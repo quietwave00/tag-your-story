@@ -1,6 +1,7 @@
 package com.tagstory.config;
 
-import com.tagstory.config.oauth.PrincipalOauth2UserService;
+import com.tagstory.oauth.OauthSuccessHandler;
+import com.tagstory.oauth.PrincipalOauth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ public class SecurityConfig {
 
     private final CorsConfig corsConfig;
     private final PrincipalOauth2UserService principalOauth2UserService;
+    private final OauthSuccessHandler oauthSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,7 +40,9 @@ public class SecurityConfig {
                 .oauth2Login()
                 .loginPage("/login")
                 .userInfoEndpoint()
-                .userService(principalOauth2UserService);
+                .userService(principalOauth2UserService)
+                .and()
+                .successHandler(oauthSuccessHandler);
 
 
         return http.build();

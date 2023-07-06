@@ -42,7 +42,7 @@ public class User {
     /*
      * 비즈니스 로직
      */
-    public User register(String userKey, String email) {
+    public static User register(String userKey, String email) {
         return User.builder()
                 .userKey(userKey)
                 .email(email)
