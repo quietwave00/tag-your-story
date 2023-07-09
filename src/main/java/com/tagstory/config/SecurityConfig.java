@@ -38,7 +38,6 @@ public class SecurityConfig {
 //                .anyRequest().permitAll()
                 .and()
                 .oauth2Login()
-                .loginPage("/login")
                 .userInfoEndpoint()
                 .userService(principalOauth2UserService)
                 .and()

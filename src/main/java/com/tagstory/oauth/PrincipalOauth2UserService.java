@@ -28,7 +28,6 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
         log.info("Oauth2UserService Execute");
         Map<String, Object> attributes = super.loadUser(request).getAttributes();
-       // Optional<User> findUser = findUserByAttributes((String) attributes.get("userKey")).orElse(() -> register(attributes));
         User user = register(attributes);
         return new PrincipalDetails(user, attributes);
     }

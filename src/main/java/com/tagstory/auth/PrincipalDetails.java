@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 @Getter
 @NoArgsConstructor
@@ -20,6 +21,10 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private User user;
     private Map<String, Object> userInfoMap;
+
+    public PrincipalDetails(User user) {
+        this.user = user;
+    }
 
     @Override
     public <A> A getAttribute(String name) {
