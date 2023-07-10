@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +25,11 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         User user = principalDetails.getUser();
         String jwt = jwtProvider.generateToken(user);
-        response.addHeader("Authorization", "Bearer " + jwt);
-
+        getRedirectStrategy().sendRedirect(request, response, getRedirectUrl(jwt));
+    }
+    private String getRedirectUrl(String token) {
+        return UriComponentsBuilder.fromUriString("http://localhost:5500/html/index.html")
+                .queryParam("token", token)
+                .build().toUriString();
     }
 }
