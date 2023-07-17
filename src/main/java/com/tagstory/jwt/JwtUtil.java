@@ -38,8 +38,13 @@ public class JwtUtil {
     }
 
     public String getUserKeyFromJwt(HttpServletRequest request) {
-        String jwt = request.getHeader(JwtCookieProvider.COOKIE_NAME).replace(JwtCookieProvider.JWT_PREFIX, "");
+        String jwt = request.getHeader("Authorization").replace("Bearer", "");
         return JWT.require(Algorithm.HMAC512(jwtKey)).build().verify(jwt).getClaim("userKey").asString();
+    }
+
+    public String getUserKeyFromRefreshToken(HttpServletRequest request) {
+        String refreshToken = request.getHeader("RefreshToken").replace("Bearer", "");
+        return JWT.require(Algorithm.HMAC512(jwtKey)).build().verify(refreshToken).getClaim("userKey").asString();
     }
 
     public boolean isTokenExpired(String token) {

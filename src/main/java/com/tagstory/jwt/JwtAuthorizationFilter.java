@@ -33,9 +33,7 @@ import java.io.IOException;
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
-
-    @Value("${jwt.key}")
-    private String jwtKey;
+    private final JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -46,14 +44,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String userKey = JWT.require(Algorithm.HMAC512(jwtKey)).build().verify(jwt).getClaim("userKey").asString();
+        String userKey = jwtUtil.getUserKeyFromJwt(request);
         log.info("userKey: {}", userKey);
-        User findUser = userRepository.findByUserKey(userKey).orElseThrow(() -> new UsernameNotFoundException("UserNotFound"));
+        User findUser = userRepository.findByUserKey(userKey);
 
         PrincipalDetails principalDetails = new PrincipalDetails(findUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         log.info("Authorization Complete");
         filterChain.doFilter(request, response);
     }
