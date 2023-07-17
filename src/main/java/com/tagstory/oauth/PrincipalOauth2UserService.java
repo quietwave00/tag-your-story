@@ -2,6 +2,7 @@ package com.tagstory.oauth;
 
 import com.tagstory.auth.PrincipalDetails;
 import com.tagstory.entity.User;
+import com.tagstory.jwt.JwtUtil;
 import com.tagstory.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
     /*
      * 사용자 정보를 가져오고, 정보를 토대로 회원가입 여부를 체크한다.
@@ -38,12 +40,12 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
     public User register(Map<String, Object> attributes) {
         String email = (String) attributes.get("email");
         String userKey = (String) attributes.get("sub");
+        String refreshToken = jwtUtil.generateRefreshToken(userKey);
         Optional<User> userOptional = userRepository.findByUserKey(userKey);
         if (userOptional.isEmpty()) {
-            User user = User.register(userKey, email);
+            User user = User.register(userKey, email, refreshToken);
             return userRepository.save(user);
         }
         return userOptional.get();
     }
-
 }
