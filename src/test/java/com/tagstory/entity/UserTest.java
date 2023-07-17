@@ -11,9 +11,10 @@ public class UserTest {
         //given
         String userKey = "userKey";
         String email = "test@email.com";
+        String refreshToken = "refreshToken";
 
         //then
-        User result = User.register(userKey, email);
+        User result = User.register(userKey, email, refreshToken);
         assertThat(result.getUserKey()).isEqualTo(userKey);
         assertThat(result.getEmail()).isEqualTo(email);
         assertThat(result.getRole()).isEqualTo(Role.ROLE_USER);
