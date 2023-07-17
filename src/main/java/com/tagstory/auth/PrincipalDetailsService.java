@@ -11,14 +11,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PrincipalDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+
 
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -28,8 +27,7 @@ public class PrincipalDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userKey) throws UsernameNotFoundException {
         log.info("PrincipalDetailsService Execute");
-        User findUser = userRepository.findByUserKey(userKey)
-                .orElseThrow(() -> new UsernameNotFoundException("dd"));
+        User findUser = userRepository.findByUserKey(userKey);
         return new PrincipalDetails(findUser);
     }
 }
