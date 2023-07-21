@@ -12,8 +12,6 @@ public class JwtCookieProvider {
 
     public final static String COOKIE_NAME = "Authorization";
     public final static String JWT_PREFIX = "Bearer ";
-    @Value("{jwt.expiration}")
-    private String cookieExpiration;
 
     public Cookie generateCookie(String jwt) {
         Cookie jwtCookie = new Cookie(COOKIE_NAME, encodeJwt(jwt));

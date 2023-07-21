@@ -41,11 +41,9 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         String email = (String) attributes.get("email");
         String userKey = (String) attributes.get("sub");
         String refreshToken = jwtUtil.generateRefreshToken(userKey);
-        Optional<User> userOptional = Optional.ofNullable(userRepository.findByUserKey(userKey));
-        if (userOptional.isEmpty()) {
+        return userRepository.findByUserKey(userKey).orElseGet(() -> {
             User user = User.register(userKey, email, refreshToken);
             return userRepository.save(user);
-        }
-        return userOptional.get();
+        });
     }
 }

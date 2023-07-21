@@ -1,21 +1,15 @@
 package com.tagstory.jwt;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.tagstory.auth.PrincipalDetails;
 import com.tagstory.entity.User;
+import com.tagstory.exception.ExceptionCode;
 import com.tagstory.user.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import com.tagstory.utils.dto.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -39,14 +33,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("JwtAuthorizationFilter Execute");
         String jwt = request.getHeader("Authorization");
-        if(jwt == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        jwtUtil.validateJwt(jwt);
 
         String userKey = jwtUtil.getUserKeyFromJwt(request);
         log.info("userKey: {}", userKey);
-        User findUser = userRepository.findByUserKey(userKey);
+        User findUser = userRepository.findByUserKey(userKey).orElseThrow(() -> new ApiException(ExceptionCode.USER_NOT_FOUND));
 
         PrincipalDetails principalDetails = new PrincipalDetails(findUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());

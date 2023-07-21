@@ -4,6 +4,7 @@ import com.tagstory.auth.PrincipalDetails;
 import com.tagstory.entity.User;
 import com.tagstory.jwt.JwtCookieProvider;
 import com.tagstory.jwt.JwtUtil;
+import com.tagstory.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -28,7 +29,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         log.info("OauthSuccessHandler Execute");
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         User user = principalDetails.getUser();
-        String jwt = jwtUtil.generateToken(user);
+        String jwt = jwtUtil.generateAccessToken(user);
 
         log.info("jwt: {}", jwt);
         response.addCookie(jwtCookieProvider.generateCookie(jwt));

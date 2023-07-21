@@ -3,6 +3,7 @@ package com.tagstory.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.*;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.tagstory.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +24,10 @@ public class JwtUtil {
     private String jwtKey;
 
 
-    public String generateToken(User user) {
+    public String generateAccessToken(User user) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(10800).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("userKey", user.getUserKey())
+                .withClaim("userId", user.getUserId())
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
@@ -47,13 +48,14 @@ public class JwtUtil {
         return JWT.require(Algorithm.HMAC512(jwtKey)).build().verify(refreshToken).getClaim("userKey").asString();
     }
 
-    public boolean isTokenExpired(String token) {
+    public void validateJwt(String jwt) {
         try {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(jwtKey)).build();
-            DecodedJWT decodedJWT = verifier.verify(token);
-            return decodedJWT.getExpiresAt().before(new Date());
-        } catch (Exception e) {
-            return true;
+            JWTVerifier verifier = JWT.require(Algorithm.HMAC512(jwtKey)).build();
+            DecodedJWT decodedJWT = verifier.verify(jwt);
+        } catch (TokenExpiredException e) {
+
+        } catch (AlgorithmMismatchException | SignatureVerificationException e) { //위조
+
         }
     }
 
