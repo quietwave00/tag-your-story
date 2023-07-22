@@ -27,6 +27,8 @@ public class User extends BaseTime {
 
     private String nickname;
 
+    private String refreshToken;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -37,12 +39,14 @@ public class User extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static User register(String userKey, String email) {
+    public static User register(String userKey, String email, String refreshToken) {
         return User.builder()
                 .userKey(userKey)
                 .email(email)
                 .role(Role.ROLE_USER)
                 .userStatus(UserStatus.ACTIVE)
+                .refreshToken(refreshToken)
                 .build();
     }
+
 }

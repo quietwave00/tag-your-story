@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
@@ -24,11 +23,6 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     public PrincipalDetails(User user) {
         this.user = user;
-    }
-
-    @Override
-    public <A> A getAttribute(String name) {
-        return OAuth2User.super.getAttribute(name);
     }
 
     @Override
