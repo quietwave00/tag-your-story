@@ -11,6 +11,10 @@ public class ExceptionManager {
     @ExceptionHandler(CustomException.class)
     public ApiResult<ExceptionResponse> handleApiException(CustomException e) {
         log.error("exceptionCode: {}, message: {}", e.getExceptionCode(), e.getMessage());
-        return ApiResult.result(false, new ExceptionResponse(e.getExceptionCode(), e.getMessage(), e.getExceptionCode().getHttpStatus().value()));
+        return ApiResult.result(false, ExceptionResponse.builder()
+                .exceptionCode(e.getExceptionCode())
+                .message(e.getMessage())
+                .status(e.getExceptionCode().getHttpStatus().value())
+                .build());
     }
 }
