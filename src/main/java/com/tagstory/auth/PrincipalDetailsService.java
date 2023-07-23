@@ -1,9 +1,9 @@
 package com.tagstory.auth;
 
 import com.tagstory.entity.User;
+import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
 import com.tagstory.user.repository.UserRepository;
-import com.tagstory.utils.dto.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +29,7 @@ public class PrincipalDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userKey) throws UsernameNotFoundException {
         log.info("PrincipalDetailsService Execute");
-        User findUser = userRepository.findByUserKey(userKey).orElseThrow(() -> new ApiException(ExceptionCode.USER_NOT_FOUND));
+        User findUser = userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         return new PrincipalDetails(findUser);
     }
 }
