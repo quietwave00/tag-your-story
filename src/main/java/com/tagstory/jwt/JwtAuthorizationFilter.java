@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,11 +21,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Optional;
 
 
-/*
- * 인증 정보를 추출하고, 유효한 사용자인지 검증한다.
- */
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
@@ -32,25 +32,51 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    /*
+     * 인증 정보를 추출하고, 유효한 사용자인지 검증한다.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("JwtAuthorizationFilter Execute");
-        String jwt = request.getHeader("Authorization");
-        try {
-            jwtUtil.validateJwt(jwt);
-            Long userId = jwtUtil.getUserIdFromJwt(request);
-            User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-            PrincipalDetails principalDetails = new PrincipalDetails(findUser);
-            Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = Optional.ofNullable(request.getHeader("Authorization")).orElseGet(() -> {
+            registerAsGuest(request, response, filterChain);
+            return null;
+        });
 
-            log.info("Authorization Complete");
-            filterChain.doFilter(request, response);
-        } catch(CustomException e) {
-            sendExceptionMessage(response, e);
+        if(jwt != null) {
+            try {
+                jwtUtil.validateJwt(jwt);
+                Long userId = jwtUtil.getUserIdFromJwt(request);
+                User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+                PrincipalDetails principalDetails = new PrincipalDetails(findUser);
+                Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                log.info("Authorization Complete");
+                filterChain.doFilter(request, response);
+            } catch(CustomException e) {
+                sendExceptionMessage(response, e);
+            }
         }
     }
 
+    /*
+     * Guest 권한을 부여해준다.
+     */
+    public void registerAsGuest(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+        try {
+            List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_GUEST"));
+            Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, authorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            filterChain.doFilter(request, response);
+        } catch (IOException | ServletException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * 클라이언트에 예외 메시지를 전달해준다.
+     */
     public void sendExceptionMessage(HttpServletResponse response, CustomException exception) {
         try {
             response.setContentType("application/json;charset=UTF-8");
@@ -65,6 +91,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             PrintWriter writer = response.getWriter();
             writer.print(message);
             writer.flush();
+            writer.close();
         } catch(IOException e) {
             e.printStackTrace();
         }
