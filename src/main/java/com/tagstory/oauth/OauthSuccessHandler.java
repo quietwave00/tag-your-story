@@ -29,10 +29,10 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         log.info("OauthSuccessHandler Execute");
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         User user = principalDetails.getUser();
-        String jwt = jwtUtil.generateAccessToken(user);
+        String jwt = jwtUtil.generateAccessToken(user.getUserId());
 
-        log.info("jwt: {}", jwt);
-        response.addCookie(jwtCookieProvider.generateCookie(jwt));
+        response.addCookie(jwtCookieProvider.generateJwtCookie(jwt));
+        response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(user.getRefreshToken()));
         getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/html/index.html");
     }
 }
