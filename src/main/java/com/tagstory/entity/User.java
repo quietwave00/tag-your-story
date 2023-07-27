@@ -49,4 +49,7 @@ public class User extends BaseTime {
                 .build();
     }
 
+    public void reissueRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }

@@ -13,6 +13,7 @@ import com.tagstory.utils.UserContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -33,6 +34,7 @@ public class UserService  {
         return userMapper.toReissueJwtResponse(newJwt);
     }
 
+    @Transactional
     public ReissueRefreshTokenResponse reissueRefreshToken() {
         User user = findByUserId(UserContextHolder.getUserId());
         String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserKey());
