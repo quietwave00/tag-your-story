@@ -11,6 +11,7 @@ import com.tagstory.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,17 +25,23 @@ public class JwtUtil {
     @Value("${jwt.key}")
     private String jwtKey;
 
+    @Value("${jwt.expiration}")
+    private int jwtExpiration;
 
-    public String generateAccessToken(User user) {
+    @Value("${jwt.refresh.expiration}")
+    private int refreshExpiration;
+
+
+    public String generateAccessToken(Long userId) {
         return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(10800).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("userId", user.getUserId())
+                .withExpiresAt(Instant.ofEpochSecond(jwtExpiration).plusSeconds(Instant.now().getEpochSecond()))
+                .withClaim("userId", userId)
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
     public String generateRefreshToken(String userKey) {
         return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(86400).plusSeconds(Instant.now().getEpochSecond()))
+                .withExpiresAt(Instant.ofEpochSecond(refreshExpiration).plusSeconds(Instant.now().getEpochSecond()))
                 .withClaim("userKey", userKey)
                 .sign(Algorithm.HMAC512(jwtKey));
     }
