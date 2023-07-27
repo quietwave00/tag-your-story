@@ -3,6 +3,9 @@ function handleExpiredJwt(_refreshToken) {
     console.log("handleExpiredJwt Execute");
     fetch("http://localhost:8080/api/user/reissue/jwt", {
         method: "POST",
+        headers: {
+            "Authorization": localStorage.getItem('Authorization')
+        },
         body: JSON.stringify({
             "refreshToken": localStorage.getItem('RefreshToken')
         })
@@ -32,7 +35,7 @@ function handleExpiredRefreshToken() {
         if(res.result === true) {
             setJwt(res.response.newJwt);
         } else {
-            console.log(res.response);
+            console.log(res);
         }
     });
 }
