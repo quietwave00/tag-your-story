@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -38,20 +39,23 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("JwtAuthorizationFilter Execute");
-        String jwt = Optional.ofNullable(request.getHeader("Authorization")).orElseGet(() -> {
-            registerAsGuest(request, response, filterChain);
-            return null;
-        });
+        Optional<String> jwtOptional = Optional.ofNullable(request.getHeader("Authorization"));
 
-        if(jwt != null) {
+        if(jwtOptional.isEmpty()) {
+            registerAsGuest();
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String jwt = jwtOptional.get();
+        if(StringUtils.hasText(jwt)) {
             try {
-                jwtUtil.validateJwt(jwt);
+                jwtUtil.validateToken(jwt);
                 Long userId = jwtUtil.getUserIdFromJwt(request);
                 User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
                 PrincipalDetails principalDetails = new PrincipalDetails(findUser);
                 Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
                 log.info("Authorization Complete");
                 filterChain.doFilter(request, response);
             } catch(CustomException e) {
@@ -60,18 +64,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
     }
 
+
     /*
      * Guest 권한을 부여해준다.
      */
-    public void registerAsGuest(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
-        try {
-            List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_GUEST"));
-            Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            filterChain.doFilter(request, response);
-        } catch (IOException | ServletException e) {
-            e.printStackTrace();
-        }
+    public void registerAsGuest() {
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_GUEST"));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     /*

@@ -26,11 +26,9 @@ public class UserService  {
     private final UserMapper userMapper;
 
     public ReissueJwtResponse reissueJwt(ReissueJwtRequest reissueJwtRequest) {
-        Long userId = UserContextHolder.getUserId();
-        if(!isValidRefreshToken(reissueJwtRequest.getRefreshToken(), userId)) {
-            throw new CustomException(ExceptionCode.INVALID_REFRESH_TOKEN);
-        }
-        String newJwt = jwtUtil.generateAccessToken(userId);
+        String userKey = getUserKeyFromRefreshToken(reissueJwtRequest.getRefreshToken());
+        User user = findByUserKey(userKey);
+        String newJwt = jwtUtil.generateAccessToken(user.getUserId());
         return userMapper.toReissueJwtResponse(newJwt);
     }
 
@@ -42,13 +40,17 @@ public class UserService  {
         return userMapper.toReissueRefreshTokenResponse(newRefreshToken);
     }
 
-    private boolean isValidRefreshToken(String refreshToken, Long userId) {
-        User user = findByUserId(userId);
-        return refreshToken.equals(user.getRefreshToken());
+
+    private String getUserKeyFromRefreshToken(String refreshToken) {
+        return jwtUtil.validateToken(refreshToken).getClaim("userKey").asString();
     }
 
     private User findByUserId(Long userId) {
         return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    }
+
+    private User findByUserKey(String userKey) {
+        return userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
     }
 
 

@@ -48,15 +48,15 @@ public class JwtUtil {
 
     public Long getUserIdFromJwt(HttpServletRequest request) throws CustomException {
         String jwt = request.getHeader("Authorization").replace("Bearer ", "");
-        return validateJwt(jwt).getClaim("userId").asLong();
+        return validateToken(jwt).getClaim("userId").asLong();
     }
 
     public Long getUserIdFromRefreshToken(HttpServletRequest request) throws CustomException {
         String refreshToken = request.getHeader("RefreshToken").replace("Bearer ", "");
-        return validateJwt(refreshToken).getClaim("userId").asLong();
+        return validateToken(refreshToken).getClaim("userId").asLong();
     }
 
-    public DecodedJWT validateJwt(String jwt) {
+    public DecodedJWT validateToken(String jwt) {
         try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC512(jwtKey)).build();
             return verifier.verify(jwt);
@@ -66,4 +66,5 @@ public class JwtUtil {
             throw new CustomException(ExceptionCode.TOKEN_HAS_TEMPERED);
         }
     }
+
 }

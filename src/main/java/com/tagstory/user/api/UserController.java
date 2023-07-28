@@ -26,7 +26,7 @@ public class UserController {
      * 토큰을 재발급한다.
      */
     @PostMapping("/user/reissue/jwt")
-    public ApiResult<ReissueJwtResponse> reissueJwt(ReissueJwtRequest reissueJwtRequest) {
+    public ApiResult<ReissueJwtResponse> reissueJwt(@RequestBody ReissueJwtRequest reissueJwtRequest) {
         ReissueJwtResponse reissueJwtResponse = userService.reissueJwt(reissueJwtRequest);
         return ApiUtils.success(reissueJwtResponse);
     }

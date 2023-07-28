@@ -6,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         show_sql: true
@@ -26,7 +26,9 @@ logging:
 
 jwt:
   key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
-  expiration: 10800
+  expiration: 5
+  refresh:
+    expiration: 86400
 
 jasypt:
   encryptor:
