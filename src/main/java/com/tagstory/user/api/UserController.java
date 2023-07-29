@@ -5,6 +5,7 @@ import com.tagstory.user.api.dto.response.ReissueJwtResponse;
 import com.tagstory.user.api.dto.response.ReissueRefreshTokenResponse;
 import com.tagstory.user.service.UserService;
 import com.tagstory.utils.ApiUtils;
+import com.tagstory.annotations.CurrentUserId;
 import com.tagstory.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +36,8 @@ public class UserController {
      * RefreshToken을 재발급한다.
      */
     @PostMapping("/user/reissue/refreshToken")
-    public ApiResult<ReissueRefreshTokenResponse> reissueRefreshToken() {
-        ReissueRefreshTokenResponse reissueRefreshTokenResponse = userService.reissueRefreshToken();
+    public ApiResult<ReissueRefreshTokenResponse> reissueRefreshToken(@CurrentUserId Long userId) {
+        ReissueRefreshTokenResponse reissueRefreshTokenResponse = userService.reissueRefreshToken(userId);
         return ApiUtils.success(reissueRefreshTokenResponse);
     }
 

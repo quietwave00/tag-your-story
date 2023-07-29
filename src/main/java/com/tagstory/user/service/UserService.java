@@ -9,7 +9,6 @@ import com.tagstory.user.api.dto.response.ReissueJwtResponse;
 import com.tagstory.user.api.dto.response.ReissueRefreshTokenResponse;
 import com.tagstory.user.repository.UserRepository;
 import com.tagstory.user.service.mapper.UserMapper;
-import com.tagstory.utils.UserContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,8 +32,8 @@ public class UserService  {
     }
 
     @Transactional
-    public ReissueRefreshTokenResponse reissueRefreshToken() {
-        User user = findByUserId(UserContextHolder.getUserId());
+    public ReissueRefreshTokenResponse reissueRefreshToken(final Long userId) {
+        User user = findByUserId(userId);
         String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserKey());
         user.reissueRefreshToken(newRefreshToken);
         return userMapper.toReissueRefreshTokenResponse(newRefreshToken);

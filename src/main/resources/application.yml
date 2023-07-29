@@ -26,7 +26,7 @@ logging:
 
 jwt:
   key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
-  expiration: 5
+  expiration: 10800
   refresh:
     expiration: 86400
 
