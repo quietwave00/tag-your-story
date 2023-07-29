@@ -9,6 +9,7 @@ import com.tagstory.exception.ExceptionResponse;
 import com.tagstory.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.internal.Function;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,6 +33,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
     /*
      * 인증 정보를 추출하고, 유효한 사용자인지 검증한다.
@@ -39,20 +41,21 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("JwtAuthorizationFilter Execute");
-        Optional<String> jwtOptional = Optional.ofNullable(request.getHeader("Authorization"));
+        Optional<String> tokenOptional = Optional.ofNullable(request.getHeader("Authorization"));
 
-        if(jwtOptional.isEmpty()) {
+        if(tokenOptional.isEmpty()) {
             registerAsGuest();
             filterChain.doFilter(request, response);
             return;
         }
 
-        String jwt = jwtOptional.get();
-        if(StringUtils.hasText(jwt)) {
+        String token = tokenOptional.get();
             try {
-                jwtUtil.validateToken(jwt);
-                Long userId = jwtUtil.getUserIdFromJwt(request);
-                User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+                jwtUtil.validateToken(token);
+                Long userId = jwtUtil.getUserIdFromJwt(request.getHeader("Authorization").replace("Bearer ", ""));
+                User findUser = findUserByIdOrUserKey(userId, token);
+
+
                 PrincipalDetails principalDetails = new PrincipalDetails(findUser);
                 Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -60,9 +63,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             } catch(CustomException e) {
                 sendExceptionMessage(response, e);
+            } finally {
+                SecurityContextHolder.clearContext();
             }
         }
-    }
+
 
 
     /*
@@ -79,21 +84,31 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      */
     public void sendExceptionMessage(HttpServletResponse response, CustomException exception) {
         try {
-            response.setContentType("application/json;charset=UTF-8");
             ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                             .exceptionCode(exception.getExceptionCode())
                             .message(exception.getMessage())
                             .status(exception.getExceptionCode().getHttpStatus().value())
                             .build();
-            ObjectMapper objectMapper = new ObjectMapper();
-            String message = objectMapper.writeValueAsString(exceptionResponse);
-
-            PrintWriter writer = response.getWriter();
-            writer.print(message);
-            writer.flush();
-            writer.close();
+            objectMapper.writeValue(response.getOutputStream(), exceptionResponse);
         } catch(IOException e) {
             e.printStackTrace();
         }
     }
+
+
+    private User findUserByIdOrUserKey(Long userId, String token) {
+        return userId == null ? getUserFromRefresh(token) : getUserFromAuthorization(userId);
+    }
+
+    private User getUserFromAuthorization(final Long userId) {
+        return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    }
+
+    private User getUserFromRefresh(final String token) {
+        String userKey = jwtUtil.getUserKeyFromRefreshToken(token);
+        return userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    }
+
+
+
 }

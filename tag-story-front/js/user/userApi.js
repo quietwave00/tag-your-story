@@ -15,11 +15,13 @@ const  logout = () => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
+            console.log("로그아웃성공");
             localStorage.removeItem('Authorization');
             localStorage.removeItem('RefreshToken');
             alert("로그아웃되었습니다.");
             window.location.href = 'http://localhost:5500/html/index.html';
         } else {
+            console.log("로그아웃실패" + res.exceptionCode);
             ExceptionHandler.handleException(res.exceptionCode);
         }
     })

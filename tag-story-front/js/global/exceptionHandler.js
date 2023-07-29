@@ -1,9 +1,10 @@
 /**
  * 반환받은 ExceptionCode에 따라 예외를 처리해준다.
  */
-const handleError = (exceptionCode) => {
+const handleException = (exceptionCode) => {
     switch (exceptionCode) {
         case 'TOKEN_HAS_EXPIRED':
+            console.log("여기로잘들어왔어");
             handleExpiredJwt();
             break;
     }
@@ -16,10 +17,12 @@ const handleError = (exceptionCode) => {
  * @param _refreshToken : 리프레쉬 토큰
  */
 const handleExpiredJwt = () => {
+    console.log("실행도 잘됐어");
     fetch("http://localhost:8080/api/user/reissue/jwt", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('RefreshToken')
         },
         body: JSON.stringify({
             "refreshToken": localStorage.getItem('RefreshToken')
@@ -28,9 +31,10 @@ const handleExpiredJwt = () => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
+            console.log("Success");
             setJwt(res.response.newJwt);
         } else {
-        
+            console.log(JSON.stringify(res));
         }
     });
 }
@@ -70,5 +74,5 @@ const setJwt = (newJwt) => {
 }
 
 export default {
-    handleError
+    handleException
 };

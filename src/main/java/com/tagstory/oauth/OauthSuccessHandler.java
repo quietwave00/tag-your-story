@@ -33,6 +33,6 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 
         response.addCookie(jwtCookieProvider.generateJwtCookie(jwt));
         response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(user.getRefreshToken()));
-        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/html/index.html");
+        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/html/user/token.html");
     }
 }

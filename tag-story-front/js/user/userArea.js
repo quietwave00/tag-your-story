@@ -26,15 +26,14 @@ const api = userApi.logout;
               </a>
               <ul class="dropdown-menu text-small">
                 <li>
-                  <a class="dropdown-item" href="#" id="test">Sign out</a>
+                  <a class="dropdown-item" href="#" id="logout-a">Sign out</a>
                 </li>
               </ul>
             </div>
             `;
     }
 
-    document.getElementById('test').addEventListener ('click', function (){
-      console.log('test clicked');
+    document.getElementById('logout-a').addEventListener ('click', function() {
       userApi.logout();
     })
 }

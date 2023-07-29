@@ -1,6 +1,7 @@
 package com.tagstory.user.api;
 
 import com.tagstory.user.api.dto.request.ReissueJwtRequest;
+import com.tagstory.user.api.dto.response.LogoutResponse;
 import com.tagstory.user.api.dto.response.ReissueJwtResponse;
 import com.tagstory.user.api.dto.response.ReissueRefreshTokenResponse;
 import com.tagstory.user.service.UserService;
@@ -42,6 +43,16 @@ public class UserController {
     public ApiResult<ReissueRefreshTokenResponse> reissueRefreshToken(@CurrentUserId Long userId) {
         ReissueRefreshTokenResponse reissueRefreshTokenResponse = userService.reissueRefreshToken(userId);
         return ApiUtils.success(reissueRefreshTokenResponse);
+    }
+
+    /*
+     * 로그아웃을 수행한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PostMapping("/logout")
+    public ApiResult<LogoutResponse> logout(@CurrentUserId Long userId) {
+        LogoutResponse logoutResponse = userService.logout(userId);
+        return ApiUtils.success(logoutResponse);
     }
 
 

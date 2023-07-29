@@ -1,5 +1,6 @@
 package com.tagstory.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tagstory.jwt.JwtAuthorizationFilter;
 import com.tagstory.jwt.JwtUtil;
 import com.tagstory.oauth.OauthSuccessHandler;
@@ -27,6 +28,7 @@ public class SecurityConfig {
     private final OauthSuccessHandler oauthSuccessHandler;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -51,7 +53,7 @@ public class SecurityConfig {
         public void configure(HttpSecurity http){
             http
                     .addFilter(corsConfig.corsFilter())
-                    .addFilterAfter(new JwtAuthorizationFilter(userRepository, jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                    .addFilterAfter(new JwtAuthorizationFilter(userRepository, jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
         }
     }
 }

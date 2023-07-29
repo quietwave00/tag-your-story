@@ -5,12 +5,14 @@ import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
 import com.tagstory.jwt.JwtUtil;
 import com.tagstory.user.api.dto.request.ReissueJwtRequest;
+import com.tagstory.user.api.dto.response.LogoutResponse;
 import com.tagstory.user.api.dto.response.ReissueJwtResponse;
 import com.tagstory.user.api.dto.response.ReissueRefreshTokenResponse;
 import com.tagstory.user.repository.UserRepository;
 import com.tagstory.user.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,11 @@ public class UserService  {
         return userMapper.toReissueRefreshTokenResponse(newRefreshToken);
     }
 
+    public LogoutResponse logout(Long userId) {
+        SecurityContextHolder.clearContext();
+        return userMapper.toLogoutResponse(userId);
+    }
+
 
     private String getUserKeyFromRefreshToken(String refreshToken) {
         return jwtUtil.validateToken(refreshToken).getClaim("userKey").asString();
@@ -51,6 +58,4 @@ public class UserService  {
     private User findByUserKey(String userKey) {
         return userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
     }
-
-
 }
