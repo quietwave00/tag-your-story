@@ -8,6 +8,7 @@ import com.tagstory.utils.ApiUtils;
 import com.tagstory.annotations.CurrentUserId;
 import com.tagstory.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,7 +18,7 @@ public class UserController {
 
     private final UserService userService;
 
-
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/user/test")
     public ApiResult<String> test() {
         return ApiUtils.success("success");
@@ -26,6 +27,7 @@ public class UserController {
     /*
      * 토큰을 재발급한다.
      */
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/user/reissue/jwt")
     public ApiResult<ReissueJwtResponse> reissueJwt(@RequestBody ReissueJwtRequest reissueJwtRequest) {
         ReissueJwtResponse reissueJwtResponse = userService.reissueJwt(reissueJwtRequest);
@@ -35,10 +37,12 @@ public class UserController {
     /*
      * RefreshToken을 재발급한다.
      */
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/user/reissue/refreshToken")
     public ApiResult<ReissueRefreshTokenResponse> reissueRefreshToken(@CurrentUserId Long userId) {
         ReissueRefreshTokenResponse reissueRefreshTokenResponse = userService.reissueRefreshToken(userId);
         return ApiUtils.success(reissueRefreshTokenResponse);
     }
+
 
 }
