@@ -58,7 +58,7 @@ public class JwtUtil {
         try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC512(jwtKey)).build();
             return verifier.verify(jwt);
-        } catch (TokenExpiredException | JWTDecodeException e) {
+        } catch (TokenExpiredException e) {
             throw new CustomException(ExceptionCode.TOKEN_HAS_EXPIRED);
         } catch (AlgorithmMismatchException | SignatureVerificationException e) {
             throw new CustomException(ExceptionCode.TOKEN_HAS_TEMPERED);

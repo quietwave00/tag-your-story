@@ -32,10 +32,12 @@ const api = userApi.logout;
             </div>
             `;
     }
-
-    document.getElementById('logout-a').addEventListener ('click', function() {
-      userApi.logout();
-    })
+    
+    if(document.getElementById('logout-a') != null) {
+      document.getElementById('logout-a').addEventListener ('click', function() {
+        userApi.logout();
+      })
+    }
 }
 
 export default {
