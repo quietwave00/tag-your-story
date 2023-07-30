@@ -1,9 +1,8 @@
 package com.tagstory.user.api;
 
 import com.tagstory.user.api.dto.request.ReissueJwtRequest;
-import com.tagstory.user.api.dto.response.LogoutResponse;
-import com.tagstory.user.api.dto.response.ReissueJwtResponse;
-import com.tagstory.user.api.dto.response.ReissueRefreshTokenResponse;
+import com.tagstory.user.api.dto.request.UpdateNicknameRequest;
+import com.tagstory.user.api.dto.response.*;
 import com.tagstory.user.service.UserService;
 import com.tagstory.utils.ApiUtils;
 import com.tagstory.annotations.CurrentUserId;
@@ -54,6 +53,27 @@ public class UserController {
         LogoutResponse logoutResponse = userService.logout(userId);
         return ApiUtils.success(logoutResponse);
     }
+
+    /*
+     * 닉네임을 설정해준다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping("/nicknames")
+    public ApiResult<UpdateNicknameResponse> updateNickname(@CurrentUserId Long userId, @RequestBody UpdateNicknameRequest updateNicknameRequest) {
+        UpdateNicknameResponse updateNicknameResponse = userService.updateNickname(updateNicknameRequest, userId);
+        return ApiUtils.success(updateNicknameResponse);
+    }
+
+    /*
+     * 회원가입한 회원인지 로그인한 회원인지 상태를 체크한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/check-registration")
+    public ApiResult<CheckRegisterUserResponse> checkRegisterUser(@CurrentUserId Long userId) {
+        CheckRegisterUserResponse checkRegisterUserResponse = userService.checkRegisterUser(userId);
+        return ApiUtils.success(checkRegisterUserResponse);
+    }
+
 
 
 }

@@ -5,9 +5,8 @@ import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
 import com.tagstory.jwt.JwtUtil;
 import com.tagstory.user.api.dto.request.ReissueJwtRequest;
-import com.tagstory.user.api.dto.response.LogoutResponse;
-import com.tagstory.user.api.dto.response.ReissueJwtResponse;
-import com.tagstory.user.api.dto.response.ReissueRefreshTokenResponse;
+import com.tagstory.user.api.dto.request.UpdateNicknameRequest;
+import com.tagstory.user.api.dto.response.*;
 import com.tagstory.user.repository.UserRepository;
 import com.tagstory.user.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +43,19 @@ public class UserService  {
     public LogoutResponse logout(Long userId) {
         SecurityContextHolder.clearContext();
         return userMapper.toLogoutResponse(userId);
+    }
+
+    @Transactional
+    public UpdateNicknameResponse updateNickname(UpdateNicknameRequest updateNicknameRequest, Long userId) {
+        User findUser = findByUserId(userId);
+        findUser.updateNickname(updateNicknameRequest.getNickname());
+        return userMapper.toUpdateNicknameResponse(findUser.getNickname());
+    }
+
+    public CheckRegisterUserResponse checkRegisterUser(Long userId) {
+        User findUser = findByUserId(userId);
+        boolean status = (findUser.getNickname() == null);
+        return userMapper.toCheckRegisterUserResponse(status);
     }
 
 

@@ -1,8 +1,6 @@
 package com.tagstory.user.service.mapper;
 
-import com.tagstory.user.api.dto.response.LogoutResponse;
-import com.tagstory.user.api.dto.response.ReissueJwtResponse;
-import com.tagstory.user.api.dto.response.ReissueRefreshTokenResponse;
+import com.tagstory.user.api.dto.response.*;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -25,6 +23,19 @@ public class UserMapper {
         return LogoutResponse.builder()
                 .logoutAt(LocalDateTime.now())
                 .userId(userId)
+                .build();
+    }
+
+    public UpdateNicknameResponse toUpdateNicknameResponse(String nickname) {
+        return UpdateNicknameResponse.builder()
+                .updateAt(LocalDateTime.now())
+                .nickname(nickname)
+                .build();
+    }
+
+    public CheckRegisterUserResponse toCheckRegisterUserResponse(boolean status) {
+        return CheckRegisterUserResponse.builder()
+                .isRegisterUser(status)
                 .build();
     }
 }

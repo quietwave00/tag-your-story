@@ -52,4 +52,8 @@ public class User extends BaseTime {
     public void reissueRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }
