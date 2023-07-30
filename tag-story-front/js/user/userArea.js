@@ -4,15 +4,10 @@ import userApi from './userApi.js';
  * user 상태에 따라 user-area의 역할을 변경해준다.
  */
 const setState = () => {
-const api = userApi.logout;
-
-
-  console.log("setState() called");
     const jwt = localStorage.getItem('Authorization');
     const refreshToken = localStorage.getItem('RefreshToken');
 
     if(jwt == null && refreshToken == null) {
-      console.log("로그인으로~");
       document.getElementById('user-area').innerHTML =
         `
         <a href = "http://localhost:5500/html/user/login.html">LOGIN</a>

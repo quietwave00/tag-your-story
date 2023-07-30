@@ -1,27 +1,14 @@
-import ExceptionHandler from './global/exceptionHandler.js';
 import UserArea from './user/userArea.js';
+import UserApi from './user/userApi.js';
 
 window.onload = () => {
     /**
      * user-area에 대한 처리를 수행한다.
      */
     UserArea.setState();
-}
 
-document.getElementById("test").addEventListener("click", function() {
-    fetch("http://localhost:8080/api/test", {
-        method: "GET",
-        headers: {
-            "Authorization": localStorage.getItem('Authorization')
-        }
-    })
-    .then((res) => res.json())
-    .then(res => {
-        if(res.success === true) {
-            console.log(res);
-        } else {
-            console.log(res);
-            ExceptionHandler.handleError(res.exceptionCode);
-        }
-    })
-})
+    /**
+     *  회원의 회원가입, 로그인 상태를 체크한다.
+     */
+    UserApi.checkRegisterUser();
+}
