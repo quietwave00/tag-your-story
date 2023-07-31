@@ -5,6 +5,8 @@ const handleException = (exceptionCode) => {
     switch (exceptionCode) {
         case 'TOKEN_HAS_EXPIRED':
             return handleExpiredJwt();
+        case 'USER_NOT_FOUND':
+            window.location.href = 'http://localhost:5500/html/exception.html';
     }
 }
 
