@@ -6,14 +6,16 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.*;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.tagstory.entity.User;
+import com.tagstory.exception.CustomException;
+import com.tagstory.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
-import java.util.Date;
 
 @Slf4j
 @Component
@@ -23,39 +25,43 @@ public class JwtUtil {
     @Value("${jwt.key}")
     private String jwtKey;
 
+    @Value("${jwt.expiration}")
+    private int jwtExpiration;
 
-    public String generateAccessToken(User user) {
+    @Value("${jwt.refresh.expiration}")
+    private int refreshExpiration;
+
+
+    public String generateAccessToken(Long userId) {
         return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(10800).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("userId", user.getUserId())
+                .withExpiresAt(Instant.ofEpochSecond(jwtExpiration).plusSeconds(Instant.now().getEpochSecond()))
+                .withClaim("userId", userId)
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
     public String generateRefreshToken(String userKey) {
         return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(86400).plusSeconds(Instant.now().getEpochSecond()))
+                .withExpiresAt(Instant.ofEpochSecond(refreshExpiration).plusSeconds(Instant.now().getEpochSecond()))
                 .withClaim("userKey", userKey)
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public String getUserKeyFromJwt(HttpServletRequest request) {
-        String jwt = request.getHeader("Authorization").replace("Bearer", "");
-        return JWT.require(Algorithm.HMAC512(jwtKey)).build().verify(jwt).getClaim("userKey").asString();
+    public Long getUserIdFromJwt(String jwt) throws CustomException {
+        return validateToken(jwt).getClaim("userId").asLong();
     }
 
-    public String getUserKeyFromRefreshToken(HttpServletRequest request) {
-        String refreshToken = request.getHeader("RefreshToken").replace("Bearer", "");
-        return JWT.require(Algorithm.HMAC512(jwtKey)).build().verify(refreshToken).getClaim("userKey").asString();
+    public String getUserKeyFromRefreshToken(String refreshToken) throws CustomException {
+        return validateToken(refreshToken).getClaim("userKey").asString();
     }
 
-    public void validateJwt(String jwt) {
+    public DecodedJWT validateToken(String jwt) {
         try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC512(jwtKey)).build();
-            DecodedJWT decodedJWT = verifier.verify(jwt);
+            return verifier.verify(jwt);
         } catch (TokenExpiredException e) {
-
-        } catch (AlgorithmMismatchException | SignatureVerificationException e) { //위조
-
+            throw new CustomException(ExceptionCode.TOKEN_HAS_EXPIRED);
+        } catch (AlgorithmMismatchException | SignatureVerificationException e) {
+            throw new CustomException(ExceptionCode.TOKEN_HAS_TEMPERED);
         }
     }
 
