@@ -4,21 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-public class User {
+@Table(name = "users")
+public class User extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userNo;
+    private Long userId;
 
     @Column(nullable = false)
     private String userKey;
@@ -28,26 +27,33 @@ public class User {
 
     private String nickname;
 
-    @Column(nullable = false)
-    @CreationTimestamp
-    private Timestamp createdDate;
+    private String refreshToken;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private UserStatus userStatus;
 
 
     /*
      * 비즈니스 로직
      */
-    public static User register(String userKey, String email) {
+    public static User register(String userKey, String email, String refreshToken) {
         return User.builder()
                 .userKey(userKey)
                 .email(email)
                 .role(Role.ROLE_USER)
-                .status(Status.Y)
+                .userStatus(UserStatus.ACTIVE)
+                .refreshToken(refreshToken)
                 .build();
+    }
+
+    public void reissueRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

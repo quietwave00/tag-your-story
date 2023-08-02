@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:test
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: a
+            client-secret: b
+            scope: profile, email
+
+logging:
+  level:
+    root: info
+
+jwt:
+  key: asdfjklasdkjlfkljsadflkjsaf
+  expiration: 10800
+  refresh:
+    expiration: 86400
+
+
+jasypt:
+  encryptor:
+    bean: jasyptEncryptor
+    property:
+      prefix: ENC(
+      suffix: )
+    password: 0000

@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/tagStory
-    username: tagStory
-    password: tagStory
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -16,13 +16,27 @@ spring:
       client:
         registration:
           google:
-            client-id: 490961154864-i1dilml42mtdffdu2h1kh6eilaam3a56.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ENC(u4YH/tXU/O3npUCfGNV4wPBuHUXRknNx0vqpb3UA0FVN3TKvi/x4/iP/yLHhJ8+dToXuCHtyX02cnTfET7t2EOOLxHldypZHxVNiUJGII8YIwFKaYFxsaA==)
+            client-secret: ENC(E181Qk1XAL17VUh37ud9zNjHvP24Wpsc6wnJvIYsLLumD3Dqc5eLwY24h8DumTdn)
             scope: profile, email
 
 logging:
   level:
     root: info
+
+jwt:
+  key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
+  expiration: 10800
+  refresh:
+    expiration: 86400
+
+jasypt:
+  encryptor:
+    bean: jasyptEncryptor
+    property:
+      prefix: ENC(
+      suffix: )
+    password: ${jasypt_encryptor_password}
 
 
 
