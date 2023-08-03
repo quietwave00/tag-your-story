@@ -44,6 +44,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         Optional<String> tokenOptional = Optional.ofNullable(request.getHeader("Authorization"));
 
         log.info("test");
+        log.info("test2");
         if(tokenOptional.isEmpty()) {
             registerAsGuest();
             filterChain.doFilter(request, response);
