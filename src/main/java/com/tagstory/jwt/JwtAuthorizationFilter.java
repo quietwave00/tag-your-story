@@ -45,6 +45,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         log.info("test");
         log.info("test2");
+        log.info("register");
         if(tokenOptional.isEmpty()) {
             registerAsGuest();
             filterChain.doFilter(request, response);
