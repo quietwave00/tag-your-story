@@ -40,6 +40,7 @@ public class User extends BaseTime {
      * 비즈니스 로직
      */
     public static User register(String userKey, String email, String refreshToken) {
+        
         return User.builder()
                 .userKey(userKey)
                 .email(email)
