@@ -3,8 +3,6 @@ package com.tagstory.auth;
 import com.tagstory.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -12,7 +10,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 
 @Getter
 @AllArgsConstructor
@@ -53,7 +50,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        return user.getUserKey();
+        return String.valueOf(user.getUserId());
     }
 
     @Override

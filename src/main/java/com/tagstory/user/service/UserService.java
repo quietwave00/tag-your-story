@@ -1,5 +1,6 @@
 package com.tagstory.user.service;
 
+import com.mysql.cj.util.StringUtils;
 import com.tagstory.entity.User;
 import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
@@ -7,6 +8,7 @@ import com.tagstory.jwt.JwtUtil;
 import com.tagstory.user.api.dto.request.ReissueJwtRequest;
 import com.tagstory.user.api.dto.request.UpdateNicknameRequest;
 import com.tagstory.user.api.dto.response.*;
+import com.tagstory.user.cache.CacheUserRepository;
 import com.tagstory.user.repository.UserRepository;
 import com.tagstory.user.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,21 +24,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService  {
 
     private final UserRepository userRepository;
+    private final CacheUserRepository cacheUserRepository;
     private final JwtUtil jwtUtil;
     private final UserMapper userMapper;
 
     public ReissueJwtResponse reissueJwt(ReissueJwtRequest reissueJwtRequest) {
-        String userKey = getUserKeyFromRefreshToken(reissueJwtRequest.getRefreshToken());
-        User user = findByUserKey(userKey);
-        String newJwt = jwtUtil.generateAccessToken(user.getUserId());
+        Long userId = jwtUtil.getUserIdFromRefreshToken(reissueJwtRequest.getRefreshToken());
+        User findUser = findByUserId(userId);
+        String newJwt = jwtUtil.generateAccessToken(findUser.getUserId());
         return userMapper.toReissueJwtResponse(newJwt);
     }
 
     @Transactional
     public ReissueRefreshTokenResponse reissueRefreshToken(final Long userId) {
         User user = findByUserId(userId);
-        String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserKey());
-        user.reissueRefreshToken(newRefreshToken);
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserId());
+        cacheUserRepository.updateRefreshToken(newRefreshToken);
         return userMapper.toReissueRefreshTokenResponse(newRefreshToken);
     }
 
@@ -47,27 +50,19 @@ public class UserService  {
 
     @Transactional
     public UpdateNicknameResponse updateNickname(UpdateNicknameRequest updateNicknameRequest, Long userId) {
-        User findUser = findByUserId(userId);
+        User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         findUser.updateNickname(updateNicknameRequest.getNickname());
+        cacheUserRepository.save(findUser);
         return userMapper.toUpdateNicknameResponse(findUser.getNickname());
     }
 
     public CheckRegisterUserResponse checkRegisterUser(Long userId) {
         User findUser = findByUserId(userId);
-        boolean status = (findUser.getNickname() == null);
+        boolean status = StringUtils.isNullOrEmpty(findUser.getNickname());
         return userMapper.toCheckRegisterUserResponse(status);
     }
 
-
-    private String getUserKeyFromRefreshToken(String refreshToken) {
-        return jwtUtil.validateToken(refreshToken).getClaim("userKey").asString();
-    }
-
     private User findByUserId(Long userId) {
-        return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-    }
-
-    private User findByUserKey(String userKey) {
-        return userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        return cacheUserRepository.findUserByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
     }
 }

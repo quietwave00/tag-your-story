@@ -3,18 +3,17 @@ package com.tagstory.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.*;
+import com.auth0.jwt.exceptions.AlgorithmMismatchException;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.tagstory.entity.User;
 import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 
 @Slf4j
@@ -39,10 +38,10 @@ public class JwtUtil {
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public String generateRefreshToken(String userKey) {
+    public String generateRefreshToken(Long userId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(refreshExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("userKey", userKey)
+                .withClaim("userId", userId)
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
@@ -50,8 +49,8 @@ public class JwtUtil {
         return validateToken(jwt).getClaim("userId").asLong();
     }
 
-    public String getUserKeyFromRefreshToken(String refreshToken) throws CustomException {
-        return validateToken(refreshToken).getClaim("userKey").asString();
+    public Long getUserIdFromRefreshToken(String refreshToken) throws CustomException {
+        return validateToken(refreshToken).getClaim("userId").asLong();
     }
 
     public DecodedJWT validateToken(String jwt) {

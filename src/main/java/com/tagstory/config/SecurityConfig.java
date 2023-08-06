@@ -5,7 +5,7 @@ import com.tagstory.jwt.JwtAuthorizationFilter;
 import com.tagstory.jwt.JwtUtil;
 import com.tagstory.oauth.OauthSuccessHandler;
 import com.tagstory.oauth.PrincipalOauth2UserService;
-import com.tagstory.user.repository.UserRepository;
+import com.tagstory.user.cache.CacheUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +26,7 @@ public class SecurityConfig {
     private final CorsConfig corsConfig;
     private final PrincipalOauth2UserService principalOauth2UserService;
     private final OauthSuccessHandler oauthSuccessHandler;
-    private final UserRepository userRepository;
+    private final CacheUserRepository cacheUserRepository;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
@@ -53,7 +53,7 @@ public class SecurityConfig {
         public void configure(HttpSecurity http){
             http
                     .addFilter(corsConfig.corsFilter())
-                    .addFilterAfter(new JwtAuthorizationFilter(userRepository, jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
+                    .addFilterAfter(new JwtAuthorizationFilter(cacheUserRepository, jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
         }
     }
 }

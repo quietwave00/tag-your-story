@@ -1,11 +1,11 @@
 package com.tagstory.user.api;
 
+import com.tagstory.annotations.CurrentUserId;
 import com.tagstory.user.api.dto.request.ReissueJwtRequest;
 import com.tagstory.user.api.dto.request.UpdateNicknameRequest;
 import com.tagstory.user.api.dto.response.*;
 import com.tagstory.user.service.UserService;
 import com.tagstory.utils.ApiUtils;
-import com.tagstory.annotations.CurrentUserId;
 import com.tagstory.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -6,15 +6,13 @@ import com.tagstory.entity.User;
 import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
 import com.tagstory.exception.ExceptionResponse;
-import com.tagstory.user.repository.UserRepository;
+import com.tagstory.user.cache.CacheUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cglib.core.internal.Function;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -22,16 +20,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
-import java.util.Optional;
 
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
-    private final UserRepository userRepository;
+    private final CacheUserRepository cacheUserRepository;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
@@ -41,37 +37,29 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("JwtAuthorizationFilter Execute");
-        Optional<String> tokenOptional = Optional.ofNullable(request.getHeader("Authorization"));
+        String token = request.getHeader("Authorization");
 
-        log.info("test");
-        log.info("test2");
-        log.info("register");
-        if(tokenOptional.isEmpty()) {
+        if(token.isEmpty()) {
             registerAsGuest();
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = tokenOptional.get();
-            try {
-                jwtUtil.validateToken(token);
-                Long userId = jwtUtil.getUserIdFromJwt(request.getHeader("Authorization").replace("Bearer ", ""));
-                User findUser = findUserByIdOrUserKey(userId, token);
+        try {
+            jwtUtil.validateToken(token);
+            Long userId = jwtUtil.getUserIdFromJwt(request.getHeader("Authorization").replace("Bearer ", ""));
+            User findUser = findUserByIdOrUserKey(userId, token);
+            log.info("레디스에서 가져온 findUser: {}", findUser.toString());
 
-
-                PrincipalDetails principalDetails = new PrincipalDetails(findUser);
-                Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("Authorization Complete");
-                filterChain.doFilter(request, response);
-            } catch(CustomException e) {
-                sendExceptionMessage(response, e);
-            } finally {
-                SecurityContextHolder.clearContext();
-            }
+            PrincipalDetails principalDetails = new PrincipalDetails(findUser);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("Authorization Complete");
+            filterChain.doFilter(request, response);
+        } catch(CustomException e) {
+            sendExceptionMessage(response, e);
         }
-
-
+    }
 
     /*
      * Guest 권한을 부여해준다.
@@ -100,18 +88,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
 
     private User findUserByIdOrUserKey(Long userId, String token) {
-        return userId == null ? getUserFromRefresh(token) : getUserFromAuthorization(userId);
+        return userId == null ? getUserFromRefreshToken(token) : getUserFromAuthorization(userId);
     }
 
     private User getUserFromAuthorization(final Long userId) {
-        return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        return cacheUserRepository.findUserByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
     }
 
-    private User getUserFromRefresh(final String token) {
-        String userKey = jwtUtil.getUserKeyFromRefreshToken(token);
-        return userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    private User getUserFromRefreshToken(final String token) {
+        Long userId = jwtUtil.getUserIdFromRefreshToken(token);
+        return cacheUserRepository.findUserByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
     }
-
-
-
 }
