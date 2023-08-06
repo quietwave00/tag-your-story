@@ -1,11 +1,9 @@
 package com.tagstory.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Getter
 @NoArgsConstructor
@@ -13,7 +11,8 @@ import javax.persistence.*;
 @Builder
 @Entity
 @Table(name = "users")
-public class User extends BaseTime {
+@ToString
+public class User extends BaseTime implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,8 +26,6 @@ public class User extends BaseTime {
 
     private String nickname;
 
-    private String refreshToken;
-
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -39,19 +36,14 @@ public class User extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static User register(String userKey, String email, String refreshToken) {
+    public static User register(String userKey, String email) {
         
         return User.builder()
                 .userKey(userKey)
                 .email(email)
                 .role(Role.ROLE_USER)
                 .userStatus(UserStatus.ACTIVE)
-                .refreshToken(refreshToken)
                 .build();
-    }
-
-    public void reissueRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
 
     public void updateNickname(String nickname) {
