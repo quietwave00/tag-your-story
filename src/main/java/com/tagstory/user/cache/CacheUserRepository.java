@@ -12,9 +12,8 @@ import java.util.Optional;
 public class CacheUserRepository {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public User save(User user) {
+    public void save(User user) {
         redisTemplate.opsForHash().put("user", user.getUserId(), user);
-        return findUserByUserId(user.getUserId()).get();
     }
 
     public void save(RefreshTokenData refreshTokenData) {

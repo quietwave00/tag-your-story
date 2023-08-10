@@ -34,7 +34,7 @@ public class JwtUtil {
     public String generateAccessToken(Long userId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(jwtExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("userId", userId)
+                .withSubject(String.valueOf(userId))
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
@@ -45,18 +45,18 @@ public class JwtUtil {
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public Long getUserIdFromJwt(String jwt) throws CustomException {
-        return validateToken(jwt).getClaim("userId").asLong();
+    public Long getUserIdFromAccessToken(String accessToken) throws CustomException {
+        return Long.valueOf(validateToken(accessToken).getSubject());
     }
 
     public Long getUserIdFromRefreshToken(String refreshToken) throws CustomException {
-        return validateToken(refreshToken).getClaim("userId").asLong();
+        return Long.valueOf(validateToken(refreshToken).getSubject());
     }
 
-    public DecodedJWT validateToken(String jwt) {
+    public DecodedJWT validateToken(String token) {
         try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC512(jwtKey)).build();
-            return verifier.verify(jwt);
+            return verifier.verify(token);
         } catch (TokenExpiredException e) {
             throw new CustomException(ExceptionCode.TOKEN_HAS_EXPIRED);
         } catch (AlgorithmMismatchException | SignatureVerificationException e) {

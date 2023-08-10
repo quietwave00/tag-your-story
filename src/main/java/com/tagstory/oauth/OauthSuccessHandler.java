@@ -32,7 +32,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         log.info("OauthSuccessHandler Execute");
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         User user = principalDetails.getUser();
-        String jwt = jwtUtil.generateAccessToken(user.getUserId());
+        String accessToken = jwtUtil.generateAccessToken(user.getUserId());
         String refreshToken = cacheUserRepository.findRefreshTokenByUserId(user.getUserId())
                 .map(RefreshTokenData::getRefreshToken)
                 .orElse(null);
@@ -42,7 +42,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
             saveRefreshToken(user.getUserId(), refreshToken);
         }
 
-        response.addCookie(jwtCookieProvider.generateJwtCookie(jwt));
+        response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));
         response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(refreshToken));
         getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/html/user/token.html");
     }

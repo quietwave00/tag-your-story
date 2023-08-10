@@ -3,7 +3,7 @@ package com.tagstory.auth;
 import com.tagstory.entity.User;
 import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
-import com.tagstory.user.repository.UserRepository;
+import com.tagstory.user.cache.CacheUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -18,8 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PrincipalDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
-
+    private final CacheUserRepository cacheUserRepository;
 
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -27,9 +26,9 @@ public class PrincipalDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String userKey) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
         log.info("PrincipalDetailsService Execute");
-        User findUser = userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        User findUser = cacheUserRepository.findUserByUserId(Long.parseLong(userId)).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         return new PrincipalDetails(findUser);
     }
 }

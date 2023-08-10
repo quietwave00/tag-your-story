@@ -21,7 +21,6 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
     private final CacheUserRepository cacheUserRepository;
-
     /*
      * 사용자 정보를 가져오고, 정보를 토대로 회원가입 여부를 체크한다.
      */
@@ -30,6 +29,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         log.info("Oauth2UserService Execute");
         Map<String, Object> attributes = super.loadUser(request).getAttributes();
         User user = register(attributes);
+        cacheUserRepository.save(user);
         return new PrincipalDetails(user, attributes);
     }
 
@@ -41,8 +41,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         String userKey = (String) attributes.get("sub");
         return userRepository.findByUserKey(userKey).orElseGet(() -> {
             User user = User.register(userKey, email);
-            userRepository.save(user);
-            return cacheUserRepository.save(user);
+            return userRepository.save(user);
         });
     }
 }

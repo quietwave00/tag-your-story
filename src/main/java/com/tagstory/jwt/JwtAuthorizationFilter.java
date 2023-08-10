@@ -47,9 +47,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         try {
             jwtUtil.validateToken(token);
-            Long userId = jwtUtil.getUserIdFromJwt(request.getHeader("Authorization").replace("Bearer ", ""));
-            User findUser = findUserByIdOrUserKey(userId, token);
-            log.info("레디스에서 가져온 findUser: {}", findUser.toString());
+            Long userId = jwtUtil.getUserIdFromAccessToken(request.getHeader("Authorization").replace("Bearer ", ""));
+            User findUser = findUserById(userId, token);
 
             PrincipalDetails principalDetails = new PrincipalDetails(findUser);
             Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
@@ -87,11 +86,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
 
-    private User findUserByIdOrUserKey(Long userId, String token) {
-        return userId == null ? getUserFromRefreshToken(token) : getUserFromAuthorization(userId);
+    private User findUserById(Long userId, String token) {
+        return userId == null ? getUserFromRefreshToken(token) : getUserFromAccessToken(userId);
     }
 
-    private User getUserFromAuthorization(final Long userId) {
+    private User getUserFromAccessToken(final Long userId) {
         return cacheUserRepository.findUserByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
     }
 

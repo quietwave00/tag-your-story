@@ -11,7 +11,6 @@ import java.io.Serializable;
 @Builder
 @Entity
 @Table(name = "users")
-@ToString
 public class User extends BaseTime implements Serializable {
 
     @Id
