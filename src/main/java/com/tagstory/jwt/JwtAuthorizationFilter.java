@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tagstory.auth.PrincipalDetails;
 import com.tagstory.entity.User;
 import com.tagstory.exception.CustomException;
-import com.tagstory.exception.ExceptionCode;
 import com.tagstory.exception.ExceptionResponse;
+import com.tagstory.user.cache.CacheSpec;
 import com.tagstory.user.cache.CacheUserRepository;
+import com.tagstory.user.cache.TagStoryRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,6 +30,7 @@ import java.util.List;
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final CacheUserRepository cacheUserRepository;
+    private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
@@ -85,17 +88,17 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
     }
 
-
     private User findUserById(Long userId, String token) {
         return userId == null ? getUserFromRefreshToken(token) : getUserFromAccessToken(userId);
     }
 
-    private User getUserFromAccessToken(final Long userId) {
-        return cacheUserRepository.findUserByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    @Cacheable(value = "user", key = "#userId")
+    public User getUserFromAccessToken(final Long userId) {
+        return cacheUserRepository.findByUserId(userId, CacheSpec.USER);
     }
 
-    private User getUserFromRefreshToken(final String token) {
+    public User getUserFromRefreshToken(final String token) {
         Long userId = jwtUtil.getUserIdFromRefreshToken(token);
-        return cacheUserRepository.findUserByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        return redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
     }
 }

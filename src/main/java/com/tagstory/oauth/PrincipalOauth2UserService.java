@@ -2,6 +2,7 @@ package com.tagstory.oauth;
 
 import com.tagstory.auth.PrincipalDetails;
 import com.tagstory.entity.User;
+import com.tagstory.user.cache.CacheSpec;
 import com.tagstory.user.cache.CacheUserRepository;
 import com.tagstory.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         log.info("Oauth2UserService Execute");
         Map<String, Object> attributes = super.loadUser(request).getAttributes();
         User user = register(attributes);
-        cacheUserRepository.save(user);
+        cacheUserRepository.save(user, CacheSpec.USER);
         return new PrincipalDetails(user, attributes);
     }
 
