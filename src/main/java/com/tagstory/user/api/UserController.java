@@ -1,10 +1,12 @@
 package com.tagstory.user.api;
 
 import com.tagstory.annotations.CurrentUserId;
-import com.tagstory.user.api.dto.request.ReissueJwtRequest;
+import com.tagstory.user.api.dto.request.ReissueAccessTokenRequest;
 import com.tagstory.user.api.dto.request.UpdateNicknameRequest;
 import com.tagstory.user.api.dto.response.*;
+import com.tagstory.user.mapper.UserControllerMapper;
 import com.tagstory.user.service.UserService;
+import com.tagstory.user.service.dto.ReissueAccessTokenCommand;
 import com.tagstory.utils.ApiUtils;
 import com.tagstory.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserControllerMapper userControllerMapper;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/user/test")
@@ -25,12 +28,12 @@ public class UserController {
     }
 
     /*
-     * 토큰을 재발급한다.
+     * AccessToken을 재발급한다.
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/user/reissue/jwt")
-    public ApiResult<ReissueJwtResponse> reissueJwt(@RequestBody ReissueJwtRequest reissueJwtRequest) {
-        ReissueJwtResponse reissueJwtResponse = userService.reissueJwt(reissueJwtRequest);
+    public ApiResult<ReissueJwtResponse> reissueJwt(@RequestBody ReissueAccessTokenRequest reissueAccessTokenRequest) {
+        ReissueJwtResponse reissueJwtResponse = userService.reissueJwt(userControllerMapper.toCommand(reissueAccessTokenRequest, ReissueAccessTokenCommand.class));
         return ApiUtils.success(reissueJwtResponse);
     }
 
@@ -73,7 +76,4 @@ public class UserController {
         CheckRegisterUserResponse checkRegisterUserResponse = userService.checkRegisterUser(userId);
         return ApiUtils.success(checkRegisterUserResponse);
     }
-
-
-
 }
