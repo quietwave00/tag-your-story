@@ -25,27 +25,27 @@ public class JwtUtil {
     private String jwtKey;
 
     @Value("${jwt.expiration}")
-    private int jwtExpiration;
+    private int accessTokenExpiration;
 
     @Value("${jwt.refresh.expiration}")
-    private int refreshExpiration;
+    private int refreshTokenExpiration;
 
 
     public String generateAccessToken(Long userId) {
         return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(jwtExpiration).plusSeconds(Instant.now().getEpochSecond()))
+                .withExpiresAt(Instant.ofEpochSecond(accessTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
                 .withSubject(String.valueOf(userId))
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
     public String generateRefreshToken(Long userId) {
         return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(refreshExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("userId", userId)
+                .withExpiresAt(Instant.ofEpochSecond(refreshTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
+                .withSubject(String.valueOf(userId))
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public Long getUserIdFromAccessToken(String accessToken) throws CustomException {
+    public Long getUserIdFromToken(String accessToken) throws CustomException {
         return Long.valueOf(validateToken(accessToken).getSubject());
     }
 

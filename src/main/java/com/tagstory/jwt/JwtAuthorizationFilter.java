@@ -50,7 +50,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         try {
             jwtUtil.validateToken(token);
-            Long userId = jwtUtil.getUserIdFromAccessToken(request.getHeader("Authorization").replace("Bearer ", ""));
+            Long userId = jwtUtil.getUserIdFromToken(request.getHeader("Authorization").replace("Bearer ", ""));
             User findUser = findUserById(userId, token);
 
             PrincipalDetails principalDetails = new PrincipalDetails(findUser);
