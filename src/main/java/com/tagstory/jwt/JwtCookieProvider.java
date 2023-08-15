@@ -13,7 +13,7 @@ public class JwtCookieProvider {
     public final static String REFRESH_COOKIE = "RefreshToken";
     public final static String TOKEN_PREFIX = "Bearer ";
 
-    public Cookie generateJwtCookie(String jwt) {
+    public Cookie generateAccessTokenCookie(String jwt) {
         Cookie jwtCookie = new Cookie(JWT_COOKIE, encodeJwt(jwt));
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(10800);

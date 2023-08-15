@@ -31,6 +31,7 @@ const logout = () => {
  * 로그인한 회원인지 회원가입한 회원인지 상태 체크를 요청한다.
  */
 const checkRegisterUser = () => {
+
     fetch(`${host}/api/check-registration`, {
         method: "GET",
         headers: {
@@ -77,7 +78,7 @@ const updateNickname = (nickname) => {
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
             .then(() => {
-                updateNickname();
+                updateNickname(nickname);
             });
         }
     });

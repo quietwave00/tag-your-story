@@ -10,5 +10,7 @@ window.onload = () => {
     /**
      *  회원의 회원가입, 로그인 상태를 체크한다.
      */
-    UserApi.checkRegisterUser();
+    if (localStorage.getItem('Authorization') != null) {
+        UserApi.checkRegisterUser();
+    }
 }

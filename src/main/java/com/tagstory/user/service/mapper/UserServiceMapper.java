@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class UserMapper {
+public class UserServiceMapper {
     public ReissueJwtResponse toReissueJwtResponse(String newJwt) {
         return ReissueJwtResponse.builder()
                 .newJwt(newJwt)

@@ -1,16 +1,21 @@
 package com.tagstory.user.service;
 
+import com.mysql.cj.util.StringUtils;
 import com.tagstory.entity.User;
 import com.tagstory.exception.CustomException;
 import com.tagstory.exception.ExceptionCode;
 import com.tagstory.jwt.JwtUtil;
-import com.tagstory.user.api.dto.request.ReissueJwtRequest;
 import com.tagstory.user.api.dto.request.UpdateNicknameRequest;
 import com.tagstory.user.api.dto.response.*;
+import com.tagstory.user.cache.CacheSpec;
+import com.tagstory.user.cache.CacheUserRepository;
+import com.tagstory.user.cache.TagStoryRedisTemplate;
 import com.tagstory.user.repository.UserRepository;
-import com.tagstory.user.service.mapper.UserMapper;
+import com.tagstory.user.service.dto.ReissueAccessTokenCommand;
+import com.tagstory.user.service.mapper.UserServiceMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,52 +27,46 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService  {
 
     private final UserRepository userRepository;
+    private final CacheUserRepository cacheUserRepository;
+    private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
-    private final UserMapper userMapper;
+    private final UserServiceMapper userServiceMapper;
 
-    public ReissueJwtResponse reissueJwt(ReissueJwtRequest reissueJwtRequest) {
-        String userKey = getUserKeyFromRefreshToken(reissueJwtRequest.getRefreshToken());
-        User user = findByUserKey(userKey);
-        String newJwt = jwtUtil.generateAccessToken(user.getUserId());
-        return userMapper.toReissueJwtResponse(newJwt);
+    public ReissueJwtResponse reissueJwt(ReissueAccessTokenCommand refreshTokenCommend) {
+        Long userId = jwtUtil.getUserIdFromRefreshToken(refreshTokenCommend.getRefreshToken());
+        User findUser = findByUserId(userId);
+        String newAccessToken = jwtUtil.generateAccessToken(findUser.getUserId());
+        return userServiceMapper.toReissueJwtResponse(newAccessToken);
     }
 
-    @Transactional
     public ReissueRefreshTokenResponse reissueRefreshToken(final Long userId) {
         User user = findByUserId(userId);
-        String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserKey());
-        user.reissueRefreshToken(newRefreshToken);
-        return userMapper.toReissueRefreshTokenResponse(newRefreshToken);
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserId());
+        redisTemplate.set(user.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
+        return userServiceMapper.toReissueRefreshTokenResponse(newRefreshToken);
     }
 
     public LogoutResponse logout(Long userId) {
         SecurityContextHolder.clearContext();
-        return userMapper.toLogoutResponse(userId);
+        return userServiceMapper.toLogoutResponse(userId);
     }
 
     @Transactional
     public UpdateNicknameResponse updateNickname(UpdateNicknameRequest updateNicknameRequest, Long userId) {
-        User findUser = findByUserId(userId);
+        User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         findUser.updateNickname(updateNicknameRequest.getNickname());
-        return userMapper.toUpdateNicknameResponse(findUser.getNickname());
+        cacheUserRepository.save(findUser, CacheSpec.USER);
+        return userServiceMapper.toUpdateNicknameResponse(findUser.getNickname());
     }
 
     public CheckRegisterUserResponse checkRegisterUser(Long userId) {
         User findUser = findByUserId(userId);
-        boolean status = (findUser.getNickname() == null);
-        return userMapper.toCheckRegisterUserResponse(status);
+        boolean status = StringUtils.isNullOrEmpty(findUser.getNickname());
+        return userServiceMapper.toCheckRegisterUserResponse(status);
     }
 
-
-    private String getUserKeyFromRefreshToken(String refreshToken) {
-        return jwtUtil.validateToken(refreshToken).getClaim("userKey").asString();
-    }
-
-    private User findByUserId(Long userId) {
-        return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-    }
-
-    private User findByUserKey(String userKey) {
-        return userRepository.findByUserKey(userKey).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    @Cacheable(value = "user", key = "#userId")
+    public User findByUserId(Long userId) {
+        return cacheUserRepository.findByUserId(userId, CacheSpec.USER);
     }
 }

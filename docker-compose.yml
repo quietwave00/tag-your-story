@@ -1,0 +1,23 @@
+version: '3.3'
+services:
+  mysql:
+    build:
+      context: localenvs/mysql
+    command: --default-time-zone='+00:00' --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./localenvs/volumes/mysql/data:/var/lib/mysql
+      - ./localenvs/volumes/mysql/log:/var/log/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_USER=tagStory
+      - MYSQL_PASSWORD=tagStory
+
+  redis:
+    build:
+      context: localenvs/redis
+    volumes:
+      - ./localenvs/volumes/redis/data:/var/log/redis/redis-server.log
+    ports:
+      - "6379:6379"
