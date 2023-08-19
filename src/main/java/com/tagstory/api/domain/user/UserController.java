@@ -1,14 +1,13 @@
 package com.tagstory.api.domain.user;
 
+import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.user.dto.request.ReissueAccessTokenRequest;
 import com.tagstory.api.domain.user.dto.request.UpdateNicknameRequest;
-import com.tagstory.api.domain.user.dto.response.*;
-import com.tagstory.api.domain.user.mapper.UserControllerMapper;
-import com.tagstory.api.annotations.CurrentUserId;
-import com.tagstory.core.domain.user.service.UserService;
-import com.tagstory.core.domain.user.service.dto.ReissueAccessTokenCommand;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
+import com.tagstory.core.domain.user.service.UserService;
+import com.tagstory.core.domain.user.service.dto.response.*;
+import com.tagstory.core.domain.user.service.dto.response.ReissueAccessTokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final UserControllerMapper userControllerMapper;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/user/test")
@@ -31,10 +29,10 @@ public class UserController {
      * AccessToken을 재발급한다.
      */
     @PreAuthorize("hasRole('ROLE_USER')")
-    @PostMapping("/user/reissue/jwt")
-    public ApiResult<ReissueJwtResponse> reissueJwt(@RequestBody ReissueAccessTokenRequest reissueAccessTokenRequest) {
-        ReissueJwtResponse reissueJwtResponse = userService.reissueJwt(userControllerMapper.toCommand(reissueAccessTokenRequest, ReissueAccessTokenCommand.class));
-        return ApiUtils.success(reissueJwtResponse);
+    @PostMapping("/user/reissue/accessToken")
+    public ApiResult<ReissueAccessTokenResponse> reissueAccessToken(@RequestBody ReissueAccessTokenRequest reissueAccessTokenRequest) {
+        ReissueAccessTokenResponse reissueAccessTokenResponse = userService.reissueAccessToken(reissueAccessTokenRequest.toCommand());
+        return ApiUtils.success(reissueAccessTokenResponse);
     }
 
     /*
@@ -63,7 +61,7 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping("/nicknames")
     public ApiResult<UpdateNicknameResponse> updateNickname(@CurrentUserId Long userId, @RequestBody UpdateNicknameRequest updateNicknameRequest) {
-        UpdateNicknameResponse updateNicknameResponse = userService.updateNickname(updateNicknameRequest, userId);
+        UpdateNicknameResponse updateNicknameResponse = userService.updateNickname(updateNicknameRequest.toCommand(), userId);
         return ApiUtils.success(updateNicknameResponse);
     }
 
