@@ -16,7 +16,7 @@ const handleException = (exceptionCode) => {
  * @param _refreshToken : 리프레쉬 토큰
  */
 const handleExpiredJwt = () => {
-    return fetch("http://localhost:8080/api/user/reissue/jwt", {
+    return fetch("http://localhost:8080/api/user/reissue/accessToken", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

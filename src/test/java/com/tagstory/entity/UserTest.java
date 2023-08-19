@@ -1,5 +1,8 @@
 package com.tagstory.entity;
 
+import com.tagstory.core.domain.user.Role;
+import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.user.UserStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
