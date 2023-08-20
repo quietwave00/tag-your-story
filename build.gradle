@@ -23,6 +23,10 @@ repositories {
 		url 'https://repo.clojars.org'
 		name 'Clojars'
 	}
+	repositories {
+		mavenCentral()
+		maven { url "https://jitpack.io" }
+	}
 }
 
 dependencies {
@@ -34,6 +38,7 @@ dependencies {
 	implementation 'com.auth0:java-jwt:4.2.1'
 	implementation 'com.mysql:mysql-connector-j:8.0.32'
 	implementation 'com.github.ulisesbocchio:jasypt-spring-boot:3.0.5'
+	implementation 'com.github.thelinmichael:spotify-web-api-java:master-SNAPSHOT'
 
 
 	compileOnly 'org.projectlombok:lombok'
