@@ -12,7 +12,8 @@ import java.time.Duration;
 @Slf4j
 public enum CacheSpec {
     REFRESH_TOKEN("refreshToken", Duration.ofDays(30L), String.class),
-    USER("user", Duration.ofDays(365L), User.class)
+    USER("user", Duration.ofDays(365L), User.class),
+    SPOTIFY_ACCESS_TOKEN("spotifyAccessToken", Duration.ofMinutes(30), String.class)
     ;
 
     private static final String SEPARATOR = ":";

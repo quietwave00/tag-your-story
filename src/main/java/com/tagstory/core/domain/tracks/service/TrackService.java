@@ -1,15 +1,15 @@
 package com.tagstory.core.domain.tracks.service;
 
 import com.tagstory.core.domain.tracks.service.dto.response.SearchTracksResponse;
-import com.tagstory.core.domain.tracks.util.SpotifyUtil;
-import com.wrapper.spotify.SpotifyApi;
-import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.specification.*;
-import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
+import com.tagstory.core.domain.tracks.util.SpotifyWebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.ParseException;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.*;
+import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,12 +20,12 @@ import java.util.List;
 @Slf4j
 public class TrackService {
 
-    private final SpotifyUtil spotifyUtil;
+    private final SpotifyWebClient spotifyWebClient;
 
     public List<SearchTracksResponse> search(String keyword, int page) {
         List<SearchTracksResponse> searchTracksResponseList = new ArrayList<>();
         try {
-            SpotifyApi spotifyApi = spotifyUtil.getSpotifyApi();
+            SpotifyApi spotifyApi = spotifyWebClient.getSpotifyApi();
             SearchTracksRequest searchTrackRequest = spotifyApi.searchTracks(keyword)
                     .limit(10)
                     .offset(page)
