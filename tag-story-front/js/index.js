@@ -14,3 +14,12 @@ window.onload = () => {
         UserApi.checkRegisterUser();
     }
 }
+
+/**
+ * 검색 리스트로 이동
+ */
+document.getElementById('search-button').addEventListener('click', () => {
+    let keyword = document.getElementById('search-input').value;
+    let defaultPage = 0;
+    window.location.href = `/html/track/tracks.html?keyword=${keyword}&page=${defaultPage}`;
+});
