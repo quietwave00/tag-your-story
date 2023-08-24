@@ -1,52 +1,7 @@
 spring:
-  datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        show_sql: true
-        format_sql: true
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ENC(u4YH/tXU/O3npUCfGNV4wPBuHUXRknNx0vqpb3UA0FVN3TKvi/x4/iP/yLHhJ8+dToXuCHtyX02cnTfET7t2EOOLxHldypZHxVNiUJGII8YIwFKaYFxsaA==)
-            client-secret: ENC(E181Qk1XAL17VUh37ud9zNjHvP24Wpsc6wnJvIYsLLumD3Dqc5eLwY24h8DumTdn)
-            scope: profile, email
-  redis:
-    host: localhost
-    port: 6379
+  profiles:
+    include: datasource, jpa, redis, security
+
 logging:
   level:
     root: info
-
-jwt:
-  key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
-  expiration: 10800
-  refresh:
-    expiration: 86400
-
-spotify:
-  client-id: ENC(nirs92MtsbCYBakFqI1QM2YhpLjNo1bFtf94TZ3pyb65DWb8KvQbpju0HTsuXz7f)
-  client-secret: ENC(8Dn9ZR8zGvGp2nPXk9/ndZD9xaVTKE0Wr9yMUPQSS5EneZRnzkDo7u+7G7Wl3ZYv)
-
-jasypt:
-  encryptor:
-    bean: jasyptEncryptor
-    property:
-      prefix: ENC(
-      suffix: )
-    password: ${jasypt_encryptor_password}
-
-
-
-
-
-
-

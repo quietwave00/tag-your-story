@@ -1,0 +1,11 @@
+spring:
+  config.activate.on-profile: local
+  redis:
+    host: localhost
+    port: 6379
+---
+spring:
+  config.activate.on-profile: dev
+  redis:
+    host: ENC(vnwVK/YduADW8/m+P5bbByaIUnaPuF1ke8dD8+v84NGuRG8WTbYgEDR7JULBUlugZjXtavs1eqbZlqaEyMFu3w==)
+    port: 6379

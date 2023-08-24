@@ -1,0 +1,29 @@
+spring:
+  config.activate.on-profile: local, dev
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ENC(u4YH/tXU/O3npUCfGNV4wPBuHUXRknNx0vqpb3UA0FVN3TKvi/x4/iP/yLHhJ8+dToXuCHtyX02cnTfET7t2EOOLxHldypZHxVNiUJGII8YIwFKaYFxsaA==)
+            client-secret: ENC(E181Qk1XAL17VUh37ud9zNjHvP24Wpsc6wnJvIYsLLumD3Dqc5eLwY24h8DumTdn)
+            scope: profile, email
+
+jwt:
+  key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
+  expiration: 10800
+  refresh:
+    expiration: 86400
+
+jasypt:
+  encryptor:
+    bean: jasyptEncryptor
+    property:
+      prefix: ENC(
+      suffix: )
+
+
+
+
+
+
