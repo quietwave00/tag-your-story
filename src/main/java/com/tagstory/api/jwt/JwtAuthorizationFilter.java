@@ -1,6 +1,7 @@
 package com.tagstory.api.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.cj.util.StringUtils;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionResponse;
 import com.tagstory.api.auth.PrincipalDetails;
@@ -42,7 +43,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         log.info("JwtAuthorizationFilter Execute");
         String token = request.getHeader("Authorization");
 
-        if(token.isEmpty()) {
+        if(StringUtils.isNullOrEmpty(token)) {
             registerAsGuest();
             filterChain.doFilter(request, response);
             return;

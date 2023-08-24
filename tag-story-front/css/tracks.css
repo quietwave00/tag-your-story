@@ -1,0 +1,39 @@
+#track-area {
+    position: absolute;
+    top: 10%;
+    left: 25%;
+}
+
+.track {
+    margin: 20px;
+    padding: 20px;
+}
+
+.track:hover {
+    color: gray;
+    font-style: italic;
+    cursor: pointer;
+}
+
+.title {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+#page-area {
+    position: absolute;
+    top: 10%;
+}
+
+.page-number {
+    cursor: pointer;
+    padding: 15px;
+}
+
+.page-number:hover {
+    font-weight: bold;
+}
+
+#number-list {
+    display: inline-block;
+}
