@@ -7,7 +7,7 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  * @param keyword: 트랙 검색 시 키워드 값 
  */
 const searchTrack = (keyword, page) => {
-    return fetch(`${host}/api/tracks?keyword=${keyword}&page=${page}`, {
+    return fetch(`${host}/api/tracks?keyword=${keyword}&page=${page - 1}`, {
         method: "GET"
     })
     .then((res) => res.json())
