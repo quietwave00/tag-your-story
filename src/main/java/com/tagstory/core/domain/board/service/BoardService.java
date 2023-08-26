@@ -25,7 +25,7 @@ public class BoardService {
         Board beforeBoard = Board.create(receiveCreateBoard);
         beforeBoard.addUser(user);
         beforeBoard.addHashtag(hashtagList);
-        Board saveBoard = boardRepository.save(beforeBoard);
-        return CreateBoardResponse.onComplete(saveBoard);
+        Board savedBoard = boardRepository.save(beforeBoard);
+        return CreateBoardResponse.onComplete(savedBoard);
     }
 }

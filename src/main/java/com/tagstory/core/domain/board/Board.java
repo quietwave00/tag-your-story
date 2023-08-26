@@ -48,7 +48,9 @@ public class Board extends BaseTime {
      */
     public void addUser(User user) {
         this.user = user;
-        user.getBoardList().add(this);
+        if(user.getBoardList() != null) {
+            user.getBoardList().add(this);
+        }
     }
 
     public void addHashtag(List<Hashtag> hashtagList) {
