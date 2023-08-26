@@ -1,8 +1,8 @@
 package com.tagstory.api.auth;
 
-import com.tagstory.core.domain.user.User;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.repository.CacheUserRepository;
+import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PrincipalDetailsService implements UserDetailsService {
 
-    private final CacheUserRepository cacheUserRepository;
+    private final UserRepository userRepository;
 
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -29,7 +29,7 @@ public class PrincipalDetailsService implements UserDetailsService {
     @Cacheable(value = "user", key = "#userId")
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
         log.info("PrincipalDetailsService Execute");
-        User findUser = cacheUserRepository.findByUserId(Long.parseLong(userId), CacheSpec.USER);
+        User findUser = userRepository.findCacheByUserId(Long.parseLong(userId), CacheSpec.USER);
         return new PrincipalDetails(findUser);
     }
 }

@@ -7,7 +7,6 @@ import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.User;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
-import com.tagstory.core.domain.user.repository.CacheUserRepository;
 import com.tagstory.core.domain.user.repository.UserRepository;
 import com.tagstory.core.domain.user.service.dto.receive.ReceiveReissueAccessToken;
 import com.tagstory.core.domain.user.service.dto.receive.ReceiveUpdateNickname;
@@ -26,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService  {
 
     private final UserRepository userRepository;
-    private final CacheUserRepository cacheUserRepository;
     private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
 
@@ -53,7 +51,7 @@ public class UserService  {
     public UpdateNicknameResponse updateNickname(ReceiveUpdateNickname receiveUpdateNickname, Long userId) {
         User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         findUser.updateNickname(receiveUpdateNickname.getNickname());
-        cacheUserRepository.save(findUser, CacheSpec.USER);
+        userRepository.saveCache(findUser, CacheSpec.USER);
         return UpdateNicknameResponse.onComplete(findUser.getNickname());
     }
 
@@ -65,6 +63,6 @@ public class UserService  {
 
     @Cacheable(value = "user", key = "#userId")
     public User findByUserId(Long userId) {
-        return cacheUserRepository.findByUserId(userId, CacheSpec.USER);
+        return userRepository.findCacheByUserId(userId, CacheSpec.USER);
     }
 }

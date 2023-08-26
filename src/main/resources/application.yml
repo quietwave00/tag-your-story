@@ -1,6 +1,10 @@
 spring:
   profiles:
-    include: datasource, jpa, redis, security
+    include:
+      - datasource
+      - jpa
+      - redis
+      - security
 
 logging:
   level:
