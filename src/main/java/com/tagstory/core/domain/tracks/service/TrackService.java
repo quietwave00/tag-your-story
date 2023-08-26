@@ -1,17 +1,15 @@
 package com.tagstory.core.domain.tracks.service;
 
 import com.tagstory.core.domain.tracks.service.dto.response.SearchTracksResponse;
-import com.tagstory.core.domain.tracks.util.SpotifyWebClient;
+import com.tagstory.core.domain.tracks.webclient.SpotifyWebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hc.core5.http.ParseException;
 import org.springframework.stereotype.Service;
-import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
-import se.michaelthelin.spotify.model_objects.specification.*;
-import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
+import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Image;
+import se.michaelthelin.spotify.model_objects.specification.Track;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,21 +21,11 @@ public class TrackService {
     private final SpotifyWebClient spotifyWebClient;
 
     public List<SearchTracksResponse> search(String keyword, int page) {
-        List<SearchTracksResponse> searchTracksResponseList = new ArrayList<>();
-        try {
-            SpotifyApi spotifyApi = spotifyWebClient.getSpotifyApi();
-            SearchTracksRequest searchTrackRequest = spotifyApi.searchTracks(keyword)
-                    .limit(10)
-                    .offset(page)
-                    .build();
-            Paging<Track> searchResult = searchTrackRequest.execute();
-            Track[] tracks = searchResult.getItems();
+        Track[] tracks = spotifyWebClient.getTrackInfoByKeyword(keyword, page);
 
-            for (Track track : tracks) {
-                searchTracksResponseList.add(getTrackData(track));
-            }
-        } catch(IOException | SpotifyWebApiException | ParseException e) {
-            log.error(e.getMessage());
+        List<SearchTracksResponse> searchTracksResponseList = new ArrayList<>();
+        for (Track track : tracks) {
+            searchTracksResponseList.add(getTrackData(track));
         }
         return searchTracksResponseList;
     }

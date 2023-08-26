@@ -1,16 +1,20 @@
-package com.tagstory.core.domain.tracks.util;
+package com.tagstory.core.domain.tracks.webclient;
 
 import com.mysql.cj.util.StringUtils;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.core5.http.ParseException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
+import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
 
 import java.io.IOException;
 
@@ -52,5 +56,20 @@ public class SpotifyWebClient {
             redisTemplate.set("", accessToken, CacheSpec.SPOTIFY_ACCESS_TOKEN);
         }
         return accessToken;
+    }
+
+    public Track[] getTrackInfoByKeyword(String keyword, int page) {
+        try {
+            SpotifyApi spotifyApi = getSpotifyApi();
+            SearchTracksRequest searchTrackRequest = spotifyApi.searchTracks(keyword)
+                    .limit(10)
+                    .offset(page)
+                    .build();
+            Paging<Track> searchResult = searchTrackRequest.execute();
+            return searchResult.getItems();
+        } catch (IOException | ParseException | SpotifyWebApiException e) {
+            log.error(e.getMessage());
+        }
+        return null;
     }
 }

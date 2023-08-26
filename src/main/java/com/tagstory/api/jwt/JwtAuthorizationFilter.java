@@ -2,13 +2,13 @@ package com.tagstory.api.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysql.cj.util.StringUtils;
+import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionResponse;
-import com.tagstory.api.auth.PrincipalDetails;
-import com.tagstory.core.domain.user.User;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.repository.CacheUserRepository;
+import com.tagstory.core.domain.user.User;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
+import com.tagstory.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
-    private final CacheUserRepository cacheUserRepository;
+    private final UserRepository userRepository;
     private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
@@ -95,7 +95,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Cacheable(value = "user", key = "#userId")
     public User getUserFromAccessToken(final Long userId) {
-        return cacheUserRepository.findByUserId(userId, CacheSpec.USER);
+        return userRepository.findCacheByUserId(userId, CacheSpec.USER);
     }
 
     public User getUserFromRefreshToken(final String token) {

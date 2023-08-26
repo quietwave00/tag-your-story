@@ -16,3 +16,8 @@
 #user-area {
   cursor: pointer;
 }
+
+a {
+  text-decoration: none;
+  color: black;
+}

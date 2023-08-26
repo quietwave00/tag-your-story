@@ -1,7 +1,11 @@
+#container{
+    text-align: center;
+}
+
 #track-area {
-    position: absolute;
-    top: 10%;
-    left: 25%;
+    width: 80%;
+    margin: 0 auto;
+    margin-left: 20%;
 }
 
 .track {
@@ -21,8 +25,9 @@
 }
 
 #page-area {
-    position: absolute;
-    top: 10%;
+    margin-top: 3%;
+    margin-bottom: 10%;
+    margin-left: 20%;
 }
 
 .page-number {

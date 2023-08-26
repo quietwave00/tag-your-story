@@ -1,9 +1,8 @@
 package com.tagstory.api.oauth;
 
 import com.tagstory.api.auth.PrincipalDetails;
-import com.tagstory.core.domain.user.User;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.repository.CacheUserRepository;
+import com.tagstory.core.domain.user.User;
 import com.tagstory.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import java.util.Map;
 public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final CacheUserRepository cacheUserRepository;
     /*
      * 사용자 정보를 가져오고, 정보를 토대로 회원가입 여부를 체크한다.
      */
@@ -30,7 +28,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         log.info("Oauth2UserService Execute");
         Map<String, Object> attributes = super.loadUser(request).getAttributes();
         User user = register(attributes);
-        cacheUserRepository.save(user, CacheSpec.USER);
+        userRepository.saveCache(user, CacheSpec.USER);
         return new PrincipalDetails(user, attributes);
     }
 
