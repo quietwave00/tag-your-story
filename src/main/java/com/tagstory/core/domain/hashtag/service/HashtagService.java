@@ -15,9 +15,9 @@ import java.util.List;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
 
-    public List<Hashtag> getHashtagList(List<String> hastagList) {
+    public List<Hashtag> getHashtagList(List<String> hashtagStrList) {
         List<Hashtag> hashtagList = new ArrayList<>();
-        for(String name : hastagList) {
+        for(String name : hashtagStrList) {
             Hashtag hashtag = Hashtag.create(name);
             hashtagList.add(hashtag);
         }
