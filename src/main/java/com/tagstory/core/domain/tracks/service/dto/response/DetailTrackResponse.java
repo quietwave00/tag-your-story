@@ -5,15 +5,15 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class SearchTracksResponse {
+public class DetailTrackResponse {
     private String trackId;
     private String title;
     private String artistName;
     private String albumName;
     private String imageUrl;
 
-    public static SearchTracksResponse onComplete(String trackId, String artistName, String title, String albumName, String imageUrl) {
-        return SearchTracksResponse.builder()
+    public static DetailTrackResponse onComplete(String trackId, String artistName, String title, String albumName, String imageUrl) {
+        return DetailTrackResponse.builder()
                 .trackId(trackId)
                 .title(title)
                 .artistName(artistName)

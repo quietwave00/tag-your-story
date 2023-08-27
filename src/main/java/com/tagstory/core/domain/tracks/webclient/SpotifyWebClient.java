@@ -15,6 +15,7 @@ import se.michaelthelin.spotify.model_objects.specification.Paging;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
 import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
+import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 
 import java.io.IOException;
 
@@ -68,6 +69,17 @@ public class SpotifyWebClient {
             Paging<Track> searchResult = searchTrackRequest.execute();
             return searchResult.getItems();
         } catch (IOException | ParseException | SpotifyWebApiException e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    public Track getDetailTrackInfo(String trackId) {
+        try {
+            SpotifyApi spotifyApi = getSpotifyApi();
+            GetTrackRequest request = spotifyApi.getTrack(trackId).build();
+            return request.execute();
+        } catch(IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());
         }
         return null;
