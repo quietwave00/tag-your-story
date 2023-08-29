@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#TagYourStory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/header.css" rel="stylesheet">
+    <link href="../../css/detail.css" rel="stylesheet">
+</head>
+<body>
+    <header class="p-3 mb-3 border-bottom">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
+                    <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap">
+                        <use xlink:href="#bootstrap" />
+                    </svg>
+                </a>
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="#" class="nav-link px-2 link-secondary">Home</a></li>
+                    <li><a href="#" class="nav-link px-2 link-dark">write</a></li>
+                </ul>
+                <div id="user-area"><span>Login</span></div>
+            </div>
+        </div>
+    </header>
+    <div id = "alert-area"></div>
+    <div id="container">
+        <div id="track-area"></div>
+        <div id="modal-area">
+            <div class="modal fade" id="boardModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="header" style="padding: 10px; text-align: right;">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="tag-area">
+                                <div id="hashtag-container"></div>
+                                <textarea id="tag-input" placeholder="Make Your Tag"></textarea>
+                            </div>
+                            <div class="container">
+                                <div class="button_outer">
+                                    <div class="btn_upload">
+                                        <input type="file" id="upload_file">
+                                        <span>Upload Image</span>
+                                    </div>
+                                    <div class="add_box"></div>
+                                </div>
+                                <div class="error_msg"></div>
+                                <div class="uploaded_file_view" id="uploaded_view">
+                                </div>
+                            </div>
+                            <textarea id="board-input" placeholder="Write Your Story"></textarea>
+                        </div>
+                        <div class="footer" style="padding: 20px; text-align: right;">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal"
+                                id="write-button">Write</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div id="board-area">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"
+                    checked>
+                <label class="form-check-label" for="inlineRadio1">최신순</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+                <label class="form-check-label" for="inlineRadio2">추천순</label>
+            </div>
+            <div class="row" id="board-element-area" style="margin-top: 30px;"></div>
+        </div>
+    </div>
+</body>
+<script type="module" src="../../js/track/detail.js"></script>
+<script type="module" src="../../js/board/board.js"></script>
+<script type="module" src="../../js/user/userArea.js"></script>
+<script type="module" src="../../js/global/global.js"></script>
+<script type="module" src="../../js/global/exceptionHandler.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</html>

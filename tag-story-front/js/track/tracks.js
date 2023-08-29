@@ -20,6 +20,10 @@ window.onload = () => {
     TrackApi.searchTrack(keyword, page).then((response) => {renderTrackList(response)});
 }
 
+/**
+ * 트랙 리스트를 렌더링한다.
+ * @param trackList: 트랙 리스트
+ */
 const renderTrackList = (trackList) => {
     document.getElementById('track-area').innerHTML = "";
     for(let track of trackList) {
@@ -52,8 +56,12 @@ const renderTrackList = (trackList) => {
                 </div> 
             `;
     }
+    moveDetails();
 }
 
+/**
+ *  페이징 관련 함수
+ */
 const pagingTrackList = () => {
     const prevButton = document.getElementById("prev-button");
     const nextButton = document.getElementById("next-button");
@@ -97,13 +105,24 @@ const pagingTrackList = () => {
     updatePage();
 }
 
-/**
- *  페이지 클릭 이벤트 함수
- */
 const onPageNumberClick = (page) => {
     const keyword = new URLSearchParams(window.location.search).get("keyword");
     TrackApi.searchTrack(keyword, page).then((response) => {
         renderTrackList(response)
     });
+}
+
+/**
+ *  트랙 영역 클릭 시 상세 페이지로 이동한다.
+ */
+const moveDetails = () => {
+    const trackElements = document.getElementsByClassName('track');
+
+    for (let element of trackElements) {
+        element.addEventListener('click', (e) => {
+            const trackId = e.currentTarget.querySelector('.track-id').value;
+            window.location.href = `detail.html?trackId=${trackId}`;
+        });
+    }
 }
 
