@@ -52,7 +52,7 @@ const deleteHashtag = (hashtagId) => {
  * 게시글 작성 버튼 클릭 시 이벤트 함수
  */
 document.getElementById('write-button').addEventListener('click', () => {
-    BoardApi.writeBoard(hashtagArray, trackId).then(() => {renderBoard(response)});
+    BoardApi.writeBoard(hashtagArray, trackId).then((response) => {renderBoard(response)});
     renderAlert();
 });
 
@@ -83,14 +83,15 @@ const renderAlert = () => {
  * 게시글 작성을 요청하고 응답값을 토대로 렌더링해준다.
  */
 const renderBoard = (board) => {
+    console.log(JSON.stringify(board));
     let boardId = board.boardId;
-    let tagList = board.tagList;
+    let hashtagList = board.hashtagList;
     let content = board.content;
     let tagElements = "";
-    for(let tag of tagList) {
+    for(let hashtag of hashtagList) {
         tagElements += 
                 `
-                <div class = "tag-element">#${tag}</div>
+                <div class = "tag-element">#${hashtag}</div>
                 `;
     }
     const boardElementArea = document.getElementById('board-element-area');

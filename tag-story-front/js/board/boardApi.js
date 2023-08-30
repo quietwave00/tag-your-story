@@ -8,6 +8,7 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  * @param trackId: 게시글에 해당하는 트랙 아이디
  */
 const writeBoard = (hashtagArray, trackId) => {
+    console.log("d?: " + document.getElementById('board-input').value);
     return fetch(`${host}/api/boards`,{
         method:"POST",
         headers: {
