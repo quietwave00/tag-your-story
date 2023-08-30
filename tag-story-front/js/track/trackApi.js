@@ -23,6 +23,30 @@ const searchTrack = (keyword, page) => {
     })
 }
 
+/**
+ * 트랙의 상세 정보를 요청한다.
+ * 
+ * @param trackId: 트랙의 아이디 값
+ * @returns 트랙의 상세 정보
+ */
+const getDetailTrackById = (trackId) => {
+    return fetch(`${host}/api/tracks/detail?trackId=${trackId}`, {
+        method: "GET"
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getDetailTrackById(trackId);
+                });
+        }
+    });
+}
+
 export default {
-    searchTrack
+    searchTrack,
+    getDetailTrackById
 }

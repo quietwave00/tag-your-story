@@ -30,13 +30,13 @@ public class UserService  {
 
     public ReissueAccessTokenResponse reissueAccessToken(ReceiveReissueAccessToken receiveReissueAccessToken) {
         Long userId = jwtUtil.getUserIdFromRefreshToken(receiveReissueAccessToken.getRefreshToken());
-        User findUser = findByUserId(userId);
+        User findUser = findCacheByUserId(userId);
         String newAccessToken = jwtUtil.generateAccessToken(findUser.getUserId());
         return ReissueAccessTokenResponse.onComplete(newAccessToken);
     }
 
     public ReissueRefreshTokenResponse reissueRefreshToken(final Long userId) {
-        User user = findByUserId(userId);
+        User user = findCacheByUserId(userId);
         String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserId());
         redisTemplate.set(user.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
         return ReissueRefreshTokenResponse.onComplete(newRefreshToken);
@@ -56,13 +56,17 @@ public class UserService  {
     }
 
     public CheckRegisterUserResponse checkRegisterUser(Long userId) {
-        User findUser = findByUserId(userId);
+        User findUser = findCacheByUserId(userId);
         boolean status = StringUtils.isNullOrEmpty(findUser.getNickname());
         return CheckRegisterUserResponse.onComplete(status);
     }
 
     @Cacheable(value = "user", key = "#userId")
-    public User findByUserId(Long userId) {
+    public User findCacheByUserId(Long userId) {
         return userRepository.findCacheByUserId(userId, CacheSpec.USER);
+    }
+
+    public User findByUserId(Long userId) {
+        return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
     }
 }

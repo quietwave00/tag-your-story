@@ -1,10 +1,16 @@
 package com.tagstory.core.domain.user;
 
 import com.tagstory.core.domain.BaseTime;
-import lombok.*;
+import com.tagstory.core.domain.board.Board;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -32,12 +38,21 @@ public class User extends BaseTime implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
+    @OneToMany(mappedBy = "user")
+    private List<Board> boardList = new ArrayList<>();
+
+    /*
+     * 연관 관계 설정
+     */
+    public void addBoard(Board board) {
+        this.boardList.add(board);
+        board.addUser(this);
+    }
 
     /*
      * 비즈니스 로직
      */
     public static User register(String userKey, String email) {
-        
         return User.builder()
                 .userKey(userKey)
                 .email(email)
