@@ -48,7 +48,7 @@ jobs:
           host: ${{ secrets.DEV_AWS_HOST }}
           username: ${{ secrets.DEV_AWS_USERNAME }}
           key: ${{ secrets.DEV_AWS_KEY }}
-          envs: PROJECT_NAME,DOCKER_IMAGE,SERVER_PORT,JASYPT_PASSWORD, PHASE
+          envs: PROJECT_NAME,DOCKER_IMAGE,SERVER_PORT,JASYPT_PASSWORD,PHASE
           script: |
             docker stop $PROJECT_NAME
             docker rm $PROJECT_NAME
