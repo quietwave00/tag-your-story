@@ -1,6 +1,6 @@
 package com.tagstory.core.domain.board.service;
 
-import com.tagstory.core.domain.board.dto.receive.ReceiveCreateBoard;
+import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.core.domain.hashtag.Hashtag;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
@@ -19,9 +19,9 @@ public class BoardFacade {
     private final UserService userService;
     private final HashtagService hashtagService;
 
-    public CreateBoardResponse create(ReceiveCreateBoard receiveCreateBoard, Long userId) {
-        User findUser = userService.findByUserId(userId);
-        List<Hashtag> hashtagList = hashtagService.getHashtagList(receiveCreateBoard.getHashtagList());
-        return boardService.create(receiveCreateBoard, findUser, hashtagList);
+    public CreateBoardResponse create(CreateBoardCommand createBoardCommand) {
+        User findUser = userService.findByUserId(createBoardCommand.getUserId());
+        List<Hashtag> hashtagList = hashtagService.getHashtagList(createBoardCommand.getHashtagList());
+        return boardService.create(createBoardCommand, findUser, hashtagList);
     }
 }

@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
-import com.tagstory.core.domain.board.dto.receive.ReceiveCreateBoard;
+import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.hashtag.Hashtag;
 import com.tagstory.core.domain.user.User;
 import lombok.AllArgsConstructor;
@@ -55,7 +55,7 @@ public class Board extends BaseTime {
 
     public void addHashtag(List<Hashtag> hashtagList) {
         this.hashtagList = hashtagList;
-        for (Hashtag hashtag : hashtagList) {
+        for (Hashtag hashtag : hashtagList) { //테스트
             hashtag.addBoard(this);
         }
     }
@@ -63,12 +63,12 @@ public class Board extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static Board create(ReceiveCreateBoard receiveCreateBoard) {
+    public static Board create(CreateBoardCommand createBoardCommand) {
         return Board.builder()
-                .content(receiveCreateBoard.getContent())
+                .content(createBoardCommand.getContent())
                 .status(BoardStatus.POST)
                 .count(0)
-                .trackId(receiveCreateBoard.getTrackId())
+                .trackId(createBoardCommand.getTrackId())
                 .build();
     }
 }

@@ -1,7 +1,7 @@
 package com.tagstory.core.board.service;
 
 import com.tagstory.core.domain.board.Board;
-import com.tagstory.core.domain.board.dto.receive.ReceiveCreateBoard;
+import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
@@ -44,18 +44,18 @@ public class BoardServiceTest {
                 .build();
         List<Hashtag> hashtagList = List.of(hashtag);
 
-        ReceiveCreateBoard receiveCreateBoard = ReceiveCreateBoard.builder()
+        CreateBoardCommand createBoardCommand = CreateBoardCommand.builder()
                 .hashtagList(List.of("test"))
                 .content("test")
                 .build();
 
-        Board board = Board.create(receiveCreateBoard);
+        Board board = Board.create(createBoardCommand);
         board.addUser(user);
         board.addHashtag(hashtagList);
 
         //when
         when(boardRepository.save(any())).thenReturn(board);
-        CreateBoardResponse createBoardResponse = boardService.create(receiveCreateBoard, user, hashtagList);
+        CreateBoardResponse createBoardResponse = boardService.create(createBoardCommand, user, hashtagList);
 
         //then
         assertThat(createBoardResponse.getNickname()).isEqualTo(user.getNickname());
