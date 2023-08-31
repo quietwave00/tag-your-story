@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.user.dto.request;
 
-import com.tagstory.core.domain.user.service.dto.receive.ReceiveReissueAccessToken;
+import com.tagstory.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class ReissueAccessTokenRequest {
     private String refreshToken;
 
-    public ReceiveReissueAccessToken toCommand() {
-        return ReceiveReissueAccessToken.builder()
+    public ReissueAccessTokenCommand toCommand() {
+        return ReissueAccessTokenCommand.builder()
                 .refreshToken(refreshToken)
                 .build();
     }

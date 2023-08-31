@@ -23,7 +23,7 @@ public class BoardController {
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/boards")
     public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
-        CreateBoardResponse createBoardResponse = boardFacade.create(createBoardRequest.toCommand(), userId);
+        CreateBoardResponse createBoardResponse = boardFacade.create(createBoardRequest.toCommand(userId));
         return ApiUtils.success(createBoardResponse);
     }
 }

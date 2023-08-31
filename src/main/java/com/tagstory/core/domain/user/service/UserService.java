@@ -8,8 +8,8 @@ import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.User;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
-import com.tagstory.core.domain.user.service.dto.receive.ReceiveReissueAccessToken;
-import com.tagstory.core.domain.user.service.dto.receive.ReceiveUpdateNickname;
+import com.tagstory.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
+import com.tagstory.core.domain.user.service.dto.command.UpdateNicknameCommand;
 import com.tagstory.core.domain.user.service.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +28,8 @@ public class UserService  {
     private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
 
-    public ReissueAccessTokenResponse reissueAccessToken(ReceiveReissueAccessToken receiveReissueAccessToken) {
-        Long userId = jwtUtil.getUserIdFromRefreshToken(receiveReissueAccessToken.getRefreshToken());
+    public ReissueAccessTokenResponse reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
+        Long userId = jwtUtil.getUserIdFromRefreshToken(reissueAccessTokenCommand.getRefreshToken());
         User findUser = findCacheByUserId(userId);
         String newAccessToken = jwtUtil.generateAccessToken(findUser.getUserId());
         return ReissueAccessTokenResponse.onComplete(newAccessToken);
@@ -48,9 +48,9 @@ public class UserService  {
     }
 
     @Transactional
-    public UpdateNicknameResponse updateNickname(ReceiveUpdateNickname receiveUpdateNickname, Long userId) {
+    public UpdateNicknameResponse updateNickname(UpdateNicknameCommand updateNicknameCommand, Long userId) {
         User findUser = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-        findUser.updateNickname(receiveUpdateNickname.getNickname());
+        findUser.updateNickname(updateNicknameCommand.getNickname());
         userRepository.saveCache(findUser, CacheSpec.USER);
         return UpdateNicknameResponse.onComplete(findUser.getNickname());
     }
@@ -67,6 +67,6 @@ public class UserService  {
     }
 
     public User findByUserId(Long userId) {
-        return userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        return userRepository.getReferenceById(userId);
     }
 }

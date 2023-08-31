@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.board.dto.request;
 
-import com.tagstory.core.domain.board.dto.receive.ReceiveCreateBoard;
+import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,11 +13,12 @@ public class CreateBoardRequest {
     private String trackId;
     private List<String> hashtagList;
 
-    public ReceiveCreateBoard toCommand() {
-        return ReceiveCreateBoard.builder()
+    public CreateBoardCommand toCommand(Long userId) {
+        return CreateBoardCommand.builder()
                 .content(content)
                 .trackId(trackId)
                 .hashtagList(hashtagList)
+                .userId(userId)
                 .build();
     }
 }
