@@ -55,7 +55,7 @@ public class Board extends BaseTime {
 
     public void addHashtag(List<Hashtag> hashtagList) {
         this.hashtagList = hashtagList;
-        for (Hashtag hashtag : hashtagList) { //테스트
+        for (Hashtag hashtag : hashtagList) {
             hashtag.addBoard(this);
         }
     }
