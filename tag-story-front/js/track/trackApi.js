@@ -30,7 +30,7 @@ const searchTrack = (keyword, page) => {
  * @returns 트랙의 상세 정보
  */
 const getDetailTrackById = (trackId) => {
-    return fetch(`${host}/api/tracks/detail?trackId=${trackId}`, {
+    return fetch(`${host}/api/tracks/${trackId}`, {
         method: "GET"
     })
     .then((res) => res.json())

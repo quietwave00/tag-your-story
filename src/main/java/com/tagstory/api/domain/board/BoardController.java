@@ -2,6 +2,7 @@ package com.tagstory.api.domain.board;
 
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.board.dto.request.CreateBoardRequest;
+import com.tagstory.api.domain.board.dto.response.CreateBoard;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
 import com.tagstory.core.domain.board.dto.response.CreateBoardResponse;
@@ -22,8 +23,8 @@ public class BoardController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/boards")
-    public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
+    public ApiResult<CreateBoard> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
         CreateBoardResponse createBoardResponse = boardFacade.create(createBoardRequest.toCommand(userId));
-        return ApiUtils.success(createBoardResponse);
+        return ApiUtils.success(CreateBoard.create(createBoardResponse));
     }
 }

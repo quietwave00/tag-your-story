@@ -11,8 +11,9 @@ import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,16 +24,14 @@ public class TrackService {
 
     public List<SearchTracksResponse> search(String keyword, int page) {
         Track[] tracks = spotifyWebClient.getTrackInfoByKeyword(keyword, page);
-        List<SearchTracksResponse> searchTracksResponseList = new ArrayList<>();
-        for (Track track : tracks) {
-            searchTracksResponseList.add(getTrackData(track, SearchTracksResponse::onComplete));
-        }
-        return searchTracksResponseList;
+        return Arrays.stream(tracks)
+                .map(track -> getTrackData(track, SearchTracksResponse::onComplete))
+                .collect(Collectors.toList());
     }
 
     public DetailTrackResponse getDetail(String trackId) {
-        Track searchTrack = spotifyWebClient.getDetailTrackInfo(trackId);
-        return getTrackData(searchTrack, DetailTrackResponse::onComplete);
+        Track track = spotifyWebClient.getDetailTrackInfo(trackId);
+        return getTrackData(track, DetailTrackResponse::onComplete);
     }
 
     private <T> T getTrackData(Track track, TrackDataConverter<T> converter) {

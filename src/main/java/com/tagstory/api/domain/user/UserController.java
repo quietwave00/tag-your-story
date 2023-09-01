@@ -3,11 +3,11 @@ package com.tagstory.api.domain.user;
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.user.dto.request.ReissueAccessTokenRequest;
 import com.tagstory.api.domain.user.dto.request.UpdateNicknameRequest;
+import com.tagstory.api.domain.user.dto.response.*;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
 import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.dto.response.*;
-import com.tagstory.core.domain.user.service.dto.response.ReissueAccessTokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +30,9 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/user/reissue/accessToken")
-    public ApiResult<ReissueAccessTokenResponse> reissueAccessToken(@RequestBody ReissueAccessTokenRequest reissueAccessTokenRequest) {
+    public ApiResult<ReissueAccessToken> reissueAccessToken(@RequestBody ReissueAccessTokenRequest reissueAccessTokenRequest) {
         ReissueAccessTokenResponse reissueAccessTokenResponse = userService.reissueAccessToken(reissueAccessTokenRequest.toCommand());
-        return ApiUtils.success(reissueAccessTokenResponse);
+        return ApiUtils.success(ReissueAccessToken.create(reissueAccessTokenResponse));
     }
 
     /*
@@ -40,9 +40,9 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/user/reissue/refreshToken")
-    public ApiResult<ReissueRefreshTokenResponse> reissueRefreshToken(@CurrentUserId Long userId) {
+    public ApiResult<ReissueRefreshToken> reissueRefreshToken(@CurrentUserId Long userId) {
         ReissueRefreshTokenResponse reissueRefreshTokenResponse = userService.reissueRefreshToken(userId);
-        return ApiUtils.success(reissueRefreshTokenResponse);
+        return ApiUtils.success(ReissueRefreshToken.create(reissueRefreshTokenResponse));
     }
 
     /*
@@ -50,9 +50,9 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/logout")
-    public ApiResult<LogoutResponse> logout(@CurrentUserId Long userId) {
+    public ApiResult<Logout> logout(@CurrentUserId Long userId) {
         LogoutResponse logoutResponse = userService.logout(userId);
-        return ApiUtils.success(logoutResponse);
+        return ApiUtils.success(Logout.create(logoutResponse));
     }
 
     /*
@@ -60,9 +60,9 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping("/nicknames")
-    public ApiResult<UpdateNicknameResponse> updateNickname(@CurrentUserId Long userId, @RequestBody UpdateNicknameRequest updateNicknameRequest) {
+    public ApiResult<UpdateNickname> updateNickname(@CurrentUserId Long userId, @RequestBody UpdateNicknameRequest updateNicknameRequest) {
         UpdateNicknameResponse updateNicknameResponse = userService.updateNickname(updateNicknameRequest.toCommand(), userId);
-        return ApiUtils.success(updateNicknameResponse);
+        return ApiUtils.success(UpdateNickname.create(updateNicknameResponse));
     }
 
     /*
@@ -70,8 +70,8 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/check-registration")
-    public ApiResult<CheckRegisterUserResponse> checkRegisterUser(@CurrentUserId Long userId) {
+    public ApiResult<CheckRegisterUser> checkRegisterUser(@CurrentUserId Long userId) {
         CheckRegisterUserResponse checkRegisterUserResponse = userService.checkRegisterUser(userId);
-        return ApiUtils.success(checkRegisterUserResponse);
+        return ApiUtils.success(CheckRegisterUser.create(checkRegisterUserResponse));
     }
 }
