@@ -10,6 +10,7 @@ import java.time.Duration;
 @Getter
 @AllArgsConstructor
 @Slf4j
+@SuppressWarnings({"unchecked"})
 public enum CacheSpec {
     REFRESH_TOKEN("refreshToken", Duration.ofDays(30L), String.class),
     USER("user", Duration.ofDays(365L), User.class),
