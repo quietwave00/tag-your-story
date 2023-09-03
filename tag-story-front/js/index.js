@@ -1,5 +1,6 @@
 import UserArea from './user/userArea.js';
 import UserApi from './user/userApi.js';
+import client_host from '../global/client.js';
 
 window.onload = () => {
     /**
@@ -21,5 +22,5 @@ window.onload = () => {
 document.getElementById('search-button').addEventListener('click', () => {
     let keyword = document.getElementById('search-input').value;
     let defaultPage = 1;
-    window.location.href = `/html/track/tracks.html?keyword=${keyword}&page=${defaultPage}`;
+    window.location.href = `${client_host}/html/track/tracks.html?keyword=${keyword}&page=${defaultPage}`;
 });

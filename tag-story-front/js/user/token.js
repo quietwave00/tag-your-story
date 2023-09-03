@@ -1,3 +1,5 @@
+import client_host from '../global/global.js';
+
 window.onload = () => {
     /**
      * 쿠키에 저장된 token값을 localStorage에 저장한다.
@@ -9,7 +11,7 @@ window.onload = () => {
     console.log("rtk: " + refreshTokenCookieValue);
     console.log("atk: " + authorizationCookieValue);
 
-    window.location.href = 'http://localhost:5500/html/index.html';
+    window.location.href = `${client_host}/html/index.html`;
 }
 
 /**

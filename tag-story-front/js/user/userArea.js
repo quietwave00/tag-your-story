@@ -1,4 +1,5 @@
 import userApi from './userApi.js';
+import client_host from '../global/global.js';
 
 /**
  * user 상태에 따라 user-area의 역할을 변경해준다.
@@ -10,7 +11,7 @@ const setState = () => {
     if(jwt == null && refreshToken == null) {
       document.getElementById('user-area').innerHTML =
         `
-        <a href = "http://localhost:5500/html/user/login.html">LOGIN</a>
+        <a href = '${client_host}/html/user/login.html'>LOGIN</a>
         `;
     } else {
         document.getElementById('user-area').innerHTML = 

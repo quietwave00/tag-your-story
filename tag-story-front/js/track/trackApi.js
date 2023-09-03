@@ -7,7 +7,7 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  * @param keyword: 트랙 검색 시 키워드 값 
  */
 const searchTrack = (keyword, page) => {
-    return fetch(`${host}/api/tracks?keyword=${keyword}&page=${page - 1}`, {
+    return fetch(`${server_host}/api/tracks?keyword=${keyword}&page=${page - 1}`, {
         method: "GET"
     })
     .then((res) => res.json())
@@ -30,7 +30,7 @@ const searchTrack = (keyword, page) => {
  * @returns 트랙의 상세 정보
  */
 const getDetailTrackById = (trackId) => {
-    return fetch(`${host}/api/tracks/${trackId}`, {
+    return fetch(`${server_host}/api/tracks/${trackId}`, {
         method: "GET"
     })
     .then((res) => res.json())

@@ -1,4 +1,5 @@
-import host from '../global/global.js';
+import server_host from '../global/global.js';
+
 import ExceptionHandler from '../global/exceptionHandler.js';
 
 /**
@@ -9,7 +10,7 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  */
 const writeBoard = (hashtagArray, trackId) => {
 
-    return fetch(`${host}/api/boards`,{
+    return fetch(`${server_host}/api/boards`,{
         method:"POST",
         headers: {
             "Content-Type": "application/json",
