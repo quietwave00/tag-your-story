@@ -1,6 +1,4 @@
-import server_host from '../global/global.js';
-
-import ExceptionHandler from '../global/exceptionHandler.js';
+import ExceptionHandler from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/global/exceptionHandler.js';
 
 /**
  * 게시글 작성을 요청한다.

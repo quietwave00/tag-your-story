@@ -1,4 +1,4 @@
-import BoardApi from "../board/boardApi.js"
+import BoardApi from "https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/board/boardApi.js"
 
 /**
  * 해당 스크립트는 detail.html에서 details.js와 함께 사용된다. 

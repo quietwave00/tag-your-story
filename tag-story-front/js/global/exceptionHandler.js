@@ -6,7 +6,7 @@ const handleException = (exceptionCode) => {
         case 'TOKEN_HAS_EXPIRED':
             return handleExpiredJwt();
         case 'USER_NOT_FOUND':
-            window.location.href = 'http://localhost:5500/html/exception.html';
+            window.location.href = `${client_host}/html/exception.html`;
     }
 }
 
@@ -16,7 +16,7 @@ const handleException = (exceptionCode) => {
  * @param _refreshToken : 리프레쉬 토큰
  */
 const handleExpiredJwt = () => {
-    return fetch("http://localhost:8080/api/user/reissue/accessToken", {
+    return fetch(`${server_host}/api/user/reissue/accessToken`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -42,7 +42,7 @@ const handleExpiredJwt = () => {
  * 새로운 RefreshToken을 설정한다.
  */
 const handleExpiredRefreshToken = () => {
-    fetch("http://localhost:8080/api/user/reissue/refreshToken", {
+    fetch(`${server_host}/api/user/reissue/refreshToken`, {
         method: "POST",
         headers: {
             "Authorization": localStorage.getItem('Authorization')

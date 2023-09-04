@@ -1,5 +1,4 @@
-import userApi from './userApi.js';
-import client_host from '../global/global.js';
+import UserApi from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/user/userApi.js';
 
 /**
  * user 상태에 따라 user-area의 역할을 변경해준다.
@@ -31,7 +30,7 @@ const setState = () => {
     
     if(document.getElementById('logout-a') != null) {
       document.getElementById('logout-a').addEventListener ('click', function() {
-        userApi.logout();
+        UserApi.logout();
       })
     }
 }

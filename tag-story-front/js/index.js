@@ -1,6 +1,5 @@
-import UserArea from './user/userArea.js';
-import UserApi from './user/userApi.js';
-import client_host from '../global/client.js';
+import UserArea from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/user/userArea.js';
+import UserApi from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/user/userApi.js';
 
 window.onload = () => {
     /**

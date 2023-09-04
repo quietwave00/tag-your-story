@@ -1,5 +1,3 @@
-import client_host from '../global/global.js';
-
 window.onload = () => {
     /**
      * 쿠키에 저장된 token값을 localStorage에 저장한다.
