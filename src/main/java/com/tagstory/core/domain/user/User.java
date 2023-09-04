@@ -38,6 +38,7 @@ public class User extends BaseTime implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user")
     private List<Board> boardList = new ArrayList<>();
 

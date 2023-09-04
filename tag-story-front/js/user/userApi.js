@@ -1,11 +1,10 @@
-import host from '../global/global.js';
-import ExceptionHandler from '../global/exceptionHandler.js';
+import ExceptionHandler from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/global/exceptionHandler.js';
 
 /**
  * 로그아웃을 수행한다.
  */
 const logout = () => {
-    fetch(`${host}/api/logout`, {
+    fetch(`${server_host}/api/logout`, {
         method: "POST",
         headers: {
             "Authorization": localStorage.getItem('Authorization')
@@ -17,7 +16,7 @@ const logout = () => {
             localStorage.removeItem('Authorization');
             localStorage.removeItem('RefreshToken');
             alert("로그아웃되었습니다.");
-            window.location.href = 'http://localhost:5500/html/index.html';
+            window.location.href = `${client_host}/html/index.html`;
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
             .then(() => {
@@ -31,7 +30,7 @@ const logout = () => {
  * 로그인한 회원인지 회원가입한 회원인지 상태 체크를 요청한다.
  */
 const checkRegisterUser = () => {
-    fetch(`${host}/api/check-registration`, {
+    fetch(`${server_host}/api/check-registration`, {
         method: "GET",
         headers: {
             "Authorization": localStorage.getItem('Authorization')
@@ -41,7 +40,7 @@ const checkRegisterUser = () => {
     .then(res => {
         if(res.success === true) {
             if(res.response.registerUser === true) {
-                window.location.href = 'http://localhost:5500/html/user/nickname.html';
+                window.location.href = `${client_host}/html/user/nickname.html`;
             }
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
@@ -59,7 +58,7 @@ const checkRegisterUser = () => {
  */
 const updateNickname = (nickname) => {
     console.log("updateNickname Called");
-    fetch(`${host}/api/nicknames`, {
+    fetch(`${server_host}/api/nicknames`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -73,7 +72,7 @@ const updateNickname = (nickname) => {
     .then(res => {
         if(res.success === true) {
             alert(`${res.response.nickname}님, 환영합니다!`);
-            window.location.href = 'http://localhost:5500/html/index.html';
+            window.location.href = `${client_host}/html/index.html`;
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
             .then(() => {

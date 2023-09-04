@@ -1,5 +1,4 @@
-import host from '../global/global.js';
-import ExceptionHandler from '../global/exceptionHandler.js';
+import ExceptionHandler from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/global/exceptionHandler.js';
 
 /**
  * 게시글 작성을 요청한다.
@@ -9,7 +8,7 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  */
 const writeBoard = (hashtagArray, trackId) => {
 
-    return fetch(`${host}/api/boards`,{
+    return fetch(`${server_host}/api/boards`,{
         method:"POST",
         headers: {
             "Content-Type": "application/json",

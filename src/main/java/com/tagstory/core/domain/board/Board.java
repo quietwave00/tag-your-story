@@ -4,10 +4,7 @@ import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.hashtag.Hashtag;
 import com.tagstory.core.domain.user.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
@@ -39,6 +36,7 @@ public class Board extends BaseTime {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Builder.Default
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Hashtag> hashtagList = new ArrayList<>();
 
@@ -55,7 +53,7 @@ public class Board extends BaseTime {
 
     public void addHashtag(List<Hashtag> hashtagList) {
         this.hashtagList = hashtagList;
-        for (Hashtag hashtag : hashtagList) { //테스트
+        for (Hashtag hashtag : hashtagList) {
             hashtag.addBoard(this);
         }
     }
@@ -70,5 +68,14 @@ public class Board extends BaseTime {
                 .count(0)
                 .trackId(createBoardCommand.getTrackId())
                 .build();
+    }
+
+    /*
+     * 테스트용 생성자
+     */
+    public void generateTestBoard(Long boardId, String content, String nickname) {
+        this.boardId = boardId;
+        this.content = content;
+        this.user.updateNickname(nickname);
     }
 }
