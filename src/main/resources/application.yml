@@ -5,6 +5,7 @@ spring:
       - jpa
       - redis
       - security
+      - aws
 
 logging:
   level:
