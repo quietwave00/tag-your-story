@@ -1,6 +1,6 @@
 package com.tagstory.core.domain.board.dto.response;
 
-import com.tagstory.core.domain.board.Board;
+import com.tagstory.core.domain.board.BoardEntity;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,15 +11,15 @@ import java.time.LocalDateTime;
 public class BoardByTrackResponse {
     private Long boardId;
     private String content;
-    private LocalDateTime createdDate;
+    private LocalDateTime createdAt;
     private String nickname;
 
-    public static BoardByTrackResponse onComplete(Board board) {
+    public static BoardByTrackResponse onComplete(BoardEntity boardEntity) {
         return BoardByTrackResponse.builder()
-                .boardId(board.getBoardId())
-                .content(board.getContent())
-                .createdDate(board.getCreatedAt())
-                .nickname(board.getUser().getNickname())
+                .boardId(boardEntity.getBoardId())
+                .content(boardEntity.getContent())
+                .createdAt(boardEntity.getCreatedAt())
+                .nickname(boardEntity.getUserEntity().getNickname())
                 .build();
     }
 }

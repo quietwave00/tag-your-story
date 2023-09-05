@@ -2,7 +2,7 @@ package com.tagstory.api.oauth;
 
 import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,20 +27,20 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
         log.info("Oauth2UserService Execute");
         Map<String, Object> attributes = super.loadUser(request).getAttributes();
-        User user = register(attributes);
-        userRepository.saveCache(user, CacheSpec.USER);
-        return new PrincipalDetails(user, attributes);
+        UserEntity userEntity = register(attributes);
+        userRepository.saveCache(userEntity, CacheSpec.USER);
+        return new PrincipalDetails(userEntity, attributes);
     }
 
     /*
      * 회원 정보가 존재하는지 확인하고, 존재하지 않을 경우 사용자를 생성한다.
      */
-    public User register(Map<String, Object> attributes) {
+    public UserEntity register(Map<String, Object> attributes) {
         String email = (String) attributes.get("email");
         String userKey = (String) attributes.get("sub");
         return userRepository.findByUserKey(userKey).orElseGet(() -> {
-            User user = User.register(userKey, email);
-            return userRepository.save(user);
+            UserEntity userEntity = UserEntity.register(userKey, email);
+            return userRepository.save(userEntity);
         });
     }
 }

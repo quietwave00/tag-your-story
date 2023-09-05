@@ -1,7 +1,7 @@
 package com.tagstory.api.oauth;
 
 import com.tagstory.api.auth.PrincipalDetails;
-import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.api.jwt.JwtCookieProvider;
 import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
@@ -30,13 +30,13 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         log.info("OauthSuccessHandler Execute");
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
-        User user = principalDetails.getUser();
-        String accessToken = jwtUtil.generateAccessToken(user.getUserId());
-        String refreshToken = redisTemplate.get(user.getUserId(), CacheSpec.REFRESH_TOKEN);
+        UserEntity userEntity = principalDetails.getUserEntity();
+        String accessToken = jwtUtil.generateAccessToken(userEntity.getUserId());
+        String refreshToken = redisTemplate.get(userEntity.getUserId(), CacheSpec.REFRESH_TOKEN);
 
         if (refreshToken == null) {
-            refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
-            redisTemplate.set(user.getUserId(), refreshToken, CacheSpec.REFRESH_TOKEN);
+            refreshToken = jwtUtil.generateRefreshToken(userEntity.getUserId());
+            redisTemplate.set(userEntity.getUserId(), refreshToken, CacheSpec.REFRESH_TOKEN);
         }
 
         response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));

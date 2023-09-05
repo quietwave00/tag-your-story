@@ -6,7 +6,7 @@ import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionResponse;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,9 +52,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         try {
             jwtUtil.validateToken(token);
             Long userId = jwtUtil.getUserIdFromToken(request.getHeader("Authorization").replace("Bearer ", ""));
-            User findUser = findUserById(userId, token);
+            UserEntity findUserEntity = findUserById(userId, token);
 
-            PrincipalDetails principalDetails = new PrincipalDetails(findUser);
+            PrincipalDetails principalDetails = new PrincipalDetails(findUserEntity);
             Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("Authorization Complete");
@@ -89,16 +89,16 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
     }
 
-    private User findUserById(Long userId, String token) {
+    private UserEntity findUserById(Long userId, String token) {
         return userId == null ? getUserFromRefreshToken(token) : getUserFromAccessToken(userId);
     }
 
     @Cacheable(value = "user", key = "#userId")
-    public User getUserFromAccessToken(final Long userId) {
+    public UserEntity getUserFromAccessToken(final Long userId) {
         return userRepository.findCacheByUserId(userId, CacheSpec.USER);
     }
 
-    public User getUserFromRefreshToken(final String token) {
+    public UserEntity getUserFromRefreshToken(final String token) {
         Long userId = jwtUtil.getUserIdFromRefreshToken(token);
         return redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
     }

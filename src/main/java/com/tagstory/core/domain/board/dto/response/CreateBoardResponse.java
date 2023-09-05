@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.board.dto.response;
 
-import com.tagstory.core.domain.board.Board;
-import com.tagstory.core.domain.hashtag.Hashtag;
+import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.hashtag.HashtagEntity;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,13 +18,13 @@ public class CreateBoardResponse {
     private LocalDateTime createdAt;
     private List<String> hashtagList;
 
-    public static CreateBoardResponse onComplete(Board board) {
+    public static CreateBoardResponse onComplete(BoardEntity boardEntity) {
         return CreateBoardResponse.builder()
-                .boardId(board.getBoardId())
-                .nickname(board.getUser().getNickname())
-                .content(board.getContent())
-                .createdAt(board.getCreatedAt())
-                .hashtagList(board.getHashtagList().stream().map(Hashtag::getName).collect(Collectors.toList()))
+                .boardId(boardEntity.getBoardId())
+                .nickname(boardEntity.getUserEntity().getNickname())
+                .content(boardEntity.getContent())
+                .createdAt(boardEntity.getCreatedAt())
+                .hashtagList(boardEntity.getHashtagEntityList().stream().map(HashtagEntity::getName).collect(Collectors.toList()))
                 .build();
     }
 }

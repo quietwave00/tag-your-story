@@ -1,6 +1,6 @@
 package com.tagstory.api.auth;
 
-import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.user.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,20 +15,20 @@ import java.util.Map;
 @AllArgsConstructor
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
-    private User user;
+    private UserEntity userEntity;
     private Map<String, Object> userInfoMap;
 
-    public PrincipalDetails(User user) {
-        this.user = user;
+    public PrincipalDetails(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
-    public User getUser() {
-        return this.user;
+    public UserEntity getUserEntity() {
+        return this.userEntity;
     }
 
     public Long getUserId()
     {
-        return this.user.getUserId();
+        return this.userEntity.getUserId();
     }
 
     @Override
@@ -39,7 +39,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> collect = new ArrayList<>();
-        collect.add((GrantedAuthority) () -> user.getRole().toString());
+        collect.add((GrantedAuthority) () -> userEntity.getRole().toString());
         return collect;
     }
 
@@ -50,7 +50,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        return String.valueOf(user.getUserId());
+        return String.valueOf(userEntity.getUserId());
     }
 
     @Override
