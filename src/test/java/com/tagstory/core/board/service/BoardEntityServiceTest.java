@@ -2,8 +2,8 @@ package com.tagstory.core.board.service;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.BoardByTrackResponse;
-import com.tagstory.core.domain.board.dto.response.CreateBoardResponse;
+import com.tagstory.core.domain.board.dto.response.BoardByTrack;
+import com.tagstory.core.domain.board.dto.response.CreateBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
@@ -65,12 +65,12 @@ public class BoardEntityServiceTest {
 
         //when
         when(boardRepository.save(any())).thenReturn(boardEntity);
-        CreateBoardResponse createBoardResponse = boardService.create(createBoardCommand, userEntity, hashtagEntityList);
+        CreateBoard createBoard = boardService.create(createBoardCommand, userEntity, hashtagEntityList);
 
         //then
-        assertThat(createBoardResponse.getNickname()).isEqualTo(userEntity.getNickname());
-        assertThat(createBoardResponse.getContent()).isEqualTo(boardEntity.getContent());
-        assertThat(createBoardResponse.getHashtagList().get(0)).isEqualTo(hashtagEntity.getName());
+        assertThat(createBoard.getNickname()).isEqualTo(userEntity.getNickname());
+        assertThat(createBoard.getContent()).isEqualTo(boardEntity.getContent());
+        assertThat(createBoard.getHashtagList().get(0)).isEqualTo(hashtagEntity.getName());
     }
 
     @Test
@@ -89,7 +89,7 @@ public class BoardEntityServiceTest {
         //when
         when(boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(any(), anyString()))
                 .thenReturn(boardEntityList);
-        List<BoardByTrackResponse> result = boardService.getBoardListByTrackId(trackId);
+        List<BoardByTrack> result = boardService.getBoardListByTrackId(trackId);
 
         //then
         assertThat(result.size()).isEqualTo(2);

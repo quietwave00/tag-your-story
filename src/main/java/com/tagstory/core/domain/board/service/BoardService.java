@@ -3,8 +3,8 @@ package com.tagstory.core.domain.board.service;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.BoardByTrackResponse;
-import com.tagstory.core.domain.board.dto.response.CreateBoardResponse;
+import com.tagstory.core.domain.board.dto.response.BoardByTrack;
+import com.tagstory.core.domain.board.dto.response.CreateBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
@@ -24,18 +24,18 @@ public class BoardService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public CreateBoardResponse create(CreateBoardCommand createBoardCommand, UserEntity userEntity, List<HashtagEntity> hashtagEntityList) {
+    public CreateBoard create(CreateBoardCommand createBoardCommand, UserEntity userEntity, List<HashtagEntity> hashtagEntityList) {
         BoardEntity beforeBoardEntity = BoardEntity.create(createBoardCommand);
         beforeBoardEntity.addUser(userEntity);
         beforeBoardEntity.addHashtag(hashtagEntityList);
         BoardEntity savedBoardEntity = boardRepository.save(beforeBoardEntity);
-        return CreateBoardResponse.onComplete(savedBoardEntity);
+        return CreateBoard.onComplete(savedBoardEntity);
     }
 
-    public List<BoardByTrackResponse> getBoardListByTrackId(String trackId) {
+    public List<BoardByTrack> getBoardListByTrackId(String trackId) {
         List<BoardEntity> boardEntityList = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId);
         return boardEntityList.stream()
-                .map(BoardByTrackResponse::onComplete)
+                .map(BoardByTrack::onComplete)
                 .collect(Collectors.toList());
     }
 

@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.tracks.service;
 
-import com.tagstory.core.domain.tracks.service.dto.response.DetailTrackResponse;
-import com.tagstory.core.domain.tracks.service.dto.response.SearchTracksResponse;
+import com.tagstory.core.domain.tracks.service.dto.response.DetailTrack;
+import com.tagstory.core.domain.tracks.service.dto.response.SearchTracks;
 import com.tagstory.core.domain.tracks.webclient.SpotifyWebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,16 +22,16 @@ public class TrackService {
 
     private final SpotifyWebClient spotifyWebClient;
 
-    public List<SearchTracksResponse> search(String keyword, int page) {
+    public List<SearchTracks> search(String keyword, int page) {
         Track[] tracks = spotifyWebClient.getTrackInfoByKeyword(keyword, page);
         return Arrays.stream(tracks)
-                .map(track -> getTrackData(track, SearchTracksResponse::onComplete))
+                .map(track -> getTrackData(track, SearchTracks::onComplete))
                 .collect(Collectors.toList());
     }
 
-    public DetailTrackResponse getDetail(String trackId) {
+    public DetailTrack getDetail(String trackId) {
         Track track = spotifyWebClient.getDetailTrackInfo(trackId);
-        return getTrackData(track, DetailTrackResponse::onComplete);
+        return getTrackData(track, DetailTrack::onComplete);
     }
 
     private <T> T getTrackData(Track track, TrackDataConverter<T> converter) {

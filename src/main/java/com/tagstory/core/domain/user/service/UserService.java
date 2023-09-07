@@ -28,37 +28,37 @@ public class UserService  {
     private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
 
-    public ReissueAccessTokenResponse reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
+    public ReissueAccessToken reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
         Long userId = jwtUtil.getUserIdFromRefreshToken(reissueAccessTokenCommand.getRefreshToken());
         UserEntity findUserEntity = findCacheByUserId(userId);
         String newAccessToken = jwtUtil.generateAccessToken(findUserEntity.getUserId());
-        return ReissueAccessTokenResponse.onComplete(newAccessToken);
+        return ReissueAccessToken.onComplete(newAccessToken);
     }
 
-    public ReissueRefreshTokenResponse reissueRefreshToken(final Long userId) {
+    public ReissueRefreshToken reissueRefreshToken(final Long userId) {
         UserEntity userEntity = findCacheByUserId(userId);
         String newRefreshToken = jwtUtil.generateRefreshToken(userEntity.getUserId());
         redisTemplate.set(userEntity.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
-        return ReissueRefreshTokenResponse.onComplete(newRefreshToken);
+        return ReissueRefreshToken.onComplete(newRefreshToken);
     }
 
-    public LogoutResponse logout(Long userId) {
+    public Logout logout(Long userId) {
         SecurityContextHolder.clearContext();
-        return LogoutResponse.onComplete(userId);
+        return Logout.onComplete(userId);
     }
 
     @Transactional
-    public UpdateNicknameResponse updateNickname(UpdateNicknameCommand updateNicknameCommand, Long userId) {
+    public UpdateNickname updateNickname(UpdateNicknameCommand updateNicknameCommand, Long userId) {
         UserEntity findUserEntity = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         findUserEntity.updateNickname(updateNicknameCommand.getNickname());
         userRepository.saveCache(findUserEntity, CacheSpec.USER);
-        return UpdateNicknameResponse.onComplete(findUserEntity.getNickname());
+        return UpdateNickname.onComplete(findUserEntity.getNickname());
     }
 
-    public CheckRegisterUserResponse checkRegisterUser(Long userId) {
+    public CheckRegisterUser checkRegisterUser(Long userId) {
         UserEntity findUserEntity = findCacheByUserId(userId);
         boolean status = StringUtils.isNullOrEmpty(findUserEntity.getNickname());
-        return CheckRegisterUserResponse.onComplete(status);
+        return CheckRegisterUser.onComplete(status);
     }
 
     @Cacheable(value = "user", key = "#userId")
