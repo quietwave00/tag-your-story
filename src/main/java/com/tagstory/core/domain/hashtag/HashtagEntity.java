@@ -1,6 +1,6 @@
 package com.tagstory.core.domain.hashtag;
 
-import com.tagstory.core.domain.board.Board;
+import com.tagstory.core.domain.board.BoardEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Hashtag {
+public class HashtagEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long hashtagId;
@@ -22,21 +22,21 @@ public class Hashtag {
 
     @ManyToOne
     @JoinColumn(name = "board_id")
-    private Board board;
+    private BoardEntity boardEntity;
 
 
     /*
      * 연관관계 설절
      */
-    public void addBoard(Board board) {
-        this.board = board;
+    public void addBoard(BoardEntity boardEntity) {
+        this.boardEntity = boardEntity;
     }
 
     /*
      * 비즈니스 로직
      */
-    public static Hashtag create(String name) {
-        return Hashtag.builder()
+    public static HashtagEntity create(String name) {
+        return HashtagEntity.builder()
                 .name(name)
                 .build();
     }

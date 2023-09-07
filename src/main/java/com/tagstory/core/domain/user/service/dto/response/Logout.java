@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-public class LogoutResponse {
+public class Logout {
     private LocalDateTime logoutAt;
     private Long userId;
 
-    public static LogoutResponse onComplete(Long userId) {
-        return LogoutResponse.builder()
+    public static Logout onComplete(Long userId) {
+        return Logout.builder()
                 .logoutAt(LocalDateTime.now())
                 .userId(userId)
                 .build();

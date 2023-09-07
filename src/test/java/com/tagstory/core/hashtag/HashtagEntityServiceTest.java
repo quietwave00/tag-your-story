@@ -1,6 +1,6 @@
 package com.tagstory.core.hashtag;
 
-import com.tagstory.core.domain.hashtag.Hashtag;
+import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.repository.HashtagRepository;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class HashtagServiceTest {
+public class HashtagEntityServiceTest {
 
     private HashtagService hashtagService;
 
@@ -31,11 +31,11 @@ public class HashtagServiceTest {
         List<String> hashtagStrList = List.of("value1", "value2", "value3");
 
         //when
-        List<Hashtag> hashtagList = hashtagService.getHashtagList(hashtagStrList);
+        List<HashtagEntity> hashtagEntityList = hashtagService.getHashtagList(hashtagStrList);
 
         //then
-        assertThat(hashtagList.get(0).getName()).isEqualTo(hashtagStrList.get(0));
-        assertThat(hashtagList.get(1).getName()).isEqualTo(hashtagStrList.get(1));
-        assertThat(hashtagList.get(2).getName()).isEqualTo(hashtagStrList.get(2));
+        assertThat(hashtagEntityList.get(0).getName()).isEqualTo(hashtagStrList.get(0));
+        assertThat(hashtagEntityList.get(1).getName()).isEqualTo(hashtagStrList.get(1));
+        assertThat(hashtagEntityList.get(2).getName()).isEqualTo(hashtagStrList.get(2));
     }
 }

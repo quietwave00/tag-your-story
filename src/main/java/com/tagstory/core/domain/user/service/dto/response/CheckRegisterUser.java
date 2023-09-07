@@ -5,11 +5,11 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class CheckRegisterUserResponse {
+public class CheckRegisterUser {
     private boolean isRegisterUser;
 
-    public static CheckRegisterUserResponse onComplete(boolean status) {
-        return CheckRegisterUserResponse.builder()
+    public static CheckRegisterUser onComplete(boolean status) {
+        return CheckRegisterUser.builder()
                 .isRegisterUser(status)
                 .build();
     }

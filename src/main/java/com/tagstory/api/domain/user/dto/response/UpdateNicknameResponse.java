@@ -1,6 +1,5 @@
 package com.tagstory.api.domain.user.dto.response;
 
-import com.tagstory.core.domain.user.service.dto.response.UpdateNicknameResponse;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,12 +7,12 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-public class UpdateNickname {
+public class UpdateNicknameResponse {
     private LocalDateTime updateAt;
     private String nickname;
 
-    public static UpdateNickname create(UpdateNicknameResponse updateNicknameResponse) {
-        return UpdateNickname.builder()
+    public static UpdateNicknameResponse create(com.tagstory.core.domain.user.service.dto.response.UpdateNickname updateNicknameResponse) {
+        return UpdateNicknameResponse.builder()
                 .updateAt(updateNicknameResponse.getUpdateAt())
                 .nickname(updateNicknameResponse.getNickname())
                 .build();

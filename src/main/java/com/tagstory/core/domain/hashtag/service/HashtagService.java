@@ -1,6 +1,6 @@
 package com.tagstory.core.domain.hashtag.service;
 
-import com.tagstory.core.domain.hashtag.Hashtag;
+import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.repository.HashtagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
 
-    public List<Hashtag> getHashtagList(List<String> hashtagStrList) {
+    public List<HashtagEntity> getHashtagList(List<String> hashtagStrList) {
         return hashtagStrList.stream()
-                .map(Hashtag::create)
+                .map(HashtagEntity::create)
                 .collect(Collectors.toList());
     }
 }

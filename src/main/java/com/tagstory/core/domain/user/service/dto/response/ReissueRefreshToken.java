@@ -5,11 +5,11 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class ReissueRefreshTokenResponse {
+public class ReissueRefreshToken {
     private String newRefreshToken;
 
-    public static ReissueRefreshTokenResponse onComplete(String newRefreshToken) {
-        return ReissueRefreshTokenResponse.builder()
+    public static ReissueRefreshToken onComplete(String newRefreshToken) {
+        return ReissueRefreshToken.builder()
                 .newRefreshToken(newRefreshToken)
                 .build();
     }

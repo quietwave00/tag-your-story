@@ -2,12 +2,12 @@ package com.tagstory.api.domain.board;
 
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.board.dto.request.CreateBoardRequest;
-import com.tagstory.api.domain.board.dto.response.BoardByTrack;
-import com.tagstory.api.domain.board.dto.response.CreateBoard;
+import com.tagstory.api.domain.board.dto.response.BoardByTrackResponse;
+import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
-import com.tagstory.core.domain.board.dto.response.BoardByTrackResponse;
-import com.tagstory.core.domain.board.dto.response.CreateBoardResponse;
+import com.tagstory.core.domain.board.dto.response.BoardByTrack;
+import com.tagstory.core.domain.board.dto.response.CreateBoard;
 import com.tagstory.core.domain.board.service.BoardFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,17 +28,17 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/boards")
-    public ApiResult<CreateBoard> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
-        CreateBoardResponse createBoardResponse = boardFacade.create(createBoardRequest.toCommand(userId));
-        return ApiUtils.success(CreateBoard.create(createBoardResponse));
+    public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
+        CreateBoard createBoard = boardFacade.create(createBoardRequest.toCommand(userId));
+        return ApiUtils.success(CreateBoardResponse.create(createBoard));
     }
 
     /*
      * 트랙 아이디에 해당하는 모든 게시물을 조회한다.
      */
     @GetMapping("/boards/{trackId}")
-    public ApiResult<List<BoardByTrack>> getBoardListByTrackId(@PathVariable("trackId") String trackId) {
-        List<BoardByTrackResponse> boardByTrackResponse = boardFacade.getBoardListByTrackId(trackId);
-        return ApiUtils.success(boardByTrackResponse.stream().map(BoardByTrack::create).collect(Collectors.toList()));
+    public ApiResult<List<BoardByTrackResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId) {
+        List<BoardByTrack> boardByTrack = boardFacade.getBoardListByTrackId(trackId);
+        return ApiUtils.success(boardByTrack.stream().map(BoardByTrackResponse::create).collect(Collectors.toList()));
     }
 }

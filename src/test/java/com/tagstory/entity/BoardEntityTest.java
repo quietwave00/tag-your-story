@@ -1,13 +1,13 @@
 package com.tagstory.entity;
 
-import com.tagstory.core.domain.board.Board;
+import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class BoardTest {
+public class BoardEntityTest {
 
 
     @Test
@@ -17,12 +17,12 @@ public class BoardTest {
                 .trackId("testId")
                 .build();
 
-        Board board = Board.create(createBoardCommand);
+        BoardEntity boardEntity = BoardEntity.create(createBoardCommand);
 
-        assertThat(board.getContent()).isEqualTo("test");
-        assertThat(board.getTrackId()).isEqualTo("testId");
-        assertThat(board.getStatus()).isEqualTo(BoardStatus.POST);
-        assertThat(board.getCount()).isEqualTo(0);
+        assertThat(boardEntity.getContent()).isEqualTo("test");
+        assertThat(boardEntity.getTrackId()).isEqualTo("testId");
+        assertThat(boardEntity.getStatus()).isEqualTo(BoardStatus.POST);
+        assertThat(boardEntity.getCount()).isEqualTo(0);
     }
 
 }

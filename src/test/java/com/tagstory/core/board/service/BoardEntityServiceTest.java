@@ -1,13 +1,13 @@
 package com.tagstory.core.board.service;
 
-import com.tagstory.core.domain.board.Board;
+import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.BoardByTrackResponse;
-import com.tagstory.core.domain.board.dto.response.CreateBoardResponse;
+import com.tagstory.core.domain.board.dto.response.BoardByTrack;
+import com.tagstory.core.domain.board.dto.response.CreateBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
-import com.tagstory.core.domain.hashtag.Hashtag;
-import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.hashtag.HashtagEntity;
+import com.tagstory.core.domain.user.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class BoardServiceTest {
+public class BoardEntityServiceTest {
 
     @Mock
     private BoardRepository boardRepository;
@@ -32,11 +32,11 @@ public class BoardServiceTest {
     @InjectMocks
     private BoardService boardService;
 
-    private User user;
+    private UserEntity userEntity;
 
     @BeforeEach
     void init() {
-        user = User.builder()
+        userEntity = UserEntity.builder()
                 .userId(1L)
                 .nickname("test")
                 .build();
@@ -48,29 +48,29 @@ public class BoardServiceTest {
     void create() {
         //given
 
-        Hashtag hashtag = Hashtag.builder()
+        HashtagEntity hashtagEntity = HashtagEntity.builder()
                 .hashtagId(1L)
                 .name("test")
                 .build();
-        List<Hashtag> hashtagList = List.of(hashtag);
+        List<HashtagEntity> hashtagEntityList = List.of(hashtagEntity);
 
         CreateBoardCommand createBoardCommand = CreateBoardCommand.builder()
                 .hashtagList(List.of("test"))
                 .content("test")
                 .build();
 
-        Board board = Board.create(createBoardCommand);
-        board.addUser(user);
-        board.addHashtag(hashtagList);
+        BoardEntity boardEntity = BoardEntity.create(createBoardCommand);
+        boardEntity.addUser(userEntity);
+        boardEntity.addHashtag(hashtagEntityList);
 
         //when
-        when(boardRepository.save(any())).thenReturn(board);
-        CreateBoardResponse createBoardResponse = boardService.create(createBoardCommand, user, hashtagList);
+        when(boardRepository.save(any())).thenReturn(boardEntity);
+        CreateBoard createBoard = boardService.create(createBoardCommand, userEntity, hashtagEntityList);
 
         //then
-        assertThat(createBoardResponse.getNickname()).isEqualTo(user.getNickname());
-        assertThat(createBoardResponse.getContent()).isEqualTo(board.getContent());
-        assertThat(createBoardResponse.getHashtagList().get(0)).isEqualTo(hashtag.getName());
+        assertThat(createBoard.getNickname()).isEqualTo(userEntity.getNickname());
+        assertThat(createBoard.getContent()).isEqualTo(boardEntity.getContent());
+        assertThat(createBoard.getHashtagList().get(0)).isEqualTo(hashtagEntity.getName());
     }
 
     @Test
@@ -78,18 +78,18 @@ public class BoardServiceTest {
     void getBoardListByTrackId() {
         //given
         String trackId = "test";
-        Board board1 = new Board();
-        board1.addUser(user);
-        board1.generateTestBoard(1L, "content1", "nickname1");
-        Board board2 = new Board();
-        board2.addUser(user);
-        board2.generateTestBoard(2L, "content2", "nickname2");
-        List<Board> boardList = List.of(board1, board2);
+        BoardEntity boardEntity1 = new BoardEntity();
+        boardEntity1.addUser(userEntity);
+        boardEntity1.generateTestBoard(1L, "content1", "nickname1");
+        BoardEntity boardEntity2 = new BoardEntity();
+        boardEntity2.addUser(userEntity);
+        boardEntity2.generateTestBoard(2L, "content2", "nickname2");
+        List<BoardEntity> boardEntityList = List.of(boardEntity1, boardEntity2);
 
         //when
         when(boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(any(), anyString()))
-                .thenReturn(boardList);
-        List<BoardByTrackResponse> result = boardService.getBoardListByTrackId(trackId);
+                .thenReturn(boardEntityList);
+        List<BoardByTrack> result = boardService.getBoardListByTrackId(trackId);
 
         //then
         assertThat(result.size()).isEqualTo(2);

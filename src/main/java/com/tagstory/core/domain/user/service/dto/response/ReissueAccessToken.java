@@ -5,11 +5,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ReissueAccessTokenResponse {
+public class ReissueAccessToken {
     private String newJwt;
 
-    public static ReissueAccessTokenResponse onComplete(String newJwt) {
-        return ReissueAccessTokenResponse.builder()
+    public static ReissueAccessToken onComplete(String newJwt) {
+        return ReissueAccessToken.builder()
                 .newJwt(newJwt)
                 .build();
     }

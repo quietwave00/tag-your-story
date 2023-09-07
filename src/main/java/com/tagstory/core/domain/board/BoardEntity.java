@@ -2,8 +2,8 @@ package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.hashtag.Hashtag;
-import com.tagstory.core.domain.user.User;
+import com.tagstory.core.domain.hashtag.HashtagEntity;
+import com.tagstory.core.domain.user.UserEntity;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Entity
-public class Board extends BaseTime {
+public class BoardEntity extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardId;
@@ -34,35 +34,35 @@ public class Board extends BaseTime {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity userEntity;
 
     @Builder.Default
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
-    private List<Hashtag> hashtagList = new ArrayList<>();
+    @OneToMany(mappedBy = "boardEntity", cascade = CascadeType.ALL)
+    private List<HashtagEntity> hashtagEntityList = new ArrayList<>();
 
 
     /*
      * 연관 관계 설정
      */
-    public void addUser(User user) {
-        this.user = user;
-        if(user.getBoardList() != null) {
-            user.getBoardList().add(this);
+    public void addUser(UserEntity userEntity) {
+        this.userEntity = userEntity;
+        if(userEntity.getBoardEntityList() != null) {
+            userEntity.getBoardEntityList().add(this);
         }
     }
 
-    public void addHashtag(List<Hashtag> hashtagList) {
-        this.hashtagList = hashtagList;
-        for (Hashtag hashtag : hashtagList) {
-            hashtag.addBoard(this);
+    public void addHashtag(List<HashtagEntity> hashtagEntityList) {
+        this.hashtagEntityList = hashtagEntityList;
+        for (HashtagEntity hashtagEntity : hashtagEntityList) {
+            hashtagEntity.addBoard(this);
         }
     }
 
     /*
      * 비즈니스 로직
      */
-    public static Board create(CreateBoardCommand createBoardCommand) {
-        return Board.builder()
+    public static BoardEntity create(CreateBoardCommand createBoardCommand) {
+        return BoardEntity.builder()
                 .content(createBoardCommand.getContent())
                 .status(BoardStatus.POST)
                 .count(0)
@@ -76,6 +76,6 @@ public class Board extends BaseTime {
     public void generateTestBoard(Long boardId, String content, String nickname) {
         this.boardId = boardId;
         this.content = content;
-        this.user.updateNickname(nickname);
+        this.userEntity.updateNickname(nickname);
     }
 }

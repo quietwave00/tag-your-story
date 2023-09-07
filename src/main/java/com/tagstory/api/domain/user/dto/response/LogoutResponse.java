@@ -1,6 +1,5 @@
 package com.tagstory.api.domain.user.dto.response;
 
-import com.tagstory.core.domain.user.service.dto.response.LogoutResponse;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,12 +7,12 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-public class Logout {
+public class LogoutResponse {
     private LocalDateTime logoutAt;
     private Long userId;
 
-    public static Logout create(LogoutResponse logoutResponse) {
-        return Logout.builder()
+    public static LogoutResponse create(com.tagstory.core.domain.user.service.dto.response.Logout logoutResponse) {
+        return LogoutResponse.builder()
                 .logoutAt(logoutResponse.getLogoutAt())
                 .userId(logoutResponse.getUserId())
                 .build();

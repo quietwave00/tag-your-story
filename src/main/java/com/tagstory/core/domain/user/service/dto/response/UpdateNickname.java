@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-public class UpdateNicknameResponse {
+public class UpdateNickname {
     private LocalDateTime updateAt;
     private String nickname;
 
-    public static UpdateNicknameResponse onComplete(String nickname) {
-        return UpdateNicknameResponse.builder()
+    public static UpdateNickname onComplete(String nickname) {
+        return UpdateNickname.builder()
                 .updateAt(LocalDateTime.now())
                 .nickname(nickname)
                 .build();

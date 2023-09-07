@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.user;
 
 import com.tagstory.core.domain.BaseTime;
-import com.tagstory.core.domain.board.Board;
+import com.tagstory.core.domain.board.BoardEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +18,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "users")
-public class User extends BaseTime implements Serializable {
+public class UserEntity extends BaseTime implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,22 +39,22 @@ public class User extends BaseTime implements Serializable {
     private UserStatus userStatus;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user")
-    private List<Board> boardList = new ArrayList<>();
+    @OneToMany(mappedBy = "userEntity")
+    private List<BoardEntity> boardEntityList = new ArrayList<>();
 
     /*
      * 연관 관계 설정
      */
-    public void addBoard(Board board) {
-        this.boardList.add(board);
-        board.addUser(this);
+    public void addBoard(BoardEntity boardEntity) {
+        this.boardEntityList.add(boardEntity);
+        boardEntity.addUser(this);
     }
 
     /*
      * 비즈니스 로직
      */
-    public static User register(String userKey, String email) {
-        return User.builder()
+    public static UserEntity register(String userKey, String email) {
+        return UserEntity.builder()
                 .userKey(userKey)
                 .email(email)
                 .role(Role.ROLE_USER)
