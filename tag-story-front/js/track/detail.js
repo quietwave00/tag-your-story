@@ -1,5 +1,5 @@
-import UserArea from "https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/user/userArea.js";
-import TrackApi from "https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/track/trackApi.js";
+import UserArea from "../user/userArea.js";
+import TrackApi from "./trackApi.js";
 
 window.onload = () => {
     /**

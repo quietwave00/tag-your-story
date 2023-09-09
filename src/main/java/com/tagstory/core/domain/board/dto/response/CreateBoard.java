@@ -18,13 +18,13 @@ public class CreateBoard {
     private LocalDateTime createdAt;
     private List<String> hashtagList;
 
-    public static CreateBoard onComplete(BoardEntity boardEntity) {
+    public static CreateBoard onComplete(BoardEntity board) {
         return CreateBoard.builder()
-                .boardId(boardEntity.getBoardId())
-                .nickname(boardEntity.getUserEntity().getNickname())
-                .content(boardEntity.getContent())
-                .createdAt(boardEntity.getCreatedAt())
-                .hashtagList(boardEntity.getHashtagEntityList().stream().map(HashtagEntity::getName).collect(Collectors.toList()))
+                .boardId(board.getBoardId())
+                .nickname(board.getUser().getNickname())
+                .content(board.getContent())
+                .createdAt(board.getCreatedAt())
+                .hashtagList(board.getHashtagList().stream().map(HashtagEntity::getName).collect(Collectors.toList()))
                 .build();
     }
 }

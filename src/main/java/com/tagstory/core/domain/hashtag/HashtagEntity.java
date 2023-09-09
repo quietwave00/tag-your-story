@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "hashtag")
 public class HashtagEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,14 +23,14 @@ public class HashtagEntity {
 
     @ManyToOne
     @JoinColumn(name = "board_id")
-    private BoardEntity boardEntity;
+    private BoardEntity board;
 
 
     /*
      * 연관관계 설절
      */
-    public void addBoard(BoardEntity boardEntity) {
-        this.boardEntity = boardEntity;
+    public void addBoard(BoardEntity board) {
+        this.board = board;
     }
 
     /*
