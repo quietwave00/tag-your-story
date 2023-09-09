@@ -2,9 +2,13 @@ package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
+import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
@@ -16,6 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Entity
+@Table(name = "board")
 public class BoardEntity extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,28 +39,35 @@ public class BoardEntity extends BaseTime {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserEntity userEntity;
+    private UserEntity user;
 
     @Builder.Default
-    @OneToMany(mappedBy = "boardEntity", cascade = CascadeType.ALL)
-    private List<HashtagEntity> hashtagEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<HashtagEntity> hashtagList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<FileEntity> fileList = new ArrayList<>();
 
 
     /*
      * 연관 관계 설정
      */
-    public void addUser(UserEntity userEntity) {
-        this.userEntity = userEntity;
-        if(userEntity.getBoardEntityList() != null) {
-            userEntity.getBoardEntityList().add(this);
+    public void addUser(UserEntity user) {
+        this.user = user;
+        if(user.getBoardList() != null) {
+            user.addBoard(this);
         }
     }
 
-    public void addHashtag(List<HashtagEntity> hashtagEntityList) {
-        this.hashtagEntityList = hashtagEntityList;
-        for (HashtagEntity hashtagEntity : hashtagEntityList) {
-            hashtagEntity.addBoard(this);
+    public void addHashtag(List<HashtagEntity> hashtagList) {
+        this.hashtagList = hashtagList;
+        for (HashtagEntity hashtag : hashtagList) {
+            hashtag.addBoard(this);
         }
+    }
+
+    public void addFile(List<FileEntity> fileList) {
+        this.fileList = fileList;
     }
 
     /*
@@ -76,6 +88,6 @@ public class BoardEntity extends BaseTime {
     public void generateTestBoard(Long boardId, String content, String nickname) {
         this.boardId = boardId;
         this.content = content;
-        this.userEntity.updateNickname(nickname);
+        this.user.updateNickname(nickname);
     }
 }

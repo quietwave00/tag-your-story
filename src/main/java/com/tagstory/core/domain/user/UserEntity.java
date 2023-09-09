@@ -39,15 +39,14 @@ public class UserEntity extends BaseTime implements Serializable {
     private UserStatus userStatus;
 
     @Builder.Default
-    @OneToMany(mappedBy = "userEntity")
-    private List<BoardEntity> boardEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<BoardEntity> boardList = new ArrayList<>();
 
     /*
      * 연관 관계 설정
      */
-    public void addBoard(BoardEntity boardEntity) {
-        this.boardEntityList.add(boardEntity);
-        boardEntity.addUser(this);
+    public void addBoard(BoardEntity board) {
+        this.boardList.add(board);
     }
 
     /*

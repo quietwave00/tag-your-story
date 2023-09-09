@@ -14,12 +14,12 @@ public class BoardByTrack {
     private LocalDateTime createdAt;
     private String nickname;
 
-    public static BoardByTrack onComplete(BoardEntity boardEntity) {
+    public static BoardByTrack onComplete(BoardEntity board) {
         return BoardByTrack.builder()
-                .boardId(boardEntity.getBoardId())
-                .content(boardEntity.getContent())
-                .createdAt(boardEntity.getCreatedAt())
-                .nickname(boardEntity.getUserEntity().getNickname())
+                .boardId(board.getBoardId())
+                .content(board.getContent())
+                .createdAt(board.getCreatedAt())
+                .nickname(board.getUser().getNickname())
                 .build();
     }
 }

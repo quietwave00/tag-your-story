@@ -13,4 +13,11 @@ spring:
     username: ENC(BHNjBGuccyPSEYFf+diLH0yn+lDn+tqr)
     password: ENC(Zz0ZJK6NA6idWRKytyIroowmo6uyRJTU)
     driver-class-name: com.mysql.cj.jdbc.Driver
-
+---
+spring:
+  config.activate.on-profile: prod
+  datasource:
+    url: ENC(av9N7xL+qAVAY25Ae0EHrSX1n1Ao0E3McsOXp2LVlUPSLLWbwNU+5iAI1O2JxtQWoxphS7N6aIyCWjuxr8NylypoDk2Q/DKBbH6wxnrshqK/F11dZ282NTAD+/cQH9No)
+    username: ENC(BHNjBGuccyPSEYFf+diLH0yn+lDn+tqr)
+    password: ENC(Zz0ZJK6NA6idWRKytyIroowmo6uyRJTU)
+    driver-class-name: com.mysql.cj.jdbc.Driver

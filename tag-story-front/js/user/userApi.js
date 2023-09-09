@@ -1,4 +1,4 @@
-import ExceptionHandler from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/global/exceptionHandler.js';
+import ExceptionHandler from '../global/exceptionHandler.js';
 
 /**
  * 로그아웃을 수행한다.

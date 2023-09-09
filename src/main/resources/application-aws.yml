@@ -9,3 +9,8 @@ cloud:
       secretKey: ENC(/sWZegnt/P9iXShmFCKDw6hS3Zef76Gw4pq6uqf6CdIaM6cDge9B0XLLrIRD1X1BmHZFO1Dup4g=)
     region:
       static: ap-northeast-2
+spring:
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 3MB

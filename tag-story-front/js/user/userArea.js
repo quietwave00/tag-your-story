@@ -1,4 +1,4 @@
-import UserApi from 'https://d2lsho2su959kd.cloudfront.net/tag-story-front/js/user/userApi.js';
+import UserApi from './userApi.js';
 
 /**
  * user 상태에 따라 user-area의 역할을 변경해준다.
