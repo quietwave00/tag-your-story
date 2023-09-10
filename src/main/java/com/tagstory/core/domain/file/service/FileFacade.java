@@ -4,6 +4,7 @@ import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.file.dto.S3File;
 import com.tagstory.core.domain.file.dto.command.UploadFileCommand;
+import com.tagstory.core.domain.file.dto.response.MainFile;
 import com.tagstory.core.domain.file.dto.response.UploadFile;
 import com.tagstory.core.domain.file.webclient.S3WebClient;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,10 @@ public class FileFacade {
         List<S3File> saveFileList = s3WebClient.uploadFiles(fileList);
         BoardEntity board = boardService.findByBoardId(uploadFileCommand.getBoardId());
         return fileService.upload(saveFileList, board);
+    }
+
+    public List<MainFile> getMainFileList(String trackId) {
+        List<BoardEntity> boardList = boardService.findByTrackId(trackId);
+        return fileService.getMainFileList(boardList);
     }
 }

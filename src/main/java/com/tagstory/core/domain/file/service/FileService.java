@@ -4,6 +4,7 @@ import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
 import com.tagstory.core.domain.file.dto.S3File;
+import com.tagstory.core.domain.file.dto.response.MainFile;
 import com.tagstory.core.domain.file.dto.response.UploadFile;
 import com.tagstory.core.domain.file.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,17 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
+    public List<MainFile> getMainFileList(List<BoardEntity> boardList) {
+        return boardList.stream()
+                .flatMap(board -> board.getFileList().stream())
+                .filter(file -> file.getFileLevel() == FileLevel.MAIN)
+                .map(MainFile::onComplete)
+                .collect(Collectors.toList());
+    }
+
+
+
     private S3File addFileLevel(S3File s3File) {
-        System.out.println("index: " + s3File.getIndex());
         FileLevel fileLevel = (s3File.getIndex() == 0) ? FileLevel.MAIN : FileLevel.SUB;
         return s3File.addFileLevel(fileLevel);
     }

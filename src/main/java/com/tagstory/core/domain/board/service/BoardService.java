@@ -42,4 +42,8 @@ public class BoardService {
     public BoardEntity findByBoardId(Long boardId) {
         return boardRepository.getReferenceById(boardId);
     }
+
+    public List<BoardEntity> findByTrackId(String trackId) {
+        return boardRepository.findByTrackId(trackId);
+    }
 }
