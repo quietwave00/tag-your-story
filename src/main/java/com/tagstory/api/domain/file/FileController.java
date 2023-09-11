@@ -1,10 +1,12 @@
 package com.tagstory.api.domain.file;
 
 import com.tagstory.api.domain.file.dto.request.UploadFileRequest;
+import com.tagstory.api.domain.file.dto.response.FileListResponse;
 import com.tagstory.api.domain.file.dto.response.MainFileResponse;
 import com.tagstory.api.domain.file.dto.response.UploadFileResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
+import com.tagstory.core.domain.file.dto.response.FileList;
 import com.tagstory.core.domain.file.dto.response.MainFile;
 import com.tagstory.core.domain.file.dto.response.UploadFile;
 import com.tagstory.core.domain.file.service.FileFacade;
@@ -41,5 +43,14 @@ public class FileController {
     public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId) {
         List<MainFile> mainFileList = fileFacade.getMainFileList(trackId);
         return ApiUtils.success(mainFileList.stream().map(MainFileResponse::create).collect(Collectors.toList()));
+    }
+
+    /*
+     * 게시물에 업로드된 파일 리스트를 조회한다.
+     */
+    @GetMapping("/files")
+    public ApiResult<List<FileListResponse>> getFileList(@RequestParam("boardId") Long boardId) {
+        List<FileList> fileList = fileFacade.getFileList(boardId);
+        return ApiUtils.success(fileList.stream().map(FileListResponse::create).collect(Collectors.toList()));
     }
 }
