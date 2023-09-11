@@ -20,6 +20,6 @@ window.onload = () => {
  */
 document.getElementById('search-button').addEventListener('click', () => {
     let keyword = document.getElementById('search-input').value;
-    let defaultPage = 1;
+    const defaultPage = 1;
     window.location.href = `${client_host}/html/track/tracks.html?keyword=${keyword}&page=${defaultPage}`;
 });
