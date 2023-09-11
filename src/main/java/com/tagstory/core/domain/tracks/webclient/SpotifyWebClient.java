@@ -1,6 +1,8 @@
 package com.tagstory.core.domain.tracks.webclient;
 
 import com.mysql.cj.util.StringUtils;
+import com.tagstory.api.exception.CustomException;
+import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +41,8 @@ public class SpotifyWebClient {
             return spotifyApi.getAccessToken();
         } catch (IOException | SpotifyWebApiException | org.apache.hc.core5.http.ParseException e) {
             log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
         }
-        return null;
     }
 
     public SpotifyApi getSpotifyApi() {
@@ -70,8 +72,8 @@ public class SpotifyWebClient {
             return searchResult.getItems();
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
         }
-        return null;
     }
 
     public Track getDetailTrackInfo(String trackId) {
@@ -81,7 +83,7 @@ public class SpotifyWebClient {
             return request.execute();
         } catch(IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
         }
-        return null;
     }
 }
