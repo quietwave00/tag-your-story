@@ -36,11 +36,11 @@ public class BoardController {
     }
 
     /*
-     * 트랙 아이디에 해당하는 모든 게시물을 조회한다.
+     * 트랙 아이디에 해당하는 게시물을 조회한다.
      */
     @GetMapping("/boards/{trackId}")
-    public ApiResult<List<BoardByTrackResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId) {
-        List<BoardByTrack> boardByTrack = boardFacade.getBoardListByTrackId(trackId);
+    public ApiResult<List<BoardByTrackResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @RequestParam("page") int page) {
+        List<BoardByTrack> boardByTrack = boardFacade.getBoardListByTrackId(trackId, page);
         return ApiUtils.success(boardByTrack.stream().map(BoardByTrackResponse::create).collect(Collectors.toList()));
     }
 

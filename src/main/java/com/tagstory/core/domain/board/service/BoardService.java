@@ -13,6 +13,8 @@ import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,9 +37,9 @@ public class BoardService {
         return CreateBoard.onComplete(savedBoardEntity);
     }
 
-    public List<BoardByTrack> getBoardListByTrackId(String trackId) {
-        List<BoardEntity> boardEntityList = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId);
-        return boardEntityList.stream()
+    public List<BoardByTrack> getBoardListByTrackId(String trackId, int page) {
+        Page<BoardEntity> boardList = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId, PageRequest.of(page, 8));
+        return boardList.stream()
                 .map(BoardByTrack::onComplete)
                 .collect(Collectors.toList());
     }

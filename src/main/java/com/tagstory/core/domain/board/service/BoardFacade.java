@@ -27,8 +27,8 @@ public class BoardFacade {
         return boardService.create(createBoardCommand, findUserEntity, hashtagEntityList);
     }
 
-    public List<BoardByTrack> getBoardListByTrackId(String trackId) {
-        return boardService.getBoardListByTrackId(trackId);
+    public List<BoardByTrack> getBoardListByTrackId(String trackId, int page) {
+        return boardService.getBoardListByTrackId(trackId, page);
     }
 
     public DetailBoard getDetailBoard(Long boardId) {

@@ -15,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -87,9 +89,9 @@ public class BoardEntityServiceTest {
         List<BoardEntity> boardEntityList = List.of(boardEntity1, boardEntity2);
 
         //when
-        when(boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(any(), anyString()))
-                .thenReturn(boardEntityList);
-        List<BoardByTrack> result = boardService.getBoardListByTrackId(trackId);
+        when(boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(any(), anyString(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(boardEntityList));
+        List<BoardByTrack> result = boardService.getBoardListByTrackId(trackId, 0);
 
         //then
         assertThat(result.size()).isEqualTo(2);
