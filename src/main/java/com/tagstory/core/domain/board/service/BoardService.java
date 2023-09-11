@@ -1,10 +1,13 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.api.exception.CustomException;
+import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.BoardByTrack;
 import com.tagstory.core.domain.board.dto.response.CreateBoard;
+import com.tagstory.core.domain.board.dto.response.DetailBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
@@ -39,7 +42,16 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
+    public DetailBoard getDetailBoard(Long boardId) {
+        BoardEntity board = findByBoardId(boardId);
+        return DetailBoard.onComplete(board);
+    }
+
     public BoardEntity findByBoardId(Long boardId) {
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
+    }
+
+    public BoardEntity getReferenceById(Long boardId) {
         return boardRepository.getReferenceById(boardId);
     }
 

@@ -14,7 +14,8 @@ public enum ExceptionCode {
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않는 토큰입니다"),
     CONVERSION_EXCEPTION(HttpStatus.UNPROCESSABLE_ENTITY, "데이터 변환 중 예외가 발생했습니다."),
     S3_UPLOAD_EXCEPTION(HttpStatus.SERVICE_UNAVAILABLE, "파일 업로드 중 예외가 발생했습니다."),
-    SPOTIFY_EXCEPTION(HttpStatus.SERVICE_UNAVAILABLE, "스포티파이 라이브러리 사용 중 예외가 발생했습니다.")
+    SPOTIFY_EXCEPTION(HttpStatus.SERVICE_UNAVAILABLE, "스포티파이 라이브러리 사용 중 예외가 발생했습니다."),
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시물입니다.")
     ;
 
     private final HttpStatus httpStatus;

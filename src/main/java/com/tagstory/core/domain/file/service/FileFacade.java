@@ -23,7 +23,7 @@ public class FileFacade {
 
     public List<UploadFile> upload(List<MultipartFile> fileList, UploadFileCommand uploadFileCommand) {
         List<S3File> savedFileList = s3WebClient.uploadFiles(fileList);
-        BoardEntity board = boardService.findByBoardId(uploadFileCommand.getBoardId());
+        BoardEntity board = boardService.getReferenceById(uploadFileCommand.getBoardId());
         return fileService.upload(savedFileList, board);
     }
 
@@ -33,7 +33,7 @@ public class FileFacade {
     }
 
     public List<FileList> getFileList(Long boardId) {
-        BoardEntity board = boardService.findByBoardId(boardId);
+        BoardEntity board = boardService.getReferenceById(boardId);
         return fileService.getFileList(board);
     }
 }
