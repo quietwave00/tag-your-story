@@ -13,7 +13,7 @@ public class DetailTrackResponse {
     private String albumName;
     private String imageUrl;
 
-    public static DetailTrackResponse create(DetailTrack detailTrack) {
+    public static DetailTrackResponse from(DetailTrack detailTrack) {
         return DetailTrackResponse.builder()
                 .trackId(detailTrack.getTrackId())
                 .title(detailTrack.getTitle())

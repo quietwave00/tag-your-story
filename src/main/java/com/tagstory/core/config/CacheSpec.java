@@ -1,5 +1,6 @@
 package com.tagstory.core.config;
 
+import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,8 @@ import java.time.Duration;
 public enum CacheSpec {
     REFRESH_TOKEN("refreshToken", Duration.ofDays(30L), String.class),
     USER("user", Duration.ofDays(365L), UserEntity.class),
-    SPOTIFY_ACCESS_TOKEN("spotifyAccessToken", Duration.ofMinutes(30), String.class)
+    SPOTIFY_ACCESS_TOKEN("spotifyAccessToken", Duration.ofMinutes(30), String.class),
+    FILE("file", Duration.ofDays(365L), FileEntity.class)
     ;
 
     private static final String SEPARATOR = ":";

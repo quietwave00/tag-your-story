@@ -1,5 +1,6 @@
 package com.tagstory.api.domain.user.dto.response;
 
+import com.tagstory.core.domain.user.service.dto.response.CheckRegisterUser;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,7 +9,7 @@ import lombok.Getter;
 public class CheckRegisterUserResponse {
     private boolean isRegisterUser;
 
-    public static CheckRegisterUserResponse create(com.tagstory.core.domain.user.service.dto.response.CheckRegisterUser checkRegisterUserResponse) {
+    public static CheckRegisterUserResponse from(CheckRegisterUser checkRegisterUserResponse) {
         return CheckRegisterUserResponse.builder()
                 .isRegisterUser(checkRegisterUserResponse.isRegisterUser())
                 .build();

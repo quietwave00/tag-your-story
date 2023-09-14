@@ -2,6 +2,8 @@ package com.tagstory.core.domain.user.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tagstory.api.exception.CustomException;
+import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +33,7 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
             return objectMapper.readValue(jsonString, cacheSpec.getClazz());
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
         }
-        return null;
     }
 }

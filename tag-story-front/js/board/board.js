@@ -3,8 +3,47 @@ import BoardApi from "./boardApi.js"
 /**
  * 해당 스크립트는 detail.html에서 details.js와 함께 사용된다. 
  */
-
 const trackId = new URLSearchParams(window.location.search).get('trackId');
+const defaultPage = 1;
+
+/**
+ *  게시물 리스트 렌더링 함수
+ */
+const renderBoardList = (boardList) => {
+    document.getElementById('board-element-area').innerHTML = "";
+    if(boardList.length === 0) {
+        document.getElementById('board-message-area').innerHTML += 
+            `
+            <span style="text-align: center; margin-bottom: 50px;">작성된 게시글이 없습니다.</span>
+            `;
+    }
+    for(let board of boardList) {
+        let boardId = board.boardId;
+        let hashtagList = board.hashtagList;
+        let content = board.content;
+        let hashtagElements = "";
+        for(let hashtag of hashtagList) {
+            hashtagElements += 
+                `
+                <div class = "hashtag-element">#${hashtag}</div>
+                `;
+        }
+        document.getElementById('board-element-area').innerHTML += 
+            `
+            <div class = "col-5 board-element">
+                <div class = "row">
+                    <div>
+                        <input type = "hidden" class = "board-id" value = "${boardId}">
+                        <div class = "hashtag-area">${hashtagElements}</div>
+                        <div class = "content-area">${content}</div>
+                    </div>
+                </div>
+            </div>
+            `;
+    }
+    moveDetails();
+}
+
 /**
  * 해시태그 입력 이벤트 함수
  */
@@ -83,7 +122,7 @@ const renderAlert = () => {
  * 게시글 작성을 요청하고 응답값을 토대로 렌더링해준다.
  */
 const renderBoard = (board) => {
-    console.log(JSON.stringify(board));
+    document.getElementById('board-message-area').innerHTML = "";
     let boardId = board.boardId;
     let hashtagList = board.hashtagList;
     let content = board.content;
@@ -91,12 +130,12 @@ const renderBoard = (board) => {
     for(let hashtag of hashtagList) {
         tagElements += 
                 `
-                <div class = "tag-element">#${hashtag}</div>
+                <div class = "hashtag-element">#${hashtag}</div>
                 `;
     }
     const boardElementArea = document.getElementById('board-element-area');
     boardElementArea.insertAdjacentHTML('afterbegin', `
-        <div class="col-5 board">
+        <div class="col-5 board-element">
             <div class="row">
                 <div>
                     <input type="hidden" class="board-id" value="${boardId}">
@@ -125,3 +164,65 @@ const moveDetails = () => {
         })
     }
 }
+
+/**
+ *  페이징 관련 함수
+ */
+const pagingBoardList = () => {
+    const prevButton = document.getElementById("prev-button");
+    const nextButton = document.getElementById("next-button");
+    const numberList = document.getElementById("number-list");
+
+    const itemsPerPage = 10;
+    let currentPage = 1;
+    const totalItems = 100;
+
+    /**
+     * 숫자 생성 및 페이지 업데이트
+     */
+    function updatePage() {
+        numberList.innerHTML = "";
+
+        const start = (currentPage - 1) * itemsPerPage + 1;
+        const end = Math.min(start + itemsPerPage, totalItems + 1);
+
+        for (let i = start; i < end; i++) {
+            const numberItem = document.createElement("span");
+            numberItem.className = "page-number";
+            numberItem.textContent = i;
+            numberList.appendChild(numberItem);
+            numberItem.addEventListener("click", () => onPageNumberClick(i));
+        }
+    }
+
+    prevButton.addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            updatePage();
+        }
+    });
+
+    nextButton.addEventListener("click", () => {
+        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+            currentPage++;
+            updatePage();
+        }
+    });
+    updatePage();
+}
+
+const onPageNumberClick = (page) => {
+    BoardApi.getBoardListByTrackId(trackId, page).then((response) => {
+        renderBoardList(response)
+    });
+}
+
+/**
+ * 게시물 리스트를 요청한다.
+ */
+BoardApi.getBoardListByTrackId(trackId, defaultPage).then((response) => renderBoardList(response));
+
+/**
+ *  page-area에 대한 처리를 수행한다.
+ */
+pagingBoardList();

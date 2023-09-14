@@ -1,15 +1,20 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.api.exception.CustomException;
+import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.BoardByTrack;
 import com.tagstory.core.domain.board.dto.response.CreateBoard;
+import com.tagstory.core.domain.board.dto.response.DetailBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,14 +37,27 @@ public class BoardService {
         return CreateBoard.onComplete(savedBoardEntity);
     }
 
-    public List<BoardByTrack> getBoardListByTrackId(String trackId) {
-        List<BoardEntity> boardEntityList = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId);
-        return boardEntityList.stream()
+    public List<BoardByTrack> getBoardListByTrackId(String trackId, int page) {
+        Page<BoardEntity> boardList = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId, PageRequest.of(page, 8));
+        return boardList.stream()
                 .map(BoardByTrack::onComplete)
                 .collect(Collectors.toList());
     }
 
+    public DetailBoard getDetailBoard(Long boardId) {
+        BoardEntity board = findByBoardId(boardId);
+        return DetailBoard.onComplete(board);
+    }
+
     public BoardEntity findByBoardId(Long boardId) {
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
+    }
+
+    public BoardEntity getReferenceById(Long boardId) {
         return boardRepository.getReferenceById(boardId);
+    }
+
+    public List<BoardEntity> findByTrackId(String trackId) {
+        return boardRepository.findByTrackId(trackId);
     }
 }

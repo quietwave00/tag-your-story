@@ -3,6 +3,7 @@ package com.tagstory.core.domain.board.service;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.BoardByTrack;
 import com.tagstory.core.domain.board.dto.response.CreateBoard;
+import com.tagstory.core.domain.board.dto.response.DetailBoard;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
 import com.tagstory.core.domain.user.UserEntity;
@@ -26,7 +27,11 @@ public class BoardFacade {
         return boardService.create(createBoardCommand, findUserEntity, hashtagEntityList);
     }
 
-    public List<BoardByTrack> getBoardListByTrackId(String trackId) {
-        return boardService.getBoardListByTrackId(trackId);
+    public List<BoardByTrack> getBoardListByTrackId(String trackId, int page) {
+        return boardService.getBoardListByTrackId(trackId, page);
+    }
+
+    public DetailBoard getDetailBoard(Long boardId) {
+        return boardService.getDetailBoard(boardId);
     }
 }

@@ -36,7 +36,7 @@ public class UserController {
     @PostMapping("/user/reissue/accessToken")
     public ApiResult<ReissueAccessTokenResponse> reissueAccessToken(@RequestBody ReissueAccessTokenRequest reissueAccessTokenRequest) {
         ReissueAccessToken reissueAccessTokenResponse = userService.reissueAccessToken(reissueAccessTokenRequest.toCommand());
-        return ApiUtils.success(ReissueAccessTokenResponse.create(reissueAccessTokenResponse));
+        return ApiUtils.success(ReissueAccessTokenResponse.from(reissueAccessTokenResponse));
     }
 
     /*
@@ -46,7 +46,7 @@ public class UserController {
     @PostMapping("/user/reissue/refreshToken")
     public ApiResult<ReissueRefreshTokenResponse> reissueRefreshToken(@CurrentUserId Long userId) {
         ReissueRefreshToken reissueRefreshTokenResponse = userService.reissueRefreshToken(userId);
-        return ApiUtils.success(ReissueRefreshTokenResponse.create(reissueRefreshTokenResponse));
+        return ApiUtils.success(ReissueRefreshTokenResponse.from(reissueRefreshTokenResponse));
     }
 
     /*
@@ -56,7 +56,7 @@ public class UserController {
     @PostMapping("/logout")
     public ApiResult<LogoutResponse> logout(@CurrentUserId Long userId) {
         Logout logoutResponse = userService.logout(userId);
-        return ApiUtils.success(LogoutResponse.create(logoutResponse));
+        return ApiUtils.success(LogoutResponse.from(logoutResponse));
     }
 
     /*
@@ -66,7 +66,7 @@ public class UserController {
     @PatchMapping("/nicknames")
     public ApiResult<UpdateNicknameResponse> updateNickname(@CurrentUserId Long userId, @RequestBody UpdateNicknameRequest updateNicknameRequest) {
         UpdateNickname updateNicknameResponse = userService.updateNickname(updateNicknameRequest.toCommand(), userId);
-        return ApiUtils.success(UpdateNicknameResponse.create(updateNicknameResponse));
+        return ApiUtils.success(UpdateNicknameResponse.from(updateNicknameResponse));
     }
 
     /*
@@ -76,6 +76,6 @@ public class UserController {
     @GetMapping("/check-registration")
     public ApiResult<CheckRegisterUserResponse> checkRegisterUser(@CurrentUserId Long userId) {
         CheckRegisterUser checkRegisterUserResponse = userService.checkRegisterUser(userId);
-        return ApiUtils.success(CheckRegisterUserResponse.create(checkRegisterUserResponse));
+        return ApiUtils.success(CheckRegisterUserResponse.from(checkRegisterUserResponse));
     }
 }
