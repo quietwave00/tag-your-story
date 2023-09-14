@@ -1,5 +1,6 @@
 package com.tagstory.api.domain.user.dto.response;
 
+import com.tagstory.core.domain.user.service.dto.response.ReissueRefreshToken;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,7 +9,7 @@ import lombok.Getter;
 public class ReissueRefreshTokenResponse {
     private String newRefreshToken;
 
-    public static ReissueRefreshTokenResponse create(com.tagstory.core.domain.user.service.dto.response.ReissueRefreshToken reissueRefreshTokenResponse) {
+    public static ReissueRefreshTokenResponse from(ReissueRefreshToken reissueRefreshTokenResponse) {
         return ReissueRefreshTokenResponse.builder()
                 .newRefreshToken(reissueRefreshTokenResponse.getNewRefreshToken())
                 .build();

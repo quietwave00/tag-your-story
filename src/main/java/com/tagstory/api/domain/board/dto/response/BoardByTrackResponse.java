@@ -16,7 +16,7 @@ public class BoardByTrackResponse {
     private String nickname;
     private List<String> hashtagList;
 
-    public static BoardByTrackResponse create(BoardByTrack boardByTrack) {
+    public static BoardByTrackResponse from(BoardByTrack boardByTrack) {
         return BoardByTrackResponse.builder()
                 .boardId(boardByTrack.getBoardId())
                 .content(boardByTrack.getContent())

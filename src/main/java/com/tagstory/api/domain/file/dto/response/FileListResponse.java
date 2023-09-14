@@ -10,7 +10,7 @@ public class FileListResponse {
     private Long fileId;
     private String filePath;
 
-    public static FileListResponse create(FileList fileList) {
+    public static FileListResponse from(FileList fileList) {
         return FileListResponse.builder()
                 .fileId(fileList.getFileId())
                 .filePath(fileList.getFilePath())

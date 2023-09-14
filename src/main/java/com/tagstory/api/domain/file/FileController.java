@@ -33,7 +33,7 @@ public class FileController {
     public ApiResult<List<UploadFileResponse>> upload(@RequestPart(value = "files") List<MultipartFile> fileList,
                                                       @RequestPart(value = "dto") UploadFileRequest uploadFileRequest) {
         List<UploadFile> uploadFileList = fileFacade.upload(fileList, uploadFileRequest.toCommand());
-        return ApiUtils.success(uploadFileList.stream().map(UploadFileResponse::create).collect(Collectors.toList()));
+        return ApiUtils.success(uploadFileList.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
     }
 
     /*
@@ -42,7 +42,7 @@ public class FileController {
     @GetMapping("/files/{trackId}")
     public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId) {
         List<MainFile> mainFileList = fileFacade.getMainFileList(trackId);
-        return ApiUtils.success(mainFileList.stream().map(MainFileResponse::create).collect(Collectors.toList()));
+        return ApiUtils.success(mainFileList.stream().map(MainFileResponse::from).collect(Collectors.toList()));
     }
 
     /*
@@ -51,6 +51,6 @@ public class FileController {
     @GetMapping("/files")
     public ApiResult<List<FileListResponse>> getFileList(@RequestParam("boardId") Long boardId) {
         List<FileList> fileList = fileFacade.getFileList(boardId);
-        return ApiUtils.success(fileList.stream().map(FileListResponse::create).collect(Collectors.toList()));
+        return ApiUtils.success(fileList.stream().map(FileListResponse::from).collect(Collectors.toList()));
     }
 }

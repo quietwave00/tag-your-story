@@ -16,7 +16,7 @@ public class DetailBoardResponse {
     private List<String> hashtagList;
     private List<String> filePathList;
 
-    public static DetailBoardResponse create(DetailBoard detailBoard) {
+    public static DetailBoardResponse from(DetailBoard detailBoard) {
         return DetailBoardResponse.builder()
                 .content(detailBoard.getContent())
                 .nickname(detailBoard.getNickname())

@@ -26,7 +26,7 @@ public class TrackController {
     @GetMapping("/tracks")
     public ApiResult<List<SearchTracksResponse>> search(@RequestParam("keyword") String keyword, @RequestParam("page") int page) {
         List<SearchTracks> searchTracksList = trackService.search(keyword, page);
-        return ApiUtils.success(searchTracksList.stream().map(SearchTracksResponse::create).collect(Collectors.toList()));
+        return ApiUtils.success(searchTracksList.stream().map(SearchTracksResponse::from).collect(Collectors.toList()));
     }
 
     /*
@@ -35,6 +35,6 @@ public class TrackController {
     @GetMapping("/tracks/{trackId}")
     public ApiResult<DetailTrackResponse> getDetail(@PathVariable("trackId") String trackId) {
         DetailTrack detailTrack = trackService.getDetail(trackId);
-        return ApiUtils.success(DetailTrackResponse.create(detailTrack));
+        return ApiUtils.success(DetailTrackResponse.from(detailTrack));
     }
 }

@@ -12,7 +12,7 @@ public class UploadFileResponse {
     private String filePath;
     private FileLevel fileLevel;
 
-    public static UploadFileResponse create(UploadFile uploadFile) {
+    public static UploadFileResponse from(UploadFile uploadFile) {
         return UploadFileResponse.builder()
                 .fileId(uploadFile.getFileId())
                 .filePath(uploadFile.getFilePath())

@@ -32,7 +32,7 @@ public class BoardController {
     @PostMapping("/boards")
     public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
         CreateBoard createBoard = boardFacade.create(createBoardRequest.toCommand(userId));
-        return ApiUtils.success(CreateBoardResponse.create(createBoard));
+        return ApiUtils.success(CreateBoardResponse.from(createBoard));
     }
 
     /*
@@ -41,7 +41,7 @@ public class BoardController {
     @GetMapping("/boards/{trackId}")
     public ApiResult<List<BoardByTrackResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @RequestParam("page") int page) {
         List<BoardByTrack> boardByTrack = boardFacade.getBoardListByTrackId(trackId, page);
-        return ApiUtils.success(boardByTrack.stream().map(BoardByTrackResponse::create).collect(Collectors.toList()));
+        return ApiUtils.success(boardByTrack.stream().map(BoardByTrackResponse::from).collect(Collectors.toList()));
     }
 
     /*
@@ -50,6 +50,6 @@ public class BoardController {
     @GetMapping("/boards")
     public ApiResult<DetailBoardResponse> getDetailBoard(@RequestParam("boardId") Long boardId) {
         DetailBoard detailBoard = boardFacade.getDetailBoard(boardId);
-        return ApiUtils.success(DetailBoardResponse.create(detailBoard));
+        return ApiUtils.success(DetailBoardResponse.from(detailBoard));
     }
 }

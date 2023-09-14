@@ -13,7 +13,7 @@ public class SearchTracksResponse {
     private String albumName;
     private String imageUrl;
 
-    public static SearchTracksResponse create(SearchTracks searchTracks) {
+    public static SearchTracksResponse from(SearchTracks searchTracks) {
         return SearchTracksResponse.builder()
                 .trackId(searchTracks.getTrackId())
                 .title(searchTracks.getTitle())
