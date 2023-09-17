@@ -42,6 +42,6 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));
         response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(refreshToken));
 //        getRedirectStrategy().sendRedirect(request, response, "https://d2lsho2su959kd.cloudfront.net/tag-story-front/html/user/token.html");
-        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/html/user/token.html");
+        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/token.html");
     }
 }
