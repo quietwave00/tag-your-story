@@ -13,7 +13,6 @@ import com.tagstory.core.domain.file.service.FileFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,10 +28,10 @@ public class FileController {
      * 파일을 게시한다.
      */
     @PreAuthorize("hasRole('ROLE_USER')")
-    @PostMapping("/files")
-    public ApiResult<List<UploadFileResponse>> upload(@RequestPart(value = "fileList") List<MultipartFile> fileList,
-                                                      @RequestPart(value = "uploadFileRequest") UploadFileRequest uploadFileRequest) {
-        List<UploadFile> uploadFileList = fileFacade.upload(fileList, uploadFileRequest.toCommand());
+    @PostMapping( value = "/files")
+    public ApiResult<List<UploadFileResponse>> upload(@ModelAttribute UploadFileRequest uploadFileRequest) {
+        System.out.println(uploadFileRequest.getBoardId());
+        List<UploadFile> uploadFileList = fileFacade.upload(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
         return ApiUtils.success(uploadFileList.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
     }
 
