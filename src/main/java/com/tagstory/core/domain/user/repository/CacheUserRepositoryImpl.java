@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.repository.dto.CacheUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
     }
 
     @Override
-    public UserEntity findCacheByUserId(Long userId, CacheSpec cacheSpec) {
+    public CacheUser findCacheByUserId(Long userId, CacheSpec cacheSpec) {
         String jsonString = redisTemplate.opsForValue().get(cacheSpec.generateKey(userId));
         try {
             return objectMapper.readValue(jsonString, cacheSpec.getClazz());

@@ -9,6 +9,7 @@ import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
+import com.tagstory.core.domain.user.repository.dto.CacheUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -90,11 +91,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private UserEntity findUserById(Long userId, String token) {
-        return userId == null ? getUserFromRefreshToken(token) : getUserFromAccessToken(userId);
+        return userId == null ? getUserFromRefreshToken(token) : CacheUser.toEntity(getUserFromAccessToken(userId));
     }
 
     @Cacheable(value = "user", key = "#userId")
-    public UserEntity getUserFromAccessToken(final Long userId) {
+    public CacheUser getUserFromAccessToken(final Long userId) {
         return userRepository.findCacheByUserId(userId, CacheSpec.USER);
     }
 

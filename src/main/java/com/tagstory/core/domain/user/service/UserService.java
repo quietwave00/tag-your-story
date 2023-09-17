@@ -31,15 +31,15 @@ public class UserService  {
 
     public ReissueAccessToken reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
         Long userId = jwtUtil.getUserIdFromRefreshToken(reissueAccessTokenCommand.getRefreshToken());
-        UserEntity findUserEntity = findCacheByUserId(userId);
-        String newAccessToken = jwtUtil.generateAccessToken(findUserEntity.getUserId());
+        CacheUser cacheUser = findCacheByUserId(userId);
+        String newAccessToken = jwtUtil.generateAccessToken(cacheUser.getUserId());
         return ReissueAccessToken.onComplete(newAccessToken);
     }
 
     public ReissueRefreshToken reissueRefreshToken(final Long userId) {
-        UserEntity userEntity = findCacheByUserId(userId);
-        String newRefreshToken = jwtUtil.generateRefreshToken(userEntity.getUserId());
-        redisTemplate.set(userEntity.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
+        CacheUser cacheUser = findCacheByUserId(userId);
+        String newRefreshToken = jwtUtil.generateRefreshToken(cacheUser.getUserId());
+        redisTemplate.set(cacheUser.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
         return ReissueRefreshToken.onComplete(newRefreshToken);
     }
 
@@ -57,13 +57,13 @@ public class UserService  {
     }
 
     public CheckRegisterUser checkRegisterUser(Long userId) {
-        UserEntity findUserEntity = findCacheByUserId(userId);
-        boolean status = StringUtils.isNullOrEmpty(findUserEntity.getNickname());
+        CacheUser cacheUser = findCacheByUserId(userId);
+        boolean status = StringUtils.isNullOrEmpty(cacheUser.getNickname());
         return CheckRegisterUser.onComplete(status);
     }
 
     @Cacheable(value = "user", key = "#userId")
-    public UserEntity findCacheByUserId(Long userId) {
+    public CacheUser findCacheByUserId(Long userId) {
         return userRepository.findCacheByUserId(userId, CacheSpec.USER);
     }
 
