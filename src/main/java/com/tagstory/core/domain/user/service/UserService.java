@@ -8,6 +8,7 @@ import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
+import com.tagstory.core.domain.user.repository.dto.CacheUser;
 import com.tagstory.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
 import com.tagstory.core.domain.user.service.dto.command.UpdateNicknameCommand;
 import com.tagstory.core.domain.user.service.dto.response.*;
@@ -49,10 +50,10 @@ public class UserService  {
 
     @Transactional
     public UpdateNickname updateNickname(UpdateNicknameCommand updateNicknameCommand, Long userId) {
-        UserEntity findUserEntity = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-        findUserEntity.updateNickname(updateNicknameCommand.getNickname());
-        userRepository.saveCache(findUserEntity, CacheSpec.USER);
-        return UpdateNickname.onComplete(findUserEntity.getNickname());
+        UserEntity user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        user.updateNickname(updateNicknameCommand.getNickname());
+        userRepository.saveCache(CacheUser.create(user), CacheSpec.USER);
+        return UpdateNickname.onComplete(user.getNickname());
     }
 
     public CheckRegisterUser checkRegisterUser(Long userId) {

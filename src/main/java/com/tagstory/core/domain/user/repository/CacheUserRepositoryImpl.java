@@ -6,6 +6,7 @@ import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
+import com.tagstory.core.domain.user.repository.dto.CacheUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,15 +19,17 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public void saveCache(UserEntity userEntity, CacheSpec cacheSpec) {
+    @Override
+    public void saveCache(CacheUser cacheUser, CacheSpec cacheSpec) {
         try {
-            String jsonString = objectMapper.writeValueAsString(userEntity);
-            redisTemplate.opsForValue().set(cacheSpec.generateKey(userEntity.getUserId()), jsonString);
+            String jsonString = objectMapper.writeValueAsString(cacheUser);
+            redisTemplate.opsForValue().set(cacheSpec.generateKey(cacheUser.getUserId()), jsonString);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
     }
 
+    @Override
     public UserEntity findCacheByUserId(Long userId, CacheSpec cacheSpec) {
         String jsonString = redisTemplate.opsForValue().get(cacheSpec.generateKey(userId));
         try {
