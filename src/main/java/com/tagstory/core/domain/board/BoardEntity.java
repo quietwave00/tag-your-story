@@ -4,6 +4,7 @@ import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
+import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,6 +48,9 @@ public class BoardEntity extends BaseTime {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<FileEntity> fileList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board")
+    private List<LikeEntity> likeList = new ArrayList<>();
 
 
     /*

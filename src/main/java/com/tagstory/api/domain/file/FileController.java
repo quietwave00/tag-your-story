@@ -30,8 +30,8 @@ public class FileController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/files")
-    public ApiResult<List<UploadFileResponse>> upload(@RequestPart(value = "files") List<MultipartFile> fileList,
-                                                      @RequestPart(value = "dto") UploadFileRequest uploadFileRequest) {
+    public ApiResult<List<UploadFileResponse>> upload(@RequestPart(value = "fileList") List<MultipartFile> fileList,
+                                                      @RequestPart(value = "uploadFileRequest") UploadFileRequest uploadFileRequest) {
         List<UploadFile> uploadFileList = fileFacade.upload(fileList, uploadFileRequest.toCommand());
         return ApiUtils.success(uploadFileList.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
     }
