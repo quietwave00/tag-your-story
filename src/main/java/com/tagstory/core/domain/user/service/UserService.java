@@ -8,6 +8,7 @@ import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
+import com.tagstory.core.domain.user.repository.dto.CacheUser;
 import com.tagstory.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
 import com.tagstory.core.domain.user.service.dto.command.UpdateNicknameCommand;
 import com.tagstory.core.domain.user.service.dto.response.*;
@@ -30,15 +31,15 @@ public class UserService  {
 
     public ReissueAccessToken reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
         Long userId = jwtUtil.getUserIdFromRefreshToken(reissueAccessTokenCommand.getRefreshToken());
-        UserEntity findUserEntity = findCacheByUserId(userId);
-        String newAccessToken = jwtUtil.generateAccessToken(findUserEntity.getUserId());
+        CacheUser cacheUser = findCacheByUserId(userId);
+        String newAccessToken = jwtUtil.generateAccessToken(cacheUser.getUserId());
         return ReissueAccessToken.onComplete(newAccessToken);
     }
 
     public ReissueRefreshToken reissueRefreshToken(final Long userId) {
-        UserEntity userEntity = findCacheByUserId(userId);
-        String newRefreshToken = jwtUtil.generateRefreshToken(userEntity.getUserId());
-        redisTemplate.set(userEntity.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
+        CacheUser cacheUser = findCacheByUserId(userId);
+        String newRefreshToken = jwtUtil.generateRefreshToken(cacheUser.getUserId());
+        redisTemplate.set(cacheUser.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
         return ReissueRefreshToken.onComplete(newRefreshToken);
     }
 
@@ -49,20 +50,20 @@ public class UserService  {
 
     @Transactional
     public UpdateNickname updateNickname(UpdateNicknameCommand updateNicknameCommand, Long userId) {
-        UserEntity findUserEntity = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-        findUserEntity.updateNickname(updateNicknameCommand.getNickname());
-        userRepository.saveCache(findUserEntity, CacheSpec.USER);
-        return UpdateNickname.onComplete(findUserEntity.getNickname());
+        UserEntity user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        user.updateNickname(updateNicknameCommand.getNickname());
+        userRepository.saveCache(CacheUser.create(user), CacheSpec.USER);
+        return UpdateNickname.onComplete(user.getNickname());
     }
 
     public CheckRegisterUser checkRegisterUser(Long userId) {
-        UserEntity findUserEntity = findCacheByUserId(userId);
-        boolean status = StringUtils.isNullOrEmpty(findUserEntity.getNickname());
+        CacheUser cacheUser = findCacheByUserId(userId);
+        boolean status = StringUtils.isNullOrEmpty(cacheUser.getNickname());
         return CheckRegisterUser.onComplete(status);
     }
 
     @Cacheable(value = "user", key = "#userId")
-    public UserEntity findCacheByUserId(Long userId) {
+    public CacheUser findCacheByUserId(Long userId) {
         return userRepository.findCacheByUserId(userId, CacheSpec.USER);
     }
 

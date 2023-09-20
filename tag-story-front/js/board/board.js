@@ -1,7 +1,8 @@
 import BoardApi from "./boardApi.js"
+import File from "./file.js"
 
 /**
- * 해당 스크립트는 detail.html에서 details.js와 함께 사용된다. 
+ * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
  */
 const trackId = new URLSearchParams(window.location.search).get('trackId');
 const defaultPage = 1;
@@ -91,7 +92,10 @@ const deleteHashtag = (hashtagId) => {
  * 게시글 작성 버튼 클릭 시 이벤트 함수
  */
 document.getElementById('write-button').addEventListener('click', () => {
-    BoardApi.writeBoard(hashtagArray, trackId).then((response) => {renderBoard(response)});
+    BoardApi.writeBoard(hashtagArray, trackId).then((response) => {
+        File.upload(response.boardId);
+        renderBoard(response)
+    });
     renderAlert();
 });
 

@@ -4,6 +4,7 @@ import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.repository.UserRepository;
+import com.tagstory.core.domain.user.repository.dto.CacheUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -28,7 +29,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         log.info("Oauth2UserService Execute");
         Map<String, Object> attributes = super.loadUser(request).getAttributes();
         UserEntity userEntity = register(attributes);
-        userRepository.saveCache(userEntity, CacheSpec.USER);
+        userRepository.saveCache(CacheUser.create(userEntity), CacheSpec.USER);
         return new PrincipalDetails(userEntity, attributes);
     }
 

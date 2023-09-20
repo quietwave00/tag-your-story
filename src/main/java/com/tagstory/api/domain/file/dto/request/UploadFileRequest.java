@@ -1,16 +1,15 @@
 package com.tagstory.api.domain.file.dto.request;
 
 import com.tagstory.core.domain.file.dto.command.UploadFileCommand;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
-@Getter
+import java.util.List;
+
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class UploadFileRequest {
+    private List<MultipartFile> fileList;
     private Long boardId;
 
     public UploadFileCommand toCommand() {
