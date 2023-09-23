@@ -1,5 +1,5 @@
 setTimeout(() => {
-    window.location.href = `${client_host}/html/index.html`;
+    window.location.href = `${client_host}/index.html`;
 }, 3000);
 
 const secArea = document.getElementById('sec-area');

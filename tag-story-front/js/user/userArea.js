@@ -10,7 +10,7 @@ const setState = () => {
     if(jwt == null && refreshToken == null) {
       document.getElementById('user-area').innerHTML =
         `
-        <a href = '${client_host}/html/user/login.html'>LOGIN</a>
+        <a href = '${client_host}/login.html'>LOGIN</a>
         `;
     } else {
         document.getElementById('user-area').innerHTML = 

@@ -9,7 +9,7 @@ window.onload = () => {
     console.log("rtk: " + refreshTokenCookieValue);
     console.log("atk: " + authorizationCookieValue);
 
-    window.location.href = `${client_host}/html/index.html`;
+    window.location.href = `${client_host}/index.html`;
 }
 
 /**
