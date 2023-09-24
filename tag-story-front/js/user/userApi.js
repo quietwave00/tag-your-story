@@ -33,7 +33,7 @@ const checkRegisterUser = () => {
     fetch(`${server_host}/api/check-registration`, {
         method: "GET",
         headers: {
-            "Authorization": localStorage.getItem('Authorization')
+            "Authorization": localStorage.getItem('TempId')
         }
     })
     .then((res) => res.json())
@@ -57,12 +57,11 @@ const checkRegisterUser = () => {
  *  @param nickname : 변경할 닉네임 값
  */
 const updateNickname = (nickname) => {
-    console.log("updateNickname Called");
     fetch(`${server_host}/api/nicknames`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": localStorage.getItem('Authorization')
+            "Authorization": localStorage.getItem('Temp')
         },
         body: JSON.stringify({
             "nickname": nickname
@@ -72,6 +71,7 @@ const updateNickname = (nickname) => {
     .then(res => {
         if(res.success === true) {
             alert(`${res.response.nickname}님, 환영합니다!`);
+            localStorage.removeItem('Temp');
             window.location.href = `${client_host}/index.html`;
         } else {
             ExceptionHandler.handleException(res.exceptionCode)

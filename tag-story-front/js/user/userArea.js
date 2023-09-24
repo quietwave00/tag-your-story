@@ -35,6 +35,14 @@ const setState = () => {
     }
 }
 
+const checkRegisterUser = () => {
+  if(localStorage.getItem('Temp') != null) {
+    window.location.href = `${client_host}/nickname.html`;
+  }
+}
+
+
 export default {
-  setState
+  setState,
+  checkRegisterUser
 }
