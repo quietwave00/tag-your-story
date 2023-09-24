@@ -3,6 +3,8 @@ package com.tagstory.core.domain.user.redis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
+import com.tagstory.api.exception.CustomException;
+import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.config.CacheSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +26,7 @@ public class TagStoryRedisTemplate {
             String jsonString =  objectMapper.writeValueAsString(value);
             redisTemplate.opsForValue().set(cacheSpec.generateKey(id), jsonString, cacheSpec.getTtl());
         } catch (JsonProcessingException e) {
-          log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
         }
     }
 
@@ -37,7 +39,7 @@ public class TagStoryRedisTemplate {
             try {
                 return objectMapper.readValue(json, cacheSpec.getClazz());
             } catch (JsonProcessingException e) {
-                log.error(e.getMessage());
+                throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
             }
         }
         return null;

@@ -1,5 +1,6 @@
 package com.tagstory.api.domain.user;
 
+import com.tagstory.api.annotations.CurrentTempId;
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.user.dto.request.ReissueAccessTokenRequest;
 import com.tagstory.api.domain.user.dto.request.UpdateNicknameRequest;
@@ -7,11 +8,7 @@ import com.tagstory.api.domain.user.dto.response.*;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
 import com.tagstory.core.domain.user.service.UserService;
-import com.tagstory.core.domain.user.service.dto.response.CheckRegisterUser;
-import com.tagstory.core.domain.user.service.dto.response.Logout;
-import com.tagstory.core.domain.user.service.dto.response.ReissueAccessToken;
-import com.tagstory.core.domain.user.service.dto.response.ReissueRefreshToken;
-import com.tagstory.core.domain.user.service.dto.response.UpdateNickname;
+import com.tagstory.core.domain.user.service.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_GUEST')")
     @GetMapping("/user/test")
     public ApiResult<String> test() {
         return ApiUtils.success("success");
@@ -62,20 +59,10 @@ public class UserController {
     /*
      * 닉네임을 설정해준다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_PENDING_USER')")
     @PatchMapping("/nicknames")
-    public ApiResult<UpdateNicknameResponse> updateNickname(@CurrentUserId Long userId, @RequestBody UpdateNicknameRequest updateNicknameRequest) {
-        UpdateNickname updateNicknameResponse = userService.updateNickname(updateNicknameRequest.toCommand(), userId);
+    public ApiResult<UpdateNicknameResponse> updateNickname(@RequestBody UpdateNicknameRequest updateNicknameRequest, @CurrentTempId String tempId) {
+        UpdateNickname updateNicknameResponse = userService.updateNickname(updateNicknameRequest.toCommand(tempId));
         return ApiUtils.success(UpdateNicknameResponse.from(updateNicknameResponse));
-    }
-
-    /*
-     * 회원가입한 회원인지 로그인한 회원인지 상태를 체크한다.
-     */
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/check-registration")
-    public ApiResult<CheckRegisterUserResponse> checkRegisterUser(@CurrentUserId Long userId) {
-        CheckRegisterUser checkRegisterUserResponse = userService.checkRegisterUser(userId);
-        return ApiUtils.success(CheckRegisterUserResponse.from(checkRegisterUserResponse));
     }
 }
