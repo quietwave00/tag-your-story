@@ -13,8 +13,9 @@ import lombok.NoArgsConstructor;
 public class UpdateNicknameRequest {
     private String nickname;
 
-    public UpdateNicknameCommand toCommand() {
+    public UpdateNicknameCommand toCommand(String tempId) {
         return UpdateNicknameCommand.builder()
+                .tempId(tempId)
                 .nickname(nickname)
                 .build();
     }

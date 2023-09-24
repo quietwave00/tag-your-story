@@ -30,7 +30,7 @@ public class UserService  {
     private final JwtUtil jwtUtil;
 
     public ReissueAccessToken reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
-        Long userId = jwtUtil.getUserIdFromRefreshToken(reissueAccessTokenCommand.getRefreshToken());
+        Long userId = jwtUtil.getUserIdFromToken(reissueAccessTokenCommand.getRefreshToken());
         CacheUser cacheUser = findCacheByUserId(userId);
         String newAccessToken = jwtUtil.generateAccessToken(cacheUser.getUserId());
         return ReissueAccessToken.onComplete(newAccessToken);
@@ -49,10 +49,11 @@ public class UserService  {
     }
 
     @Transactional
-    public UpdateNickname updateNickname(UpdateNicknameCommand updateNicknameCommand, Long userId) {
-        UserEntity user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    public UpdateNickname updateNickname(UpdateNicknameCommand updateNicknameCommand) {
+        CacheUser cacheUser = userRepository.findPendingUserByTempId(updateNicknameCommand.getTempId(), CacheSpec.PENDING_USER);
+        UserEntity user = userRepository.save(CacheUser.toEntity(cacheUser));
         user.updateNickname(updateNicknameCommand.getNickname());
-        userRepository.saveCache(CacheUser.create(user), CacheSpec.USER);
+        userRepository.saveCache(CacheUser.toCacheUser(user), CacheSpec.USER);
         return UpdateNickname.onComplete(user.getNickname());
     }
 
@@ -64,7 +65,7 @@ public class UserService  {
 
     @Cacheable(value = "user", key = "#userId")
     public CacheUser findCacheByUserId(Long userId) {
-        return userRepository.findCacheByUserId(userId, CacheSpec.USER);
+        return UserEntity.toCacheUser(userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND)));
     }
 
     public UserEntity findByUserId(Long userId) {

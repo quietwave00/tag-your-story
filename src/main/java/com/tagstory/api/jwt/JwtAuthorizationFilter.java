@@ -5,14 +5,9 @@ import com.mysql.cj.util.StringUtils;
 import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionResponse;
-import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.UserEntity;
-import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
-import com.tagstory.core.domain.user.repository.UserRepository;
-import com.tagstory.core.domain.user.repository.dto.CacheUser;
+import com.tagstory.core.domain.user.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,14 +20,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+
+import static com.tagstory.api.jwt.JwtProperties.HEADER_STRING;
+import static com.tagstory.api.jwt.JwtProperties.TOKEN_PREFIX;
 
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
-    private final UserRepository userRepository;
-    private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
@@ -42,9 +39,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("JwtAuthorizationFilter Execute");
-        String token = request.getHeader("Authorization");
+        String token = request.getHeader(HEADER_STRING);
 
         if(StringUtils.isNullOrEmpty(token)) {
+            log.info("Register As Guest");
             registerAsGuest();
             filterChain.doFilter(request, response);
             return;
@@ -52,10 +50,16 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         try {
             jwtUtil.validateToken(token);
-            Long userId = jwtUtil.getUserIdFromToken(request.getHeader("Authorization").replace("Bearer ", ""));
-            UserEntity findUserEntity = findUserById(userId, token);
+            Long userId = jwtUtil.getUserIdFromToken(request.getHeader(HEADER_STRING).replace(TOKEN_PREFIX, ""));
 
-            PrincipalDetails principalDetails = new PrincipalDetails(findUserEntity);
+            if(Objects.isNull(userId)) {
+                log.info("Register As Pending User");
+                registerAsPendingUser(jwtUtil.getTempIdFromToken(token));
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            PrincipalDetails principalDetails = new PrincipalDetails(userId);
             Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("Authorization Complete");
@@ -69,8 +73,18 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      * Guest 권한을 부여해준다.
      */
     public void registerAsGuest() {
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_GUEST"));
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_GUEST.toString()));
         Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    /*
+     * Pending User 권한을 부여해준다.
+     */
+    public void registerAsPendingUser(String tempId) {
+        PrincipalDetails principalDetails = new PrincipalDetails(tempId);
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_PENDING_USER.toString()));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
@@ -88,19 +102,5 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         } catch(IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private UserEntity findUserById(Long userId, String token) {
-        return userId == null ? getUserFromRefreshToken(token) : CacheUser.toEntity(getUserFromAccessToken(userId));
-    }
-
-    @Cacheable(value = "user", key = "#userId")
-    public CacheUser getUserFromAccessToken(final Long userId) {
-        return userRepository.findCacheByUserId(userId, CacheSpec.USER);
-    }
-
-    public UserEntity getUserFromRefreshToken(final String token) {
-        Long userId = jwtUtil.getUserIdFromRefreshToken(token);
-        return redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
     }
 }
