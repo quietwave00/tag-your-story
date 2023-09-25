@@ -3,32 +3,41 @@ package com.tagstory.core.domain.boardhashtag;
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
+@Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name="BOARD_HASHTAG")
 @Entity
 public class BoardHashtagEntity extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private BoardHashtagId boardHashtagId;
+    private Long boardHashtagId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hashtag_id")
-    private HashtagEntity hashtag;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "board_id")
     private BoardEntity board;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "hashtag_id")
+    private HashtagEntity hashtag;
 
     /*
      * 연관관계 설정
      */
-    public void add(BoardEntity board) {
-        this.board = board;
-        this.boardHashtagId = new BoardHashtagId(board.getBoardId(), hashtag.getHashtagId());
+    public static BoardHashtagEntity of(BoardEntity board, HashtagEntity hashtag) {
+        return BoardHashtagEntity.builder()
+                .board(board)
+                .hashtag(hashtag)
+                .build();
     }
 }

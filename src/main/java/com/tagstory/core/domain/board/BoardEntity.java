@@ -44,10 +44,6 @@ public class BoardEntity extends BaseTime {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
-    private List<BoardHashtagEntity> hashtagList = new ArrayList<>();
-
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<FileEntity> fileList = new ArrayList<>();
 
@@ -65,14 +61,14 @@ public class BoardEntity extends BaseTime {
         }
     }
 
-    public void addHashtag(List<BoardHashtagEntity> boardHashtagList) {
-        for (BoardHashtagEntity boardHashtag : boardHashtagList) {
-            if(!this.hashtagList.contains(boardHashtag)) {
-                this.hashtagList.add(boardHashtag);
-                boardHashtag.add(this);
-            }
-        }
-    }
+//    public void addHashtag(List<BoardHashtagEntity> boardHashtagList) {
+//        for (BoardHashtagEntity boardHashtag : boardHashtagList) {
+//            if(!this.hashtagList.contains(boardHashtag)) {
+//                this.hashtagList.add(boardHashtag);
+//                boardHashtag.add(this);
+//            }
+//        }
+//    }
 
     public void addFile(List<FileEntity> fileList) {
         this.fileList = fileList;

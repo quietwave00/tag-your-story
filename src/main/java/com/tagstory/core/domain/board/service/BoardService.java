@@ -9,6 +9,7 @@ import com.tagstory.core.domain.board.dto.response.BoardByTrack;
 import com.tagstory.core.domain.board.dto.response.CreateBoard;
 import com.tagstory.core.domain.board.dto.response.DetailBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
+import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
@@ -31,11 +32,14 @@ public class BoardService {
     private final BoardHashtagRepository boardHashtagRepository;
 
     @Transactional
-    public CreateBoard create(CreateBoardCommand createBoardCommand, UserEntity userEntity, List<HashtagEntity> hashtagEntityList) {
-        BoardEntity beforeBoardEntity = BoardEntity.create(createBoardCommand);
-        beforeBoardEntity.addUser(userEntity);
-        BoardEntity savedBoardEntity = boardRepository.save(beforeBoardEntity);
-        return CreateBoard.onComplete(savedBoardEntity);
+    public CreateBoard create(CreateBoardCommand createBoardCommand, UserEntity user, List<HashtagEntity> hashtagList) {
+        BoardEntity board = BoardEntity.create(createBoardCommand);
+        board.addUser(user);
+        BoardEntity savedBoard = boardRepository.save(board);
+        hashtagList.stream()
+                .map(hashtag -> BoardHashtagEntity.of(board, hashtag))
+                .forEach(boardHashtagRepository::save);
+        return CreateBoard.onComplete(savedBoard, hashtagList);
     }
 
     public List<BoardByTrack> getBoardListByTrackId(String trackId, int page) {
