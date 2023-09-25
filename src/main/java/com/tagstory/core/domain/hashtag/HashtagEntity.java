@@ -21,18 +21,6 @@ public class HashtagEntity {
 
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "board_id")
-    private BoardEntity board;
-
-
-    /*
-     * 연관관계 설절
-     */
-    public void addBoard(BoardEntity board) {
-        this.board = board;
-    }
-
     /*
      * 비즈니스 로직
      */

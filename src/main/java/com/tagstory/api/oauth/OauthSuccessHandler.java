@@ -35,7 +35,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         if(Objects.isNull(userId)) {
             String tempToken = jwtUtil.generateTempToken(principalDetails.getTempId());
             response.addCookie(jwtCookieProvider.generatePendingUserCookie(tempToken));
-            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/token.html");
+            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5501/token.html");
         } else {
             String accessToken = jwtUtil.generateAccessToken(userId);
             String refreshToken = redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
@@ -46,7 +46,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
             }
             response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));
             response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(refreshToken));
-            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/token.html");
+            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5501/token.html");
         }
     }
 }

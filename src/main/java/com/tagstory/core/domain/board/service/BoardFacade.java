@@ -22,9 +22,9 @@ public class BoardFacade {
     private final HashtagService hashtagService;
 
     public CreateBoard create(CreateBoardCommand createBoardCommand) {
-        UserEntity findUserEntity = userService.findByUserId(createBoardCommand.getUserId());
-        List<HashtagEntity> hashtagEntityList = hashtagService.getHashtagList(createBoardCommand.getHashtagList());
-        return boardService.create(createBoardCommand, findUserEntity, hashtagEntityList);
+        UserEntity user = userService.findByUserId(createBoardCommand.getUserId());
+        List<HashtagEntity> hashtagList = hashtagService.makeHashtagList(createBoardCommand.getHashtagList());
+        return boardService.create(createBoardCommand, user, hashtagList);
     }
 
     public List<BoardByTrack> getBoardListByTrackId(String trackId, int page) {

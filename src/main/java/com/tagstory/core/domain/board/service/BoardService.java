@@ -9,6 +9,7 @@ import com.tagstory.core.domain.board.dto.response.BoardByTrack;
 import com.tagstory.core.domain.board.dto.response.CreateBoard;
 import com.tagstory.core.domain.board.dto.response.DetailBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
+import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +28,12 @@ import java.util.stream.Collectors;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final BoardHashtagRepository boardHashtagRepository;
 
     @Transactional
     public CreateBoard create(CreateBoardCommand createBoardCommand, UserEntity userEntity, List<HashtagEntity> hashtagEntityList) {
         BoardEntity beforeBoardEntity = BoardEntity.create(createBoardCommand);
         beforeBoardEntity.addUser(userEntity);
-        beforeBoardEntity.addHashtag(hashtagEntityList);
         BoardEntity savedBoardEntity = boardRepository.save(beforeBoardEntity);
         return CreateBoard.onComplete(savedBoardEntity);
     }
