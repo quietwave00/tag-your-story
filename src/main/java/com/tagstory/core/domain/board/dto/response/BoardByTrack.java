@@ -1,13 +1,11 @@
 package com.tagstory.core.domain.board.dto.response;
 
 import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.hashtag.HashtagEntity;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -16,15 +14,16 @@ public class BoardByTrack {
     private String content;
     private LocalDateTime createdAt;
     private String nickname;
-    private List<String> hashtagList;
+    private HashtagNameList hashtagNameList;
 
-    public static BoardByTrack onComplete(BoardEntity board) {
+
+    public static BoardByTrack onComplete(BoardEntity board, HashtagNameList hashtagNameList) {
         return BoardByTrack.builder()
                 .boardId(board.getBoardId())
                 .content(board.getContent())
                 .createdAt(board.getCreatedAt())
                 .nickname(board.getUser().getNickname())
-                .hashtagList(board.getHashtagList().stream().map(HashtagEntity::getName).collect(Collectors.toList()))
+                .hashtagNameList(hashtagNameList)
                 .build();
     }
 }

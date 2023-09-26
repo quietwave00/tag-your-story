@@ -11,6 +11,7 @@ import com.tagstory.core.domain.board.dto.response.DetailBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,17 +44,16 @@ public class BoardService {
         return CreateBoard.onComplete(savedBoard, hashtagList);
     }
 
-    public List<BoardByTrack> getBoardListByTrackId(String trackId, int page) {
-        Page<BoardEntity> boardList = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId, PageRequest.of(page, 8));
+    public List<BoardByTrack> getBoardListByTrackId(Page<BoardEntity> boardList, List<HashtagNameList> hashtagNameListByBoard) {
         return boardList.stream()
-                .map(BoardByTrack::onComplete)
+                .flatMap(board -> hashtagNameListByBoard.stream()
+                .map(hashtagNameList -> BoardByTrack.onComplete(board, hashtagNameList)))
                 .collect(Collectors.toList());
     }
 
-    public DetailBoard getDetailBoard(String boardId) {
+    public DetailBoard getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
         BoardEntity board = boardRepository.findByBoardId(boardId);
-        List<String> hahstagNameList = boardHashtagRepository.findHashtagNameByBoardId(boardId);
-        return DetailBoard.onComplete(board, hahstagNameList);
+        return DetailBoard.onComplete(board, hashtagNameList);
     }
 
     public BoardEntity findByBoardId(String boardId) {
@@ -61,5 +62,9 @@ public class BoardService {
 
     public List<BoardEntity> findByTrackId(String trackId) {
         return boardRepository.findByTrackId(trackId);
+    }
+
+    public Page<BoardEntity> findBoardByStatusAndTrackId(String trackId, int page) {
+        return boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId, PageRequest.of(page, 8));
     }
 }
