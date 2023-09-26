@@ -49,17 +49,14 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
-    public DetailBoard getDetailBoard(Long boardId) {
-        BoardEntity board = findByBoardId(boardId);
-        return DetailBoard.onComplete(board);
+    public DetailBoard getDetailBoard(String boardId) {
+        BoardEntity board = boardRepository.findByBoardId(boardId);
+        List<String> hahstagNameList = boardHashtagRepository.findHashtagNameByBoardId(boardId);
+        return DetailBoard.onComplete(board, hahstagNameList);
     }
 
-    public BoardEntity findByBoardId(Long boardId) {
+    public BoardEntity findByBoardId(String boardId) {
         return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
-    }
-
-    public BoardEntity getReferenceById(Long boardId) {
-        return boardRepository.getReferenceById(boardId);
     }
 
     public List<BoardEntity> findByTrackId(String trackId) {

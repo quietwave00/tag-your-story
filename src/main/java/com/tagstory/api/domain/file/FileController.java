@@ -48,7 +48,7 @@ public class FileController {
      * 게시물에 업로드된 파일 리스트를 조회한다.
      */
     @GetMapping("/files")
-    public ApiResult<List<FileListResponse>> getFileList(@RequestParam("boardId") Long boardId) {
+    public ApiResult<List<FileListResponse>> getFileList(@RequestParam("boardId") String boardId) {
         List<FileList> fileList = fileFacade.getFileList(boardId);
         return ApiUtils.success(fileList.stream().map(FileListResponse::from).collect(Collectors.toList()));
     }

@@ -14,5 +14,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     List<BoardEntity> findByTrackId(String trackId);
 
-    Optional<BoardEntity> findByBoardIdAndStatus(Long boardId, BoardStatus status);
+    Optional<BoardEntity> findByBoardIdAndStatus(String boardId, BoardStatus status);
+
+    BoardEntity findByBoardId(String boardId);
 }

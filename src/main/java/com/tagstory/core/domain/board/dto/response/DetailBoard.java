@@ -19,14 +19,12 @@ public class DetailBoard {
     private List<String> hashtagList;
     private List<String> filePathList;
 
-    public static DetailBoard onComplete(BoardEntity board) {
+    public static DetailBoard onComplete(BoardEntity board, List<String> hashtagNameList) {
         return DetailBoard.builder()
                 .content(board.getContent())
                 .nickname(board.getUser().getNickname())
                 .createdAt(board.getCreatedAt())
-                .hashtagList(board.getHashtagList().stream()
-                        .map(HashtagEntity::getName)
-                        .collect(Collectors.toList()))
+                .hashtagList(hashtagNameList)
                 .filePathList(board.getFileList().stream()
                         .map(FileEntity::getFilePath)
                         .collect(Collectors.toList()))

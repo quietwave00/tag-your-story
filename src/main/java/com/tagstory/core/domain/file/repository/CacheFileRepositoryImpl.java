@@ -33,7 +33,7 @@ public class CacheFileRepositoryImpl implements CacheFileRepository {
     }
 
     @Override
-    public List<FileEntity> findCacheByBoardId(Long boardId, CacheSpec cacheSpec) {
+    public List<FileEntity> findCacheByBoardId(String boardId, CacheSpec cacheSpec) {
 //        String jsonString = redisTemplate.opsForValue().get(cacheSpec.generateKey(boardId));
 //        try {
 //            objectMapper.readValue(jsonString, cacheSpec.getClazz());

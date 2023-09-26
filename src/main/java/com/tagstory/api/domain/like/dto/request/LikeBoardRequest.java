@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LikeBoardRequest {
-    private Long boardId;
+    private String boardId;
 
     public LikeBoardCommand toCommand(Long userId) {
         return LikeBoardCommand.builder()

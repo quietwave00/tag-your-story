@@ -48,7 +48,7 @@ public class BoardController {
      * 게시물을 조회한다.
      */
     @GetMapping("/boards")
-    public ApiResult<DetailBoardResponse> getDetailBoard(@RequestParam("boardId") Long boardId) {
+    public ApiResult<DetailBoardResponse> getDetailBoard(@RequestParam("boardId") String boardId) {
         DetailBoard detailBoard = boardFacade.getDetailBoard(boardId);
         return ApiUtils.success(DetailBoardResponse.from(detailBoard));
     }

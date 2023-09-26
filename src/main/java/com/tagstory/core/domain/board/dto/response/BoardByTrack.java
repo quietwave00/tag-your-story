@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 public class BoardByTrack {
-    private Long boardId;
+    private String boardId;
     private String content;
     private LocalDateTime createdAt;
     private String nickname;

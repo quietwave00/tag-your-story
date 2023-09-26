@@ -42,7 +42,7 @@ public class LikeController {
      * 게시글의 좋아요 개수를 가져온다.
      */
     @GetMapping("/likes/{boardId}")
-    public ApiResult<LikeCountResponse> like(@PathVariable("boardId") Long boardId) {
+    public ApiResult<LikeCountResponse> like(@PathVariable("boardId") String boardId) {
         LikeCount likeCount = likeFacade.getLikeCount(boardId);
         return ApiUtils.success(LikeCountResponse.from(likeCount));
     }

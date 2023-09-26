@@ -24,7 +24,7 @@ public class LikeFacade {
         likeService.like(board, user);
     }
 
-    public LikeCount getLikeCount(Long boardId) {
+    public LikeCount getLikeCount(String boardId) {
         BoardEntity board = boardService.findByBoardId(boardId);
         return likeService.getLikeCount(board);
     }

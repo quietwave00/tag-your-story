@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Builder
 public class CreateBoardResponse {
-    private Long boardId;
+    private String boardId;
     private String nickname;
     private String content;
     private LocalDateTime createdAt;

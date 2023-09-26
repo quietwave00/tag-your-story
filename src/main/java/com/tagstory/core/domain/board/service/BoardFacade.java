@@ -31,7 +31,7 @@ public class BoardFacade {
         return boardService.getBoardListByTrackId(trackId, page);
     }
 
-    public DetailBoard getDetailBoard(Long boardId) {
+    public DetailBoard getDetailBoard(String boardId) {
         return boardService.getDetailBoard(boardId);
     }
 }
