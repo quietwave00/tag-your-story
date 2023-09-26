@@ -2,8 +2,8 @@ package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
+import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.file.FileEntity;
-import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.AllArgsConstructor;
@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -24,8 +25,9 @@ import java.util.List;
 @Table(name = "board")
 public class BoardEntity extends BaseTime {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long boardId;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    private String boardId;
 
     @Lob
     private String content;
@@ -41,10 +43,6 @@ public class BoardEntity extends BaseTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
-    private List<HashtagEntity> hashtagList = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<FileEntity> fileList = new ArrayList<>();
@@ -63,12 +61,14 @@ public class BoardEntity extends BaseTime {
         }
     }
 
-    public void addHashtag(List<HashtagEntity> hashtagList) {
-        this.hashtagList = hashtagList;
-        for (HashtagEntity hashtag : hashtagList) {
-            hashtag.addBoard(this);
-        }
-    }
+//    public void addHashtag(List<BoardHashtagEntity> boardHashtagList) {
+//        for (BoardHashtagEntity boardHashtag : boardHashtagList) {
+//            if(!this.hashtagList.contains(boardHashtag)) {
+//                this.hashtagList.add(boardHashtag);
+//                boardHashtag.add(this);
+//            }
+//        }
+//    }
 
     public void addFile(List<FileEntity> fileList) {
         this.fileList = fileList;
@@ -89,7 +89,7 @@ public class BoardEntity extends BaseTime {
     /*
      * 테스트용 생성자
      */
-    public void generateTestBoard(Long boardId, String content, String nickname) {
+    public void generateTestBoard(String boardId, String content, String nickname) {
         this.boardId = boardId;
         this.content = content;
         this.user.updateNickname(nickname);

@@ -2,6 +2,7 @@ package com.tagstory.core.domain.user;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.user.repository.dto.CacheUser;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,6 +59,20 @@ public class UserEntity extends BaseTime implements Serializable {
                 .email(email)
                 .role(Role.ROLE_USER)
                 .userStatus(UserStatus.ACTIVE)
+                .build();
+    }
+
+    /*
+     * 캐싱용 형변환
+     */
+    public static CacheUser toCacheUser(UserEntity user) {
+        return CacheUser.builder()
+                .userId(user.getUserId())
+                .userKey(user.getUserKey())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .role(user.getRole())
+                .userStatus(user.getUserStatus())
                 .build();
     }
 

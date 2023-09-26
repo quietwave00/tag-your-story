@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Builder
 public class BoardByTrackResponse {
-    private Long boardId;
+    private String boardId;
     private String content;
     private LocalDateTime createdAt;
     private String nickname;

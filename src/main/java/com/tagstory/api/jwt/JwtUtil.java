@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
+import static com.tagstory.api.jwt.JwtProperties.*;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -30,27 +32,49 @@ public class JwtUtil {
     @Value("${jwt.refresh.expiration}")
     private int refreshTokenExpiration;
 
+//    private final JWTVerifier jwtVerifier;
+//
+//    public JwtUtil(@Value("${jwt.key}") String jwtKey) {
+//        Algorithm algorithm = Algorithm.HMAC512(jwtKey);
+//        this.jwtVerifier = JWT.require(algorithm).build();
+//    }
+
 
     public String generateAccessToken(Long userId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(accessTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withSubject(String.valueOf(userId))
+                .withClaim("tokenType", TOKEN_TYPE_ACCESS)
+                .withClaim("userId", String.valueOf(userId))
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
     public String generateRefreshToken(Long userId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(refreshTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withSubject(String.valueOf(userId))
+                .withClaim("tokenType", TOKEN_TYPE_REFRESH)
+                .withClaim("userId", String.valueOf(userId))
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public Long getUserIdFromToken(String accessToken) throws CustomException {
-        return Long.valueOf(validateToken(accessToken).getSubject());
+    public String generateTempToken(String tempId) {
+        return JWT.create()
+                .withExpiresAt(Instant.ofEpochSecond(accessTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
+                .withClaim("tokenType", TOKEN_TYPE_TEMP)
+                .withClaim("tempId", tempId)
+                .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public Long getUserIdFromRefreshToken(String refreshToken) throws CustomException {
-        return Long.valueOf(validateToken(refreshToken).getSubject());
+    public Long getUserIdFromToken(String token) throws CustomException {
+        return validateToken(token).getClaim("userId").asLong();
+    }
+
+    public String getTempIdFromToken(String token) throws CustomException {
+        return validateToken(token).getClaim("tempId").asString();
+    }
+
+
+    public String getTokenTypeFromToken(String token) {
+        return validateToken(token).getClaim("tokenType").asString();
     }
 
     public DecodedJWT validateToken(String token) {
@@ -63,5 +87,4 @@ public class JwtUtil {
             throw new CustomException(ExceptionCode.TOKEN_HAS_TEMPERED);
         }
     }
-
 }

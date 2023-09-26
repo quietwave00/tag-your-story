@@ -33,7 +33,7 @@ public class SpotifyWebClient {
 
     private final TagStoryRedisTemplate redisTemplate;
 
-    public String generateAccessToken() {
+    private String generateAccessToken() {
         ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();
         try {
             final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
@@ -45,7 +45,7 @@ public class SpotifyWebClient {
         }
     }
 
-    public SpotifyApi getSpotifyApi() {
+    private SpotifyApi getSpotifyApi() {
         return new SpotifyApi.Builder()
                 .setAccessToken(getAccessToken())
                 .build();

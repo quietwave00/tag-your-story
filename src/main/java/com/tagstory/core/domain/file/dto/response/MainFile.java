@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class MainFile {
-    private Long boardId;
+    private String boardId;
     private String filePath;
 
     public static MainFile onComplete(FileEntity file) {

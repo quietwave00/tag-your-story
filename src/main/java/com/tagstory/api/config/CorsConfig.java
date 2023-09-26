@@ -16,7 +16,10 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
+        config.addAllowedMethod("GET");
+        config.addAllowedMethod("POST");
+        config.addAllowedMethod("PATCH");
+        config.addAllowedMethod("DELETE");
         config.addExposedHeader("Authorization");
         source.registerCorsConfiguration("/**", config);
 

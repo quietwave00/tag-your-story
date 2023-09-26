@@ -55,7 +55,7 @@ public class SecurityConfig {
         public void configure(HttpSecurity http){
             http
                     .addFilter(corsConfig.corsFilter())
-                    .addFilterAfter(new JwtAuthorizationFilter(userRepository, redisTemplate, jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
+                    .addFilterAfter(new JwtAuthorizationFilter(jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
         }
     }
 }

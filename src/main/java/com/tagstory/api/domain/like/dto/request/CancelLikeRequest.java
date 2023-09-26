@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CancelLikeRequest {
-    private Long boardId;
+    private String boardId;
 
     public CancelLikeCommand toCommand(Long userId) {
         return CancelLikeCommand.builder()

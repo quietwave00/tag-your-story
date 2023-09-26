@@ -91,11 +91,10 @@ const deleteHashtag = (hashtagId) => {
 /**
  * 게시글 작성 버튼 클릭 시 이벤트 함수
  */
-document.getElementById('write-button').addEventListener('click', () => {
-    BoardApi.writeBoard(hashtagArray, trackId).then((response) => {
-        File.upload(response.boardId);
-        renderBoard(response)
-    });
+document.getElementById('write-button').addEventListener('click', async () => {
+    const response = await BoardApi.writeBoard(hashtagArray, trackId);
+    renderBoard(response);
+    File.upload(response.boardId);
     renderAlert();
 });
 

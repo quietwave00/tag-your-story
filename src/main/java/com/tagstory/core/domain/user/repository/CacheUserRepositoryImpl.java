@@ -24,7 +24,18 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
             String jsonString = objectMapper.writeValueAsString(cacheUser);
             redisTemplate.opsForValue().set(cacheSpec.generateKey(cacheUser.getUserId()), jsonString);
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
+        }
+    }
+
+    @Override
+    public CacheUser savePendingUser(CacheUser cacheUser, CacheSpec cacheSpec) {
+        try {
+            String jsongString = objectMapper.writeValueAsString(cacheUser);
+            redisTemplate.opsForValue().set(cacheSpec.generateKey(cacheUser.getTempId()), jsongString);
+            return findPendingUserByTempId(cacheUser.getTempId(), cacheSpec);
+        } catch (JsonProcessingException e) {
+            throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
         }
     }
 
@@ -34,7 +45,16 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
         try {
             return objectMapper.readValue(jsonString, cacheSpec.getClazz());
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
+        }
+    }
+
+    @Override
+    public CacheUser findPendingUserByTempId(String tempId, CacheSpec cacheSpec) {
+        String jsonString = redisTemplate.opsForValue().get(cacheSpec.generateKey(tempId));
+        try {
+            return objectMapper.readValue(jsonString, cacheSpec.getClazz());
+        } catch (JsonProcessingException e) {
             throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
         }
     }

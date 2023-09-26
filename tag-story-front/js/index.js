@@ -1,5 +1,4 @@
 import UserArea from './user/userArea.js';
-import UserApi from './user/userApi.js';
 
 window.onload = () => {
     /**
@@ -10,8 +9,8 @@ window.onload = () => {
     /**
      *  회원의 회원가입, 로그인 상태를 체크한다.
      */
-    if (localStorage.getItem('Authorization') != null) {
-        UserApi.checkRegisterUser();
+    if(localStorage.getItem('Temp') != null) {
+        window.location.href = `${client_host}/nickname.html`;
     }
 }
 
@@ -21,5 +20,5 @@ window.onload = () => {
 document.getElementById('search-button').addEventListener('click', () => {
     let keyword = document.getElementById('search-input').value;
     const defaultPage = 1;
-    window.location.href = `${client_host}/html/track/tracks.html?keyword=${keyword}&page=${defaultPage}`;
+    window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
 });

@@ -6,7 +6,7 @@ const handleException = (exceptionCode) => {
         case 'TOKEN_HAS_EXPIRED':
             return handleExpiredJwt();
         case 'USER_NOT_FOUND':
-            window.location.href = `${client_host}/html/exception.html`;
+            window.location.href = `${client_host}/exception.html`;
     }
 }
 

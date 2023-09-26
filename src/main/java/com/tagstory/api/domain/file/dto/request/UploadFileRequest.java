@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class UploadFileRequest {
     private List<MultipartFile> fileList;
-    private Long boardId;
+    private String boardId;
 
     public UploadFileCommand toCommand() {
         return UploadFileCommand.builder()

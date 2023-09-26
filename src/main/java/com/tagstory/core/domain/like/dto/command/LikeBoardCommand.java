@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class LikeBoardCommand {
-    private Long boardId;
+    private String boardId;
     private Long userId;
 }

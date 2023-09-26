@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -15,9 +17,10 @@ import java.util.stream.Collectors;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
 
-    public List<HashtagEntity> getHashtagList(List<String> hashtagStrList) {
+    public List<HashtagEntity> makeHashtagList(List<String> hashtagStrList) {
         return hashtagStrList.stream()
-                .map(HashtagEntity::create)
+                .map(hashtagStr -> hashtagRepository.findByName(hashtagStr)
+                        .orElseGet(() -> hashtagRepository.save(HashtagEntity.create(hashtagStr))))
                 .collect(Collectors.toList());
     }
 }

@@ -3,7 +3,7 @@ import FileApi from './fileApi.js';
 /**
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
  */
- 
+
 /**
  * 파일 이벤트
  */
@@ -14,12 +14,12 @@ const uploadedView = document.querySelector("#uploaded_view");
 const beforeFormData = new FormData();
 let imgCount = 1;
 
-btnUpload.addEventListener("change", function(e) {    
+btnUpload.addEventListener("change", function(e) {
     let ext = btnUpload.value.split('.').pop().toLowerCase();
     if (!['png', 'jpg', 'jpeg'].includes(ext)) {
         errorMsg.textContent = "이미지 파일을 선택해 주세요";
     } else {
-        //Image Preview
+        //이미지 미리보기
         btnOuter.classList.add("file_uploaded");
         let uploadedFile = URL.createObjectURL(e.target.files[0]);
         let imgDiv = document.createElement("div");
@@ -31,7 +31,7 @@ btnUpload.addEventListener("change", function(e) {
         uploadedView.appendChild(imgDiv);
         uploadedView.classList.add("show");
 
-        //Add file to formData
+        //formData에 추가
         const fileInput = e.target.files[0];
         beforeFormData.append(`imgDiv${imgDiv.id}`, fileInput);
 
@@ -49,25 +49,45 @@ const deleteImg = () => {
 
     imgDivList.forEach((imgDiv) => {
         imgDiv.addEventListener('click', (event) => {
-            //Delete from Preview
+            //미리보기에서 삭제
             event.currentTarget.remove();
             btnOuter.classList.remove("file_uploading");
             btnOuter.classList.remove("file_uploaded");
             
-            //Delete from formData
+            //formData에서 삭제
             const fileKey = imgDiv.id;
-            console.log("fileKey: " + fileKey);
             beforeFormData.delete(fileKey);
         });
     });
 }
 
 const upload = (boardId) => {
-    return FileApi.upload(beforeFormData, boardId);
+    const imageList = document.getElementsByClassName('img_div');
+   // const beforeFormData2 = new FormData();
+  //  beforeFormData2.append(`imgDiv${imgDiv.id}`, [...imageList]);
+  //  console.log(imageList);
+  //  console.log(beforeFormData2);
+    const fileList = new FormData();
+    // const uploadFileRequest = new FormData();
+    for (const value of beforeFormData.values()) {
+        console.log(value);
+        fileList.append('fileList', value);
+    }
+
+   // fileList.append('fileList', [...imageList]);
+    fileList.append('boardId', boardId);
+    fileList.set('enctype', 'multipart/form-data');
+    // console.log(fileList);
+    const uploadFileRequest = {
+        boardId: boardId
+    };
+
+
+  //  const uploadFileRequest = "";
+ //   uploadFileRequest.append('uploadFileRequest', JSON.stringify(uploadFileRequestData));
+    return FileApi.upload(fileList, uploadFileRequest);
 }
-    
 
-
-export {
+export default {
     upload
 }

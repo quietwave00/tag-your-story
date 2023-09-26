@@ -12,19 +12,19 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 public class CreateBoard {
-    private Long boardId;
+    private String boardId;
     private String nickname;
     private String content;
     private LocalDateTime createdAt;
     private List<String> hashtagList;
 
-    public static CreateBoard onComplete(BoardEntity board) {
+    public static CreateBoard onComplete(BoardEntity board, List<HashtagEntity> hashtagList) {
         return CreateBoard.builder()
                 .boardId(board.getBoardId())
                 .nickname(board.getUser().getNickname())
                 .content(board.getContent())
                 .createdAt(board.getCreatedAt())
-                .hashtagList(board.getHashtagList().stream().map(HashtagEntity::getName).collect(Collectors.toList()))
+                .hashtagList(hashtagList.stream().map(HashtagEntity::getName).collect(Collectors.toList()))
                 .build();
     }
 }

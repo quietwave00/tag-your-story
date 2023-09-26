@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class MainFileResponse {
-    private Long boardId;
+    private String boardId;
     private String filePath;
 
     public static MainFileResponse from(MainFile mainFile) {

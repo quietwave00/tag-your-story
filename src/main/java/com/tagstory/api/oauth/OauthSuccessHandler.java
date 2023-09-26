@@ -1,7 +1,6 @@
 package com.tagstory.api.oauth;
 
 import com.tagstory.api.auth.PrincipalDetails;
-import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.api.jwt.JwtCookieProvider;
 import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
@@ -16,6 +15,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -30,18 +30,23 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         log.info("OauthSuccessHandler Execute");
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
-        UserEntity userEntity = principalDetails.getUserEntity();
-        String accessToken = jwtUtil.generateAccessToken(userEntity.getUserId());
-        String refreshToken = redisTemplate.get(userEntity.getUserId(), CacheSpec.REFRESH_TOKEN);
+        Long userId = principalDetails.getUserId();
 
-        if (refreshToken == null) {
-            refreshToken = jwtUtil.generateRefreshToken(userEntity.getUserId());
-            redisTemplate.set(userEntity.getUserId(), refreshToken, CacheSpec.REFRESH_TOKEN);
+        if(Objects.isNull(userId)) {
+            String tempToken = jwtUtil.generateTempToken(principalDetails.getTempId());
+            response.addCookie(jwtCookieProvider.generatePendingUserCookie(tempToken));
+            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5501/token.html");
+        } else {
+            String accessToken = jwtUtil.generateAccessToken(userId);
+            String refreshToken = redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
+
+            if (Objects.isNull(refreshToken)) {
+                refreshToken = jwtUtil.generateRefreshToken(userId);
+                redisTemplate.set(userId, refreshToken, CacheSpec.REFRESH_TOKEN);
+            }
+            response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));
+            response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(refreshToken));
+            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5501/token.html");
         }
-
-        response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));
-        response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(refreshToken));
-//        getRedirectStrategy().sendRedirect(request, response, "https://d2lsho2su959kd.cloudfront.net/tag-story-front/html/user/token.html");
-        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5500/token.html");
     }
 }

@@ -2,14 +2,26 @@ window.onload = () => {
     /**
      * 쿠키에 저장된 token값을 localStorage에 저장한다.
      */
-    const authorizationCookieValue = extractBearerToken(getCookieValue('Authorization'));
-    const refreshTokenCookieValue = extractBearerToken(getCookieValue('RefreshToken'));
-    localStorage.setItem('Authorization', authorizationCookieValue);
-    localStorage.setItem('RefreshToken', refreshTokenCookieValue);
-    console.log("rtk: " + refreshTokenCookieValue);
-    console.log("atk: " + authorizationCookieValue);
-
-    window.location.href = `${client_host}/html/index.html`;
+    const authorizationCookieValue = getCookieValue('Authorization');
+    const refreshTokenCookieValue = getCookieValue('RefreshToken');
+    const tempIdCookieValue = getCookieValue('Temp');
+    
+    if (authorizationCookieValue) {
+        const extractedAuthorizationToken = extractBearerToken(authorizationCookieValue);
+        localStorage.setItem('Authorization', extractedAuthorizationToken);
+        console.log("atk: " + extractedAuthorizationToken);
+    }
+    
+    if (refreshTokenCookieValue) {
+        const extractedRefreshToken = extractBearerToken(refreshTokenCookieValue);
+        localStorage.setItem('RefreshToken', extractedRefreshToken);
+        console.log("rtk: " + extractedRefreshToken);
+    }
+    
+    if (tempIdCookieValue) {
+        localStorage.setItem('Temp', tempIdCookieValue);
+    }
+    window.location.href = `${client_host}/index.html`;
 }
 
 /**

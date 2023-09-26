@@ -6,5 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UpdateNicknameCommand {
+    private String tempId;
     private String nickname;
 }

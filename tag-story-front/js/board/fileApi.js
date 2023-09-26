@@ -3,16 +3,14 @@ import ExceptionHandler from '../global/exceptionHandler.js';
 /**
  * 파일 업로드를 요청한다.
  */
-const upload = (fileList, uploadFileRequest) => {
+const upload = (fileList,uploadFileRequest) => {
+    console.log(fileList);
     return fetch(`${server_host}/api/files`, {
         method: "POST",
         headers: {
             "Authorization": localStorage.getItem('Authorization')
         },
-        body: JSON.stringify({
-            "files": fileList,
-            "dto": uploadFileRequest
-        })
+        body: fileList
     })
     .then((res) => res.json())
     .then(res => {
@@ -29,6 +27,6 @@ const upload = (fileList, uploadFileRequest) => {
 
 
 
-export {
+export default {
     upload
 }

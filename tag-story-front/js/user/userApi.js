@@ -16,7 +16,7 @@ const logout = () => {
             localStorage.removeItem('Authorization');
             localStorage.removeItem('RefreshToken');
             alert("로그아웃되었습니다.");
-            window.location.href = `${client_host}/html/index.html`;
+            window.location.href = `${client_host}/index.html`;
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
             .then(() => {
@@ -33,14 +33,14 @@ const checkRegisterUser = () => {
     fetch(`${server_host}/api/check-registration`, {
         method: "GET",
         headers: {
-            "Authorization": localStorage.getItem('Authorization')
+            "Authorization": localStorage.getItem('TempId')
         }
     })
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
             if(res.response.registerUser === true) {
-                window.location.href = `${client_host}/html/user/nickname.html`;
+                window.location.href = `${client_host}/nickname.html`;
             }
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
@@ -57,12 +57,11 @@ const checkRegisterUser = () => {
  *  @param nickname : 변경할 닉네임 값
  */
 const updateNickname = (nickname) => {
-    console.log("updateNickname Called");
     fetch(`${server_host}/api/nicknames`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": localStorage.getItem('Authorization')
+            "Authorization": localStorage.getItem('Temp')
         },
         body: JSON.stringify({
             "nickname": nickname
@@ -72,7 +71,8 @@ const updateNickname = (nickname) => {
     .then(res => {
         if(res.success === true) {
             alert(`${res.response.nickname}님, 환영합니다!`);
-            window.location.href = `${client_host}/html/index.html`;
+            localStorage.removeItem('Temp');
+            window.location.href = `${client_host}/index.html`;
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
             .then(() => {
