@@ -12,8 +12,9 @@ import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+
 import com.tagstory.core.domain.hashtag.HashtagEntity;
-import com.tagstory.core.domain.user.UserEntity;
+import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,20 +35,22 @@ public class BoardService {
     private final BoardHashtagRepository boardHashtagRepository;
 
     @Transactional
-    public CreateBoard create(CreateBoardCommand createBoardCommand, UserEntity user, List<HashtagEntity> hashtagList) {
+    public CreateBoard create(CreateBoardCommand createBoardCommand, User user, List<HashtagEntity> hashtagList) {
         BoardEntity board = BoardEntity.create(createBoardCommand);
-        board.addUser(user);
+        board.addUser(user.toEntity());
         BoardEntity savedBoard = boardRepository.save(board);
+
         hashtagList.stream()
                 .map(hashtag -> BoardHashtagEntity.of(board, hashtag))
                 .forEach(boardHashtagRepository::save);
+
         return CreateBoard.onComplete(savedBoard, hashtagList);
     }
 
     public List<BoardByTrack> getBoardListByTrackId(Page<BoardEntity> boardList, List<HashtagNameList> hashtagNameListByBoard) {
         return boardList.stream()
                 .flatMap(board -> hashtagNameListByBoard.stream()
-                .map(hashtagNameList -> BoardByTrack.onComplete(board, hashtagNameList)))
+                        .map(hashtagNameList -> BoardByTrack.onComplete(board, hashtagNameList)))
                 .collect(Collectors.toList());
     }
 

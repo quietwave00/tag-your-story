@@ -1,11 +1,11 @@
 package com.tagstory.api.domain.board.dto.response;
 
 import com.tagstory.core.domain.board.dto.response.BoardByTrack;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Builder
@@ -14,7 +14,7 @@ public class BoardByTrackResponse {
     private String content;
     private LocalDateTime createdAt;
     private String nickname;
-    private List<String> hashtagList;
+    private HashtagNameList hashtagNameList;
 
     public static BoardByTrackResponse from(BoardByTrack boardByTrack) {
         return BoardByTrackResponse.builder()
@@ -22,7 +22,7 @@ public class BoardByTrackResponse {
                 .content(boardByTrack.getContent())
                 .createdAt(boardByTrack.getCreatedAt())
                 .nickname(boardByTrack.getNickname())
-                .hashtagList(boardByTrack.getHashtagList())
+                .hashtagNameList(boardByTrack.getHashtagNameList())
                 .build();
     }
 

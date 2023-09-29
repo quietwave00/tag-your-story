@@ -5,8 +5,7 @@ import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.like.dto.command.CancelLikeCommand;
 import com.tagstory.core.domain.like.dto.command.LikeBoardCommand;
 import com.tagstory.core.domain.like.dto.response.LikeCount;
-import com.tagstory.core.domain.user.UserEntity;
-import com.tagstory.core.domain.user.repository.dto.CacheUser;
+import com.tagstory.core.domain.user.service.dto.response.User;
 import com.tagstory.core.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,7 @@ public class LikeFacade {
 
     public void like(LikeBoardCommand likeBoardCommand) {
         BoardEntity board = boardService.findByBoardId(likeBoardCommand.getBoardId());
-        CacheUser user = userService.findCacheByUserId(likeBoardCommand.getUserId());
+        User user = userService.getCacheByUserId(likeBoardCommand.getUserId());
         likeService.like(board, user);
     }
 
@@ -31,7 +30,7 @@ public class LikeFacade {
 
     public void cancelLike(CancelLikeCommand cancelLikeCommand) {
         BoardEntity board = boardService.findByBoardId(cancelLikeCommand.getBoardId());
-        CacheUser user = userService.findCacheByUserId(cancelLikeCommand.getUserId());
+        User user = userService.getCacheByUserId(cancelLikeCommand.getUserId());
         likeService.cancelLike(board, user);
     }
 }

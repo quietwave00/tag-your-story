@@ -50,6 +50,7 @@ public class BoardEntity extends BaseTime {
     @OneToMany(mappedBy = "board")
     private List<LikeEntity> likeList = new ArrayList<>();
 
+    //해시태그 연관관계 추가
 
     /*
      * 연관 관계 설정

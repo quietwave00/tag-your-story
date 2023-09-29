@@ -7,6 +7,7 @@ import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -26,17 +27,23 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     private final JwtUtil jwtUtil;
     private final TagStoryRedisTemplate redisTemplate;
 
+    @Value("${api.redirect-url}")
+    private String REDIRECT_URL;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         log.info("OauthSuccessHandler Execute");
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         Long userId = principalDetails.getUserId();
+        log.info("OatuhSuccessHandler userId: {}", userId);
 
         if(Objects.isNull(userId)) {
+            log.info("pendingUser");
             String tempToken = jwtUtil.generateTempToken(principalDetails.getTempId());
             response.addCookie(jwtCookieProvider.generatePendingUserCookie(tempToken));
-            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5501/token.html");
+            getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
         } else {
+            log.info("registerd user");
             String accessToken = jwtUtil.generateAccessToken(userId);
             String refreshToken = redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
 
@@ -46,7 +53,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
             }
             response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));
             response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(refreshToken));
-            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5501/token.html");
+            getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
         }
     }
 }

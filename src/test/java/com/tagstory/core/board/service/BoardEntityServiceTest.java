@@ -2,7 +2,6 @@ package com.tagstory.core.board.service;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.BoardByTrack;
 import com.tagstory.core.domain.board.dto.response.CreateBoard;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
@@ -15,14 +14,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,7 +63,7 @@ public class BoardEntityServiceTest {
 
         //when
         when(boardRepository.save(any())).thenReturn(boardEntity);
-        CreateBoard createBoard = boardService.create(createBoardCommand, userEntity, hashtagEntityList);
+        CreateBoard createBoard = boardService.create(createBoardCommand, userEntity.toUser(), hashtagEntityList);
 
         //then
         assertThat(createBoard.getNickname()).isEqualTo(userEntity.getNickname());

@@ -2,7 +2,7 @@ spring:
   config.activate.on-profile: local
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         show_sql: true

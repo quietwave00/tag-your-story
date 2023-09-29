@@ -1,7 +1,7 @@
 package com.tagstory.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tagstory.api.jwt.JwtAuthorizationFilter;
+import com.tagstory.api.filter.JwtAuthorizationFilter;
 import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.api.oauth.OauthSuccessHandler;
 import com.tagstory.api.oauth.PrincipalOauth2UserService;

@@ -12,6 +12,7 @@ public enum ExceptionCode {
     TOKEN_HAS_EXPIRED(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
     TOKEN_HAS_TEMPERED(HttpStatus.UNAUTHORIZED, "위변조된 토큰입니다"),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않는 토큰입니다"),
+    CACHE_DELETE_EXCEPTION(HttpStatus.NOT_FOUND, "캐시 삭제 중 예외가 발생했습니다."),
     CONVERSION_EXCEPTION(HttpStatus.UNPROCESSABLE_ENTITY, "데이터 변환 중 예외가 발생했습니다."),
     S3_UPLOAD_EXCEPTION(HttpStatus.SERVICE_UNAVAILABLE, "파일 업로드 중 예외가 발생했습니다."),
     SPOTIFY_EXCEPTION(HttpStatus.SERVICE_UNAVAILABLE, "스포티파이 라이브러리 사용 중 예외가 발생했습니다."),

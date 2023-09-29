@@ -1,6 +1,5 @@
 package com.tagstory.core.domain.user.service;
 
-import com.mysql.cj.util.StringUtils;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.api.jwt.JwtUtil;
@@ -8,16 +7,18 @@ import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
-import com.tagstory.core.domain.user.repository.dto.CacheUser;
+import com.tagstory.core.domain.user.service.dto.command.RegisterCommand;
 import com.tagstory.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
-import com.tagstory.core.domain.user.service.dto.command.UpdateNicknameCommand;
-import com.tagstory.core.domain.user.service.dto.response.*;
+import com.tagstory.core.domain.user.service.dto.response.Token;
+import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 
 @Service
@@ -29,46 +30,69 @@ public class UserService  {
     private final TagStoryRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
 
-    public ReissueAccessToken reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
+    public Token reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
         Long userId = jwtUtil.getUserIdFromToken(reissueAccessTokenCommand.getRefreshToken());
-        CacheUser cacheUser = findCacheByUserId(userId);
-        String newAccessToken = jwtUtil.generateAccessToken(cacheUser.getUserId());
-        return ReissueAccessToken.onComplete(newAccessToken);
+        User user = getCacheByUserId(userId);
+        String newAccessToken = jwtUtil.generateAccessToken(user.getUserId());
+        return Token.onComplete(newAccessToken);
     }
 
-    public ReissueRefreshToken reissueRefreshToken(final Long userId) {
-        CacheUser cacheUser = findCacheByUserId(userId);
-        String newRefreshToken = jwtUtil.generateRefreshToken(cacheUser.getUserId());
-        redisTemplate.set(cacheUser.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
-        return ReissueRefreshToken.onComplete(newRefreshToken);
+    public Token reissueRefreshToken(final Long userId) {
+        User user = getCacheByUserId(userId);
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getUserId());
+        redisTemplate.set(user.getUserId(), newRefreshToken, CacheSpec.REFRESH_TOKEN);
+        return Token.onComplete(newRefreshToken);
     }
 
-    public Logout logout(Long userId) {
+    public void logout() {
         SecurityContextHolder.clearContext();
-        return Logout.onComplete(userId);
     }
 
     @Transactional
-    public UpdateNickname updateNickname(UpdateNicknameCommand updateNicknameCommand) {
-        CacheUser cacheUser = userRepository.findPendingUserByTempId(updateNicknameCommand.getTempId(), CacheSpec.PENDING_USER);
-        UserEntity user = userRepository.save(CacheUser.toEntity(cacheUser));
-        user.updateNickname(updateNicknameCommand.getNickname());
-        userRepository.saveCache(CacheUser.toCacheUser(user), CacheSpec.USER);
-        return UpdateNickname.onComplete(user.getNickname());
+    public User register(RegisterCommand command) {
+        User user = userRepository.findCachedUserByPendingUserId(command.getPendingUserId(), CacheSpec.PENDING_USER);
+        user.addNickname(command.getNickname());
+
+        UserEntity userEntity = userRepository.save(UserEntity.register(user.getUserKey(), user.getEmail()));
+        userRepository.saveCache(userEntity.toUser(), CacheSpec.USER);
+
+        userRepository.deleteCache(user, CacheSpec.PENDING_USER);
+        return user;
     }
 
-    public CheckRegisterUser checkRegisterUser(Long userId) {
-        CacheUser cacheUser = findCacheByUserId(userId);
-        boolean status = StringUtils.isNullOrEmpty(cacheUser.getNickname());
-        return CheckRegisterUser.onComplete(status);
+
+    /*
+     * 단일 메소드
+     */
+    public User getCacheByUserId(Long userId) {
+        return Optional.ofNullable(userRepository.findCachedUserByUserId(userId, CacheSpec.USER))
+                .orElseGet(() -> userRepository.findByUserId(userId)
+                        .map(UserEntity::toUser)
+                        .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND)));
     }
 
-    @Cacheable(value = "user", key = "#userId")
-    public CacheUser findCacheByUserId(Long userId) {
-        return UserEntity.toCacheUser(userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND)));
+    public User getCacheByUserKey(String userKey) {
+        return Optional.ofNullable(userRepository.findCachedUserByUserKey(userKey, CacheSpec.USER))
+                .orElseGet(() -> userRepository.findByUserKey(userKey)
+                        .map(UserEntity::toUser)
+                        .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND)));
     }
 
-    public UserEntity findByUserId(Long userId) {
-        return userRepository.getReferenceById(userId);
+    @Nullable
+    public User findByUserId(Long userId) {
+        return userRepository.findByUserId(userId)
+                .map(UserEntity::toUser)
+                .orElse(null);
+    }
+
+    @Nullable
+    public User findByUserKey(String userKey) {
+        return userRepository.findByUserKey(userKey)
+                .map(UserEntity::toUser)
+                .orElse(null);
+    }
+
+    public User saveCache(User user) {
+        return userRepository.saveCache(user, CacheSpec.PENDING_USER);
     }
 }

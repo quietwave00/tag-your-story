@@ -16,7 +16,6 @@ public class BoardByTrack {
     private String nickname;
     private HashtagNameList hashtagNameList;
 
-
     public static BoardByTrack onComplete(BoardEntity board, HashtagNameList hashtagNameList) {
         return BoardByTrack.builder()
                 .boardId(board.getBoardId())
