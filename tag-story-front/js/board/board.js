@@ -20,7 +20,7 @@ const renderBoardList = (boardList) => {
     }
     for(let board of boardList) {
         let boardId = board.boardId;
-        let hashtagList = board.hashtagList;
+        let hashtagList = board.hashtagNameList.nameList;
         let content = board.content;
         let hashtagElements = "";
         for(let hashtag of hashtagList) {
@@ -127,7 +127,7 @@ const renderAlert = () => {
 const renderBoard = (board) => {
     document.getElementById('board-message-area').innerHTML = "";
     let boardId = board.boardId;
-    let hashtagList = board.hashtagList;
+    let hashtagList = board.hashtagNameList.nameList;
     let content = board.content;
     let tagElements = "";
     for(let hashtag of hashtagList) {
