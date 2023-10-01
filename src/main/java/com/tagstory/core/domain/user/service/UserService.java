@@ -5,7 +5,7 @@ import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.UserEntity;
-import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
+import com.tagstory.core.common.CommonRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
 import com.tagstory.core.domain.user.service.dto.command.RegisterCommand;
 import com.tagstory.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
@@ -27,7 +27,7 @@ import java.util.Optional;
 public class UserService  {
 
     private final UserRepository userRepository;
-    private final TagStoryRedisTemplate redisTemplate;
+    private final CommonRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
 
     public Token reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
@@ -50,13 +50,13 @@ public class UserService  {
 
     @Transactional
     public User register(RegisterCommand command) {
-        User user = userRepository.findCachedUserByPendingUserId(command.getPendingUserId(), CacheSpec.PENDING_USER);
+        User user = getCachedPendingUserById(command.getPendingUserId());
         user.addNickname(command.getNickname());
 
         UserEntity userEntity = userRepository.save(UserEntity.register(user.getUserKey(), user.getEmail()));
         userRepository.saveCache(userEntity.toUser(), CacheSpec.USER);
 
-        userRepository.deleteCache(user, CacheSpec.PENDING_USER);
+        userRepository.deletePendingUser(user, CacheSpec.PENDING_USER);
         return user;
     }
 
@@ -78,6 +78,11 @@ public class UserService  {
                         .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND)));
     }
 
+    public User getCachedPendingUserById(String pendingUserId) {
+        return Optional.ofNullable(userRepository.findCachedUserByPendingUserId(pendingUserId, CacheSpec.PENDING_USER))
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+    }
+
     @Nullable
     public User findByUserId(Long userId) {
         return userRepository.findByUserId(userId)
@@ -92,7 +97,7 @@ public class UserService  {
                 .orElse(null);
     }
 
-    public User saveCache(User user) {
+    public User saveCachedPendingUser(User user) {
         return userRepository.saveCache(user, CacheSpec.PENDING_USER);
     }
 }

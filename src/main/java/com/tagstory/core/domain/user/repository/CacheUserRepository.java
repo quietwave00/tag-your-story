@@ -7,7 +7,7 @@ public interface CacheUserRepository {
 
     User saveCache(User user, CacheSpec cacheSpec);
 
-    boolean deleteCache(User user, CacheSpec cacheSpec);
+    void deletePendingUser(User user, CacheSpec cacheSpec);
 
     User findCachedUserByUserId(Long userId, CacheSpec cacheSpec);
 

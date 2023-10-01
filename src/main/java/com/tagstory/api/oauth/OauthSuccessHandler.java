@@ -4,7 +4,7 @@ import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.jwt.JwtCookieProvider;
 import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
+import com.tagstory.core.common.CommonRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +25,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 
     private final JwtCookieProvider jwtCookieProvider;
     private final JwtUtil jwtUtil;
-    private final TagStoryRedisTemplate redisTemplate;
+    private final CommonRedisTemplate redisTemplate;
 
     @Value("${api.redirect-url}")
     private String REDIRECT_URL;
@@ -43,7 +43,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
             response.addCookie(jwtCookieProvider.generatePendingUserCookie(tempToken));
             getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
         } else {
-            log.info("registerd user");
+            log.info("registered user");
             String accessToken = jwtUtil.generateAccessToken(userId);
             String refreshToken = redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
 

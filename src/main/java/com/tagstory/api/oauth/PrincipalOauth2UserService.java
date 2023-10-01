@@ -62,6 +62,6 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
                 .userKey(userKey)
                 .build();
 
-        return userService.saveCache(user);
+        return userService.saveCachedPendingUser(user);
     }
 }
