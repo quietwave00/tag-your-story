@@ -5,14 +5,11 @@ import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.BoardByTrack;
-import com.tagstory.core.domain.board.dto.response.CreateBoard;
-import com.tagstory.core.domain.board.dto.response.DetailBoard;
+import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
-
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +19,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,39 +33,52 @@ public class BoardService {
     private final BoardHashtagRepository boardHashtagRepository;
 
     @Transactional
-    public CreateBoard create(CreateBoardCommand createBoardCommand, User user, List<HashtagEntity> hashtagList) {
-        BoardEntity board = BoardEntity.create(createBoardCommand);
-        board.addUser(user.toEntity());
-        BoardEntity savedBoard = boardRepository.save(board);
+    public Board create(CreateBoardCommand command, User user, List<HashtagEntity> hashtagEntityList) {
+        BoardEntity boardEntity = BoardEntity.create(command);
+        boardEntity.addUser(user.toEntity());
+        BoardEntity savedBoard = boardRepository.save(boardEntity);
 
-        hashtagList.stream()
-                .map(hashtag -> BoardHashtagEntity.of(board, hashtag))
+        /* 해시태그 중간 테이블에 저장 */
+        hashtagEntityList.stream()
+                .map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity))
                 .forEach(boardHashtagRepository::save);
 
-        return CreateBoard.onComplete(savedBoard, hashtagList);
+        return savedBoard.toBoard();
     }
 
-    public List<BoardByTrack> getBoardListByTrackId(Page<BoardEntity> boardList, List<HashtagNameList> hashtagNameListByBoard) {
+    public List<Board> getBoardListByTrackId(List<Board> boardList, List<HashtagNameList> hashtagNameListByBoardList) {
         return boardList.stream()
-                .flatMap(board -> hashtagNameListByBoard.stream()
-                        .map(hashtagNameList -> BoardByTrack.onComplete(board, hashtagNameList)))
+                .peek(board -> hashtagNameListByBoardList.forEach(board::addHashtagList))
                 .collect(Collectors.toList());
     }
 
-    public DetailBoard getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
-        BoardEntity board = boardRepository.findByBoardId(boardId);
-        return DetailBoard.onComplete(board, hashtagNameList);
+    public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
+        Board board = getBoardByBoardId(boardId);
+        return board.addHashtagList(hashtagNameList);
     }
 
-    public BoardEntity findByBoardId(String boardId) {
-        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
+
+    /*
+     * 단일 메소드
+     */
+    public Board getBoardByBoardId(String boardId) {
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND)).toBoard();
     }
 
-    public List<BoardEntity> findByTrackId(String trackId) {
-        return boardRepository.findByTrackId(trackId);
+    public List<Board> findByTrackId(String trackId) {
+        List<BoardEntity> boardEntityList = boardRepository.findByTrackId(trackId);
+
+        return Optional.ofNullable(boardEntityList)
+                .map(entityList -> entityList.stream().map(BoardEntity::toBoard).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
-    public Page<BoardEntity> findBoardByStatusAndTrackId(String trackId, int page) {
-        return boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus.POST, trackId, PageRequest.of(page, 8));
+
+    public List<Board> getBoardListByStatusAndTrackId(BoardStatus status, String trackId, int page) {
+        Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(status, trackId, PageRequest.of(page, 8));
+
+        return boardEntityPage.getContent().stream()
+                .map(BoardEntity::toBoard)
+                .collect(Collectors.toList());
     }
 }

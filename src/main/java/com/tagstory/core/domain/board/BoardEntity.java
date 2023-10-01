@@ -2,7 +2,7 @@ package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
+import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.user.UserEntity;
@@ -50,7 +50,7 @@ public class BoardEntity extends BaseTime {
     @OneToMany(mappedBy = "board")
     private List<LikeEntity> likeList = new ArrayList<>();
 
-    //해시태그 연관관계 추가
+    //해시태그 연관관계?
 
     /*
      * 연관 관계 설정
@@ -61,15 +61,6 @@ public class BoardEntity extends BaseTime {
             user.addBoard(this);
         }
     }
-
-//    public void addHashtag(List<BoardHashtagEntity> boardHashtagList) {
-//        for (BoardHashtagEntity boardHashtag : boardHashtagList) {
-//            if(!this.hashtagList.contains(boardHashtag)) {
-//                this.hashtagList.add(boardHashtag);
-//                boardHashtag.add(this);
-//            }
-//        }
-//    }
 
     public void addFile(List<FileEntity> fileList) {
         this.fileList = fileList;
@@ -88,11 +79,16 @@ public class BoardEntity extends BaseTime {
     }
 
     /*
-     * 테스트용 생성자
+     * 서비스 도메인 형변환
      */
-    public void generateTestBoard(String boardId, String content, String nickname) {
-        this.boardId = boardId;
-        this.content = content;
-        this.user.updateNickname(nickname);
+    public Board toBoard() {
+        return Board.builder()
+                .boardId(this.getBoardId())
+                .content(this.getContent())
+                .status(this.getStatus())
+                .count(this.getCount())
+                .trackId(this.getTrackId())
+                .user(this.getUser().toUser())
+                .build();
     }
 }

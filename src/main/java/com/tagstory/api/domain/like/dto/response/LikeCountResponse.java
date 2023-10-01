@@ -1,6 +1,5 @@
 package com.tagstory.api.domain.like.dto.response;
 
-import com.tagstory.core.domain.like.dto.response.LikeCount;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,9 +8,9 @@ import lombok.Getter;
 public class LikeCountResponse {
     private int likeCount;
 
-    public static LikeCountResponse from(LikeCount getLikeCount) {
+    public static LikeCountResponse from(int likeCount) {
         return LikeCountResponse.builder()
-                .likeCount(getLikeCount.getLikeCount())
+                .likeCount(likeCount)
                 .build();
     }
 }

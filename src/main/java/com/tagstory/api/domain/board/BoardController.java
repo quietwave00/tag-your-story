@@ -7,9 +7,7 @@ import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
-import com.tagstory.core.domain.board.dto.response.BoardByTrack;
-import com.tagstory.core.domain.board.dto.response.CreateBoard;
-import com.tagstory.core.domain.board.dto.response.DetailBoard;
+import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,9 +28,9 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/boards")
-    public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
-        CreateBoard createBoard = boardFacade.create(createBoardRequest.toCommand(userId));
-        return ApiUtils.success(CreateBoardResponse.from(createBoard));
+    public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest request, @CurrentUserId Long userId) {
+        Board response = boardFacade.create(request.toCommand(userId));
+        return ApiUtils.success(CreateBoardResponse.from(response));
     }
 
     /*
@@ -40,8 +38,8 @@ public class BoardController {
      */
     @GetMapping("/boards/{trackId}")
     public ApiResult<List<BoardByTrackResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @RequestParam("page") int page) {
-        List<BoardByTrack> boardByTrack = boardFacade.getBoardListByTrackId(trackId, page);
-        return ApiUtils.success(boardByTrack.stream().map(BoardByTrackResponse::from).collect(Collectors.toList()));
+        List<Board> response = boardFacade.getBoardListByTrackId(trackId, page);
+        return ApiUtils.success(response.stream().map(BoardByTrackResponse::from).collect(Collectors.toList()));
     }
 
     /*
@@ -49,7 +47,7 @@ public class BoardController {
      */
     @GetMapping("/boards")
     public ApiResult<DetailBoardResponse> getDetailBoard(@RequestParam("boardId") String boardId) {
-        DetailBoard detailBoard = boardFacade.getDetailBoard(boardId);
-        return ApiUtils.success(DetailBoardResponse.from(detailBoard));
+        Board response = boardFacade.getDetailBoard(boardId);
+        return ApiUtils.success(DetailBoardResponse.from(response));
     }
 }

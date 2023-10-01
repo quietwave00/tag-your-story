@@ -27,6 +27,9 @@ public class User {
 
     private UserStatus userStatus;
 
+    /*
+     * 형변환
+     */
     public UserEntity toEntity() {
         return UserEntity.builder()
                 .userId(this.getUserId())
@@ -38,6 +41,9 @@ public class User {
                 .build();
     }
 
+    /*
+     * 비즈니스 로직
+     */
     public void addNickname(String nickname) {
         this.nickname = nickname;
     }

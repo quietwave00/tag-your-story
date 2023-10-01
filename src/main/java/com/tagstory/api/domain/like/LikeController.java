@@ -6,7 +6,6 @@ import com.tagstory.api.domain.like.dto.request.LikeBoardRequest;
 import com.tagstory.api.domain.like.dto.response.LikeCountResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
-import com.tagstory.core.domain.like.dto.response.LikeCount;
 import com.tagstory.core.domain.like.service.LikeFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,8 +42,7 @@ public class LikeController {
      */
     @GetMapping("/likes/{boardId}")
     public ApiResult<LikeCountResponse> like(@PathVariable("boardId") String boardId) {
-        LikeCount likeCount = likeFacade.getLikeCount(boardId);
+        int likeCount = likeFacade.getLikeCount(boardId);
         return ApiUtils.success(LikeCountResponse.from(likeCount));
     }
-
 }

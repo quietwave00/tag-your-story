@@ -1,14 +1,12 @@
 package com.tagstory.api.domain.file;
 
 import com.tagstory.api.domain.file.dto.request.UploadFileRequest;
-import com.tagstory.api.domain.file.dto.response.FileListResponse;
+import com.tagstory.api.domain.file.dto.response.FileResponse;
 import com.tagstory.api.domain.file.dto.response.MainFileResponse;
 import com.tagstory.api.domain.file.dto.response.UploadFileResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
-import com.tagstory.core.domain.file.dto.response.FileList;
-import com.tagstory.core.domain.file.dto.response.MainFile;
-import com.tagstory.core.domain.file.dto.response.UploadFile;
+import com.tagstory.core.domain.file.dto.response.File;
 import com.tagstory.core.domain.file.service.FileFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,9 +28,8 @@ public class FileController {
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping( value = "/files")
     public ApiResult<List<UploadFileResponse>> upload(@ModelAttribute UploadFileRequest uploadFileRequest) {
-        System.out.println(uploadFileRequest.getBoardId());
-        List<UploadFile> uploadFileList = fileFacade.upload(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
-        return ApiUtils.success(uploadFileList.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
+        List<File> response = fileFacade.upload(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
+        return ApiUtils.success(response.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
     }
 
     /*
@@ -40,16 +37,16 @@ public class FileController {
      */
     @GetMapping("/files/{trackId}")
     public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId) {
-        List<MainFile> mainFileList = fileFacade.getMainFileList(trackId);
-        return ApiUtils.success(mainFileList.stream().map(MainFileResponse::from).collect(Collectors.toList()));
+        List<File> response = fileFacade.getMainFileList(trackId);
+        return ApiUtils.success(response.stream().map(MainFileResponse::from).collect(Collectors.toList()));
     }
 
     /*
      * 게시물에 업로드된 파일 리스트를 조회한다.
      */
     @GetMapping("/files")
-    public ApiResult<List<FileListResponse>> getFileList(@RequestParam("boardId") String boardId) {
-        List<FileList> fileList = fileFacade.getFileList(boardId);
-        return ApiUtils.success(fileList.stream().map(FileListResponse::from).collect(Collectors.toList()));
+    public ApiResult<List<FileResponse>> getFileList(@RequestParam("boardId") String boardId) {
+        List<File> response = fileFacade.getFileList(boardId);
+        return ApiUtils.success(response.stream().map(FileResponse::from).collect(Collectors.toList()));
     }
 }

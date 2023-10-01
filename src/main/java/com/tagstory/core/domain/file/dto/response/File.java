@@ -1,41 +1,33 @@
-package com.tagstory.core.domain.file;
+package com.tagstory.core.domain.file.dto.response;
 
-import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.file.dto.response.File;
+import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.file.FileEntity;
+import com.tagstory.core.domain.file.FileLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "files")
-public class FileEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class File {
     private Long fileId;
 
     private String fileName;
 
     private String filePath;
 
-    @Enumerated(EnumType.STRING)
     private FileLevel fileLevel;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
-    private BoardEntity board;
+    private Board board;
 
     /*
      * 형변환
      */
-    public File toFile() {
-        return File.builder()
+    public FileEntity toEntity() {
+        return FileEntity.builder()
                 .fileId(this.getFileId())
                 .fileName(this.getFileName())
                 .filePath(this.getFilePath())

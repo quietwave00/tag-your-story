@@ -1,17 +1,17 @@
-package com.tagstory.core.domain.file.dto.response;
+package com.tagstory.api.domain.file.dto.response;
 
-import com.tagstory.core.domain.file.FileEntity;
+import com.tagstory.core.domain.file.dto.response.File;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class FileList {
+public class FileResponse {
     private Long fileId;
     private String filePath;
 
-    public static FileList onComplete(FileEntity file) {
-        return FileList.builder()
+    public static FileResponse from(File file) {
+        return FileResponse.builder()
                 .fileId(file.getFileId())
                 .filePath(file.getFilePath())
                 .build();

@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.board.dto.response;
 
-import com.tagstory.core.domain.board.dto.response.BoardByTrack;
+import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,14 +16,13 @@ public class BoardByTrackResponse {
     private String nickname;
     private HashtagNameList hashtagNameList;
 
-    public static BoardByTrackResponse from(BoardByTrack boardByTrack) {
+    public static BoardByTrackResponse from(Board board) {
         return BoardByTrackResponse.builder()
-                .boardId(boardByTrack.getBoardId())
-                .content(boardByTrack.getContent())
-                .createdAt(boardByTrack.getCreatedAt())
-                .nickname(boardByTrack.getNickname())
-                .hashtagNameList(boardByTrack.getHashtagNameList())
+                .boardId(board.getBoardId())
+                .content(board.getContent())
+                .createdAt(board.getCreatedAt())
+                .nickname(board.getUser().getNickname())
+                .hashtagNameList(board.getHashtagNameList())
                 .build();
     }
-
 }

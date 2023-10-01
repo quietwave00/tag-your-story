@@ -1,6 +1,5 @@
 package com.tagstory.core.domain.file.dto;
 
-import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
 import lombok.Builder;
@@ -14,12 +13,11 @@ public class S3File {
     private String filePath;
     private FileLevel fileLevel;
 
-    public FileEntity toEntity(BoardEntity board) {
+    public FileEntity toEntity() {
         return FileEntity.builder()
-                .fileName(originalName)
-                .filePath(filePath)
-                .fileLevel(fileLevel)
-                .board(board)
+                .fileName(this.getOriginalName())
+                .filePath(this.getFilePath())
+                .fileLevel(this.getFileLevel())
                 .build();
     }
 

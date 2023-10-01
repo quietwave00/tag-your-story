@@ -1,13 +1,11 @@
 package com.tagstory.core.domain.file.service;
 
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
 import com.tagstory.core.domain.file.dto.S3File;
-import com.tagstory.core.domain.file.dto.response.FileList;
-import com.tagstory.core.domain.file.dto.response.MainFile;
-import com.tagstory.core.domain.file.dto.response.UploadFile;
+import com.tagstory.core.domain.file.dto.response.File;
 import com.tagstory.core.domain.file.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,34 +21,35 @@ public class FileService {
     private final FileRepository fileRepository;
 
     @Transactional
-    public List<UploadFile> upload(List<S3File> saveFileList, BoardEntity board) {
-        List<FileEntity> fileList = saveFileList.stream()
+    public List<File> upload(List<S3File> saveFileList, Board board) {
+        /* S3에 저장돈 정보를 엔티티로 변환 */
+        List<FileEntity> fileEntityList = saveFileList.stream()
                 .map(beforeS3File -> {
                     S3File s3File = addFileLevel(beforeS3File);
-                    return s3File.toEntity(board);
+                    return s3File.toEntity();
                 })
                 .collect(Collectors.toList());
-        fileRepository.saveCache(fileList, CacheSpec.FILE);
-        return fileRepository.saveAll(fileList).stream()
-                .map(UploadFile::onComplete)
+
+        fileRepository.saveCache(fileEntityList, CacheSpec.FILE);
+        return fileRepository.saveAll(fileEntityList).stream()
+                .map(FileEntity::toFile)
                 .collect(Collectors.toList());
     }
 
-    public List<MainFile> getMainFileList(List<BoardEntity> boardList) {
+    public List<File> getMainFileList(List<Board> boardList) {
         return boardList.stream()
                 .flatMap(board -> board.getFileList().stream())
                 .filter(file -> file.getFileLevel() == FileLevel.MAIN)
-                .map(MainFile::onComplete)
                 .collect(Collectors.toList());
     }
 
-    public List<FileList> getFileList(BoardEntity board) {
-        List<FileEntity> fileList = board.getFileList();
-        return fileList.stream()
-                .map(FileList::onComplete)
-                .collect(Collectors.toList());
+    public List<File> getFileList(Board board) {
+        return board.getFileList();
     }
 
+    /*
+     * 단일 메소드
+     */
     private S3File addFileLevel(S3File s3File) {
         FileLevel fileLevel = (s3File.getIndex() == 0) ? FileLevel.MAIN : FileLevel.SUB;
         return s3File.addFileLevel(fileLevel);

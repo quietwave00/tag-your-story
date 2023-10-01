@@ -16,5 +16,5 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     Optional<BoardEntity> findByBoardIdAndStatus(String boardId, BoardStatus status);
 
-    BoardEntity findByBoardId(String boardId);
+    Optional<BoardEntity> findByBoardId(String boardId);
 }
