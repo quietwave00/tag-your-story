@@ -1,6 +1,5 @@
 package com.tagstory.core.domain.boardhashtag;
 
-import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import lombok.AllArgsConstructor;
@@ -16,7 +15,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Table(name="BOARD_HASHTAG")
 @Entity
-public class BoardHashtagEntity extends BaseTime {
+public class BoardHashtagEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

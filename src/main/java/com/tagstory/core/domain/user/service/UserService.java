@@ -53,7 +53,7 @@ public class UserService  {
         User user = getCachedPendingUserById(command.getPendingUserId());
         user.addNickname(command.getNickname());
 
-        UserEntity userEntity = userRepository.save(UserEntity.register(user.getUserKey(), user.getEmail()));
+        UserEntity userEntity = userRepository.save(user.toEntity());
         userRepository.saveCache(userEntity.toUser(), CacheSpec.USER);
 
         userRepository.deletePendingUser(user, CacheSpec.PENDING_USER);

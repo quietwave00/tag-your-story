@@ -53,7 +53,7 @@ public class CommonRedisTemplate {
             String key = cacheSpec.generateKey(id);
             return redisTemplate.delete(key);
         } catch (NullPointerException e) {
-            throw new CustomException(ExceptionCode.CACHE_DELETE_EXCEPTION);
+            throw new RuntimeException("An exception occurred while deleting the cache.");
         }
     }
 }
