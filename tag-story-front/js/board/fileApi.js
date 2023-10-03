@@ -4,7 +4,7 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  * 파일 업로드를 요청한다.
  */
 const upload = (fileList,uploadFileRequest) => {
-    console.log(fileList);
+    console.log("fileApi 실행됨");
     return fetch(`${server_host}/api/files`, {
         method: "POST",
         headers: {

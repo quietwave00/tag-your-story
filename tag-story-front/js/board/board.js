@@ -94,7 +94,9 @@ const deleteHashtag = (hashtagId) => {
 document.getElementById('write-button').addEventListener('click', async () => {
     const response = await BoardApi.writeBoard(hashtagArray, trackId);
     renderBoard(response);
-    File.upload(response.boardId);
+    if(document.getElementsByClassName('img_div').length > 0) {
+        File.upload(response.boardId);
+    }
     renderAlert();
 });
 
@@ -127,7 +129,7 @@ const renderAlert = () => {
 const renderBoard = (board) => {
     document.getElementById('board-message-area').innerHTML = "";
     let boardId = board.boardId;
-    let hashtagList = board.hashtagNameList.nameList;
+    let hashtagList = board.hashtagList.nameList;
     let content = board.content;
     let tagElements = "";
     for(let hashtag of hashtagList) {
