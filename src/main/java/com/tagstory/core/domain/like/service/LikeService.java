@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class LikeService {
@@ -26,5 +28,10 @@ public class LikeService {
 
     public int getLikeCount(Board board) {
         return likeRepository.countByBoard(board.toEntity());
+    }
+
+    public boolean isLiked(String boardId, Long userId) {
+        LikeEntity likeEntity = likeRepository.findByBoard_BoardId_AndUser_UserId(boardId, userId);
+        return Objects.nonNull(likeEntity);
     }
 }

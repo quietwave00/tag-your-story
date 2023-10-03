@@ -4,6 +4,7 @@ import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.like.dto.request.CancelLikeRequest;
 import com.tagstory.api.domain.like.dto.request.LikeBoardRequest;
 import com.tagstory.api.domain.like.dto.response.LikeCountResponse;
+import com.tagstory.api.domain.like.dto.response.LikeStatusResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
 import com.tagstory.core.domain.like.service.LikeFacade;
@@ -44,5 +45,14 @@ public class LikeController {
     public ApiResult<LikeCountResponse> like(@PathVariable("boardId") String boardId) {
         int likeCount = likeFacade.getLikeCount(boardId);
         return ApiUtils.success(LikeCountResponse.from(likeCount));
+    }
+
+    /*
+     * 사용자의 좋아요 여부를 체크한다.
+     */
+    @GetMapping("/likes/status/{boardId}")
+    public ApiResult<LikeStatusResponse> isLiked(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
+        boolean isLiked = likeFacade.isLiked(boardId, userId);
+        return ApiUtils.success(LikeStatusResponse.from(isLiked));
     }
 }

@@ -32,4 +32,8 @@ public class LikeFacade {
         User user = userService.getCacheByUserId(command.getUserId());
         likeService.cancelLike(board, user);
     }
+
+    public boolean isLiked(String boardId, Long userId) {
+        return likeService.isLiked(boardId, userId);
+    }
 }
