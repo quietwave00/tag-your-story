@@ -47,8 +47,8 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
-    public List<File> getFileList(Board board) {
-        return board.getFileList();
+    public List<File> getFileList(String boardId) {
+        return getFileListByBoardId(boardId);
     }
 
     /*
@@ -57,5 +57,9 @@ public class FileService {
     private S3File addFileLevel(S3File s3File) {
         FileLevel fileLevel = (s3File.getIndex() == 0) ? FileLevel.MAIN : FileLevel.SUB;
         return s3File.addFileLevel(fileLevel);
+    }
+
+    private List<File> getFileListByBoardId(String boardId) {
+        return fileRepository.findByBoard_BoardId(boardId).stream().map(FileEntity::toFile).collect(Collectors.toList());
     }
 }

@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Builder
@@ -15,7 +14,6 @@ public class DetailBoardResponse {
     private String nickname;
     private LocalDateTime createdAt;
     private HashtagNameList hashtagNameList;
-    private List<String> filePathList;
 
     public static DetailBoardResponse from(Board board) {
         return DetailBoardResponse.builder()

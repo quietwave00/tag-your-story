@@ -35,7 +35,7 @@ public class FileController {
     /*
      * 트랙 아이디에 해당하는 메인 이미지 파일을 조회한다.
      */
-    @GetMapping("/files/{trackId}")
+    @GetMapping("/files/main/{trackId}")
     public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId) {
         List<File> response = fileFacade.getMainFileList(trackId);
         return ApiUtils.success(response.stream().map(MainFileResponse::from).collect(Collectors.toList()));
@@ -44,8 +44,8 @@ public class FileController {
     /*
      * 게시물에 업로드된 파일 리스트를 조회한다.
      */
-    @GetMapping("/files")
-    public ApiResult<List<FileResponse>> getFileList(@RequestParam("boardId") String boardId) {
+    @GetMapping("/files/{boardId}")
+    public ApiResult<List<FileResponse>> getFileList(@PathVariable("boardId") String boardId) {
         List<File> response = fileFacade.getFileList(boardId);
         return ApiUtils.success(response.stream().map(FileResponse::from).collect(Collectors.toList()));
     }

@@ -31,7 +31,6 @@ public class FileFacade {
     }
 
     public List<File> getFileList(String boardId) {
-        Board board = boardService.getBoardByBoardId(boardId);
-        return fileService.getFileList(board);
+        return fileService.getFileList(boardId);
     }
 }
