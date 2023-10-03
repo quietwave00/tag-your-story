@@ -157,20 +157,6 @@ const renderBoard = (board) => {
 }
 
 /**
- * 게시글의 상세 페이지로 이동한다.
- */
-const moveDetails = () => {
-    const boardElements = document.getElementsByClassName('board');
-
-    for(let element of boardElements) {
-        element.addEventListener('click', (e) => {
-            const boardId = e.currentTarget.querySelector('.board-id').value;
-            window.location.href = `board.html?boardId=${boardId}`;
-        })
-    }
-}
-
-/**
  *  페이징 관련 함수
  */
 const pagingBoardList = () => {
@@ -231,3 +217,17 @@ BoardApi.getBoardListByTrackId(trackId, defaultPage).then((response) => renderBo
  *  page-area에 대한 처리를 수행한다.
  */
 pagingBoardList();
+
+/**
+ * 게시글의 상세 페이지로 이동한다.
+ */
+const moveDetails = () => {
+    const boardElements = document.getElementsByClassName('board-element');
+
+    for(let board of boardElements) {
+        board.addEventListener('click', (e) => {
+            const boardId = e.currentTarget.querySelector('.board-id').value;
+            window.location.href = `${client_host}/board.html?boardId=${boardId}`;
+        });
+    }
+}
