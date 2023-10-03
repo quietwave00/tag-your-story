@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -47,8 +48,8 @@ public class BoardService {
     }
 
     public List<Board> getBoardListByTrackId(List<Board> boardList, List<HashtagNameList> hashtagNameListByBoardList) {
-        return boardList.stream()
-                .peek(board -> hashtagNameListByBoardList.forEach(board::addHashtagList))
+        return IntStream.range(0, boardList.size())
+                .mapToObj(i -> boardList.get(i).addHashtagList(hashtagNameListByBoardList.get(i)))
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +73,6 @@ public class BoardService {
                 .map(entityList -> entityList.stream().map(BoardEntity::toBoard).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
     }
-
 
     public List<Board> getBoardListByStatusAndTrackId(BoardStatus status, String trackId, int page) {
         Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(status, trackId, PageRequest.of(page, 8));
