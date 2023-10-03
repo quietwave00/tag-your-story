@@ -32,6 +32,13 @@ public class FileEntity {
     private BoardEntity board;
 
     /*
+     * 연관관계 설정
+     */
+    public void addBoard(BoardEntity boardEntity) {
+        this.board = boardEntity;
+    }
+
+    /*
      * 형변환
      */
     public File toFile() {

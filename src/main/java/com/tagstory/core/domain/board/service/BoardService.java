@@ -38,6 +38,7 @@ public class BoardService {
         BoardEntity boardEntity = BoardEntity.create(command);
         boardEntity.addUser(user.toEntity());
         BoardEntity savedBoard = boardRepository.save(boardEntity);
+        savedBoard.addHashtag(hashtagEntityList);
 
         /* 해시태그 중간 테이블에 저장 */
         hashtagEntityList.stream()

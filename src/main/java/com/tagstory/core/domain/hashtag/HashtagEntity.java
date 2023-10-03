@@ -1,6 +1,5 @@
 package com.tagstory.core.domain.hashtag;
 
-import com.tagstory.core.domain.board.BoardEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

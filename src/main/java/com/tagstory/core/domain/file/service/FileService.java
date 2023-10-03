@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,10 +31,13 @@ public class FileService {
                 })
                 .collect(Collectors.toList());
 
-        fileRepository.saveCache(fileEntityList, CacheSpec.FILE);
-        return fileRepository.saveAll(fileEntityList).stream()
-                .map(FileEntity::toFile)
-                .collect(Collectors.toList());
+        /* 변환한 엔티티 객체를 저장 */
+        fileEntityList.forEach(fileEntity -> fileEntity.addBoard(board.toEntity()));
+        List<FileEntity> savedFileEntityList= new ArrayList<>(fileRepository.saveAll(fileEntityList));
+
+        /* 캐싱 */
+        fileRepository.saveCache(savedFileEntityList, CacheSpec.FILE);
+        return savedFileEntityList.stream().map(FileEntity::toFile).collect(Collectors.toList());
     }
 
     public List<File> getMainFileList(List<Board> boardList) {

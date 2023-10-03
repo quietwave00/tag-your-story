@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -50,7 +49,6 @@ public class Board {
                 .count(this.getCount())
                 .trackId(this.getTrackId())
                 .user(this.getUser().toEntity())
-                .fileList(this.getFileList().stream().map(File::toEntity).collect(Collectors.toList()))
                 .build();
     }
 
