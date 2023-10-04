@@ -1,5 +1,6 @@
 import UserArea from "../user/userArea.js";
 import BoardApi from "../board/boardApi.js"
+import Like from "../board/like.js";
 
 window.onload = () => {
     /**
@@ -8,13 +9,19 @@ window.onload = () => {
     UserArea.setState();
 
     const boardId = new URLSearchParams(window.location.search).get('boardId');
-
     /**
      * 상세 게시글 정보를 요청하고 렌더링한다.
      */
     BoardApi.getBoardByBoardId(boardId).then((response) => {
         renderBoard(response)
     });
+
+    /**
+     * 사용자의 게시글 좋아요 여부를 검사한다.
+     */
+    if(localStorage.getItem("Authorization") != null) {
+        Like.checkLiked(boardId);
+    }
 };
 
 /**

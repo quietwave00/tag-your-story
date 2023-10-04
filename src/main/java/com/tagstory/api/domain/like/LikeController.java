@@ -50,6 +50,7 @@ public class LikeController {
     /*
      * 사용자의 좋아요 여부를 체크한다.
      */
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/likes/status/{boardId}")
     public ApiResult<LikeStatusResponse> isLiked(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
         boolean isLiked = likeFacade.isLiked(boardId, userId);
