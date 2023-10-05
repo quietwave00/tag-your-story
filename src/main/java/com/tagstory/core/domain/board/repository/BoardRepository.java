@@ -5,6 +5,8 @@ import com.tagstory.core.domain.board.BoardStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +21,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     Optional<BoardEntity> findByBoardId(String boardId);
 
     int countByTrackId(String trackId);
+
+    @Query("SELECT b FROM BoardEntity b JOIN BoardHashtagEntity bh ON b.boardId = bh.board.boardId WHERE bh.hashtag.hashtagId = :hashtagId")
+    List<BoardEntity> findBoardsByHashtagId(@Param("hashtagId") Long hashtagId);
 }
