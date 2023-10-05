@@ -43,38 +43,38 @@ public class JwtUtil {
     public String generateAccessToken(Long userId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(accessTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("tokenType", TOKEN_TYPE_ACCESS)
-                .withClaim("userId", String.valueOf(userId))
+                .withClaim("TOKEN_TYPE", TOKEN_TYPE_ACCESS)
+                .withSubject(String.valueOf(userId))
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
     public String generateRefreshToken(Long userId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(refreshTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("tokenType", TOKEN_TYPE_REFRESH)
-                .withClaim("userId", String.valueOf(userId))
+                .withClaim("TOKEN_TYPE", TOKEN_TYPE_REFRESH)
+                .withSubject(String.valueOf(userId))
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
     public String generateTempToken(String tempId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(accessTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("tokenType", TOKEN_TYPE_TEMP)
-                .withClaim("tempId", tempId)
+                .withClaim("TOKEN_TYPE", TOKEN_TYPE_TEMP)
+                .withSubject(tempId)
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
     public Long getUserIdFromToken(String token) throws CustomException {
-        return validateToken(token).getClaim("userId").asLong();
+        return Long.valueOf(validateToken(token).getSubject());
     }
 
     public String getTempIdFromToken(String token) throws CustomException {
-        return validateToken(token).getClaim("tempId").asString();
+        return validateToken(token).getSubject();
     }
 
 
     public String getTokenTypeFromToken(String token) {
-        return validateToken(token).getClaim("tokenType").asString();
+        return validateToken(token).getClaim("TOKEN_TYPE").asString();
     }
 
     public DecodedJWT validateToken(String token) {

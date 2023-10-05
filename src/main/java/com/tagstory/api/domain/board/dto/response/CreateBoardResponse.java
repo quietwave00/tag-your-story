@@ -1,11 +1,11 @@
 package com.tagstory.api.domain.board.dto.response;
 
-import com.tagstory.core.domain.board.dto.response.CreateBoard;
+import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Builder
@@ -14,15 +14,15 @@ public class CreateBoardResponse {
     private String nickname;
     private String content;
     private LocalDateTime createdAt;
-    private List<String> hashtagList;
+    private HashtagNameList hashtagList;
 
-    public static CreateBoardResponse from(CreateBoard createBoard) {
+    public static CreateBoardResponse from(Board board) {
         return CreateBoardResponse.builder()
-                .boardId(createBoard.getBoardId())
-                .nickname(createBoard.getNickname())
-                .content(createBoard.getContent())
-                .createdAt(createBoard.getCreatedAt())
-                .hashtagList(createBoard.getHashtagList())
+                .boardId(board.getBoardId())
+                .nickname(board.getUser().getNickname())
+                .content(board.getContent())
+                .createdAt(board.getCreatedAt())
+                .hashtagList(board.getHashtagNameList())
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.tagstory.core.domain.user.redis;
+package com.tagstory.core.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class TagStoryRedisTemplate {
+public class CommonRedisTemplate {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
@@ -43,5 +43,17 @@ public class TagStoryRedisTemplate {
             }
         }
         return null;
+    }
+
+    /*
+     * 데이터를 레디스에서 지운다.
+     */
+    public boolean delete(Object id, CacheSpec cacheSpec) {
+        try {
+            String key = cacheSpec.generateKey(id);
+            return redisTemplate.delete(key);
+        } catch (NullPointerException e) {
+            throw new RuntimeException("An exception occurred while deleting the cache.");
+        }
     }
 }

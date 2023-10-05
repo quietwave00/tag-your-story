@@ -1,10 +1,11 @@
-package com.tagstory.api.jwt;
+package com.tagstory.api.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysql.cj.util.StringUtils;
 import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionResponse;
+import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.core.domain.user.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +21,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
-import static com.tagstory.api.jwt.JwtProperties.HEADER_STRING;
-import static com.tagstory.api.jwt.JwtProperties.TOKEN_PREFIX;
+import static com.tagstory.api.jwt.JwtProperties.*;
 
 
 @Slf4j
@@ -41,27 +40,32 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         log.info("JwtAuthorizationFilter Execute");
         String token = request.getHeader(HEADER_STRING);
 
+        /* 토큰이 존재하지 않으면 게스트 역할이 부여된다. */
         if(StringUtils.isNullOrEmpty(token)) {
-            log.info("Register As Guest");
+            log.info("Request As Guest");
             registerAsGuest();
             filterChain.doFilter(request, response);
             return;
         }
 
+        /* 회원 가입이 완료되지 않은 역할이 부여된다. */
+        if(TOKEN_TYPE_TEMP.equals(jwtUtil.getTokenTypeFromToken(token))) {
+            log.info("Request As Pending User");
+            registerAsPendingUser(jwtUtil.getTempIdFromToken(token));
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        /* 유저 권한을 갖는다 */
         try {
             jwtUtil.validateToken(token);
             Long userId = jwtUtil.getUserIdFromToken(request.getHeader(HEADER_STRING).replace(TOKEN_PREFIX, ""));
+            log.info("Filter userId: {}", userId);
 
-            if(Objects.isNull(userId)) {
-                log.info("Register As Pending User");
-                registerAsPendingUser(jwtUtil.getTempIdFromToken(token));
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            PrincipalDetails principalDetails = new PrincipalDetails(userId);
+            PrincipalDetails principalDetails = new PrincipalDetails(userId, Role.ROLE_USER);
             Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
             log.info("Authorization Complete");
             filterChain.doFilter(request, response);
         } catch(CustomException e) {
@@ -72,7 +76,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     /*
      * Guest 권한을 부여해준다.
      */
-    public void registerAsGuest() {
+    private void registerAsGuest() {
         List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_GUEST.toString()));
         Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -81,7 +85,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     /*
      * Pending User 권한을 부여해준다.
      */
-    public void registerAsPendingUser(String tempId) {
+    private void registerAsPendingUser(String tempId) {
         PrincipalDetails principalDetails = new PrincipalDetails(tempId);
         List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_PENDING_USER.toString()));
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, authorities);
@@ -91,7 +95,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     /*
      * 클라이언트에 예외 메시지를 전달해준다.
      */
-    public void sendExceptionMessage(HttpServletResponse response, CustomException exception) {
+    private void sendExceptionMessage(HttpServletResponse response, CustomException exception) {
         try {
             ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                             .exceptionCode(exception.getExceptionCode())

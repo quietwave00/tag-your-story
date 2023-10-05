@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.user.dto.request;
 
-import com.tagstory.core.domain.user.service.dto.command.UpdateNicknameCommand;
+import com.tagstory.core.domain.user.service.dto.command.RegisterCommand;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateNicknameRequest {
+public class RegisterRequest {
     private String nickname;
 
-    public UpdateNicknameCommand toCommand(String tempId) {
-        return UpdateNicknameCommand.builder()
-                .tempId(tempId)
+    public RegisterCommand toCommand(String pendingUserId) {
+        return RegisterCommand.builder()
+                .pendingUserId(pendingUserId)
                 .nickname(nickname)
                 .build();
     }

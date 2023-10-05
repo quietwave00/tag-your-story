@@ -54,8 +54,31 @@ const getBoardListByTrackId = (trackId, page) => {
     });
 }
 
+/**
+ * 게시글 아이디에 해당하는 상세 게시글 정보를 요청한다.
+ * 
+ * @param boardId: 게시글 아이디
+ */
+const getBoardByBoardId = (boardId) => {
+    return fetch(`${server_host}/api/boards?boardId=${boardId}`, {
+        method: "GET",
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response)
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getBoardByBoardId(boardId);
+                });
+        }
+    });
+}
+
 
 export default {
     writeBoard,
-    getBoardListByTrackId
+    getBoardListByTrackId,
+    getBoardByBoardId
 }

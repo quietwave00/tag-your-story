@@ -1,11 +1,11 @@
 package com.tagstory.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tagstory.api.jwt.JwtAuthorizationFilter;
+import com.tagstory.api.filter.JwtAuthorizationFilter;
 import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.api.oauth.OauthSuccessHandler;
 import com.tagstory.api.oauth.PrincipalOauth2UserService;
-import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
+import com.tagstory.core.common.CommonRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +28,7 @@ public class SecurityConfig {
     private final PrincipalOauth2UserService principalOauth2UserService;
     private final OauthSuccessHandler oauthSuccessHandler;
     private final UserRepository userRepository;
-    private final TagStoryRedisTemplate redisTemplate;
+    private final CommonRedisTemplate redisTemplate;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 

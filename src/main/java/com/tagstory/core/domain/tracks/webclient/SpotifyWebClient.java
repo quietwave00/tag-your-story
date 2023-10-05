@@ -4,7 +4,7 @@ import com.mysql.cj.util.StringUtils;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.redis.TagStoryRedisTemplate;
+import com.tagstory.core.common.CommonRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.ParseException;
@@ -31,7 +31,7 @@ public class SpotifyWebClient {
     private final String CLIENT_SECRET = "913a13e08d71401286973a288516c4a5";
     private final SpotifyApi spotifyApi = new SpotifyApi.Builder().setClientId(CLIENT_ID).setClientSecret(CLIENT_SECRET).build();
 
-    private final TagStoryRedisTemplate redisTemplate;
+    private final CommonRedisTemplate redisTemplate;
 
     private String generateAccessToken() {
         ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();

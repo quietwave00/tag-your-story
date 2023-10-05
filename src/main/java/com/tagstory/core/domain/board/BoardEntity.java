@@ -2,8 +2,10 @@ package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
+import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import com.tagstory.core.domain.file.FileEntity;
+import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.AllArgsConstructor;
@@ -47,9 +49,12 @@ public class BoardEntity extends BaseTime {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<FileEntity> fileList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board")
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<LikeEntity> likeList = new ArrayList<>();
 
+    @OneToMany
+    @JoinColumn(name = "board_id")
+    private List<HashtagEntity> hashtagList = new ArrayList<>();
 
     /*
      * 연관 관계 설정
@@ -61,17 +66,8 @@ public class BoardEntity extends BaseTime {
         }
     }
 
-//    public void addHashtag(List<BoardHashtagEntity> boardHashtagList) {
-//        for (BoardHashtagEntity boardHashtag : boardHashtagList) {
-//            if(!this.hashtagList.contains(boardHashtag)) {
-//                this.hashtagList.add(boardHashtag);
-//                boardHashtag.add(this);
-//            }
-//        }
-//    }
-
-    public void addFile(List<FileEntity> fileList) {
-        this.fileList = fileList;
+    public void addHashtag(List<HashtagEntity> hashtagList) {
+        this.hashtagList = hashtagList;
     }
 
     /*
@@ -87,11 +83,17 @@ public class BoardEntity extends BaseTime {
     }
 
     /*
-     * 테스트용 생성자
+     * 서비스 도메인 형변환
      */
-    public void generateTestBoard(String boardId, String content, String nickname) {
-        this.boardId = boardId;
-        this.content = content;
-        this.user.updateNickname(nickname);
+    public Board toBoard() {
+        return Board.builder()
+                .boardId(this.getBoardId())
+                .content(this.getContent())
+                .status(this.getStatus())
+                .count(this.getCount())
+                .trackId(this.getTrackId())
+                .user(this.getUser().toUser())
+                .hashtagNameList(HashtagNameList.of(this.getHashtagList()))
+                .build();
     }
 }

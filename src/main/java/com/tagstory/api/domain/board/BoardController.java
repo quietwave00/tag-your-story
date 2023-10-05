@@ -2,14 +2,13 @@ package com.tagstory.api.domain.board;
 
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.board.dto.request.CreateBoardRequest;
-import com.tagstory.api.domain.board.dto.response.BoardByTrackResponse;
+import com.tagstory.api.domain.board.dto.response.BoardResponse;
+import com.tagstory.api.domain.board.dto.response.BoardCountResponse;
 import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
-import com.tagstory.core.domain.board.dto.response.BoardByTrack;
-import com.tagstory.core.domain.board.dto.response.CreateBoard;
-import com.tagstory.core.domain.board.dto.response.DetailBoard;
+import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/boards")
 public class BoardController {
 
     private final BoardFacade boardFacade;
@@ -29,27 +28,45 @@ public class BoardController {
      * 게시글을 작성한다.
      */
     @PreAuthorize("hasRole('ROLE_USER')")
-    @PostMapping("/boards")
-    public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest createBoardRequest, @CurrentUserId Long userId) {
-        CreateBoard createBoard = boardFacade.create(createBoardRequest.toCommand(userId));
-        return ApiUtils.success(CreateBoardResponse.from(createBoard));
+    @PostMapping
+    public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest request, @CurrentUserId Long userId) {
+        Board response = boardFacade.create(request.toCommand(userId));
+        return ApiUtils.success(CreateBoardResponse.from(response));
     }
 
     /*
      * 트랙 아이디에 해당하는 게시물을 조회한다.
      */
-    @GetMapping("/boards/{trackId}")
-    public ApiResult<List<BoardByTrackResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @RequestParam("page") int page) {
-        List<BoardByTrack> boardByTrack = boardFacade.getBoardListByTrackId(trackId, page);
-        return ApiUtils.success(boardByTrack.stream().map(BoardByTrackResponse::from).collect(Collectors.toList()));
+    @GetMapping("/{trackId}")
+    public ApiResult<List<BoardResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @RequestParam("page") int page) {
+        List<Board> response = boardFacade.getBoardListByTrackId(trackId, page);
+        return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
     }
 
     /*
      * 게시물을 조회한다.
      */
-    @GetMapping("/boards")
+    @GetMapping
     public ApiResult<DetailBoardResponse> getDetailBoard(@RequestParam("boardId") String boardId) {
-        DetailBoard detailBoard = boardFacade.getDetailBoard(boardId);
-        return ApiUtils.success(DetailBoardResponse.from(detailBoard));
+        Board response = boardFacade.getDetailBoard(boardId);
+        return ApiUtils.success(DetailBoardResponse.from(response));
+    }
+
+    /*
+     * 트랙 아이디에 대한 전체 게시물 개수를 조회한다.
+     */
+    @GetMapping("/count/{trackId}")
+    public ApiResult<BoardCountResponse> getBoardCountByTrackId(@PathVariable("trackId") String trackId) {
+        int response = boardFacade.getBoardCountByTrackId(trackId);
+        return ApiUtils.success(BoardCountResponse.from(response));
+    }
+
+    /*
+     * 해시태그 이름을 갖고 있는 게시물 목록을 조회한다.
+     */
+    @GetMapping("/hashtags")
+    public ApiResult<List<BoardResponse>> getBoardListByHashtagName(@RequestParam("hashtagName") String hashtagName) {
+        List<Board> response = boardFacade.getBoardListByHashtagName(hashtagName);
+        return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
     }
 }

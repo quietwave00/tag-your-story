@@ -9,6 +9,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @AuthenticationPrincipal(expression = "tempId")
-public @interface CurrentTempId {
+public @interface CurrentPendingUserId {
 
 }

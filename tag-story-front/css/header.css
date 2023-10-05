@@ -1,9 +1,3 @@
-@import url(https://fonts.googleapis.com/css?family=Roboto);
-
-/* zocial */
-[class*="entypo-"]:before {
-  font-family: 'entypo', sans-serif;
-}
 
 *,
 *:before,

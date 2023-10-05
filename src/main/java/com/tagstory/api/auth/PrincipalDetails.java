@@ -31,6 +31,11 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         this.tempId = tempId;
     }
 
+    public PrincipalDetails(Long userId, Role role) {
+        this.userId = userId;
+        this.role = role;
+    }
+
     public PrincipalDetails(Long userId, Role role, Map<String, Object> attributes) {
         this.userId = userId;
         this.role = role;

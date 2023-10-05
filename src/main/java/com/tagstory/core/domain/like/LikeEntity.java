@@ -1,8 +1,9 @@
 package com.tagstory.core.domain.like;
 
 import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.user.UserEntity;
-import com.tagstory.core.domain.user.repository.dto.CacheUser;
+import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,7 +40,7 @@ public class LikeEntity {
     /*
      * 비즈니스 로직
      */
-    public static LikeEntity createLike(BoardEntity board, CacheUser user) {
-        return new LikeEntity(CacheUser.toEntity(user), board);
+    public static LikeEntity createLike(User user, Board board) {
+        return new LikeEntity(user.toEntity(), board.toEntity());
     }
 }

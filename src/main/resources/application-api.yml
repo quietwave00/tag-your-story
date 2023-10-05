@@ -1,3 +1,7 @@
 spotify:
   client-id: ENC(nirs92MtsbCYBakFqI1QM2YhpLjNo1bFtf94TZ3pyb65DWb8KvQbpju0HTsuXz7f)
   client-secret: ENC(8Dn9ZR8zGvGp2nPXk9/ndZD9xaVTKE0Wr9yMUPQSS5EneZRnzkDo7u+7G7Wl3ZYv)
+config.activate.on-profile: local
+api:
+  redirect-url: "http://localhost:5500/token.html"
+---

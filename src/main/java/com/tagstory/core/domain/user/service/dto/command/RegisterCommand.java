@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class UpdateNicknameCommand {
-    private String tempId;
+public class RegisterCommand {
+    private String pendingUserId;
     private String nickname;
 }

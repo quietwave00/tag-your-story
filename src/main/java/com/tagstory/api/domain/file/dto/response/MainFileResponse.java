@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.file.dto.response;
 
-import com.tagstory.core.domain.file.dto.response.MainFile;
+import com.tagstory.core.domain.file.dto.response.File;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,10 +10,10 @@ public class MainFileResponse {
     private String boardId;
     private String filePath;
 
-    public static MainFileResponse from(MainFile mainFile) {
+    public static MainFileResponse from(File file) {
         return MainFileResponse.builder()
-                .boardId(mainFile.getBoardId())
-                .filePath(mainFile.getFilePath())
+                .boardId(file.getBoard().getBoardId())
+                .filePath(file.getFilePath())
                 .build();
     }
 }

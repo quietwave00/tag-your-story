@@ -7,6 +7,4 @@ import java.util.List;
 
 public interface CacheFileRepository {
     void saveCache(List<FileEntity> fileList, CacheSpec cacheSpec);
-
-    List<FileEntity> findCacheByBoardId(String boardId, CacheSpec cacheSpec);
 }

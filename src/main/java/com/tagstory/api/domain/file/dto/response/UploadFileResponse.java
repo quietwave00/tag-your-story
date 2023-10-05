@@ -1,7 +1,7 @@
 package com.tagstory.api.domain.file.dto.response;
 
 import com.tagstory.core.domain.file.FileLevel;
-import com.tagstory.core.domain.file.dto.response.UploadFile;
+import com.tagstory.core.domain.file.dto.response.File;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,11 +12,11 @@ public class UploadFileResponse {
     private String filePath;
     private FileLevel fileLevel;
 
-    public static UploadFileResponse from(UploadFile uploadFile) {
+    public static UploadFileResponse from(File file) {
         return UploadFileResponse.builder()
-                .fileId(uploadFile.getFileId())
-                .filePath(uploadFile.getFilePath())
-                .fileLevel(uploadFile.getFileLevel())
+                .fileId(file.getFileId())
+                .filePath(file.getFilePath())
+                .fileLevel(file.getFileLevel())
                 .build();
     }
 }
