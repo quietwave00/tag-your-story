@@ -6,7 +6,7 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  * @param boardId: 게시글 아이디
  */
 const like = (boardId) => {
-    fetch(`${server_host}/api/likes`, {
+    return fetch(`${server_host}/api/likes`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -19,8 +19,7 @@ const like = (boardId) => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
-            document.getElementById('checkLiked').value = true;
-            document.getElementById("like-button").innerHTML = "♥︎";
+            return Promise.resolve(res.success);
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
                 .then(() =>{
@@ -36,7 +35,7 @@ const like = (boardId) => {
  * @param boardId: 게시글 아이디
  */
 const cancelLike = (boardId) => {
-    fetch(`${server_host}/api/likes`, {
+    return fetch(`${server_host}/api/likes`, {
         method: 'DELETE',
         headers: {
             "Content-Type": "application/json",
@@ -49,8 +48,7 @@ const cancelLike = (boardId) => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
-            document.getElementById('checkLiked').value = false;
-            document.getElementById("like-button").innerHTML = "♡";
+            return Promise.resolve(res.success);
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
                 .then(() =>{

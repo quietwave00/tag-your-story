@@ -22,6 +22,11 @@ window.onload = () => {
     if(localStorage.getItem("Authorization") != null) {
         Like.checkLiked(boardId);
     }
+
+    /**
+     * 좋아요 개수를 요청한다.
+     */
+    Like.getLikeCount(boardId);
 };
 
 /**
