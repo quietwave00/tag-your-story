@@ -3,6 +3,7 @@ package com.tagstory.api.domain.board;
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.board.dto.request.CreateBoardRequest;
 import com.tagstory.api.domain.board.dto.response.BoardByTrackResponse;
+import com.tagstory.api.domain.board.dto.response.BoardCountResponse;
 import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
 import com.tagstory.api.utils.ApiUtils;
@@ -49,5 +50,14 @@ public class BoardController {
     public ApiResult<DetailBoardResponse> getDetailBoard(@RequestParam("boardId") String boardId) {
         Board response = boardFacade.getDetailBoard(boardId);
         return ApiUtils.success(DetailBoardResponse.from(response));
+    }
+
+    /*
+     * 트랙 아이디에 대한 전체 게시물 개수를 조회한다.
+     */
+    @GetMapping("/boards/count/{trackId}")
+    public ApiResult<BoardCountResponse> getBoardCountByTrackId(@PathVariable("trackId") String trackId) {
+        int response = boardFacade.getBoardCountByTrackId(trackId);
+        return ApiUtils.success(BoardCountResponse.from(response));
     }
 }

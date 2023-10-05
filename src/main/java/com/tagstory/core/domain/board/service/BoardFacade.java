@@ -42,4 +42,8 @@ public class BoardFacade {
         HashtagNameList hashtagNameList = boardHashtagService.getHashtagName(boardId);
         return boardService.getDetailBoard(boardId, hashtagNameList);
     }
+
+    public int getBoardCountByTrackId(String trackId) {
+        return boardService.getBoardCountByTrackId(trackId);
+    }
 }

@@ -56,7 +56,12 @@ public class BoardService {
 
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
         Board board = getBoardByBoardId(boardId);
+        log.info("nickname: " + board.getUser().getNickname());
         return board.addHashtagList(hashtagNameList);
+    }
+
+    public int getBoardCountByTrackId(String trackId) {
+        return boardRepository.countByTrackId(trackId);
     }
 
 
