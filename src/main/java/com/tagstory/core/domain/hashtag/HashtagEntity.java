@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.hashtag;
 
+import com.tagstory.core.domain.hashtag.service.dto.Hashtag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,17 @@ public class HashtagEntity {
     private Long hashtagId;
 
     private String name;
+
+    /*
+     * 형변환
+     */
+    public Hashtag toHashtag() {
+        return Hashtag.builder()
+                .hashtagId(this.getHashtagId())
+                .name(this.getName())
+                .build();
+    }
+
 
     /*
      * 비즈니스 로직
