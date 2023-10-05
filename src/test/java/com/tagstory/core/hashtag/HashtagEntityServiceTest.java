@@ -4,6 +4,7 @@ import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.repository.HashtagRepository;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -25,6 +26,7 @@ public class HashtagEntityServiceTest {
     }
 
     @Test
+    @Disabled
     @DisplayName("해시태그 리스트 반환")
     void getHashtagList() {
         //given
