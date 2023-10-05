@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,8 @@ public class BoardFacade {
 
     public Board create(CreateBoardCommand command) {
         User user = userService.getCacheByUserId(command.getUserId());
-        List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
+        hashtagService.makeHashtagList(command.getHashtagList());
+        List<HashtagEntity> hashtagEntityList = new ArrayList<>();
         return boardService.create(command, user, hashtagEntityList);
     }
 
