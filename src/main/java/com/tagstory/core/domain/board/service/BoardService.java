@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -64,12 +65,24 @@ public class BoardService {
         return boardRepository.countByTrackId(trackId);
     }
 
+    public List<Board> getBoardListByHashtagName(Long hashtagId) {
+        return getBoardListByHashtagId(hashtagId);
+    }
+
 
     /*
      * 단일 메소드
      */
     public Board getBoardByBoardId(String boardId) {
         return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND)).toBoard();
+    }
+
+    public List<Board> getBoardListByStatusAndTrackId(BoardStatus status, String trackId, int page) {
+        Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(status, trackId, PageRequest.of(page, 8));
+
+        return boardEntityPage.getContent().stream()
+                .map(BoardEntity::toBoard)
+                .collect(Collectors.toList());
     }
 
     public List<Board> findByTrackId(String trackId) {
@@ -80,11 +93,7 @@ public class BoardService {
                 .orElse(Collections.emptyList());
     }
 
-    public List<Board> getBoardListByStatusAndTrackId(BoardStatus status, String trackId, int page) {
-        Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(status, trackId, PageRequest.of(page, 8));
-
-        return boardEntityPage.getContent().stream()
-                .map(BoardEntity::toBoard)
-                .collect(Collectors.toList());
+    public List<Board> getBoardListByHashtagId(Long hashtagId) {
+        return boardRepository.findBoardsByHashtagId(hashtagId).stream().map(BoardEntity::toBoard).collect(Collectors.toList());
     }
 }

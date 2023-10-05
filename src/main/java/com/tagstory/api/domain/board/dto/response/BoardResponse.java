@@ -9,15 +9,15 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class BoardByTrackResponse {
+public class BoardResponse {
     private String boardId;
     private String content;
     private LocalDateTime createdAt;
     private String nickname;
     private HashtagNameList hashtagNameList;
 
-    public static BoardByTrackResponse from(Board board) {
-        return BoardByTrackResponse.builder()
+    public static BoardResponse from(Board board) {
+        return BoardResponse.builder()
                 .boardId(board.getBoardId())
                 .content(board.getContent())
                 .createdAt(board.getCreatedAt())
