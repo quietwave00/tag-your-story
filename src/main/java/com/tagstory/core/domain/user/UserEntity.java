@@ -18,7 +18,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_user_key", columnList = "userKey")
+        }
+)
 public class UserEntity extends BaseTime implements Serializable {
 
     @Id

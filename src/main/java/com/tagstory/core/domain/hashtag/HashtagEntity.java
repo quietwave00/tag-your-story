@@ -13,7 +13,12 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "hashtag")
+@Table(
+        name = "hashtag",
+        indexes = {
+                @Index(name = "idx_name", columnList = "name")
+        }
+)
 public class HashtagEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
