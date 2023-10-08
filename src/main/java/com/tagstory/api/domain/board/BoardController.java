@@ -35,7 +35,7 @@ public class BoardController {
     }
 
     /*
-     * 트랙 아이디에 해당하는 게시물을 조회한다.
+     * 트랙 아이디에 해당하는 게시물 리스트를 조회한다.
      */
     @GetMapping("/{trackId}")
     public ApiResult<List<BoardResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @RequestParam("page") int page) {

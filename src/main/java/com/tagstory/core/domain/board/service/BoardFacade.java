@@ -1,8 +1,10 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
@@ -13,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,22 +29,23 @@ public class BoardFacade {
     private final BoardHashtagService boardHashtagService;
 
     public Board create(CreateBoardCommand command) {
+        BoardEntity boardEntity = BoardEntity.create(command);
         User user = userService.getCacheByUserId(command.getUserId());
-        hashtagService.makeHashtagList(command.getHashtagList());
-        List<HashtagEntity> hashtagEntityList = new ArrayList<>();
-        return boardService.create(command, user, hashtagEntityList);
+        List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
+        List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagEntityList(boardEntity, hashtagEntityList);
+        return boardService.create(boardEntity, user, boardHashtagEntityList);
     }
 
     public List<Board> getBoardListByTrackId(String trackId, int page) {
         List<Board> boardList = boardService.getBoardListByStatusAndTrackId(BoardStatus.POST, trackId, page);
         List<HashtagNameList> hashtagNameListByBoardList = boardList.stream()
-                .map(board -> boardHashtagService.getHashtagName(board.getBoardId()))
+                .map(board -> boardHashtagService.getHashtagNameByBoardId(board.getBoardId()))
                 .collect(Collectors.toList());
         return boardService.getBoardListByTrackId(boardList, hashtagNameListByBoardList);
     }
 
     public Board getDetailBoard(String boardId) {
-        HashtagNameList hashtagNameList = boardHashtagService.getHashtagName(boardId);
+        HashtagNameList hashtagNameList = boardHashtagService.getHashtagNameByBoardId(boardId);
         log.info("hashtagName: {}", hashtagNameList.getNameList().toString());
         return boardService.getDetailBoard(boardId, hashtagNameList);
     }

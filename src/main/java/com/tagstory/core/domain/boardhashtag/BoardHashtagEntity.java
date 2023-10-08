@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="BOARD_HASHTAG")
+@Table(name="board_hashtag")
 @Entity
 public class BoardHashtagEntity {
 
@@ -22,11 +22,11 @@ public class BoardHashtagEntity {
     private Long boardHashtagId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @JoinColumn(name = "board_id")
     private BoardEntity board;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "hashtag_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @JoinColumn(name = "hashtag_id")
     private HashtagEntity hashtag;
 
     /*
@@ -37,5 +37,14 @@ public class BoardHashtagEntity {
                 .board(board)
                 .hashtag(hashtag)
                 .build();
+    }
+
+    public void addBoard(BoardEntity board) {
+        this.board = board;
+    }
+
+    public void addHashTag(HashtagEntity hashtag) {
+        this.hashtag = hashtag;
+        hashtag.addBoardHashTag(this);
     }
 }
