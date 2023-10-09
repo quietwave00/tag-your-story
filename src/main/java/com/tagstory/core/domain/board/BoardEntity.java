@@ -43,7 +43,7 @@ public class BoardEntity extends BaseTime {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private UserEntity userEntity;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<FileEntity> fileList = new ArrayList<>();
@@ -57,10 +57,10 @@ public class BoardEntity extends BaseTime {
     /*
      * 연관 관계 설정
      */
-    public void addUser(UserEntity user) {
-        this.user = user;
-        if(user.getBoardList() != null) {
-            user.addBoard(this);
+    public void addUser(UserEntity userEntity) {
+        this.userEntity = userEntity;
+        if(userEntity.getBoardList() != null) {
+            userEntity.addBoard(this);
         }
     }
 
@@ -91,7 +91,7 @@ public class BoardEntity extends BaseTime {
                 .status(this.getStatus())
                 .count(this.getCount())
                 .trackId(this.getTrackId())
-                .user(this.getUser().toUser())
+                .user(this.getUserEntity().toUser())
                 .build();
     }
 }

@@ -48,7 +48,7 @@ public class Board {
                 .status(this.getStatus())
                 .count(this.getCount())
                 .trackId(this.getTrackId())
-                .user(this.getUser().toEntity())
+                .userEntity(this.getUser().toEntity())
                 .build();
     }
 

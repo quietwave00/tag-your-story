@@ -1,6 +1,8 @@
 package com.tagstory.api.oauth;
 
 import com.tagstory.api.auth.PrincipalDetails;
+import com.tagstory.core.domain.user.Role;
+import com.tagstory.core.domain.user.UserStatus;
 import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +62,8 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
                 .pendingUserId(UUID.randomUUID().toString())
                 .email(email)
                 .userKey(userKey)
+                .userStatus(UserStatus.ACTIVE)
+                .role(Role.ROLE_PENDING_USER)
                 .build();
 
         return userService.saveCachedPendingUser(user);
