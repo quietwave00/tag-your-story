@@ -46,7 +46,6 @@ public class BoardFacade {
 
     public Board getDetailBoard(String boardId) {
         HashtagNameList hashtagNameList = boardHashtagService.getHashtagNameByBoardId(boardId);
-        log.info("hashtagName: {}", hashtagNameList.getNameList().toString());
         return boardService.getDetailBoard(boardId, hashtagNameList);
     }
 
@@ -57,5 +56,9 @@ public class BoardFacade {
     public List<Board> getBoardListByHashtagName(String hashtagName) {
         Long hashtagId = hashtagService.getHashtagIdByHashtagName(hashtagName);
         return boardService.getBoardListByHashtagName(hashtagId);
+    }
+
+    public Boolean isWriter(String boardId, Long userId) {
+        return boardService.isWriter(boardId, userId);
     }
 }

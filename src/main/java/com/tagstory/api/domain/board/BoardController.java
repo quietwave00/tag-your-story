@@ -2,6 +2,7 @@ package com.tagstory.api.domain.board;
 
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.board.dto.request.CreateBoardRequest;
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.api.domain.board.dto.response.BoardResponse;
 import com.tagstory.api.domain.board.dto.response.BoardCountResponse;
 import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
@@ -68,5 +69,25 @@ public class BoardController {
     public ApiResult<List<BoardResponse>> getBoardListByHashtagName(@RequestParam("hashtagName") String hashtagName) {
         List<Board> response = boardFacade.getBoardListByHashtagName(hashtagName);
         return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
+    }
+
+    /*
+     * 게시글에 대한 권한을 확인한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/auth/{boardId}")
+    public ApiResult<Boolean> isWriter(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
+        Boolean isWriter = boardFacade.isWriter(boardId, userId);
+        return ApiUtils.success(isWriter);
+    }
+
+    /*
+     * 게시글을 수정한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping
+    public ApiResult<BoardResponse> updateBoard(@RequestBody UpdateBoardRequest request) {
+
+        return null;
     }
 }
