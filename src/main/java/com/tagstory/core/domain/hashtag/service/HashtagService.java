@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.hashtag.service;
 
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,14 @@ public class HashtagService {
 
     public Long getHashtagIdByHashtagName(String hashtagName) {
         return getHashtagByName(hashtagName).getHashtagId();
+    }
+
+    @Transactional
+    public void updateHashtag(UpdateBoardRequest request) {
+        deleteByBoardId(request.getBoardId());
+    }
+
+    private void deleteByBoardId(String boardId) {
     }
 
     /*

@@ -27,4 +27,15 @@ public class BoardHashtagService {
         List<String> nameList = boardHashtagRepository.findHashtagNameByBoardId(boardId);
         return HashtagNameList.onComplete(nameList);
     }
+
+    public void deleteHashtag(String boardId) {
+        deleteHashtagByBoardId(boardId);
+    }
+
+    /*
+     * 단일 메소드
+     */
+    private void deleteHashtagByBoardId(String boardId) {
+        boardHashtagRepository.deleteByBoard_BoardId(boardId);
+    }
 }

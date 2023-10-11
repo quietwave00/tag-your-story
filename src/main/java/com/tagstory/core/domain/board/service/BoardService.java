@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
@@ -50,7 +51,6 @@ public class BoardService {
 
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
         Board board = getBoardByBoardId(boardId);
-        log.info("nickname: " + board.getUser().getNickname());
         return board.addHashtagList(hashtagNameList);
     }
 
@@ -65,6 +65,11 @@ public class BoardService {
     public Boolean isWriter(String boardId, Long userId) {
         Board board = findBoardByBoardIdAndUserId(boardId, userId);
         return Objects.nonNull(board);
+    }
+
+    public Board updateBoard(UpdateBoardRequest request) {
+
+        return new Board();
     }
 
 
