@@ -53,7 +53,6 @@ const renderBoard = (board) => {
                     <div class = "col-9" id = "hashtag-area">${hashtagElements}</div>
                     <div class = "col-3" id = "created-date-area">${createdAt}</div>
                 </div>
-                
                 <div id = "content-area">${content}</div>
                 <div id = "user-area">${nickname}</div>
             </div>

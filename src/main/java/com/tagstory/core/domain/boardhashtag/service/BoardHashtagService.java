@@ -1,12 +1,16 @@
 package com.tagstory.core.domain.boardhashtag.service;
 
+import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+import com.tagstory.core.domain.hashtag.HashtagEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -15,8 +19,23 @@ public class BoardHashtagService {
 
     private final BoardHashtagRepository boardHashtagRepository;
 
-    public HashtagNameList getHashtagName(String boardId) {
+    public List<BoardHashtagEntity> makeBoardHashtagEntityList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
+        return hashtagEntityList.stream().map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity)).collect(Collectors.toList());
+    }
+
+    public HashtagNameList getHashtagNameByBoardId(String boardId) {
         List<String> nameList = boardHashtagRepository.findHashtagNameByBoardId(boardId);
         return HashtagNameList.onComplete(nameList);
+    }
+
+    public void deleteHashtag(String boardId) {
+        deleteHashtagByBoardId(boardId);
+    }
+
+    /*
+     * 단일 메소드
+     */
+    private void deleteHashtagByBoardId(String boardId) {
+        boardHashtagRepository.deleteByBoard_BoardId(boardId);
     }
 }

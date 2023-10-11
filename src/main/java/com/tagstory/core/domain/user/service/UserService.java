@@ -4,6 +4,7 @@ import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.api.jwt.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
+import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.common.CommonRedisTemplate;
 import com.tagstory.core.domain.user.repository.UserRepository;
@@ -52,6 +53,7 @@ public class UserService  {
     public User register(RegisterCommand command) {
         User user = getCachedPendingUserById(command.getPendingUserId());
         user.addNickname(command.getNickname());
+        user.addRole(Role.ROLE_USER);
 
         UserEntity userEntity = userRepository.save(user.toEntity());
         userRepository.saveCache(userEntity.toUser(), CacheSpec.USER);

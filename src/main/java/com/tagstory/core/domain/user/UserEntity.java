@@ -18,7 +18,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_user_key", columnList = "userKey")
+        }
+)
 public class UserEntity extends BaseTime implements Serializable {
 
     @Id
@@ -40,7 +45,7 @@ public class UserEntity extends BaseTime implements Serializable {
     private UserStatus userStatus;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "userEntity")
     private List<BoardEntity> boardList = new ArrayList<>();
 
     /*

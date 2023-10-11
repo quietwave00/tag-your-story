@@ -1,16 +1,15 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
-import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
-import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.util.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,18 +35,12 @@ public class BoardService {
     private final BoardHashtagRepository boardHashtagRepository;
 
     @Transactional
-    public Board create(CreateBoardCommand command, User user, List<HashtagEntity> hashtagEntityList) {
-        BoardEntity boardEntity = BoardEntity.create(command);
+    public Board create(BoardEntity boardEntity, User user, List<BoardHashtagEntity> boardHashtagEntityList) {
         boardEntity.addUser(user.toEntity());
+        boardEntity.addBoardHashTagList(boardHashtagEntityList);
         BoardEntity savedBoard = boardRepository.save(boardEntity);
-        savedBoard.addHashtag(hashtagEntityList);
-
-        /* 해시태그 중간 테이블에 저장 */
-        hashtagEntityList.stream()
-                .map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity))
-                .forEach(boardHashtagRepository::save);
-
-        return savedBoard.toBoard();
+        HashtagNameList hashtagNameList = getHashtagNameListByBoardId(savedBoard.getBoardId());
+        return savedBoard.toBoard().addHashtagList(hashtagNameList);
     }
 
     public List<Board> getBoardListByTrackId(List<Board> boardList, List<HashtagNameList> hashtagNameListByBoardList) {
@@ -57,7 +51,6 @@ public class BoardService {
 
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
         Board board = getBoardByBoardId(boardId);
-        log.info("nickname: " + board.getUser().getNickname());
         return board.addHashtagList(hashtagNameList);
     }
 
@@ -67,6 +60,16 @@ public class BoardService {
 
     public List<Board> getBoardListByHashtagName(Long hashtagId) {
         return getBoardListByHashtagId(hashtagId);
+    }
+
+    public Boolean isWriter(String boardId, Long userId) {
+        Board board = findBoardByBoardIdAndUserId(boardId, userId);
+        return Objects.nonNull(board);
+    }
+
+    public Board updateBoard(UpdateBoardRequest request) {
+
+        return new Board();
     }
 
 
@@ -95,5 +98,16 @@ public class BoardService {
 
     public List<Board> getBoardListByHashtagId(Long hashtagId) {
         return boardRepository.findBoardsByHashtagId(hashtagId).stream().map(BoardEntity::toBoard).collect(Collectors.toList());
+    }
+
+    public HashtagNameList getHashtagNameListByBoardId(String boardId) {
+        List<String> hashtagName = boardHashtagRepository.findHashtagNameByBoardId(boardId);
+        return HashtagNameList.onComplete(hashtagName);
+    }
+
+    @Nullable
+    public Board findBoardByBoardIdAndUserId(String boardId, Long userId) {
+        Optional<BoardEntity> boardEntityOptional = boardRepository.findByBoardIdAndUserEntity_UserId(boardId, userId);
+        return boardEntityOptional.map(BoardEntity::toBoard).orElse(null);
     }
 }

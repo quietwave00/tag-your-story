@@ -47,4 +47,8 @@ public class User {
     public void addNickname(String nickname) {
         this.nickname = nickname;
     }
+
+    public void addRole(Role role) {
+        this.role = role;
+    }
 }

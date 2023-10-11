@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.hashtag.service;
 
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
@@ -9,9 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,14 +20,22 @@ import java.util.stream.Collectors;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
 
-    public void makeHashtagList(List<String> hashtagStrList) {
-        hashtagStrList.stream()
+    public List<HashtagEntity> makeHashtagList(List<String> hashtagStrList) {
+        return hashtagStrList.stream()
             .map(hashtagStr -> hashtagRepository.findByName(hashtagStr)
-            .orElseGet(() -> hashtagRepository.save(HashtagEntity.create(hashtagStr))));
+            .orElseGet(() -> HashtagEntity.create(hashtagStr))).collect(Collectors.toList());
     }
 
     public Long getHashtagIdByHashtagName(String hashtagName) {
         return getHashtagByName(hashtagName).getHashtagId();
+    }
+
+    @Transactional
+    public void updateHashtag(UpdateBoardRequest request) {
+        deleteByBoardId(request.getBoardId());
+    }
+
+    private void deleteByBoardId(String boardId) {
     }
 
     /*

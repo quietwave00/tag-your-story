@@ -48,7 +48,7 @@ const renderBoardList = (boardList) => {
 /**
  * 해시태그 입력 이벤트 함수
  */
-const hashtagArray = [];
+let hashtagArray = [];
     let enterCount = 0;
     document.getElementById('tag-input').addEventListener('keypress', function(e) {
         if(e.key === "Enter") {
@@ -72,20 +72,28 @@ const hashtagArray = [];
  * @param hashtag: 해시태그 입력값
  */
 const renderHashtag = (hashtag) => {
-    document.getElementById('hashtag-container').innerHTML +=
+    const hashtagElement = document.getElementById('hashtag-container');
+    hashtagElement.innerHTML +=
         `
-            <div class = "hashtag-elements" id = "tag-${enterCount}" style = "margin-right: 10px;" onclick = "deleteHashtag('tag-${enterCount}')">#${hashtag}</div>
+            <div class = "hashtag-elements" id = "tag-${enterCount}" style = "margin-right: 10px;">#${hashtag}</div>
 
         `;
     hashtagArray.push(hashtag);
+    hashtagElement.onclick = (e) => deleteHashtag(e.target.id);
 }
 
 /**
  * 해시태그 요소를 삭제한다.
- * @param hashtagId: 삭제할 해시태그 아이디
+ * @param hashtagId: 삭제할 해시태그 아이디의 인덱스값
  */
 const deleteHashtag = (hashtagId) => {
+    console.log("hashtagId: " + hashtagId);
     document.getElementById(hashtagId).remove();
+    const id = hashtagId.match(/-(\d+)/);
+    const index = id[1] - 1;
+    console.log("index: " + index);
+    
+    hashtagArray.splice(index, 1);
 }
 
 /**
@@ -93,6 +101,7 @@ const deleteHashtag = (hashtagId) => {
  */
 document.getElementById('write-button').addEventListener('click', async () => {
     const response = await BoardApi.writeBoard(hashtagArray, trackId);
+    hashtagArray = [];
     renderBoard(response);
     if(document.getElementsByClassName('img_div').length > 0) {
         File.upload(response.boardId);

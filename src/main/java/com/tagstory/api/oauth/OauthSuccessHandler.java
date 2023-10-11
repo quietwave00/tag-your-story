@@ -3,8 +3,8 @@ package com.tagstory.api.oauth;
 import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.jwt.JwtCookieProvider;
 import com.tagstory.api.jwt.JwtUtil;
-import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.common.CommonRedisTemplate;
+import com.tagstory.core.config.CacheSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -31,7 +30,7 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     private String REDIRECT_URL;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         log.info("OauthSuccessHandler Execute");
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         Long userId = principalDetails.getUserId();
