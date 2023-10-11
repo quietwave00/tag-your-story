@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
@@ -60,5 +61,14 @@ public class BoardFacade {
 
     public Boolean isWriter(String boardId, Long userId) {
         return boardService.isWriter(boardId, userId);
+    }
+
+    public Board updateBoardAndHashtag(UpdateBoardRequest request) {
+        /* 해시태그에 수정 사항이 있으면 해당 게시글의 해시태그 모두 삭제 후 요청 값으로 insert */
+        if(!request.getHashtagList().isEmpty()) {
+            boardHashtagService.deleteHashtag(request.getBoardId());
+            hashtagService.updateHashtag(request);
+        }
+        return boardService.updateBoard(request);
     }
 }
