@@ -2,6 +2,7 @@ package com.tagstory.core.domain.board.repository;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
+import com.tagstory.core.domain.board.dto.response.Board;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,6 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query("SELECT b FROM BoardEntity b JOIN BoardHashtagEntity bh ON b.boardId = bh.board.boardId WHERE bh.hashtag.hashtagId = :hashtagId")
     List<BoardEntity> findBoardsByHashtagId(@Param("hashtagId") Long hashtagId);
+
+    Optional<BoardEntity> findByBoardIdAndUserEntity_UserId(String BoardId, Long userId);
 }

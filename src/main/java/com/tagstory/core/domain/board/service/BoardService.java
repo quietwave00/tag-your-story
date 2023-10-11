@@ -16,9 +16,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.util.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -60,6 +62,11 @@ public class BoardService {
         return getBoardListByHashtagId(hashtagId);
     }
 
+    public Boolean isWriter(String boardId, Long userId) {
+        Board board = findBoardByBoardIdAndUserId(boardId, userId);
+        return Objects.nonNull(board);
+    }
+
 
     /*
      * 단일 메소드
@@ -93,4 +100,9 @@ public class BoardService {
         return HashtagNameList.onComplete(hashtagName);
     }
 
+    @Nullable
+    public Board findBoardByBoardIdAndUserId(String boardId, Long userId) {
+        Optional<BoardEntity> boardEntityOptional = boardRepository.findByBoardIdAndUserEntity_UserId(boardId, userId);
+        return boardEntityOptional.map(BoardEntity::toBoard).orElse(null);
+    }
 }
