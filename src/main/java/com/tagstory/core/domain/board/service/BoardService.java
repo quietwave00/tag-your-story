@@ -67,20 +67,23 @@ public class BoardService {
         return Objects.nonNull(board);
     }
 
+    @Transactional
     public Board updateBoard(UpdateBoardCommand command, BoardEntity boardEntity) {
         return boardEntity.update(command.getContent()).toBoard();
     }
 
+    @Transactional
     public Board updateBoardWithHashtag(UpdateBoardCommand command, BoardEntity boardEntity, List<BoardHashtagEntity> boardHashtagEntityList) {
         return boardEntity.update(command.getContent(), boardHashtagEntityList).toBoard();
     }
 
+    @Transactional
     public void delete(String boardId) {
         try {
             BoardEntity boardEntity = getBoardEntityByBoardId(boardId);
             boardEntity.delete();
         } catch(Exception e) {
-            throw new RuntimeException("An exception occurred while deleting the board.");
+            throw new RuntimeException("An exception occurred ₩hile deleting the board.");
         }
     }
 

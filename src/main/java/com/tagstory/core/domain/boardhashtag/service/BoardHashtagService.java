@@ -8,6 +8,7 @@ import com.tagstory.core.domain.hashtag.HashtagEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ public class BoardHashtagService {
         return HashtagNameList.onComplete(nameList);
     }
 
+    @Transactional
     public void deleteHashtag(String boardId) {
         boardHashtagRepository.deleteByBoard_BoardId(boardId);
     }
