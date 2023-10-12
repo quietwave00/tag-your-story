@@ -2,7 +2,6 @@ package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.file.FileEntity;
@@ -73,28 +72,13 @@ public class BoardEntity extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static BoardEntity create(CreateBoardCommand command) {
+    public static BoardEntity create(CreateBoardCommand createBoardCommand) {
         return BoardEntity.builder()
-                .content(command.getContent())
+                .content(createBoardCommand.getContent())
                 .status(BoardStatus.POST)
                 .count(0)
-                .trackId(command.getTrackId())
+                .trackId(createBoardCommand.getTrackId())
                 .build();
-    }
-
-    public BoardEntity update(String content) {
-        this.content = content;
-        return this;
-    }
-
-    public BoardEntity update(String content, List<BoardHashtagEntity> boardHashtagEntityList) {
-        this.content = content;
-        this.boardHashtagEntityList = boardHashtagEntityList;
-        return this;
-    }
-
-    public void delete() {
-        this.status = BoardStatus.REMOVAL;
     }
 
     /*

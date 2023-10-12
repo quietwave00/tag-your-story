@@ -76,36 +76,9 @@ const getBoardByBoardId = (boardId) => {
     });
 }
 
-/**
- * 게시글의 작성자인지 확인을 요청한다.
- * 
- * @param boardId: 게시글 아이디
- */
-const isWriter = (boardId) => {
-    return fetch(`${server_host}/api/boards/auth/${boardId}`, {
-        method:"GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": localStorage.getItem('Authorization')
-        }
-    })
-    .then((res) => res.json())
-    .then(res => {
-        if(res.success === true) {
-            return Promise.resolve(res.response)
-        } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    isWriter(boardId);
-                });
-        }
-    });
-}
-
 
 export default {
     writeBoard,
     getBoardListByTrackId,
-    getBoardByBoardId,
-    isWriter
+    getBoardByBoardId
 }

@@ -9,7 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="./css/header.css" rel="stylesheet">
     <link href="./css/board_detail.css" rel="stylesheet">
-    <link href="./css/file.css" rel="stylesheet">
 </head>
 
 <body>
@@ -30,41 +29,8 @@
         </div>
     </header>
 
-    <div id="board-edit-area"></div>
     <div id="board-area"></div>
     <div id="modal-area">
-        <div class="modal fade" id="edit-board-modal" tabindex="-1">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="header" style="padding: 10px; text-align: right;">
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="tag-area">
-                            <div id="hashtag-container"></div>
-                            <textarea id="tag-input" placeholder="Make Your Tag"></textarea>
-                        </div>
-                        <div class="container">
-                            <div class="button_outer">
-                                <div class="btn_upload">
-                                    <input type="file" id="upload_file">
-                                    <span>Upload Image</span>
-                                </div>
-                                <div class="add_box"></div>
-                            </div>
-                            <div class="error_msg"></div>
-                            <div class="uploaded_file_view" id="uploaded_view"></div>
-                        </div>
-                        <textarea id="board-input"></textarea>
-                    </div>
-                    <div class="footer" style="padding: 20px; text-align: right;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal"
-                            id="write-button">Write</button>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="modal fade" id="board-hashtag-modal" tabindex="-1">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
@@ -97,7 +63,6 @@
     </div>
 </body>
 <script src="./js/global/global.js"></script>
-<script src="./js/board/hashtag_editable.js"></script>
 <script type="module" src="./js/user/userArea.js"></script>
 <script type="module" src="./js/board/board_detail.js"></script>
 <script type="module" src="./js/board/like.js"></script>
