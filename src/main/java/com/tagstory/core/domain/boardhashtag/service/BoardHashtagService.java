@@ -19,12 +19,16 @@ public class BoardHashtagService {
 
     private final BoardHashtagRepository boardHashtagRepository;
 
-    public List<BoardHashtagEntity> makeBoardHashtagEntityList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
+    public List<BoardHashtagEntity> makeBoardHashtagList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
         return hashtagEntityList.stream().map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity)).collect(Collectors.toList());
     }
 
     public HashtagNameList getHashtagNameByBoardId(String boardId) {
         List<String> nameList = boardHashtagRepository.findHashtagNameByBoardId(boardId);
         return HashtagNameList.onComplete(nameList);
+    }
+
+    public void deleteHashtag(String boardId) {
+        boardHashtagRepository.deleteByBoard_BoardId(boardId);
     }
 }
