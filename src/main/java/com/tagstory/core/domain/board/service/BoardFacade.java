@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
@@ -62,6 +63,7 @@ public class BoardFacade {
     public Boolean isWriter(String boardId, Long userId) {
         return boardService.isWriter(boardId, userId);
     }
+
     public Board updateBoardAndHashtag(UpdateBoardCommand command) {
         BoardEntity boardEntity = boardService.getBoardEntityByBoardId(command.getBoardId());
 

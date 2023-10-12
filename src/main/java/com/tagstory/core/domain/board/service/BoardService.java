@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.board.service;
 
+import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;

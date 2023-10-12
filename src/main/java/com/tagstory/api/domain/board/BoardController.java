@@ -86,7 +86,6 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping
-
     public ApiResult<BoardResponse> updateBoardAndHashtag(@RequestBody UpdateBoardRequest request) {
         Board board = boardFacade.updateBoardAndHashtag(request.toCommand());
         return ApiUtils.success(BoardResponse.from(board));
