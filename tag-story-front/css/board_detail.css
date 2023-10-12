@@ -34,7 +34,7 @@
     cursor: pointer;
 }
 
-.tag-elements {
+.hashtag-elements, .editable-tag-elements {
     display: inline-block;
     margin-top: 30px;
     margin-right: 10px;
@@ -148,6 +148,51 @@
 }
 
 #board-edit-area {
-    text-align: right;
+    position: absolute;
+    top: 15%;
+    left: 75%;
+    width: 85%; 
+    padding: 15px;
+    height: auto;
     font-size: smaller;
+}
+
+#edit-board {
+    margin-right: 30px;
+}
+
+#edit-board, #delete-board {
+    cursor: pointer;
+}
+
+#board-input {
+    margin-top: 10px;
+    margin-bottom: 50px;
+    width: 90%;
+    height: 300px;
+    border-radius: 50px;
+    border: 1px solid lightgray;
+    padding: 50px;
+}
+
+#board-input:focus,
+#tag-input:focus {
+    outline: auto;
+    box-shadow: none;
+    border: 1px solid #ccc;
+}
+
+#tag-input {
+    margin-top: 30px;
+    width: 200px;
+    height: 50px;
+    border-radius: 30px;
+    border: 1px solid lightgray;
+    padding: 13px;
+    resize: none;
+    text-align: center;
+}
+
+#modal-area {
+    text-align: center;
 }
