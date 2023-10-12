@@ -132,11 +132,37 @@ const updateBoardAndHashtag = (boardId, content, hashtagArray) => {
     });
 }
 
+/**
+ * 게시글 삭제를 요청한다.
+ */
+const deleteBoard = (boardId) => {
+    fetch(`${server_host}/api/boards/status/${boardId}`,{
+        method:"PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        }
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success == true) {
+            alert("게시글이 삭제되었습니다.");
+            window.history.back();
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    deleteBoard(boardId);
+                });
+        }
+    });
+}
+
 
 export default {
     writeBoard,
     getBoardListByTrackId,
     getBoardByBoardId,
     isWriter,
-    updateBoardAndHashtag
+    updateBoardAndHashtag,
+    deleteBoard
 }

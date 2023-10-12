@@ -75,11 +75,16 @@ const renderBoard = (board) => {
  * 게시물 수정, 삭제 버튼을 보여준다.
  */
 const renderEditBoardArea = () => {
+    const boardId = new URLSearchParams(window.location.search).get('boardId');
     document.getElementById("board-edit-area").innerHTML =
         `
             <span id="edit-board" data-bs-toggle="modal" data-bs-target="#edit-board-modal">수정</span>
             <span id="delete-board">삭제</span>
         `;
+        const deleteBoardElement = document.getElementById('delete-board');
+        deleteBoardElement.onclick = () => {
+            deleteBoard(boardId);
+        };
     document.getElementById("edit-board-modal").addEventListener("shown.bs.modal", renderExistedBoard);
 };
 
@@ -103,12 +108,20 @@ const renderExistedBoard = () => {
 }
 
 /**
- * 수정 버튼 클릭 이벤트 함수.
+ * 수정 버튼 클릭 이벤트 함수
  */
 document.getElementById("edit-button").addEventListener('click', () => {
     const boardId = new URLSearchParams(window.location.search).get('boardId');
     const content = document.getElementById("board-input").value;
     const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
-    BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
+    const response = BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
+    renderBoard(response);
 });
+
+/**
+ * 게시글을 삭제한다.
+ */
+const deleteBoard = (boardId) => {
+    BoardApi.deleteBoard(boardId);
+}
 
