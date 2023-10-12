@@ -94,14 +94,21 @@ const renderExistedBoard = () => {
                 <div class = "editable-tag-elements">#${hashtag}</div>
             `;
     }
-
     document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;
     document.getElementById("board-input").innerHTML = `${content}`;
     // document.getElementById("uploaded_file_view").innerHTML = `${}`;
 
-    const tagElements = document.querySelectorAll(".editable-tag-elements");
     addIdToTagElements();
     addTagToHashtagArray();
-    console.log(hashtagArray);
 }
+
+/**
+ * 수정 버튼 클릭 이벤트 함수.
+ */
+document.getElementById("edit-button").addEventListener('click', () => {
+    const boardId = new URLSearchParams(window.location.search).get('boardId');
+    const content = document.getElementById("board-input").value;
+    const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
+    BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
+});
 

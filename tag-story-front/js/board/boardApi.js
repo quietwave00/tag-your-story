@@ -102,10 +102,41 @@ const isWriter = (boardId) => {
     });
 }
 
+/**
+ *  게시글의 수정을 요청한다.
+ * 
+ */
+const updateBoardAndHashtag = (boardId, content, hashtagArray) => {
+    return fetch(`${server_host}/api/boards`,{
+        method:"PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        },
+        body: JSON.stringify({
+            "boardId": boardId,
+            "content": content,
+            "hashtagList": hashtagArray
+        })
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success == true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    updateBoardAndHashtag(boardId, content, hashtagArray);
+                });
+        }
+    });
+}
+
 
 export default {
     writeBoard,
     getBoardListByTrackId,
     getBoardByBoardId,
-    isWriter
+    isWriter,
+    updateBoardAndHashtag
 }
