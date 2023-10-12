@@ -4,6 +4,7 @@ import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
+import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
@@ -67,12 +68,35 @@ public class BoardService {
         return Objects.nonNull(board);
     }
 
+<<<<<<< Updated upstream
+=======
+    public Board updateBoard(UpdateBoardCommand command, BoardEntity boardEntity) {
+        return boardEntity.update(command.getContent()).toBoard();
+    }
+
+    public Board updateBoardWithHashtag(UpdateBoardCommand command, BoardEntity boardEntity, List<BoardHashtagEntity> boardHashtagEntityList) {
+        return boardEntity.update(command.getContent(), boardHashtagEntityList).toBoard();
+    }
+
+    public void delete(String boardId) {
+        try {
+            BoardEntity boardEntity = getBoardEntityByBoardId(boardId);
+            boardEntity.delete();
+        } catch(Exception e) {
+            throw new RuntimeException("An exception occurred while deleting the board.");
+        }
+    }
+>>>>>>> Stashed changes
 
     /*
      * 단일 메소드
      */
     public Board getBoardByBoardId(String boardId) {
         return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND)).toBoard();
+    }
+
+    public BoardEntity getBoardEntityByBoardId(String boardId) {
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
     public List<Board> getBoardListByStatusAndTrackId(BoardStatus status, String trackId, int page) {

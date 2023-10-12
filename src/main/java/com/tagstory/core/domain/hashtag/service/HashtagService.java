@@ -28,6 +28,16 @@ public class HashtagService {
         return getHashtagByName(hashtagName).getHashtagId();
     }
 
+<<<<<<< Updated upstream
+=======
+    @Transactional
+    public void updateHashtag(UpdateBoardRequest request) {
+
+    }
+
+
+
+>>>>>>> Stashed changes
     /*
      * 단일 메소드
      */

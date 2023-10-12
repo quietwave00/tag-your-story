@@ -19,7 +19,7 @@ public class BoardHashtagService {
 
     private final BoardHashtagRepository boardHashtagRepository;
 
-    public List<BoardHashtagEntity> makeBoardHashtagEntityList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
+    public List<BoardHashtagEntity> makeBoardHashtagList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
         return hashtagEntityList.stream().map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity)).collect(Collectors.toList());
     }
 

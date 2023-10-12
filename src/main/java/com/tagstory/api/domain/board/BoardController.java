@@ -86,8 +86,24 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping
+<<<<<<< Updated upstream
     public ApiResult<BoardResponse> updateBoard(@RequestBody UpdateBoardRequest request) {
 
         return null;
+=======
+    public ApiResult<BoardResponse> updateBoardAndHashtag(@RequestBody UpdateBoardRequest request) {
+        Board board = boardFacade.updateBoardAndHashtag(request.toCommand());
+        return ApiUtils.success(BoardResponse.from(board));
+>>>>>>> Stashed changes
+    }
+
+    /*
+     * 게시글을 삭제한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping("/status/{boardId}")
+    public ApiResult<Void> delete(@PathVariable("boardId") String boardId) {
+        boardFacade.delete(boardId);
+        return ApiUtils.success();
     }
 }

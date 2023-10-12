@@ -46,61 +46,11 @@ const renderBoardList = (boardList) => {
 }
 
 /**
- * 해시태그 입력 이벤트 함수
- */
-let hashtagArray = [];
-    let enterCount = 0;
-    document.getElementById('tag-input').addEventListener('keypress', function(e) {
-        if(e.key === "Enter") {
-            enterCount++;
-            if(enterCount > 5) {
-                alert("해시태그는 다섯 개까지 입력 가능합니다.");
-                this.value= "";
-                e.preventDefault();
-            } else {
-                e.stopPropagation();
-                e.preventDefault();
-                const hashtag = this.value.trim();
-                renderHashtag(hashtag);
-                this.value = "";
-            }
-        }
-    });
-
-/**
- * 해시태그 요소를 보여준다.
- * @param hashtag: 해시태그 입력값
- */
-const renderHashtag = (hashtag) => {
-    const hashtagElement = document.getElementById('hashtag-container');
-    hashtagElement.innerHTML +=
-        `
-            <div class = "hashtag-elements" id = "tag-${enterCount}" style = "margin-right: 10px;">#${hashtag}</div>
-
-        `;
-    hashtagArray.push(hashtag);
-    hashtagElement.onclick = (e) => deleteHashtag(e.target.id);
-}
-
-/**
- * 해시태그 요소를 삭제한다.
- * @param hashtagId: 삭제할 해시태그 아이디의 인덱스값
- */
-const deleteHashtag = (hashtagId) => {
-    console.log("hashtagId: " + hashtagId);
-    document.getElementById(hashtagId).remove();
-    const id = hashtagId.match(/-(\d+)/);
-    const index = id[1] - 1;
-    console.log("index: " + index);
-    
-    hashtagArray.splice(index, 1);
-}
-
-/**
  * 게시글 작성 버튼 클릭 시 이벤트 함수
  */
 document.getElementById('write-button').addEventListener('click', async () => {
-    const response = await BoardApi.writeBoard(hashtagArray, trackId);
+    const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
+    const response = await BoardApi.writeBoard(resultHashtagArray, trackId);
     hashtagArray = [];
     renderBoard(response);
     if(document.getElementsByClassName('img_div').length > 0) {
@@ -133,7 +83,7 @@ const renderAlert = () => {
 }
 
 /**
- * 게시글 작성을 요청하고 응답값을 토대로 렌더링해준다.
+ * 게시글 작성 응답값을 토대로 렌더링해준다.
  */
 const renderBoard = (board) => {
     document.getElementById('board-message-area').innerHTML = "";

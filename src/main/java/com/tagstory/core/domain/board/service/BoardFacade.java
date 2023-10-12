@@ -3,6 +3,7 @@ package com.tagstory.core.domain.board.service;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
+import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
@@ -32,7 +33,7 @@ public class BoardFacade {
         BoardEntity boardEntity = BoardEntity.create(command);
         User user = userService.getCacheByUserId(command.getUserId());
         List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
-        List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagEntityList(boardEntity, hashtagEntityList);
+        List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
         return boardService.create(boardEntity, user, boardHashtagEntityList);
     }
 
@@ -61,4 +62,24 @@ public class BoardFacade {
     public Boolean isWriter(String boardId, Long userId) {
         return boardService.isWriter(boardId, userId);
     }
+<<<<<<< Updated upstream
+=======
+
+    public Board updateBoardAndHashtag(UpdateBoardCommand command) {
+        BoardEntity boardEntity = boardService.getBoardEntityByBoardId(command.getBoardId());
+
+        /* 해시태그에 수정 사항이 있으면 해당 게시글의 해시태그 모두 삭제 후 요청 값으로 insert */
+        if(!command.getHashtagList().isEmpty()) {
+            boardHashtagService.deleteHashtag(command.getBoardId());
+            List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
+            List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
+            return boardService.updateBoardWithHashtag(command, boardEntity, boardHashtagEntityList);
+        }
+        return boardService.updateBoard(command, boardEntity);
+    }
+
+    public void delete(String boardId) {
+        boardService.delete(boardId);
+    }
+>>>>>>> Stashed changes
 }
