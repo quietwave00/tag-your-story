@@ -38,6 +38,13 @@ public class Comment {
     private LocalDateTime createdAt;
 
     /*
+     * 생성자
+     */
+    public Comment(List<Comment> children) {
+        this.children = children;
+    }
+
+    /*
      * 형변환
      */
     public CommentEntity toEntity() {

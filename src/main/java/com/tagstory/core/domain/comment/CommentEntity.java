@@ -3,7 +3,6 @@ package com.tagstory.core.domain.comment;
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.comment.service.dto.Comment;
-import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +33,7 @@ public class CommentEntity extends BaseTime {
     @JoinColumn(name = "parent_id")
     private CommentEntity parent;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.PERSIST)
     private List<CommentEntity> children = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -62,11 +61,16 @@ public class CommentEntity extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static CommentEntity create(CreateCommentCommand command) {
+    public static CommentEntity create(String content) {
         return CommentEntity.builder()
-                .content(command.getContent())
+                .content(content)
                 .status(CommentStatus.POST)
                 .build();
+    }
+
+    public void addParent(CommentEntity parentEntity) {
+        this.parent = parentEntity;
+        parentEntity.getChildren().add(this);
     }
 
     /*
@@ -84,8 +88,9 @@ public class CommentEntity extends BaseTime {
             commentBuilder.parent(this.getParent().toComment());
         }
 
-        if (Objects.nonNull(this.getParent())) {
-            commentBuilder.children(this.getChildren().stream().map(CommentEntity::toComment).collect(Collectors.toList()));
+        if (Objects.nonNull(this.getChildren())) {
+            List<Comment> children = this.getChildren().stream().map(CommentEntity::toComment).collect(Collectors.toList());
+            commentBuilder.children(children);
         }
         return commentBuilder.build();
     }

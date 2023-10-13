@@ -4,6 +4,7 @@ import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.comment.service.dto.Comment;
 import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
+import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +21,11 @@ public class CommentFacade {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
         return commentService.create(board, user, command);
+    }
+
+    public Comment createReply(CreateReplyCommand command) {
+        Board board = boardService.getBoardByBoardId(command.getBoardId());
+        User user = userService.getCacheByUserId(command.getUserId());
+        return commentService.createReply(board, user, command);
     }
 }

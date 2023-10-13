@@ -2,6 +2,7 @@ package com.tagstory.api.domain.comment;
 
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.comment.dto.request.CreateCommentRequest;
+import com.tagstory.api.domain.comment.dto.request.CreateReplyRequest;
 import com.tagstory.api.domain.comment.dto.response.CreateCommentResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
@@ -20,10 +21,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommentController {
     private final CommentFacade commentFacade;
 
+    /*
+     * 댓글을 작성한다.
+     */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
     public ApiResult<CreateCommentResponse> create(@RequestBody CreateCommentRequest request, @CurrentUserId Long userId) {
         Comment comment = commentFacade.create(request.toCommand(userId));
         return ApiUtils.success(CreateCommentResponse.from(comment));
     }
+
+    /*
+     * 답글을 작성한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PostMapping("/replies")
+    public ApiResult<CreateCommentResponse> createReply(@RequestBody CreateReplyRequest request, @CurrentUserId Long userId) {
+        Comment comment = commentFacade.createReply(request.toCommand(userId));
+        return ApiUtils.success(CreateCommentResponse.from(comment));
+    }
+
+
 }
