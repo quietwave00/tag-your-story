@@ -84,7 +84,7 @@ public class BoardService {
             BoardEntity boardEntity = getBoardEntityByBoardId(boardId);
             boardEntity.delete();
         } catch(Exception e) {
-            throw new RuntimeException("An exception occurred ₩hile deleting the board.");
+            throw new RuntimeException("An exception occurred While deleting the board.");
         }
     }
 
