@@ -11,6 +11,8 @@ import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class CommentFacade {
@@ -30,6 +32,10 @@ public class CommentFacade {
 
     public void delete(Long commentId) {
         commentService.delete(commentId);
+    }
+
+    public List<Comment> getCommentList(String boardId) {
+        return commentService.getCommentList(boardId);
     }
 
     public Comment createReply(CreateReplyCommand command) {

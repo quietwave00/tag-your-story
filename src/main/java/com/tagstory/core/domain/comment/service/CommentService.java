@@ -4,6 +4,7 @@ import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.comment.CommentEntity;
+import com.tagstory.core.domain.comment.CommentStatus;
 import com.tagstory.core.domain.comment.repository.CommentRepository;
 import com.tagstory.core.domain.comment.service.dto.Comment;
 import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +48,10 @@ public class CommentService {
         }
     }
 
+    public List<Comment> getCommentList(String boardId) {
+        return getCommentListByBoardId(boardId);
+    }
+
     @Transactional
     public Comment createReply(Board board, User user, CreateReplyCommand command) {
         CommentEntity parentComment = getCommentEntityByCommentId(command.getParentId());
@@ -68,5 +75,9 @@ public class CommentService {
     private CommentEntity getCommentEntityByCommentId(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
+    }
+
+    private List<Comment> getCommentListByBoardId(String boardId) {
+        return commentRepository.findByStatusAndBoardEntity_BoardId(CommentStatus.POST, boardId).stream().map(CommentEntity::toComment).collect(Collectors.toList());
     }
 }

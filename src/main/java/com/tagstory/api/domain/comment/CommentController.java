@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/comments")
@@ -47,6 +50,15 @@ public class CommentController {
     public ApiResult<Void> delete(@PathVariable("commentId") Long commentId) {
         commentFacade.delete(commentId);
         return ApiUtils.success();
+    }
+
+    /*
+     * 게시글에 해당하는 댓글 리스트를 조회한다.
+     */
+    @GetMapping("/{boardId}")
+    public ApiResult<List<CommentResponse>> getCommentList(@PathVariable("boardId") String boardId) {
+        List<Comment> commentList = commentFacade.getCommentList(boardId);
+        return ApiUtils.success(commentList.stream().map(CommentResponse::from).collect(Collectors.toList()));
     }
 
 
