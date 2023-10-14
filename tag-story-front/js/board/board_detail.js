@@ -1,6 +1,7 @@
 import UserArea from "../user/userArea.js";
 import BoardApi from "../board/boardApi.js"
 import Like from "../board/like.js";
+import Comment from "../comment/comment.js"
 
 window.onload = () => {
     /**
@@ -15,6 +16,11 @@ window.onload = () => {
     BoardApi.getBoardByBoardId(boardId).then((response) => {
         renderBoard(response)
     });
+
+    /*
+     * 댓글 리스트를 보여준다.
+     */
+    Comment.getCommentList(boardId);
 
     /**
      * 게시글 작성자인지 확인한다.

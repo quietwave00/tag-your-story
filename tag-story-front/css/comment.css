@@ -1,0 +1,15 @@
+.comment-nickname {
+    font-weight: bold;
+}
+
+.reply-button {
+    color: gray;
+    visibility: hidden;
+}
+
+.comment-element:hover .reply-button {
+    margin-left: 10px;
+    cursor: pointer;
+    visibility: visible!important;
+    text-align: left;
+}
