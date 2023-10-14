@@ -8,6 +8,7 @@ import com.tagstory.core.domain.comment.repository.CommentRepository;
 import com.tagstory.core.domain.comment.service.dto.Comment;
 import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
+import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,12 @@ public class CommentService {
         commentEntity.addBoard(board.toEntity());
 
         return commentRepository.save(commentEntity).toComment();
+    }
+
+    @Transactional
+    public Comment update(UpdateCommentCommand command) {
+        CommentEntity commentEntity = getCommentEntityByCommentId(command.getCommentId());
+        return commentEntity.update(command.getContent()).toComment();
     }
 
     @Transactional

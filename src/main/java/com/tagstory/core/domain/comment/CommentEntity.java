@@ -68,6 +68,11 @@ public class CommentEntity extends BaseTime {
                 .build();
     }
 
+    public CommentEntity update(String content) {
+        this.content = content;
+        return this;
+    }
+
     public void addParent(CommentEntity parentEntity) {
         this.parent = parentEntity;
         parentEntity.getChildren().add(this);
