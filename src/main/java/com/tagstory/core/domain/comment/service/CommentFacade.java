@@ -28,6 +28,10 @@ public class CommentFacade {
         return commentService.update(command);
     }
 
+    public void delete(Long commentId) {
+        commentService.delete(commentId);
+    }
+
     public Comment createReply(CreateReplyCommand command) {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());

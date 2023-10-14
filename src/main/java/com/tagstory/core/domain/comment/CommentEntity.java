@@ -73,6 +73,11 @@ public class CommentEntity extends BaseTime {
         return this;
     }
 
+    public CommentEntity delete() {
+        this.status = CommentStatus.REMOVAL;
+        return this;
+    }
+
     public void addParent(CommentEntity parentEntity) {
         this.parent = parentEntity;
         parentEntity.getChildren().add(this);

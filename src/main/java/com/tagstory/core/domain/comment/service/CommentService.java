@@ -36,6 +36,16 @@ public class CommentService {
     }
 
     @Transactional
+    public void delete(Long commentId) {
+        CommentEntity commentEntity = getCommentEntityByCommentId(commentId);
+        try {
+            commentEntity.delete();
+        } catch (Exception e) {
+            throw new RuntimeException("An exception occurred While deleting the comment.");
+        }
+    }
+
+    @Transactional
     public Comment createReply(Board board, User user, CreateReplyCommand command) {
         CommentEntity parentComment = getCommentEntityByCommentId(command.getParentId());
 

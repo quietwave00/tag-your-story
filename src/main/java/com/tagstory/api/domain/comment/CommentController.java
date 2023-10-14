@@ -39,6 +39,16 @@ public class CommentController {
         return ApiUtils.success(CommentResponse.from(comment));
     }
 
+    /*
+     * 댓글을 삭제한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping("/status/{commentId}")
+    public ApiResult<Void> delete(@PathVariable("commentId") Long commentId) {
+        commentFacade.delete(commentId);
+        return ApiUtils.success();
+    }
+
 
     /*
      * 답글을 작성한다.
