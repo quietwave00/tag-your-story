@@ -52,6 +52,12 @@ public class CommentService {
         return getCommentListByBoardId(boardId);
     }
 
+    public List<Long> getUserCommentId(String boardId, Long userId) {
+        return getCommentListByBoardIdAndUserId(boardId, userId)
+                .stream().map(Comment::getCommentId).collect(Collectors.toList());
+    }
+
+
     @Transactional
     public Comment createReply(Board board, User user, CreateReplyCommand command) {
         CommentEntity parentComment = getCommentEntityByCommentId(command.getParentId());
@@ -78,6 +84,14 @@ public class CommentService {
     }
 
     private List<Comment> getCommentListByBoardId(String boardId) {
-        return commentRepository.findByStatusAndBoardEntity_BoardId(CommentStatus.POST, boardId).stream().map(CommentEntity::toComment).collect(Collectors.toList());
+        return commentRepository.findByStatusAndBoardEntity_BoardId(CommentStatus.POST, boardId)
+                .stream().map(CommentEntity::toComment).collect(Collectors.toList());
     }
+
+    private List<Comment> getCommentListByBoardIdAndUserId(String boardId, Long userId) {
+        return commentRepository.findByBoardEntity_BoardIdAndUserEntity_UserId(boardId, userId)
+                .stream().map(CommentEntity::toComment).collect(Collectors.toList());
+    }
+
+
 }

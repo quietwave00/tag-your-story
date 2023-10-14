@@ -38,6 +38,10 @@ public class CommentFacade {
         return commentService.getCommentList(boardId);
     }
 
+    public List<Long> getUserCommentId(String boardId, Long userId) {
+        return commentService.getUserCommentId(boardId, userId);
+    }
+
     public Comment createReply(CreateReplyCommand command) {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());

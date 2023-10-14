@@ -61,6 +61,17 @@ public class CommentController {
         return ApiUtils.success(commentList.stream().map(CommentResponse::from).collect(Collectors.toList()));
     }
 
+    /*
+     * 댓글에 대한 권한을 확인한다.
+     * @return 사용자가 작성한 댓글의 아이디
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/auth/{boardId}")
+    public ApiResult<List<Long>> getUserCommentId(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
+        List<Long> commentIdList = commentFacade.getUserCommentId(boardId, userId);
+        return ApiUtils.success(commentIdList);
+    }
+
 
     /*
      * 답글을 작성한다.
