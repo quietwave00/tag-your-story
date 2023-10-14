@@ -84,7 +84,7 @@ public class CommentService {
     }
 
     private List<Comment> getCommentListByBoardId(String boardId) {
-        return commentRepository.findByStatusAndBoardEntity_BoardId(CommentStatus.POST, boardId)
+        return commentRepository.findByStatusAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId)
                 .stream().map(CommentEntity::toComment).collect(Collectors.toList());
     }
 

@@ -82,6 +82,4 @@ public class CommentController {
         Comment comment = commentFacade.createReply(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
     }
-
-
 }
