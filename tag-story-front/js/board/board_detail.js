@@ -60,8 +60,12 @@ const renderBoard = (board) => {
     for(let hashtag of hashtagList) {
         hashtagElements += 
             `
-            <div class = "hashtag-elements" onclick="getBoardListByHashtag(\'${hashtag}\')" data-bs-toggle="modal" data-bs-target="#board-hashtag-modal">#${hashtag}</div>
+            <div class = "hashtag-elements" data-bs-toggle="modal" data-bs-target="#board-hashtag-modal">#${hashtag}</div>
             `;
+
+        document.getElementsByClassName('hashtag-elements')[0].addEventListener('click', () => {
+            getBoardListByHashtagName(hashtag);
+        });
     }
 
     document.getElementById('board-area').innerHTML =
@@ -124,12 +128,19 @@ document.getElementById("edit-button").addEventListener('click', () => {
     renderBoard(response);
 });
 
-
-
 /**
  * 게시글을 삭제한다.
  */
 const deleteBoard = (boardId) => {
     BoardApi.deleteBoard(boardId);
+}
+
+/**
+ * 해시태그 클릭 시 해당 태그가 포함된 게시글을 보여준다.
+ */
+const getBoardListByHashtagName = (hashtagName) => {
+    BoardApi.getBoardListByHashtagName(hashtagName).then((response) => {
+        console.log(response);
+    });
 }
 

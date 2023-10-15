@@ -84,6 +84,23 @@ const upload = (boardId) => {
     return FileApi.upload(fileList, uploadFileRequest);
 }
 
+/**
+ * 메인 이미지 리스트를 조회한다.
+ */
+const getMainFileList = (trackId) => {
+    FileApi.getMainFileList(trackId).then((response) => {
+        renderMainFIleList(response);
+    });
+}
+
+/**
+ * 메인 이미지를 조회한다.
+ */
+const renderMainFIleList = (mainFileList) => {
+    console.log(JSON.stringify(mainFileList));
+}
+
 export default {
-    upload
+    upload,
+    getMainFileList
 }

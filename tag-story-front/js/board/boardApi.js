@@ -157,6 +157,28 @@ const deleteBoard = (boardId) => {
     });
 }
 
+/**
+ * 해시태그에 해당하는 게시글 리스트를 요청한다.
+ * 
+ * @param hashtagName: 해시태그 이름
+ */
+const getBoardListByHashtagName = (hashtagName) => {
+    return fetch(`${server_host}/api/boards/hashtags?hashtagName=${hashtagName}`, {
+        method:"GET"
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getBoardListByHashtagName(hashtagName);
+                });
+        }
+    });
+}
+
 
 export default {
     writeBoard,
@@ -164,5 +186,6 @@ export default {
     getBoardByBoardId,
     isWriter,
     updateBoardAndHashtag,
-    deleteBoard
+    deleteBoard,
+    getBoardListByHashtagName
 }

@@ -1,5 +1,6 @@
 import UserArea from "../user/userArea.js";
 import TrackApi from "./trackApi.js";
+import File from "../board/file.js";
 
 window.onload = () => {
     /**
@@ -7,11 +8,16 @@ window.onload = () => {
      */
     UserArea.setState();
 
+    const trackId = new URLSearchParams(window.location.search).get('trackId');
     /**
      * 트랙의 상세 정보를 가져온다.
      */
-    const trackId = new URLSearchParams(window.location.search).get('trackId');
     TrackApi.getDetailTrackById(trackId).then((response) => {renderDetailTrack(response)});
+
+    /**
+     * 메인 이미지 파일을 가져온다.
+     */
+    File.getMainFileList(trackId);
 };
 
 const renderDetailTrack = (track) => {

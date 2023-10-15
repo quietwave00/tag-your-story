@@ -1,3 +1,4 @@
+
 /**
  * 해시태그 입력 이벤트 함수
  */
@@ -56,35 +57,3 @@ const addIdToTagElements = () => {
         tagElement.id = tagId;
     });
 };
-
-/**
- * hashtagArray에 기존 해시태그 값들을 넣어준다. (수정 시 사용)
- */
-const addTagToHashtagArrayForEditable = () => {
-    const container = document.getElementById("hashtag-container");
-    const tagElements = container.querySelectorAll(".editable-tag-elements");
-    tagElements.forEach(tagElement => {
-        const text = tagElement.textContent;
-        const hashtag = text.substring(1);
-        hashtagArray.push(hashtag);
-    });
-}
-
-/**
- * hashtagArray에 기존 해시태그 값들을 넣어준다. (작성 시 사용)
- */
-const addTagToHashtagArray = () => {
-    const container = document.getElementById("hashtag-container");
-    const tagElements = container.querySelectorAll(".editable-tag-elements");
-    tagElements.forEach(tagElement => {
-        const text = tagElement.textContent;
-        const hashtag = text.substring(1);
-        hashtagArray.push(hashtag);
-    });
-}
-
-
-/**
- * 해시태그 클릭 시 해당 태그가 포함된 게시글을 보여준다.
- */
-const getBoardListByHashtag = () => {}
