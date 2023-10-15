@@ -124,6 +124,8 @@ document.getElementById("edit-button").addEventListener('click', () => {
     renderBoard(response);
 });
 
+
+
 /**
  * 게시글을 삭제한다.
  */

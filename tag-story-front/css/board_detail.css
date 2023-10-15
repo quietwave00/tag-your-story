@@ -78,7 +78,6 @@
 #comment-input:focus {
     outline: none;
     box-shadow: none;
-
 }
 
 #comment-write-button {
@@ -195,4 +194,14 @@
 
 #modal-area {
     text-align: center;
+}
+
+.comment-edit-input {
+    border: 0px;
+    border-bottom: 3px solid black;
+}
+
+.comment-edit-input:focus {
+    outline: none;
+    box-shadow: none;
 }
