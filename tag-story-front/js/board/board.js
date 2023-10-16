@@ -5,12 +5,12 @@ import File from "./file.js"
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
  */
 const trackId = new URLSearchParams(window.location.search).get('trackId');
-const defaultPage = 1;
 
 /**
  *  게시물 리스트 렌더링 함수
  */
 const renderBoardList = (boardList) => {
+    console.log("게시글 그려짐");
     document.getElementById('board-element-area').innerHTML = "";
     if(boardList.length === 0) {
         document.getElementById('board-message-area').innerHTML += 
@@ -31,14 +31,9 @@ const renderBoardList = (boardList) => {
         }
         document.getElementById('board-element-area').innerHTML += 
             `
-            <div class = "col-5 board-element">
-                <div class = "row">
-                    <div>
-                        <input type = "hidden" class = "board-id" value = "${boardId}">
-                        <div class = "hashtag-area">${hashtagElements}</div>
-                        <div class = "content-area">${content}</div>
-                    </div>
-                </div>
+            <div class = "col-5 board-element" id = "board-${boardId}">
+                <div class = "hashtag-area">${hashtagElements}</div>
+                <div class = "content-area">${content}</div>
             </div>
             `;
     }
@@ -50,11 +45,18 @@ const renderBoardList = (boardList) => {
  */
 document.getElementById('write-button').addEventListener('click', async () => {
     const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
-    const response = await BoardApi.writeBoard(resultHashtagArray, trackId);
+    const writeBoardResponse = await BoardApi.writeBoard(resultHashtagArray, trackId);
     hashtagArray = [];
-    renderBoard(response);
+    renderBoard(writeBoardResponse);
     if(document.getElementsByClassName('img_div').length > 0) {
-        File.upload(response.boardId);
+        File.upload(writeBoardResponse.boardId).then((uploadResponse) => {
+            const mainFileObject = [{
+                "filePath": uploadResponse[0].filePath,
+                "boardId": writeBoardResponse.boardId
+            }];
+            
+            File.renderMainFileList(mainFileObject);
+        });
     }
     renderAlert();
 });
@@ -90,23 +92,18 @@ const renderBoard = (board) => {
     let boardId = board.boardId;
     let hashtagList = board.hashtagList.nameList;
     let content = board.content;
-    let tagElements = "";
+    let hashtagElements = "";
     for(let hashtag of hashtagList) {
-        tagElements += 
+        hashtagElements += 
                 `
                 <div class = "hashtag-element">#${hashtag}</div>
                 `;
     }
     const boardElementArea = document.getElementById('board-element-area');
     boardElementArea.insertAdjacentHTML('afterbegin', `
-        <div class="col-5 board-element">
-            <div class="row">
-                <div>
-                    <input type="hidden" class="board-id" value="${boardId}">
-                    <div class="tag-area">${tagElements}</div>
-                    <div class="content-area">${content}</div>
-                </div>
-            </div>
+        <div class = "col-5 board-element" id = "board-${boardId}">
+            <div class = "hashtag-area">${hashtagElements}</div>
+            <div class="content-area">${content}</div>
         </div>
         `);
         document.getElementById('hashtag-container').innerHTML = "";
@@ -167,10 +164,6 @@ const onPageNumberClick = (page) => {
     });
 }
 
-/**
- * 게시물 리스트를 요청한다.
- */
-BoardApi.getBoardListByTrackId(trackId, defaultPage).then((response) => renderBoardList(response));
 
 /**
  *  page-area에 대한 처리를 수행한다.
@@ -189,4 +182,8 @@ const moveDetails = () => {
             window.location.href = `${client_host}/board.html?boardId=${boardId}`;
         });
     }
+}
+
+export default {
+    renderBoardList
 }

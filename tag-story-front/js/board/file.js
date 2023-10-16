@@ -89,18 +89,30 @@ const upload = (boardId) => {
  */
 const getMainFileList = (trackId) => {
     FileApi.getMainFileList(trackId).then((response) => {
-        renderMainFIleList(response);
+        renderMainFileList(response);
     });
 }
 
 /**
- * 메인 이미지를 조회한다.
+ * 메인 이미지를 보여준다.
  */
-const renderMainFIleList = (mainFileList) => {
-    console.log(JSON.stringify(mainFileList));
+const renderMainFileList = (mainFileList) => {
+    mainFileList.forEach((mainFile) => {
+        const boardId = mainFile.boardId;
+        const filePath = mainFile.filePath;
+        const boardElement = document.getElementById(`board-${boardId}`);
+        if (boardElement) {
+            const fileAreaDiv = document.createElement('div');
+            fileAreaDiv.className = "main-file-area";
+            fileAreaDiv.innerHTML = `
+                <div class="main-file-element"><img class="main-file" src="${filePath}" alt="main-image"></div>
+            `;
+            boardElement.insertBefore(fileAreaDiv, boardElement.firstChild);
+        }
+    });
 }
 
 export default {
     upload,
-    getMainFileList
+    renderMainFileList
 }

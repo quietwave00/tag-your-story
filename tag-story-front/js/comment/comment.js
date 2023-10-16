@@ -107,11 +107,11 @@ const renderEditCommentForm = (commentId) => {
                     .querySelector('.comment-content');
     
     commentContent.innerHTML = `
-                                                        <div class="comment-edit-area">
-                                                            <input type="text" class="comment-edit-input" placeholder="Comment">
-                                                            <button type="submit" class="btn btn-dark comment-edit-button">write</button>
-                                                        </div>
-                                                    `
+                                <div class="comment-edit-area">
+                                    <input type="text" class="comment-edit-input" placeholder="Comment">
+                                    <button type="submit" class="btn btn-dark comment-edit-button">write</button>
+                                </div>
+                                `;
     const commentEditButtons = Array.from(document.getElementsByClassName('comment-edit-button'));
 
     commentEditButtons.forEach((commentEditButton) => {

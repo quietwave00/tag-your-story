@@ -62,10 +62,6 @@ const renderBoard = (board) => {
             `
             <div class = "hashtag-elements" data-bs-toggle="modal" data-bs-target="#board-hashtag-modal">#${hashtag}</div>
             `;
-
-        document.getElementsByClassName('hashtag-elements')[0].addEventListener('click', () => {
-            getBoardListByHashtagName(hashtag);
-        });
     }
 
     document.getElementById('board-area').innerHTML =
