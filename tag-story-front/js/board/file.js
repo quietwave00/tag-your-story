@@ -84,6 +84,35 @@ const upload = (boardId) => {
     return FileApi.upload(fileList, uploadFileRequest);
 }
 
+/**
+ * 메인 이미지 리스트를 조회한다.
+ */
+const getMainFileList = (trackId) => {
+    FileApi.getMainFileList(trackId).then((response) => {
+        renderMainFileList(response);
+    });
+}
+
+/**
+ * 메인 이미지를 보여준다.
+ */
+const renderMainFileList = (mainFileList) => {
+    mainFileList.forEach((mainFile) => {
+        const boardId = mainFile.boardId;
+        const filePath = mainFile.filePath;
+        const boardElement = document.getElementById(`board-${boardId}`);
+        if (boardElement) {
+            const fileAreaDiv = document.createElement('div');
+            fileAreaDiv.className = "main-file-area";
+            fileAreaDiv.innerHTML = `
+                <div class="main-file-element"><img class="main-file" src="${filePath}" alt="main-image"></div>
+            `;
+            boardElement.insertBefore(fileAreaDiv, boardElement.firstChild);
+        }
+    });
+}
+
 export default {
-    upload
+    upload,
+    renderMainFileList
 }

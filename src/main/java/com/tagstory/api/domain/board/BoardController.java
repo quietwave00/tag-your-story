@@ -9,6 +9,7 @@ import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
 import com.tagstory.api.utils.ApiUtils;
 import com.tagstory.api.utils.dto.ApiResult;
+import com.tagstory.core.domain.board.BoardOrderType;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +39,10 @@ public class BoardController {
     /*
      * 트랙 아이디에 해당하는 게시물 리스트를 조회한다.
      */
-    @GetMapping("/{trackId}")
-    public ApiResult<List<BoardResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @RequestParam("page") int page) {
-        List<Board> response = boardFacade.getBoardListByTrackId(trackId, page);
+    @GetMapping("/{trackId}/{orderType}")
+    public ApiResult<List<BoardResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @PathVariable("orderType") BoardOrderType orderType,
+                                                                @RequestParam("page") int page) {
+        List<Board> response = boardFacade.getBoardListByTrackId(trackId, orderType, page);
         return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
     }
 
@@ -61,6 +63,7 @@ public class BoardController {
         int response = boardFacade.getBoardCountByTrackId(trackId);
         return ApiUtils.success(BoardCountResponse.from(response));
     }
+
 
     /*
      * 해시태그 이름을 갖고 있는 게시물 목록을 조회한다.
@@ -87,7 +90,17 @@ public class BoardController {
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping
     public ApiResult<BoardResponse> updateBoardAndHashtag(@RequestBody UpdateBoardRequest request) {
-        Board board = boardFacade.updateBoardAndHashtag(request);
+        Board board = boardFacade.updateBoardAndHashtag(request.toCommand());
         return ApiUtils.success(BoardResponse.from(board));
+    }
+
+    /*
+     * 게시글을 삭제한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping("/status/{boardId}")
+    public ApiResult<Void> delete(@PathVariable("boardId") String boardId) {
+        boardFacade.delete(boardId);
+        return ApiUtils.success();
     }
 }

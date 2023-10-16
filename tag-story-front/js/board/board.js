@@ -1,16 +1,17 @@
 import BoardApi from "./boardApi.js"
 import File from "./file.js"
+import FileApi from "./fileApi.js"
 
 /**
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
  */
 const trackId = new URLSearchParams(window.location.search).get('trackId');
-const defaultPage = 1;
 
 /**
  *  게시물 리스트 렌더링 함수
  */
 const renderBoardList = (boardList) => {
+    console.log("게시글 그려짐");
     document.getElementById('board-element-area').innerHTML = "";
     if(boardList.length === 0) {
         document.getElementById('board-message-area').innerHTML += 
@@ -31,14 +32,9 @@ const renderBoardList = (boardList) => {
         }
         document.getElementById('board-element-area').innerHTML += 
             `
-            <div class = "col-5 board-element">
-                <div class = "row">
-                    <div>
-                        <input type = "hidden" class = "board-id" value = "${boardId}">
-                        <div class = "hashtag-area">${hashtagElements}</div>
-                        <div class = "content-area">${content}</div>
-                    </div>
-                </div>
+            <div class = "col-5 board-element" id = "board-${boardId}">
+                <div class = "hashtag-area">${hashtagElements}</div>
+                <div class = "content-area">${content}</div>
             </div>
             `;
     }
@@ -46,65 +42,22 @@ const renderBoardList = (boardList) => {
 }
 
 /**
- * 해시태그 입력 이벤트 함수
- */
-let hashtagArray = [];
-    let enterCount = 0;
-    document.getElementById('tag-input').addEventListener('keypress', function(e) {
-        if(e.key === "Enter") {
-            enterCount++;
-            if(enterCount > 5) {
-                alert("해시태그는 다섯 개까지 입력 가능합니다.");
-                this.value= "";
-                e.preventDefault();
-            } else {
-                e.stopPropagation();
-                e.preventDefault();
-                const hashtag = this.value.trim();
-                renderHashtag(hashtag);
-                this.value = "";
-            }
-        }
-    });
-
-/**
- * 해시태그 요소를 보여준다.
- * @param hashtag: 해시태그 입력값
- */
-const renderHashtag = (hashtag) => {
-    const hashtagElement = document.getElementById('hashtag-container');
-    hashtagElement.innerHTML +=
-        `
-            <div class = "hashtag-elements" id = "tag-${enterCount}" style = "margin-right: 10px;">#${hashtag}</div>
-
-        `;
-    hashtagArray.push(hashtag);
-    hashtagElement.onclick = (e) => deleteHashtag(e.target.id);
-}
-
-/**
- * 해시태그 요소를 삭제한다.
- * @param hashtagId: 삭제할 해시태그 아이디의 인덱스값
- */
-const deleteHashtag = (hashtagId) => {
-    console.log("hashtagId: " + hashtagId);
-    document.getElementById(hashtagId).remove();
-    const id = hashtagId.match(/-(\d+)/);
-    const index = id[1] - 1;
-    console.log("index: " + index);
-    
-    hashtagArray.splice(index, 1);
-}
-
-/**
  * 게시글 작성 버튼 클릭 시 이벤트 함수
  */
 document.getElementById('write-button').addEventListener('click', async () => {
-    const response = await BoardApi.writeBoard(hashtagArray, trackId);
+    const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
+    const writeBoardResponse = await BoardApi.writeBoard(resultHashtagArray, trackId);
     hashtagArray = [];
-    renderBoard(response);
+    renderBoard(writeBoardResponse);
     if(document.getElementsByClassName('img_div').length > 0) {
-        File.upload(response.boardId);
+        File.upload(writeBoardResponse.boardId).then((uploadResponse) => {
+            const mainFileObject = [{
+                "filePath": uploadResponse[0].filePath,
+                "boardId": writeBoardResponse.boardId
+            }];
+            
+            File.renderMainFileList(mainFileObject);
+        });
     }
     renderAlert();
 });
@@ -133,30 +86,25 @@ const renderAlert = () => {
 }
 
 /**
- * 게시글 작성을 요청하고 응답값을 토대로 렌더링해준다.
+ * 게시글 작성 응답값을 토대로 렌더링해준다.
  */
 const renderBoard = (board) => {
     document.getElementById('board-message-area').innerHTML = "";
     let boardId = board.boardId;
     let hashtagList = board.hashtagList.nameList;
     let content = board.content;
-    let tagElements = "";
+    let hashtagElements = "";
     for(let hashtag of hashtagList) {
-        tagElements += 
+        hashtagElements += 
                 `
                 <div class = "hashtag-element">#${hashtag}</div>
                 `;
     }
     const boardElementArea = document.getElementById('board-element-area');
     boardElementArea.insertAdjacentHTML('afterbegin', `
-        <div class="col-5 board-element">
-            <div class="row">
-                <div>
-                    <input type="hidden" class="board-id" value="${boardId}">
-                    <div class="tag-area">${tagElements}</div>
-                    <div class="content-area">${content}</div>
-                </div>
-            </div>
+        <div class = "col-5 board-element" id = "board-${boardId}">
+            <div class = "hashtag-area">${hashtagElements}</div>
+            <div class="content-area">${content}</div>
         </div>
         `);
         document.getElementById('hashtag-container').innerHTML = "";
@@ -211,16 +159,15 @@ const pagingBoardList = () => {
     updatePage();
 }
 
-const onPageNumberClick = (page) => {
-    BoardApi.getBoardListByTrackId(trackId, page).then((response) => {
+const onPageNumberClick = async (page) => {
+    await BoardApi.getBoardListByTrackId(trackId, page).then((response) => {
         renderBoardList(response)
     });
+
+    await FileApi.getMainFileList(trackId).then((response) => {
+        File.renderMainFileList(response)});
 }
 
-/**
- * 게시물 리스트를 요청한다.
- */
-BoardApi.getBoardListByTrackId(trackId, defaultPage).then((response) => renderBoardList(response));
 
 /**
  *  page-area에 대한 처리를 수행한다.
@@ -239,4 +186,8 @@ const moveDetails = () => {
             window.location.href = `${client_host}/board.html?boardId=${boardId}`;
         });
     }
+}
+
+export default {
+    renderBoardList
 }

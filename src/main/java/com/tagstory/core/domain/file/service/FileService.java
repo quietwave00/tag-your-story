@@ -41,10 +41,8 @@ public class FileService {
     }
 
     public List<File> getMainFileList(List<Board> boardList) {
-        return boardList.stream()
-                .flatMap(board -> board.getFileList().stream())
-                .filter(file -> file.getFileLevel() == FileLevel.MAIN)
-                .collect(Collectors.toList());
+        List<String> boardIdList = boardList.stream().map(Board::getBoardId).collect(Collectors.toList());
+        return getMainFileListByBoardId(boardIdList);
     }
 
     public List<File> getFileList(String boardId) {
@@ -61,5 +59,10 @@ public class FileService {
 
     private List<File> getFileListByBoardId(String boardId) {
         return fileRepository.findByBoard_BoardId(boardId).stream().map(FileEntity::toFile).collect(Collectors.toList());
+    }
+
+    private List<File> getMainFileListByBoardId(List<String> boardIdList) {
+        return fileRepository.findByFileLevelAndBoard_BoardIdIn(FileLevel.MAIN, boardIdList)
+                .stream().map(FileEntity::toFile).collect(Collectors.toList());
     }
 }

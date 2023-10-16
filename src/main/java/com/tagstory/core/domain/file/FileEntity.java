@@ -47,6 +47,7 @@ public class FileEntity {
                 .fileName(this.getFileName())
                 .filePath(this.getFilePath())
                 .fileLevel(this.getFileLevel())
+                .board(this.getBoard().toBoard())
                 .build();
     }
 }

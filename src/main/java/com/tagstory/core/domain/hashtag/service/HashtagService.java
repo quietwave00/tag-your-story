@@ -30,14 +30,6 @@ public class HashtagService {
         return getHashtagByName(hashtagName).getHashtagId();
     }
 
-    @Transactional
-    public void updateHashtag(UpdateBoardRequest request) {
-        deleteByBoardId(request.getBoardId());
-    }
-
-    private void deleteByBoardId(String boardId) {
-    }
-
     /*
      * 단일 메소드
      */

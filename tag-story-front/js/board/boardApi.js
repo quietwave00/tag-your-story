@@ -76,9 +76,116 @@ const getBoardByBoardId = (boardId) => {
     });
 }
 
+/**
+ * 게시글의 작성자인지 확인을 요청한다.
+ * 
+ * @param boardId: 게시글 아이디
+ */
+const isWriter = (boardId) => {
+    return fetch(`${server_host}/api/boards/auth/${boardId}`, {
+        method:"GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        }
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response)
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    isWriter(boardId);
+                });
+        }
+    });
+}
+
+/**
+ *  게시글의 수정을 요청한다.
+ * 
+ */
+const updateBoardAndHashtag = (boardId, content, hashtagArray) => {
+    return fetch(`${server_host}/api/boards`,{
+        method:"PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        },
+        body: JSON.stringify({
+            "boardId": boardId,
+            "content": content,
+            "hashtagList": hashtagArray
+        })
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success == true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    updateBoardAndHashtag(boardId, content, hashtagArray);
+                });
+        }
+    });
+}
+
+/**
+ * 게시글 삭제를 요청한다.
+ */
+const deleteBoard = (boardId) => {
+    fetch(`${server_host}/api/boards/status/${boardId}`,{
+        method:"PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        }
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success == true) {
+            alert("게시글이 삭제되었습니다.");
+            window.history.back();
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    deleteBoard(boardId);
+                });
+        }
+    });
+}
+
+/**
+ * 해시태그에 해당하는 게시글 리스트를 요청한다.
+ * 
+ * @param hashtagName: 해시태그 이름
+ */
+const getBoardListByHashtagName = (hashtagName) => {
+    return fetch(`${server_host}/api/boards/hashtags?hashtagName=${hashtagName}`, {
+        method:"GET"
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getBoardListByHashtagName(hashtagName);
+                });
+        }
+    });
+}
+
 
 export default {
     writeBoard,
     getBoardListByTrackId,
-    getBoardByBoardId
+    getBoardByBoardId,
+    isWriter,
+    updateBoardAndHashtag,
+    deleteBoard,
+    getBoardListByHashtagName
 }

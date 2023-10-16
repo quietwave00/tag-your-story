@@ -8,6 +8,7 @@ import com.tagstory.core.domain.hashtag.HashtagEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ public class BoardHashtagService {
 
     private final BoardHashtagRepository boardHashtagRepository;
 
-    public List<BoardHashtagEntity> makeBoardHashtagEntityList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
+    public List<BoardHashtagEntity> makeBoardHashtagList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
         return hashtagEntityList.stream().map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity)).collect(Collectors.toList());
     }
 
@@ -28,14 +29,8 @@ public class BoardHashtagService {
         return HashtagNameList.onComplete(nameList);
     }
 
+    @Transactional
     public void deleteHashtag(String boardId) {
-        deleteHashtagByBoardId(boardId);
-    }
-
-    /*
-     * 단일 메소드
-     */
-    private void deleteHashtagByBoardId(String boardId) {
         boardHashtagRepository.deleteByBoard_BoardId(boardId);
     }
 }

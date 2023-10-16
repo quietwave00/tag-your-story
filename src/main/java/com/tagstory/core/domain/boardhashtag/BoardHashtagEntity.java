@@ -21,11 +21,11 @@ public class BoardHashtagEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardHashtagId;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private BoardEntity board;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "hashtag_id")
     private HashtagEntity hashtag;
 

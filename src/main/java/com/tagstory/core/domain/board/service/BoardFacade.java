@@ -1,9 +1,10 @@
 package com.tagstory.core.domain.board.service;
 
-import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.board.BoardOrderType;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
+import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
@@ -33,15 +34,19 @@ public class BoardFacade {
         BoardEntity boardEntity = BoardEntity.create(command);
         User user = userService.getCacheByUserId(command.getUserId());
         List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
-        List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagEntityList(boardEntity, hashtagEntityList);
+        List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
         return boardService.create(boardEntity, user, boardHashtagEntityList);
     }
 
-    public List<Board> getBoardListByTrackId(String trackId, int page) {
-        List<Board> boardList = boardService.getBoardListByStatusAndTrackId(BoardStatus.POST, trackId, page);
+    public List<Board> getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
+        List<Board> boardList = BoardOrderType.CREATED_AT.equals(orderType)
+                ? boardService.getBoardListByTrackIdSortedCreatedAt(BoardStatus.POST, trackId, page)
+                : boardService.getBoardListByTrackIdSortedLike(BoardStatus.POST, trackId, page);
+
         List<HashtagNameList> hashtagNameListByBoardList = boardList.stream()
                 .map(board -> boardHashtagService.getHashtagNameByBoardId(board.getBoardId()))
                 .collect(Collectors.toList());
+
         return boardService.getBoardListByTrackId(boardList, hashtagNameListByBoardList);
     }
 
@@ -63,12 +68,20 @@ public class BoardFacade {
         return boardService.isWriter(boardId, userId);
     }
 
-    public Board updateBoardAndHashtag(UpdateBoardRequest request) {
+    public Board updateBoardAndHashtag(UpdateBoardCommand command) {
+        BoardEntity boardEntity = boardService.getBoardEntityByBoardId(command.getBoardId());
+
         /* 해시태그에 수정 사항이 있으면 해당 게시글의 해시태그 모두 삭제 후 요청 값으로 insert */
-        if(!request.getHashtagList().isEmpty()) {
-            boardHashtagService.deleteHashtag(request.getBoardId());
-            hashtagService.updateHashtag(request);
+        if(!command.getHashtagList().isEmpty()) {
+            boardHashtagService.deleteHashtag(command.getBoardId());
+            List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
+            List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
+            return boardService.updateBoardWithHashtag(command, boardEntity, boardHashtagEntityList);
         }
-        return boardService.updateBoard(request);
+        return boardService.updateBoard(command, boardEntity);
+    }
+
+    public void delete(String boardId) {
+        boardService.delete(boardId);
     }
 }

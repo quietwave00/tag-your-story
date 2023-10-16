@@ -41,6 +41,8 @@ public class BoardEntity extends BaseTime {
 
     private String trackId;
 
+    private Integer likeCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
@@ -72,13 +74,28 @@ public class BoardEntity extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static BoardEntity create(CreateBoardCommand createBoardCommand) {
+    public static BoardEntity create(CreateBoardCommand command) {
         return BoardEntity.builder()
-                .content(createBoardCommand.getContent())
+                .content(command.getContent())
                 .status(BoardStatus.POST)
                 .count(0)
-                .trackId(createBoardCommand.getTrackId())
+                .trackId(command.getTrackId())
                 .build();
+    }
+
+    public BoardEntity update(String content) {
+        this.content = content;
+        return this;
+    }
+
+    public BoardEntity update(String content, List<BoardHashtagEntity> boardHashtagEntityList) {
+        this.content = content;
+        this.boardHashtagEntityList = boardHashtagEntityList;
+        return this;
+    }
+
+    public void delete() {
+        this.status = BoardStatus.REMOVAL;
     }
 
     /*
