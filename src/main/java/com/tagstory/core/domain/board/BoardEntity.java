@@ -41,6 +41,8 @@ public class BoardEntity extends BaseTime {
 
     private String trackId;
 
+    private Integer likeCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;

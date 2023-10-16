@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.board.service;
 
-import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.board.BoardOrderType;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
@@ -38,11 +38,15 @@ public class BoardFacade {
         return boardService.create(boardEntity, user, boardHashtagEntityList);
     }
 
-    public List<Board> getBoardListByTrackId(String trackId, int page) {
-        List<Board> boardList = boardService.getBoardListByStatusAndTrackId(BoardStatus.POST, trackId, page);
+    public List<Board> getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
+        List<Board> boardList = BoardOrderType.CREATED_AT.equals(orderType)
+                ? boardService.getBoardListByTrackIdSortedCreatedAt(BoardStatus.POST, trackId, page)
+                : boardService.getBoardListByTrackIdSortedLike(BoardStatus.POST, trackId, page);
+
         List<HashtagNameList> hashtagNameListByBoardList = boardList.stream()
                 .map(board -> boardHashtagService.getHashtagNameByBoardId(board.getBoardId()))
                 .collect(Collectors.toList());
+
         return boardService.getBoardListByTrackId(boardList, hashtagNameListByBoardList);
     }
 

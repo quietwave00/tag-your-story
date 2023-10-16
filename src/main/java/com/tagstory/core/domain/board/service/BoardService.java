@@ -49,6 +49,10 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
+    public List<Board> getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
+
+    }
+
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
         Board board = getBoardByBoardId(boardId);
         return board.addHashtagList(hashtagNameList);
@@ -98,7 +102,7 @@ public class BoardService {
         return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
-    public List<Board> getBoardListByStatusAndTrackId(BoardStatus status, String trackId, int page) {
+    public List<Board> getBoardListByTrackIdSortedCreatedAt(BoardStatus status, String trackId, int page) {
         Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
 
         return boardEntityPage.getContent().stream()
