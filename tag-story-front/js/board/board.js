@@ -1,5 +1,6 @@
 import BoardApi from "./boardApi.js"
 import File from "./file.js"
+import FileApi from "./fileApi.js"
 
 /**
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
@@ -158,10 +159,13 @@ const pagingBoardList = () => {
     updatePage();
 }
 
-const onPageNumberClick = (page) => {
-    BoardApi.getBoardListByTrackId(trackId, page).then((response) => {
+const onPageNumberClick = async (page) => {
+    await BoardApi.getBoardListByTrackId(trackId, page).then((response) => {
         renderBoardList(response)
     });
+
+    await FileApi.getMainFileList(trackId).then((response) => {
+        File.renderMainFileList(response)});
 }
 
 
