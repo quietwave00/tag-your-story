@@ -2,8 +2,8 @@ package com.tagstory.core.domain.board.repository;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
-import com.tagstory.core.domain.board.dto.response.Board;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +27,6 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     List<BoardEntity> findBoardsByHashtagId(@Param("hashtagId") Long hashtagId);
 
     Optional<BoardEntity> findByBoardIdAndUserEntity_UserId(String BoardId, Long userId);
+
+    Page<BoardEntity> findByStatusAndTrackIdOrderByCreatedAtDesc(BoardStatus status, String trackId, PageRequest of);
 }

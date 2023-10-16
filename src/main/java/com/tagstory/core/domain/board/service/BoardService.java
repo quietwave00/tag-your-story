@@ -1,6 +1,5 @@
 package com.tagstory.core.domain.board.service;
 
-import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagstory.api.exception.CustomException;
 import com.tagstory.api.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
@@ -100,7 +99,7 @@ public class BoardService {
     }
 
     public List<Board> getBoardListByStatusAndTrackId(BoardStatus status, String trackId, int page) {
-        Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByBoardIdDesc(status, trackId, PageRequest.of(page, 8));
+        Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
 
         return boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)
