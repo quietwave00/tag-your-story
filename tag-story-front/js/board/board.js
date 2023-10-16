@@ -11,7 +11,6 @@ const trackId = new URLSearchParams(window.location.search).get('trackId');
  *  게시물 리스트 렌더링 함수
  */
 const renderBoardList = (boardList) => {
-    console.log("게시글 그려짐");
     document.getElementById('board-element-area').innerHTML = "";
     if(boardList.length === 0) {
         document.getElementById('board-message-area').innerHTML += 
@@ -182,8 +181,12 @@ const moveDetails = () => {
 
     for(let board of boardElements) {
         board.addEventListener('click', (e) => {
-            const boardId = e.currentTarget.querySelector('.board-id').value;
-            window.location.href = `${client_host}/board.html?boardId=${boardId}`;
+            const prefix = "board-";
+            const boardElement = e.target.closest('.board-element');
+            if (boardElement) {
+                const boardId = boardElement.getAttribute('id').replace(prefix, '');
+                window.location.href = `${client_host}/board.html?boardId=${boardId}`;
+            }
         });
     }
 }
