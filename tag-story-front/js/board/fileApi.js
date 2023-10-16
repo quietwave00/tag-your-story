@@ -24,6 +24,11 @@ const upload = (fileList,uploadFileRequest) => {
     });
 }
 
+/**
+ * 메인 이미지 파일 리스트를 요청한다.
+ * 
+ * @param trackId: 트랙 아이디
+ */
 const getMainFileList = (trackId) => {
     return fetch(`${server_host}/api/files/main/${trackId}`, {
         method: "GET"
