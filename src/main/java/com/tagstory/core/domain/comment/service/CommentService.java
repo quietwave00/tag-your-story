@@ -61,7 +61,6 @@ public class CommentService {
     @Transactional
     public Comment createReply(Board board, User user, CreateReplyCommand command) {
         CommentEntity parentComment = getCommentEntityByCommentId(command.getParentId());
-
         CommentEntity replyEntity = CommentEntity.create(command.getContent());
         replyEntity.addParent(parentComment);
         replyEntity.addUser(user.toEntity());

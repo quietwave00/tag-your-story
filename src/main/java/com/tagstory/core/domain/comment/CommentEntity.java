@@ -95,11 +95,18 @@ public class CommentEntity extends BaseTime {
                 .board(this.getBoardEntity().toBoard());
 
         if (Objects.nonNull(this.getParent())) {
-            commentBuilder.parent(this.getParent().toComment());
+            Comment comment = Comment.builder()
+                    .commentId(this.getParent().getCommentId())
+                    .build();
+            commentBuilder.parent(comment);
         }
 
         if (Objects.nonNull(this.getChildren())) {
-            List<Comment> children = this.getChildren().stream().map(CommentEntity::toComment).collect(Collectors.toList());
+            List<Comment> children = this.getChildren().stream()
+                    .map(child -> Comment.builder()
+                            .commentId(child.getCommentId())
+                            .build())
+                    .collect(Collectors.toList());
             commentBuilder.children(children);
         }
         return commentBuilder.build();
