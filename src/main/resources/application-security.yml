@@ -1,5 +1,5 @@
 spring:
-  config.activate.on-profile: local, dev
+  config.activate.on-profile: dev
   security:
     oauth2:
       client:
@@ -9,7 +9,19 @@ spring:
             client-secret: ENC(E181Qk1XAL17VUh37ud9zNjHvP24Wpsc6wnJvIYsLLumD3Dqc5eLwY24h8DumTdn)
             redirect-uri : ENC(KDIATlIANx5xhD8dFzjm0Dr2jaK6rOCxbXs+Ac+I7i5AF1C5PJsJN5NhJwQGKZSvUrDHwsUtFQjORU3jx1MdJ463ZIFiMke+)
             scope: profile, email
-
+---
+spring:
+  config.activate.on-profile: local
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ENC(VtobPb9fgfA0qIBoxiAP7yah3rhaPVzGXsBl8x+lZanCcLv2x4jg5A1ruGl13YjCx9/PYaBMyzztyB5+cmbWGXAFLgrkD9m2YTvGwOIf8VBLjzlzRiduVA==)
+            client-secret: ENC(6jbGTDbNkSmONmqA5mr2SzOzDYjBOMWZplMPT7hZ3z6STBGfSAWhD8aQc6PIRLnJ)
+            scope:
+              - email
+              - profile
 jwt:
   key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
   expiration: 99999
