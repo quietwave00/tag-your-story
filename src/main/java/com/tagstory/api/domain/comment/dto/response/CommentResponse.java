@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -13,6 +14,7 @@ public class CommentResponse {
     private String nickname;
     private String content;
     private LocalDateTime createdDate;
+    private List<Comment> children;
 
     public static CommentResponse from(Comment comment) {
         return CommentResponse.builder()
@@ -20,6 +22,7 @@ public class CommentResponse {
                 .nickname(comment.getUser().getNickname())
                 .content(comment.getContent())
                 .createdDate(comment.getCreatedAt())
+                .children(comment.getChildren())
                 .build();
     }
 }

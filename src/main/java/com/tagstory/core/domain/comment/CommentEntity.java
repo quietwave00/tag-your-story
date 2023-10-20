@@ -103,9 +103,7 @@ public class CommentEntity extends BaseTime {
 
         if (Objects.nonNull(this.getChildren())) {
             List<Comment> children = this.getChildren().stream()
-                    .map(child -> Comment.builder()
-                            .commentId(child.getCommentId())
-                            .build())
+                    .map(Comment::createReply)
                     .collect(Collectors.toList());
             commentBuilder.children(children);
         }
