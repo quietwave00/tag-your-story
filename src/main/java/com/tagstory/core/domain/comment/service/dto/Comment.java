@@ -57,4 +57,16 @@ public class Comment {
         }
         return commentEntityBuilder.build();
     }
+
+    /*
+     * 객체 생성 메소드
+     */
+    public static Comment createReply(CommentEntity entity) {
+        return Comment.builder()
+                .commentId(entity.getCommentId())
+                .user(entity.getUserEntity().toUser())
+                .content(entity.getContent())
+                .createdAt(entity.getCreatedAt())
+                .build();
+    }
 }
