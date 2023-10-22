@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface CacheFileRepository {
     void saveCache(List<FileEntity> fileList, CacheSpec cacheSpec);
+
+    void saveFileIdsToDelete(List<Long> fileIdList, CacheSpec cacheSpec);
 }

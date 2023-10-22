@@ -17,7 +17,8 @@ public enum CacheSpec {
     USER("user", Duration.ofDays(365L), User.class),
     PENDING_USER("pending_user", Duration.ofDays(30L), User.class),
     SPOTIFY_ACCESS_TOKEN("spotifyAccessToken", Duration.ofMinutes(30), String.class),
-    FILE("file", Duration.ofDays(365L), FileEntity.class)
+    FILE("file", Duration.ofDays(365L), FileEntity.class),
+    FILE_TO_DELETE("file_to_delete", Duration.ofDays(1L), Long.class)
     ;
 
     private static final String SEPARATOR = ":";

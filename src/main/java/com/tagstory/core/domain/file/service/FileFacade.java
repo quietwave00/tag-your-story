@@ -3,6 +3,7 @@ package com.tagstory.core.domain.file.service;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.file.dto.S3File;
+import com.tagstory.core.domain.file.dto.command.DeleteFileCommand;
 import com.tagstory.core.domain.file.dto.command.UploadFileCommand;
 import com.tagstory.core.domain.file.dto.response.File;
 import com.tagstory.core.domain.file.webclient.S3WebClient;
@@ -32,5 +33,9 @@ public class FileFacade {
 
     public List<File> getFileList(String boardId) {
         return fileService.getFileList(boardId);
+    }
+
+    public void deleteFile(DeleteFileCommand command) {
+        fileService.deleteFile(command);
     }
 }

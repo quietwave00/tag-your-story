@@ -5,6 +5,7 @@ import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
 import com.tagstory.core.domain.file.dto.S3File;
+import com.tagstory.core.domain.file.dto.command.DeleteFileCommand;
 import com.tagstory.core.domain.file.dto.response.File;
 import com.tagstory.core.domain.file.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,10 @@ public class FileService {
 
     public List<File> getFileList(String boardId) {
         return getFileListByBoardId(boardId);
+    }
+
+    public void deleteFile(DeleteFileCommand command) {
+        fileRepository.saveFileIdsToDelete(command.getFileIdList(), CacheSpec.FILE_TO_DELETE);
     }
 
     /*
