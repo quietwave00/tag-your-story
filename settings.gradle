@@ -1,3 +1,5 @@
 rootProject.name = 'story'
 include 'story-batch'
+include 'story-api'
+include 'story-core'
 
