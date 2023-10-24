@@ -1,4 +1,4 @@
-package com.tagstory.api.jwt;
+package com.tagstory.core.utils;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
-import static com.tagstory.api.jwt.JwtProperties.*;
+import static com.tagstory.core.utils.JwtProperties.*;
 
 @Slf4j
 @Component

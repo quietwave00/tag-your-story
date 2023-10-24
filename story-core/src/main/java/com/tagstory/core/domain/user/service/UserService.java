@@ -2,7 +2,7 @@ package com.tagstory.core.domain.user.service;
 
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
-import com.tagstory.core.util.JwtUtil;
+import com.tagstory.core.utils.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.domain.user.UserEntity;
@@ -29,6 +29,7 @@ public class UserService  {
 
     private final UserRepository userRepository;
     private final CommonRedisTemplate redisTemplate;
+    private final JwtUtil jwtUtil;
 
     public Token reissueAccessToken(ReissueAccessTokenCommand reissueAccessTokenCommand) {
         Long userId = jwtUtil.getUserIdFromToken(reissueAccessTokenCommand.getRefreshToken());

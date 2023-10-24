@@ -1,4 +1,4 @@
-package com.tagstory.api.jwt;
+package com.tagstory.core.utils;
 
 public final class JwtProperties {
     private JwtProperties() {}

@@ -38,6 +38,7 @@ subprojects {
 		implementation 'com.github.ulisesbocchio:jasypt-spring-boot:3.0.5'
 		implementation 'com.mysql:mysql-connector-j:8.0.32'
 		implementation 'org.apache.commons:commons-lang3'
+		implementation 'com.auth0:java-jwt:4.2.1'
 		compileOnly 'org.projectlombok:lombok'
 
 		annotationProcessor 'org.projectlombok:lombok'
@@ -64,7 +65,6 @@ project(':story-api') {
 	dependencies {
 		implementation project(':story-core')
 		implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-		implementation 'com.auth0:java-jwt:4.2.1'
 	}
 }
 

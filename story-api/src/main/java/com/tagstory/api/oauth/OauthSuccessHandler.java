@@ -2,7 +2,7 @@ package com.tagstory.api.oauth;
 
 import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.jwt.JwtCookieProvider;
-import com.tagstory.api.jwt.JwtUtil;
+import com.tagstory.core.utils.JwtUtil;
 import com.tagstory.core.common.CommonRedisTemplate;
 import com.tagstory.core.config.CacheSpec;
 import lombok.RequiredArgsConstructor;
