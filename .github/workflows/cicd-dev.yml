@@ -23,8 +23,31 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew clean build
+      - name: Build with Gradle (story-api)
+        run: |
+          cd story-api
+          ./gradlew clean build
+        working-directory: story-api
+
+      - name: Build with Gradle (story-core)
+        run: |
+          cd story-core
+          ./gradlew clean build
+        working-directory: story-core
+
+      - name: Build with Gradle (story-batch)
+        run: |
+          cd story-batch
+          ./gradlew clean build
+        working-directory: story-batch
+
+      - name: Combine JARs
+        run: |
+          mkdir -p combined
+          cp story-api/build/libs/story-api.jar combined/
+          cp story-core/build/libs/story-core.jar combined/
+          cp story-batch/build/libs/story-batch.jar combined/
+        working-directory: $GITHUB_WORKSPACE
 
       - name: DockerHub Login
         uses: docker/login-action@v2
@@ -34,6 +57,7 @@ jobs:
 
       - name: Docker Image Build
         run: docker build -t $DOCKER_IMAGE .
+        working-directory: $GITHUB_WORKSPACE
 
       - name: DockerHub Push
         run: docker push $DOCKER_IMAGE
