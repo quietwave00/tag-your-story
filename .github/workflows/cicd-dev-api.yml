@@ -34,7 +34,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Docker Image Build
-        run: docker build -t $DOCKER_IMAGE .
+        run: docker build -f story-api/Dockerfile -t $DOCKER_IMAGE story-api/
 
       - name: DockerHub Push
         run: docker push $DOCKER_IMAGE
