@@ -4,19 +4,19 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
-dependencies {
-	testImplementation 'junit:junit'
+group 'com.tagstory'
+version '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+allprojects {
+	repositories {
+		mavenCentral()
+	}
 }
 
-bootJar.enabled = false
 
 subprojects {
-	group 'com.tagstory'
-	version '0.0.1-SNAPSHOT'
-	sourceCompatibility = '11'
-
 	apply plugin: 'java'
-	apply plugin: 'idea'
 	apply plugin: 'org.springframework.boot'
 	apply plugin: 'io.spring.dependency-management'
 
@@ -25,18 +25,12 @@ subprojects {
 			extendsFrom annotationProcessor
 		}
 	}
-	repositories {
-		mavenCentral()
-	}
 
 	/* 하위 모듈에서 공통 사용 */
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-web'
-		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
-		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 		implementation 'com.github.ulisesbocchio:jasypt-spring-boot:3.0.5'
-		implementation 'com.mysql:mysql-connector-j:8.0.32'
 		implementation 'org.apache.commons:commons-lang3'
 		implementation 'com.auth0:java-jwt:4.2.1'
 		compileOnly 'org.projectlombok:lombok'
@@ -51,32 +45,5 @@ subprojects {
 
 	test {
 		useJUnitPlatform()
-	}
-}
-
-allprojects {
-	repositories {
-		mavenCentral()
-	}
-}
-
-
-project(':story-api') {
-	dependencies {
-		implementation project(':story-core')
-		implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-	}
-}
-
-project(':story-core') {
-	dependencies {
-		implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-		implementation 'se.michaelthelin.spotify:spotify-web-api-java:8.0.0'
-	}
-}
-
-project(':story-batch') {
-	dependencies {
-		implementation project(':story-core')
 	}
 }

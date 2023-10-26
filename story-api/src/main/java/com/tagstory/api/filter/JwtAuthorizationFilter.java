@@ -1,14 +1,14 @@
 package com.tagstory.api.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysql.cj.util.StringUtils;
 import com.tagstory.api.auth.PrincipalDetails;
+import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionResponse;
 import com.tagstory.core.utils.JwtUtil;
-import com.tagstory.core.domain.user.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -41,7 +41,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         String token = request.getHeader(HEADER_STRING);
 
         /* 토큰이 존재하지 않으면 게스트 역할이 부여된다. */
-        if(StringUtils.isNullOrEmpty(token)) {
+        if(StringUtils.isBlank(token)) {
             log.info("Request As Guest");
             registerAsGuest();
             filterChain.doFilter(request, response);
