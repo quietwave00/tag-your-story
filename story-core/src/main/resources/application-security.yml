@@ -9,6 +9,21 @@ spring:
             client-secret: ENC(E181Qk1XAL17VUh37ud9zNjHvP24Wpsc6wnJvIYsLLumD3Dqc5eLwY24h8DumTdn)
             redirect-uri : ENC(KDIATlIANx5xhD8dFzjm0Dr2jaK6rOCxbXs+Ac+I7i5AF1C5PJsJN5NhJwQGKZSvUrDHwsUtFQjORU3jx1MdJ463ZIFiMke+)
             scope: profile, email
+
+jwt:
+  key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
+  expiration: 99999
+  refresh:
+    expiration: 86400
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+    bean: jasyptEncryptor
+    property:
+      prefix: ENC(
+      suffix: )
 ---
 spring:
   config.activate.on-profile: local
@@ -31,12 +46,11 @@ jwt:
 jasypt:
   encryptor:
     bean: jasyptEncryptor
+    algorithm: PBEWithMD5AndDES
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
     property:
       prefix: ENC(
       suffix: )
-
-
-
 
 
 
