@@ -24,7 +24,7 @@ public class FileService {
 
     @Transactional
     public List<File> upload(List<S3File> saveFileList, Board board) {
-        /* S3에 저장돈 정보를 엔티티로 변환 */
+        /* S3에 저장된 정보를 엔티티로 변환 */
         List<FileEntity> fileEntityList = saveFileList.stream()
                 .map(beforeS3File -> {
                     S3File s3File = addFileLevel(beforeS3File);
