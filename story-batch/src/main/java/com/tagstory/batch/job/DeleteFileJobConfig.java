@@ -1,6 +1,7 @@
 package com.tagstory.batch.job;
 
-import com.tagstory.core.domain.file.service.FileService;
+import com.tagstory.core.common.CommonRedisTemplate;
+import com.tagstory.core.config.CacheSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -11,13 +12,15 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
 public class DeleteFileJobConfig {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
-    private final FileService fileService;
+    private final CommonRedisTemplate redisTemplate;
 
     @Bean
     public Job deleteFileJob() {
@@ -42,7 +45,7 @@ public class DeleteFileJobConfig {
     public Step getFileIdListStep() {
         return stepBuilderFactory.get("getFileIdListStep")
                 .tasklet((contribution, chunkContext) -> {
-                    log.info("!!!Executing getFileIdListStep!!!");
+                    List<Long> fileIdList = redisTemplate.getList("", CacheSpec.FILE_TO_DELETE);
                     return RepeatStatus.FINISHED;
                 })
                 .build();
