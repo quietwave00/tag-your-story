@@ -1,34 +1,43 @@
 package com.tagstory.batch.job;
 
+import com.tagstory.batch.item.RedisItemReader;
+import com.tagstory.batch.item.S3ItemWriter;
 import com.tagstory.core.common.CommonRedisTemplate;
-import com.tagstory.core.config.CacheSpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.persistence.EntityManagerFactory;
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
 public class DeleteFileJobConfig {
+    private static final int pageSize = 10;
+
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
+    private final EntityManagerFactory entityManagerFactory;
+
     private final CommonRedisTemplate redisTemplate;
 
     @Bean
     public Job deleteFileJob() {
         return jobBuilderFactory.get("deleteFileJob")
-                .start(getFileIdListStep())
+                .start(getS3URLFromFileId())
                     .on("FAILED") //contribution.setExitStatus(ExitStatus.FAILED) 조정 필요
                     .fail()
-                .from(getFileIdListStep())
+                .from(getS3URLFromFileId())
                     .on("*")
                     .to(deleteFileFromTableStep())
                 .from(deleteFileFromTableStep())
@@ -38,27 +47,28 @@ public class DeleteFileJobConfig {
                     .on("*")
                     .end()
                 .end()
+                .incrementer(new RunIdIncrementer())
                 .build();
     }
 
+    /*
+     * 삭제된 파일 아이디의 리스트를 가져오고
+     * 해당 아이디의 S3 URL을 가져온다.
+     */
     @Bean
-    public Step getFileIdListStep() {
-        return stepBuilderFactory.get("getFileIdListStep")
-                .tasklet((contribution, chunkContext) -> {
-                    List<Long> fileIdList = redisTemplate.getList("", CacheSpec.FILE_TO_DELETE);
-                    return RepeatStatus.FINISHED;
-                })
+    public Step getS3URLFromFileId() {
+        return stepBuilderFactory.get("getS3URLFromFileId")
+                .<List<String>, List<String>>chunk(10)
+                .reader(redisItemReader())
+                .writer(s3ItemWriter())
                 .build();
     }
 
     @Bean
     public Step deleteFileFromTableStep() {
-        return stepBuilderFactory.get("deleteFileFromTableStep")
-                .tasklet((contribution, chunkContext) -> {
-                    log.info("!!!Executing deleteFileFromTableStep!!!");
-                    return RepeatStatus.FINISHED;
-                })
-                .build();
+//        return stepBuilderFactory.get("deleteFileFromTableStep")
+//                .build();
+        return null;
     }
 
     @Bean
@@ -69,5 +79,20 @@ public class DeleteFileJobConfig {
                     return RepeatStatus.FINISHED;
                 })
                 .build();
+    }
+
+    /*
+     * getS3URLFromFileId()의 ItemReader, ItemProcessor, ItemWriter
+     */
+    @Bean
+    public JpaPagingItemReader<List<String>> redisItemReader() {
+        JpaPagingItemReader<List<String>> itemReader = new RedisItemReader(redisTemplate, entityManagerFactory);
+        itemReader.setPageSize(pageSize);
+        return itemReader;
+    }
+
+    @Bean
+    public ItemWriter<List<String>> s3ItemWriter() {
+        return new S3ItemWriter();
     }
 }
