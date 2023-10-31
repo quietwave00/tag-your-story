@@ -110,7 +110,6 @@ const renderExistedBoard = () => {
     }
     document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;
     document.getElementById("board-input").innerHTML = `${content}`;
-    // document.getElementById("uploaded_file_view").innerHTML = `${}`;
 
     addIdToTagElements();
     addTagToHashtagArray();

@@ -46,8 +46,31 @@ const getMainFileList = (trackId) => {
     })
 }
 
+/**
+ * 게시글의 파일 리스트를 요청한다.
+ * 
+ * @param boardId: 게시글 아이디
+ */
+const getFileList = (boardId) => {
+    return fetch(`${server_host}/api/files/${boardId}`, {
+        method: "GET"
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if (res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getFileList(boardId);
+                });
+        }
+    })
+}
+
 
 export default {
     upload,
-    getMainFileList
+    getMainFileList,
+    getFileList
 }
