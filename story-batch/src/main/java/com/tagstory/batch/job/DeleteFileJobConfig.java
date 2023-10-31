@@ -9,6 +9,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
@@ -57,18 +58,27 @@ public class DeleteFileJobConfig {
      */
     @Bean
     public Step getS3URLFromFileId() {
+//        return stepBuilderFactory.get("getS3URLFromFileId")
+//                .<List<String>, List<String>>chunk(10)
+//                .reader(redisItemReader())
+//                .writer(s3ItemWriter())
+//                .build();
         return stepBuilderFactory.get("getS3URLFromFileId")
-                .<List<String>, List<String>>chunk(10)
-                .reader(redisItemReader())
-                .writer(s3ItemWriter())
+                .tasklet((contribution, chunkContext) -> {
+                    log.info("!!!Executing getS3URLFromFileId!!!");
+                    return RepeatStatus.FINISHED;
+                })
                 .build();
     }
 
     @Bean
     public Step deleteFileFromTableStep() {
-//        return stepBuilderFactory.get("deleteFileFromTableStep")
-//                .build();
-        return null;
+        return stepBuilderFactory.get("deleteFileFromTableStep")
+                .tasklet((contribution, chunkContext) -> {
+                    log.info("!!!Executing deleteFileFromTableStep!!!");
+                    return RepeatStatus.FINISHED;
+                })
+                .build();
     }
 
     @Bean
@@ -85,6 +95,7 @@ public class DeleteFileJobConfig {
      * getS3URLFromFileId()의 ItemReader, ItemProcessor, ItemWriter
      */
     @Bean
+    @StepScope
     public JpaPagingItemReader<List<String>> redisItemReader() {
         JpaPagingItemReader<List<String>> itemReader = new RedisItemReader(redisTemplate, entityManagerFactory);
         itemReader.setPageSize(pageSize);
