@@ -49,7 +49,8 @@ public class CommentService {
     }
 
     public List<Comment> getCommentList(String boardId) {
-        return getCommentListByBoardId(boardId);
+        List<Comment> commentList = getCommentListByBoardId(boardId);
+        return commentList;
     }
 
     public List<Long> getUserCommentId(String boardId, Long userId) {
@@ -83,7 +84,7 @@ public class CommentService {
     }
 
     private List<Comment> getCommentListByBoardId(String boardId) {
-        return commentRepository.findByStatusAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId)
+        return commentRepository.findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId)
                 .stream().map(CommentEntity::toComment).collect(Collectors.toList());
     }
 

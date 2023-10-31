@@ -13,5 +13,5 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     List<CommentEntity> findByBoardEntity_BoardIdAndUserEntity_UserId(String boardId, Long userId);
 
-    List<CommentEntity> findByStatusAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus post, String boardId);
+    List<CommentEntity> findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus commentStatus, String boardId);
 }

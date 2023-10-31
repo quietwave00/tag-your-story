@@ -56,24 +56,7 @@
     text-align: right;
 }
 
-#comment-area {
-    text-align: cetner;
-    margin-left: 20%;
-    margin-top: 20px;
-}
 
-#comment-input {
-    margin-left: 30px;
-    margin-right: 20px;
-    width:50%;
-    border: 0px;
-    border-bottom: 3px solid black;
-}
-
-#comment-input:focus {
-    outline: none;
-    box-shadow: none;
-}
 
 #comment-write-button {
     border-radius: 10px;
@@ -195,3 +178,4 @@
     outline: none;
     box-shadow: none;
 }
+
