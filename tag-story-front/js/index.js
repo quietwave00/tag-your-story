@@ -13,12 +13,24 @@ window.onload = () => {
         window.location.href = `${client_host}/nickname.html`;
     }
 }
+const searchInput = document.getElementById("search-input");
+const searchButton = document.getElementById("search-button");
+
+
+/**
+ * 검색창에서 Enter를 누를 시 이벤트 리스너
+ */
+searchInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      searchButton.click();
+    }
+});
 
 /**
  * 검색 리스트로 이동
  */
-document.getElementById('search-button').addEventListener('click', () => {
-    let keyword = document.getElementById('search-input').value;
+searchButton.addEventListener('click', () => {
+    let keyword = searchInput.value;
     const defaultPage = 1;
     window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
 });
