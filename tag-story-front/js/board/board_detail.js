@@ -25,10 +25,13 @@ window.onload = () => {
     /**
      * 게시글 작성자인지 확인한다.
      */
-    const isWriter = BoardApi.isWriter(boardId);
-    if(isWriter) {
-        renderEditBoardArea();
+    if(localStorage.getItem('Authorization')) {
+        const isWriter = BoardApi.isWriter(boardId);
+        if(isWriter) {
+            renderEditBoardArea();
+        }
     }
+    
 
     /**
      * 사용자의 게시글 좋아요 여부를 검사한다.
