@@ -53,7 +53,7 @@ let hashtagList;
 const renderBoard = (board) => {
     content = board.content;
     nickname = board.nickname;
-    createdAt = board.createdAt;
+    createdAt = board.createdAt[0] + "." + board.createdAt[1] + "." + board.createdAt[2];
     hashtagList = board.hashtagNameList.nameList;
 
     let hashtagElements = "";
