@@ -20,7 +20,12 @@ window.onload = () => {
     /*
      * 댓글 리스트를 보여준다.
      */
-    Comment.getCommentList(boardId);
+    Comment.getCommentList(boardId)
+        .then(() => {
+            if (localStorage.getItem('Authorization')) {
+                Comment.getUserCommentId();
+            }
+        });
 
     /**
      * 게시글 작성자인지 확인한다.

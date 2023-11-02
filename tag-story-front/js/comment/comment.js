@@ -2,16 +2,6 @@ import CommentApi from './commentApi.js';
 
 /* 해당 스크립트는 board.html에서 함께 사용된다. */
 
-window.addEventListener("load", function () {
-    /**
-     * 댓글에 대한 권한을 체크한다. 
-     */
-    if(localStorage.getItem('Authorization')) {
-        getUserCommentId();
-    }
-});
-
-
 
 const boardId = new URLSearchParams(window.location.search).get('boardId');
 
@@ -19,11 +9,12 @@ const boardId = new URLSearchParams(window.location.search).get('boardId');
  * 댓글 리스트를 요청한다.
  */
 const getCommentList = (boardId) => {
-    CommentApi.getCommentList(boardId).then((response) => {
-        if(response.length > 0) {
-            renderCommentList(response);
-        }
-    });
+    return CommentApi.getCommentList(boardId)
+        .then((response) => {
+            if (response.length > 0) {
+                renderCommentList(response);
+            }
+        });
 }
 
 /**
@@ -55,24 +46,30 @@ const createReply = (parentId, replyInput) => {
     CommentApi.createReply(boardId, parentId, replyInput).then((response) => {
         renderComment(response, false, true);
     });
-
+    location.reload();
 }
+
 /**
  * 댓글 입력 버튼 클릭 이벤트 함수
  */
 document.getElementById("comment-write-button").addEventListener("click", () => {
     const content = document.getElementById('comment-input').value;
     CommentApi.writeComment(boardId, content).then((response) => {
-        renderComment(response);
+        renderComment(response, false, false);
     })
 });
 
 /**
  * 댓글 리스트를 보여준다.
  */
-const renderCommentList = (commentList) => {
-    commentList.forEach(comment => {
-        renderComment(comment, true);
+const renderCommentList = (commentWithReplyList) => {
+    commentWithReplyList.forEach(commentWithReply => {
+        renderComment(commentWithReply.comment, true, false);
+        if(commentWithReply.children.length > 0) {
+            commentWithReply.children.forEach(child => {
+                renderComment(child, true, true);
+            })
+        }
     });
 }
 
@@ -81,19 +78,20 @@ const renderCommentList = (commentList) => {
  * 작성한 댓글을 보여준다.
  * @param comment: 댓글 정보 
  * @param isList: renderList()에서 호출되었는지 여부
+ * @param isReply: 댓글의 성격이 답글인지 여부
  */
-const renderComment = (comment, isList) => {
+const renderComment = (comment, isList, isReply) => {
     const commentElements = document.getElementById('comment-elements');
 
     /* 댓글 엘리먼트 */
     const newCommentElement = document.createElement('div');
-    newCommentElement.className = 'row comment-element';
+    newCommentElement.className = isReply ? 'row reply-element' : 'row comment-element';
     newCommentElement.id = `comment-${comment.commentId}`;
 
     /* 닉네임 */
     const commentNickname = document.createElement('div');
     commentNickname.className = 'col-2 comment-nickname';
-    commentNickname.textContent = comment.nickname;
+    commentNickname.textContent = comment.user.nickname;
 
     /* 내용 */
     const commentContent = document.createElement('div');
@@ -104,11 +102,19 @@ const renderComment = (comment, isList) => {
     replyButton.className = 'reply-button';
     replyButton.textContent = '↳';
 
+    /* 답글 이벤트 */
     replyButton.addEventListener('click', () => {
+        const parentId = isReply ? comment.parentId : comment.comentId;
         renderReplyForm(comment.commentId);
     });
 
-    commentContent.appendChild(document.createTextNode(comment.content));
+    /* append */
+    if (isReply) {
+        const replySymbol = document.createTextNode('↳ ');
+        commentContent.appendChild(replySymbol);
+    }
+    const textNode = document.createTextNode(comment.content);
+    commentContent.appendChild(textNode);
     commentContent.appendChild(replyButton);
 
     /* 댓글 아이디 */
@@ -121,19 +127,14 @@ const renderComment = (comment, isList) => {
     newCommentElement.appendChild(commentContent);
     newCommentElement.appendChild(commentIdInput);
 
+    /* 보여주는 순서 */
     if (isList) {
         commentElements.appendChild(newCommentElement);
-    } else if(isReply) {
-        const parentElement = docuent.getElementById(`comment-${comment.parentId}`);
-        parentElement.appendChild(newCommentElement);
     } else {
         commentElements.insertBefore(newCommentElement, commentElements.firstChild);
     }
-
-    if (!isList) {
-        document.getElementById('comment-input').value = '';
-    }
 }
+
 
 /**
  * 댓글 리스트에 대한 권한을 확인한다.
@@ -149,8 +150,8 @@ const getUserCommentId = () => {
  */
 const renderEditCommentForm = (commentId) => {
     const commentContent = document.querySelector(`input.comment-id[value="comment-${commentId}"]`)
-                    .closest('.comment-element')
-                    .querySelector('.comment-content');
+                                    .closest('.comment-element, .reply-element')
+                                    .querySelector('.comment-content');
     
     commentContent.innerHTML = `
                                 <div class="comment-edit-area">
@@ -162,7 +163,7 @@ const renderEditCommentForm = (commentId) => {
 
     commentEditButtons.forEach((commentEditButton) => {
         commentEditButton.addEventListener('click', () => {
-            const parentCommentElement = commentEditButton.closest('.comment-element');
+            const parentCommentElement = commentEditButton.closest('.comment-element, .reply-element');
             const commentEditInput = parentCommentElement.querySelector('.comment-edit-input');
             const content = commentEditInput.value;
 
@@ -194,8 +195,8 @@ const deleteComment = (commentId) => {
  */
 const renderEditCommentArea = (commentIdList) => {
     commentIdList.forEach((commentId) => {
-        const userComment = document.querySelector(`input.comment-id[value="comment-${commentId}"]`);
-
+        let userComment = document.querySelector(`input.comment-id[value="comment-${commentId}"]`);
+    
         if (userComment) {
             const editAreaButtons = document.createElement('div');
             editAreaButtons.className = 'col-2 edit-area';
@@ -220,5 +221,6 @@ const renderEditCommentArea = (commentIdList) => {
 
 
 export default {
-    getCommentList
+    getCommentList,
+    getUserCommentId
 }

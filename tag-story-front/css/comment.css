@@ -14,12 +14,24 @@
     text-align: left;
 }
 
+.reply-element:hover .reply-button {
+    margin-left: 10px;
+    cursor: pointer;
+    visibility: visible!important;
+    text-align: left;
+}
+
 .edit-comment, .delete-comment {
     font-size: smaller;
     visibility: hidden;
 }
 
 .comment-element:hover .edit-comment, .comment-element:hover .delete-comment {
+    visibility: visible!important;
+    cursor: pointer;
+}
+
+.reply-element:hover .edit-comment, .reply-element:hover .delete-comment {
     visibility: visible!important;
     cursor: pointer;
 }
@@ -47,4 +59,9 @@
     border: 0px;
     border-bottom: 3px solid black;
     margin-left: 17%;
+}
+
+.reply-element .comment-content{
+    margin-left: 1%;
+    color: gray;
 }

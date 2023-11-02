@@ -30,6 +30,7 @@
 }
 
 .file-element {
-    max-width: 20%;
+    max-width: 30%;
     height: auto;
+    padding: 30px;
 }
