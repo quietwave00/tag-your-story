@@ -97,6 +97,4 @@ public class CommentService {
         return commentRepository.findByBoardEntity_BoardIdAndUserEntity_UserId(boardId, userId)
                 .stream().map(CommentEntity::toComment).collect(Collectors.toList());
     }
-
-
 }

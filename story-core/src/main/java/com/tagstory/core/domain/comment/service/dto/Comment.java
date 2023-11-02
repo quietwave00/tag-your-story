@@ -69,6 +69,7 @@ public class Comment {
                 .user(entity.getUserEntity().toUser())
                 .content(entity.getContent())
                 .createdAt(entity.getCreatedAt())
+                .status(entity.getStatus())
                 .build();
     }
 }
