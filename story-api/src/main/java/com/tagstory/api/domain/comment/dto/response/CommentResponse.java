@@ -11,6 +11,7 @@ import java.util.List;
 @Builder
 public class CommentResponse {
     private Long commentId;
+    private Long parentId;
     private String nickname;
     private String content;
     private LocalDateTime createdDate;
@@ -19,6 +20,7 @@ public class CommentResponse {
     public static CommentResponse from(Comment comment) {
         return builder()
                 .commentId(comment.getCommentId())
+                .parentId(comment.getParent().getCommentId())
                 .nickname(comment.getUser().getNickname())
                 .content(comment.getContent())
                 .createdDate(comment.getCreatedAt())
