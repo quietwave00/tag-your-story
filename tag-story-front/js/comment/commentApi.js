@@ -132,6 +132,40 @@ const deleteComment = (commentId) => {
     });
 }
 
+/**
+ * 답글 작성을 요청한다.
+ * 
+ * @param boardId: 게시글 아이디 
+ * @param parentId: 부모 댓글 아이디
+ * @param content: 답글 내용
+ * @returns 
+ */
+const createReply = (boardId, parentId, content) => {
+    return fetch(`${server_host}/api/comments/replies`,{
+        method:"POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        },
+        body: JSON.stringify({
+            "boardId": boardId,
+            "parentId": parentId,
+            "content": content
+        })
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success == true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    createReply(boardId, parentId, content);
+                });
+        }
+    });
+}
+
 
 
 export default {
@@ -139,5 +173,6 @@ export default {
     writeComment,
     getUserCommentId,
     updateComment,
-    deleteComment
+    deleteComment,
+    createReply
 }

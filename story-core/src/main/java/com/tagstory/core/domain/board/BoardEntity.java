@@ -109,6 +109,7 @@ public class BoardEntity extends BaseTime {
                 .count(this.getCount())
                 .trackId(this.getTrackId())
                 .user(this.getUserEntity().toUser())
+                .createdAt(this.getCreatedAt())
                 .build();
     }
 }

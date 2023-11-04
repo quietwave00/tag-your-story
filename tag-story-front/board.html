@@ -23,16 +23,27 @@
                     </svg>
                 </a>
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="#" class="nav-link px-2 link-secondary">Home</a></li>
-                    <li><a href="#" class="nav-link px-2 link-dark">write</a></li>
+                    <li><a href="/index.html" class="nav-link px-2 link-secondary">Home</a></li>
                 </ul>
                 <div id="user-area"><span>Login</span></div>
             </div>
         </div>
     </header>
 
-    <div id="board-edit-area"></div>
-    <div id="board-area"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12" id="file-area">
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-12" id="board-area">
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-12" id="board-edit-area">
+            </div>
+        </div>
+    </div>
     <div id="modal-area">
         <div class="modal fade" id="edit-board-modal" tabindex="-1">
             <div class="modal-dialog modal-xl">
@@ -99,6 +110,7 @@
 </body>
 <script src="./js/global/global.js"></script>
 <script src="./js/board/hashtag_editable.js"></script>
+<script type="module" src="./js/board/board_detail_file.js"></script>
 <script type="module" src="./js/board/hashtag.js"></script>
 <script type="module" src="./js/comment/comment.js"></script>
 <script type="module" src="./js/user/userArea.js"></script>

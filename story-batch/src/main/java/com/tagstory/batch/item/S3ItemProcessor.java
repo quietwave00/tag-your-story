@@ -14,8 +14,8 @@ public class S3ItemProcessor implements ItemProcessor<List<Long>, List<String>> 
 
     @Override
     public List<String> process(List<Long> item) throws Exception {
-        log.info("===== S3ItemProcessor =====");
-        log.info("item: {}", item.toString());
+//        log.info("===== S3ItemProcessor =====");
+//        log.info("item: {}", item.toString());
 
         return null;
     }

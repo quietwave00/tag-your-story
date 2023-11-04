@@ -5,10 +5,12 @@ import com.tagstory.api.domain.comment.dto.request.CreateCommentRequest;
 import com.tagstory.api.domain.comment.dto.request.CreateReplyRequest;
 import com.tagstory.api.domain.comment.dto.request.UpdateCommentRequest;
 import com.tagstory.api.domain.comment.dto.response.CommentResponse;
-import com.tagstory.core.utils.ApiUtils;
-import com.tagstory.core.utils.dto.ApiResult;
+import com.tagstory.api.domain.comment.dto.response.CommentWithRepliesResponse;
 import com.tagstory.core.domain.comment.service.CommentFacade;
 import com.tagstory.core.domain.comment.service.dto.Comment;
+import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
+import com.tagstory.core.utils.ApiUtils;
+import com.tagstory.core.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -56,9 +58,9 @@ public class CommentController {
      * 게시글에 해당하는 댓글 리스트를 조회한다.
      */
     @GetMapping("/{boardId}")
-    public ApiResult<List<CommentResponse>> getCommentList(@PathVariable("boardId") String boardId) {
-        List<Comment> commentList = commentFacade.getCommentList(boardId);
-        return ApiUtils.success(commentList.stream().map(CommentResponse::from).collect(Collectors.toList()));
+    public ApiResult<List<CommentWithRepliesResponse>> getCommentList(@PathVariable("boardId") String boardId) {
+        List<CommentWithReplies> commentList = commentFacade.getCommentList(boardId);
+        return ApiUtils.success(commentList.stream().map(CommentWithRepliesResponse::from).collect(Collectors.toList()));
     }
 
     /*

@@ -8,10 +8,12 @@ import com.tagstory.core.domain.comment.service.dto.Comment;
 import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
+import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
@@ -48,8 +51,11 @@ public class CommentService {
         }
     }
 
-    public List<Comment> getCommentList(String boardId) {
-        return getCommentListByBoardId(boardId);
+    public List<CommentWithReplies> getCommentList(String boardId) {
+        List<Comment> commentList = getCommentListByBoardId(boardId);
+        return commentList.stream()
+                .map(comment -> CommentWithReplies.of(comment, comment.getChildren()))
+                .collect(Collectors.toList());
     }
 
     public List<Long> getUserCommentId(String boardId, Long userId) {
@@ -83,7 +89,7 @@ public class CommentService {
     }
 
     private List<Comment> getCommentListByBoardId(String boardId) {
-        return commentRepository.findByStatusAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId)
+        return commentRepository.findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId)
                 .stream().map(CommentEntity::toComment).collect(Collectors.toList());
     }
 
@@ -91,6 +97,4 @@ public class CommentService {
         return commentRepository.findByBoardEntity_BoardIdAndUserEntity_UserId(boardId, userId)
                 .stream().map(CommentEntity::toComment).collect(Collectors.toList());
     }
-
-
 }

@@ -1,7 +1,8 @@
+body {
+    margin-bottom: 10%;
+}
+
 #board-area {
-    position: absolute;
-    top: 20%;
-    left: 25%;
     background-color: rgb(236, 236, 236);
     width: 58%;
     height: auto;
@@ -20,8 +21,6 @@
 }
 
 #comment-area {
-    position: absolute;
-    top: 60%;
     left: 20%;
     width: 100%;
 }
@@ -61,33 +60,14 @@
     text-align: right;
 }
 
-#comment-area {
-    position: absolute;
-    top: 58%;
-    left: 25%;
-}
 
-#comment-input {
-    margin-left: 30px;
-    margin-right: 20px;
-    width:50%;
-    border: 0px;
-    border-bottom: 3px solid black;
-}
-
-#comment-input:focus {
-    outline: none;
-    box-shadow: none;
-}
 
 #comment-write-button {
     border-radius: 10px;
 }
 
 #like-area {
-    position: absolute;
-    top: 50%;
-    left: 26%;
+    margin-left: 23%;
 }
 
 #like-alert-area {
@@ -147,13 +127,10 @@
 }
 
 #board-edit-area {
-    position: absolute;
-    top: 15%;
-    left: 75%;
-    width: 85%; 
     padding: 15px;
     height: auto;
     font-size: smaller;
+    margin-left: 130%;
 }
 
 #edit-board {
@@ -205,3 +182,4 @@
     outline: none;
     box-shadow: none;
 }
+

@@ -6,6 +6,7 @@ import com.tagstory.core.domain.comment.service.dto.Comment;
 import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
+import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
 import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class CommentFacade {
         commentService.delete(commentId);
     }
 
-    public List<Comment> getCommentList(String boardId) {
+    public List<CommentWithReplies> getCommentList(String boardId) {
         return commentService.getCommentList(boardId);
     }
 

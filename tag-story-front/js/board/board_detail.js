@@ -20,15 +20,23 @@ window.onload = () => {
     /*
      * 댓글 리스트를 보여준다.
      */
-    Comment.getCommentList(boardId);
+    Comment.getCommentList(boardId)
+        .then(() => {
+            if (localStorage.getItem('Authorization')) {
+                Comment.getUserCommentId();
+            }
+        });
 
     /**
      * 게시글 작성자인지 확인한다.
      */
-    const isWriter = BoardApi.isWriter(boardId);
-    if(isWriter) {
-        renderEditBoardArea();
+    if(localStorage.getItem('Authorization')) {
+        const isWriter = BoardApi.isWriter(boardId);
+        if(isWriter) {
+            renderEditBoardArea();
+        }
     }
+    
 
     /**
      * 사용자의 게시글 좋아요 여부를 검사한다.
@@ -53,7 +61,7 @@ let hashtagList;
 const renderBoard = (board) => {
     content = board.content;
     nickname = board.nickname;
-    createdAt = board.createdAt;
+    createdAt = board.createdAt[0] + "." + board.createdAt[1] + "." + board.createdAt[2];
     hashtagList = board.hashtagNameList.nameList;
 
     let hashtagElements = "";
@@ -107,7 +115,6 @@ const renderExistedBoard = () => {
     }
     document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;
     document.getElementById("board-input").innerHTML = `${content}`;
-    // document.getElementById("uploaded_file_view").innerHTML = `${}`;
 
     addIdToTagElements();
     addTagToHashtagArray();
