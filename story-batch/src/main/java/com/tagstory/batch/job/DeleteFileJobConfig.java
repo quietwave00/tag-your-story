@@ -36,34 +36,49 @@ public class DeleteFileJobConfig {
     private final StepBuilderFactory stepBuilderFactory;
     private final CommonRedisTemplate redisTemplate;
     private final DataSource dataSource;
-    private final JdbcTemplate jdbcTemplate;
 
     @Bean
     public Job deleteFileJob() throws Exception {
         return jobBuilderFactory.get("deleteFileJob")
                 .start(deleteFile())
+                .next(deleteFileFromDB())
                 .build();
     }
 
     /*
-     * 삭제된 파일 아이디의 리스트를 가져오고
-     * 해당 아이디의 S3 URL을 가져온다.
+     * 파일을 삭제한다.
      */
     @Bean
     public Step deleteFile() throws Exception {
         return stepBuilderFactory.get("deleteFile")
                 .<List<String>, List<String>>chunk(chunkSize)
-                .reader(itemReader())
-                .writer(itemWriter())
+                .reader(fileItemReader())
+                .processor(fileItemProcessor(redisTemplate))
+                .writer(fileItemWriter())
                 .build();
     }
+
+    /*
+     * 파일을 DB에서 삭제한다.
+     */
+    @Bean
+    public Step deleteFileFromDB() throws Exception {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        return stepBuilderFactory.get("deleteFileFromDB")
+                .tasklet(new DeleteFileFromDBStep(redisTemplate, jdbcTemplate))
+                .build();
+    }
+
+    /*
+     * Step1
+     */
 
     /*
      * ItemReader
      * 파일 아이디에 해당하는 파일 경로를 읽는다.
      */
     @Bean
-    public JdbcPagingItemReader<List<String>> itemReader() throws Exception {
+    public JdbcPagingItemReader<List<String>> fileItemReader() throws Exception {
         Map<String, Object> parameterValues = new HashMap<>();
         parameterValues.put("fileIdList", redisTemplate.getList("", CacheSpec.FILE_TO_DELETE));
 
@@ -74,7 +89,7 @@ public class DeleteFileJobConfig {
                 .rowMapper(new FileListRowMapper())
                 .queryProvider(pagingQueryProvider())
                 .parameterValues(parameterValues)
-                .name("itemReader")
+                .name("fileItemReader")
                 .build();
     }
 
@@ -93,6 +108,9 @@ public class DeleteFileJobConfig {
         return factoryBean.getObject();
     }
 
+    /*
+     * 데이터를 정렬한다.
+     */
     @Bean
     public Map<String, Order> sortKeys() {
         Map<String, Order> sortKeys = new HashMap<>(1);
@@ -106,8 +124,9 @@ public class DeleteFileJobConfig {
      * S3로 파일 삭제 요청을 한다.
      */
     @Bean
-    public ItemProcessor<List<String>, List<String>> itemProcessor() {
-        return new CustomItemProcessor();
+    public ItemProcessor<List<String>, List<String>> fileItemProcessor(CommonRedisTemplate redisTemplate) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        return new CustomItemProcessor(redisTemplate, jdbcTemplate);
     }
 
     /*
@@ -115,11 +134,11 @@ public class DeleteFileJobConfig {
      *
      */
     @Bean
-    public ItemWriter<List<String>> itemWriter() {
-        return new ItemWriter<List<String>>() {
+    public ItemWriter<List<String>> fileItemWriter() {
+        return new ItemWriter<>() {
             @Override
             public void write(List<? extends List<String>> items) throws Exception {
-                log.info(">>>>>>>" + items.toString());
+                log.info(">>>>>>>ItemWriter!!<<<<<<");
             }
         };
     }
