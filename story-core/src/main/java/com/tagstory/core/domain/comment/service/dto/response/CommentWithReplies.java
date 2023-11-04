@@ -17,10 +17,6 @@ public class CommentWithReplies {
     private List<Comment> children;
 
     public static CommentWithReplies of(Comment comment, List<Comment> children) {
-        children.forEach(child -> {
-            System.out.println("///" + child.getStatus() + "/////" + " " + child.getContent());
-        });
-
         children = children.stream()
                 .filter(child -> CommentStatus.POST == child.getStatus())
                 .collect(Collectors.toList());
