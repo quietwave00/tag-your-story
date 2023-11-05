@@ -4,6 +4,7 @@ import com.tagstory.batch.item.CustomItemProcessor;
 import com.tagstory.batch.mapper.FileListRowMapper;
 import com.tagstory.core.common.CommonRedisTemplate;
 import com.tagstory.core.config.CacheSpec;
+import com.tagstory.core.domain.file.webclient.S3WebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -35,6 +36,7 @@ public class DeleteFileJobConfig {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final CommonRedisTemplate redisTemplate;
+    private final S3WebClient s3WebClient;
     private final DataSource dataSource;
 
     @Bean
@@ -68,10 +70,6 @@ public class DeleteFileJobConfig {
                 .tasklet(new DeleteFileFromDBStep(redisTemplate, jdbcTemplate))
                 .build();
     }
-
-    /*
-     * Step1
-     */
 
     /*
      * ItemReader
@@ -126,7 +124,7 @@ public class DeleteFileJobConfig {
     @Bean
     public ItemProcessor<List<String>, List<String>> fileItemProcessor(CommonRedisTemplate redisTemplate) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return new CustomItemProcessor(redisTemplate, jdbcTemplate);
+        return new CustomItemProcessor(redisTemplate, jdbcTemplate, s3WebClient);
     }
 
     /*
