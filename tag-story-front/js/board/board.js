@@ -58,31 +58,7 @@ document.getElementById('write-button').addEventListener('click', async () => {
             File.renderMainFileList(mainFileObject);
         });
     }
-    renderAlert();
 });
-
-/**
- * 게시글 작성 완료 알림을 보여준다.
- */
-const renderAlert = () => {
-    document.getElementById('alert-area').innerHTML =
-            `
-                <div class = "alert alert-dark hide" role = "alert">
-                    Your board has been created successfully.
-                </div>
-            `;
-            let alertDiv = document.querySelector('.alert');
-            let opacity = 1;
-            let timer = setInterval(function() {
-                if (opacity > 0) {
-                    opacity -= 0.005;
-                    alertDiv.style.opacity = opacity;
-                } else {
-                    clearInterval(timer);
-                    alertDiv.style.display = 'none';
-                }
-            }, 10);
-}
 
 /**
  * 게시글 작성 응답값을 토대로 렌더링해준다.

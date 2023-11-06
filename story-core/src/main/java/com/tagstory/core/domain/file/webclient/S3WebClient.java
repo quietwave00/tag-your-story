@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -73,13 +73,9 @@ public class S3WebClient {
     public void deleteFile(String filePath) {
         String[] pathSegments = filePath.split("/");
         String fileName = pathSegments[pathSegments.length - 1];
-        try {
-            String decodedFileName = URLDecoder.decode(fileName, "UTF-8");
-            log.info("fileName: {}", decodedFileName);
-            DeleteObjectRequest request = new DeleteObjectRequest(bucketName, fileName);
-            amazonS3Client.deleteObject(request);
-        } catch(UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+        log.info("fileName: {}", decodedFileName);
+        DeleteObjectRequest request = new DeleteObjectRequest(bucketName, fileName);
+        amazonS3Client.deleteObject(request);
     }
 }

@@ -10,16 +10,18 @@ window.addEventListener("load", function () {
      */
     FileApi.getFileList(boardId).then((response) => {
         renderFile(response);
+        renderExistedFile(response);
     });
 });
 
 const fileArea = document.getElementById('file-area');
 let fileId;
-let filePath;
+let fileList;
 /**
  * 상세 게시글 정보를 보여준다. 
  */
 const renderFile = (fileList) => {
+    fileList = fileList;
     fileList.forEach(file => {
         const fileId = file.fileId;
         const filePath = file.filePath;
@@ -37,3 +39,44 @@ const renderFile = (fileList) => {
 /**
  * 수정 시 기존 데이터를 보여준다.
  */
+const renderExistedFile = (fileList) => {
+    const uploadedView = document.getElementById('uploaded_view');
+    fileList.forEach(file => {
+        const fileId = file.fileId;
+        const filePath = file.filePath;
+
+        /* 미리보기에 추가 */
+        let imgDiv = document.createElement("div");
+        imgDiv.className = "existed_img_div";
+        imgDiv.id = `existed-img${fileId}`;
+        let img = document.createElement("img");
+        img.src = filePath;
+        imgDiv.appendChild(img);
+        uploadedView.appendChild(imgDiv);
+        uploadedView.classList.add("show");
+
+        deleteExistedImg(fileId);
+    });
+}
+
+const deleteExistedImg = (fileId) => {
+    const fileIdListToDelete = [];
+    const parentImgDiv = document.querySelector('#uploaded_view');
+    const imgDivList = parentImgDiv.querySelectorAll('.img_div');
+
+    parentImgDiv.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    imgDivList.forEach((imgDiv) => {
+        imgDiv.addEventListener('click', (event) => {
+            /* 미리보기에서 삭제 */
+            event.currentTarget.remove();
+            btnOuter.classList.remove("file_uploading");
+            btnOuter.classList.remove("file_uploaded");
+            
+            /* 삭제할 파일 아이디 저장 */
+            fileIdListToDelete.add(fileId);
+        });
+    });
+}
