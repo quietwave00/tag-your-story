@@ -40,7 +40,7 @@ public class DeleteFileJobConfig {
     private final DataSource dataSource;
 
     @Bean
-    public Job deleteFileJob() throws Exception {
+    public Job deleteFileJob() {
         return jobBuilderFactory.get("deleteFileJob")
                 .start(deleteFile())
                 .next(deleteFileFromDB())
@@ -51,7 +51,7 @@ public class DeleteFileJobConfig {
      * 파일을 삭제한다.
      */
     @Bean
-    public Step deleteFile() throws Exception {
+    public Step deleteFile() {
         return stepBuilderFactory.get("deleteFile")
                 .<List<String>, List<String>>chunk(chunkSize)
                 .reader(fileItemReader())
@@ -64,7 +64,7 @@ public class DeleteFileJobConfig {
      * 파일을 DB에서 삭제한다.
      */
     @Bean
-    public Step deleteFileFromDB() throws Exception {
+    public Step deleteFileFromDB() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return stepBuilderFactory.get("deleteFileFromDB")
                 .tasklet(new DeleteFileFromDBStep(redisTemplate, jdbcTemplate))
@@ -76,7 +76,7 @@ public class DeleteFileJobConfig {
      * 파일 아이디에 해당하는 파일 경로를 읽는다.
      */
     @Bean
-    public JdbcPagingItemReader<List<String>> fileItemReader() throws Exception {
+    public JdbcPagingItemReader<List<String>> fileItemReader() {
         Map<String, Object> parameterValues = new HashMap<>();
         parameterValues.put("fileIdList", redisTemplate.getList("", CacheSpec.FILE_TO_DELETE));
 
@@ -95,15 +95,20 @@ public class DeleteFileJobConfig {
      * 파일 경로를 조회하는 쿼리를 돌려준다.
      */
     @Bean
-    public PagingQueryProvider pagingQueryProvider() throws Exception {
-        SqlPagingQueryProviderFactoryBean factoryBean = new SqlPagingQueryProviderFactoryBean();
-        factoryBean.setDataSource(dataSource);
-        factoryBean.setSelectClause("SELECT file_path");
-        factoryBean.setFromClause("FROM files");
-        factoryBean.setWhereClause("WHERE file_id IN (:fileIdList)");
-        factoryBean.setSortKeys(sortKeys());
+    public PagingQueryProvider pagingQueryProvider() {
+        try {
+            SqlPagingQueryProviderFactoryBean factoryBean = new SqlPagingQueryProviderFactoryBean();
+            factoryBean.setDataSource(dataSource);
+            factoryBean.setSelectClause("SELECT file_path");
+            factoryBean.setFromClause("FROM files");
+            factoryBean.setWhereClause("WHERE file_id IN (:fileIdList)");
+            factoryBean.setSortKeys(sortKeys());
 
-        return factoryBean.getObject();
+            return factoryBean.getObject();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
     }
 
     /*
