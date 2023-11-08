@@ -15,6 +15,7 @@ window.addEventListener("load", function () {
 });
 
 const fileArea = document.getElementById('file-area');
+const fileIdListToDelete = [];
 let fileId;
 let fileList;
 /**
@@ -60,9 +61,9 @@ const renderExistedFile = (fileList) => {
 }
 
 const deleteExistedImg = (fileId) => {
-    const fileIdListToDelete = [];
     const parentImgDiv = document.querySelector('#uploaded_view');
-    const imgDivList = parentImgDiv.querySelectorAll('.img_div');
+    const imgDivList = parentImgDiv.querySelectorAll('.existed_img_div');
+    const btnOuter = document.querySelector(".button_outer");
 
     parentImgDiv.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -76,7 +77,16 @@ const deleteExistedImg = (fileId) => {
             btnOuter.classList.remove("file_uploaded");
             
             /* 삭제할 파일 아이디 저장 */
-            fileIdListToDelete.add(fileId);
+            fileIdListToDelete.push(fileId);
         });
     });
 }
+
+/**
+ * 수정 버튼 클릭 시 파일 삭제 요청을 한다.
+ */
+document.getElementById("edit-button").addEventListener('click', () => {
+    if(fileIdListToDelete.length > 0) {
+        FileApi.deleteFileList(fileIdListToDelete);
+    }
+});

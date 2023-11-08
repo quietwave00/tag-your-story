@@ -68,9 +68,37 @@ const getFileList = (boardId) => {
     })
 }
 
+/**
+ * 파일 삭제 요청을 한다.
+ * 
+ * @param fileIdList: 삭제할 파일 아이디 리스트 
+ */
+const deleteFileList = (fileIdList) => {
+    fetch(`${server_host}/api/files`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        },
+        body: JSON.stringify({
+            "fileIdList": fileIdList
+        })
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === false) {
+            ExceptionHandler.handleException(res.exceptionCode)
+            .then(() => {
+                deleteFileList(fileIdList);
+            });
+        }
+    });
+}
+
 
 export default {
     upload,
     getMainFileList,
-    getFileList
+    getFileList,
+    deleteFileList
 }
