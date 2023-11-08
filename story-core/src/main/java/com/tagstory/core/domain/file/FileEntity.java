@@ -27,15 +27,26 @@ public class FileEntity {
     @Enumerated(EnumType.STRING)
     private FileLevel fileLevel;
 
+    @Enumerated(EnumType.STRING)
+    private FileStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private BoardEntity board;
+
 
     /*
      * 연관관계 설정
      */
     public void addBoard(BoardEntity boardEntity) {
         this.board = boardEntity;
+    }
+
+    /*
+     * 비즈니스 로직
+     */
+    public void delete() {
+        this.status = FileStatus.PENDING;
     }
 
     /*
@@ -47,6 +58,7 @@ public class FileEntity {
                 .fileName(this.getFileName())
                 .filePath(this.getFilePath())
                 .fileLevel(this.getFileLevel())
+                .status(this.getStatus())
                 .board(this.getBoard().toBoard())
                 .build();
     }
