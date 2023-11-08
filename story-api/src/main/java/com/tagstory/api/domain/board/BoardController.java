@@ -98,7 +98,7 @@ public class BoardController {
      * 게시글을 삭제한다.
      */
     @PreAuthorize("hasRole('ROLE_USER')")
-    @PatchMapping("/status/{boardId}")
+    @DeleteMapping("/{boardId}")
     public ApiResult<Void> delete(@PathVariable("boardId") String boardId) {
         boardFacade.delete(boardId);
         return ApiUtils.success();
