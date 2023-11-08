@@ -126,8 +126,9 @@ document.getElementById("edit-button").addEventListener('click', () => {
     const boardId = new URLSearchParams(window.location.search).get('boardId');
     const content = document.getElementById("board-input").value;
     const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
-    const response = BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
-    renderBoard(response);
+    console.log("수정버튼클릭시이벤트함수 hashtagArray: " + JSON.stringify(hashtagArray));
+    BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray)
+    location.reload();
 });
 
 /**
@@ -142,7 +143,9 @@ const deleteBoard = (boardId) => {
  */
 const getBoardListByHashtagName = (hashtagName) => {
     BoardApi.getBoardListByHashtagName(hashtagName).then((response) => {
-        console.log(response);
+        /**
+         * TODO
+         */
     });
 }
 

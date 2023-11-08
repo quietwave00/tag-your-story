@@ -77,7 +77,9 @@ public class BoardService {
     }
 
     @Transactional
-    public Board updateBoardWithHashtag(UpdateBoardCommand command, BoardEntity boardEntity, List<BoardHashtagEntity> boardHashtagEntityList) {
+    public Board updateBoardWithHashtag(UpdateBoardCommand command,
+                                        BoardEntity boardEntity,
+                                        List<BoardHashtagEntity> boardHashtagEntityList) {
         return boardEntity.update(command.getContent(), boardHashtagEntityList).toBoard();
     }
 
@@ -95,15 +97,18 @@ public class BoardService {
      * 단일 메소드
      */
     public Board getBoardByBoardId(String boardId) {
-        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND)).toBoard();
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST)
+                .orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND)).toBoard();
     }
 
     public BoardEntity getBoardEntityByBoardId(String boardId) {
-        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST)
+                .orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
     public List<Board> getBoardListByTrackIdSortedCreatedAt(BoardStatus status, String trackId, int page) {
-        Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
+        Page<BoardEntity> boardEntityPage = boardRepository.
+                findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
 
         return boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)

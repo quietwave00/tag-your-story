@@ -72,12 +72,14 @@ public class BoardFacade {
         BoardEntity boardEntity = boardService.getBoardEntityByBoardId(command.getBoardId());
 
         /* 해시태그에 수정 사항이 있으면 해당 게시글의 해시태그 모두 삭제 후 요청 값으로 insert */
-        if(!command.getHashtagList().isEmpty()) {
+        if(command.getHashtagList().size() > 0) {
+            log.info("여기로 타니?");
             boardHashtagService.deleteHashtag(command.getBoardId());
             List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
             List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
             return boardService.updateBoardWithHashtag(command, boardEntity, boardHashtagEntityList);
         }
+        log.info("저기로 타니?");
         return boardService.updateBoard(command, boardEntity);
     }
 
