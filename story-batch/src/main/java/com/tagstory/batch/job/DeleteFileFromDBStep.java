@@ -11,6 +11,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,9 +29,11 @@ public class DeleteFileFromDBStep implements Tasklet {
 
     private void deleteFromDataBase() {
         List<Long> fileIdList = redisTemplate.getList("", CacheSpec.FILE_TO_DELETE);
-        fileIdList.forEach(fileId -> {
-            jdbcTemplate.update("delete from files where file_id = ?", fileId);
-        });
-        redisTemplate.delete("", CacheSpec.FILE_TO_DELETE);
+        if(Objects.nonNull(fileIdList)) {
+            fileIdList.forEach(fileId -> {
+                jdbcTemplate.update("delete from files where file_id = ?", fileId);
+            });
+            redisTemplate.delete("", CacheSpec.FILE_TO_DELETE);
+        }
     }
 }
