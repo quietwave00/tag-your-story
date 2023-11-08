@@ -1,12 +1,20 @@
 
+const existedHashtagElements = document.getElementsByClassName('hashtag-elements');
+let hashtagArray = [];
+let enterCount;
+let editFlag = false; // 해시태그에 수정 사항이 생겼는지 판단하는 값
+let editedHashtagArray = []; //수정 사항이 있을 때 모든 해시태그 값이 할당된다.
+
+
+
 /**
  * 해시태그 입력 이벤트 함수
  */
-let hashtagArray = [];
-let enterCount = 0;
 document.getElementById('tag-input').addEventListener('keypress', function(e) {
     if(e.key === "Enter") {
+        enterCount = existedHashtagElements ? existedHashtagElements.length : 0;
         enterCount++;
+        console.log("enterCount: " + enterCount);
         if(enterCount > 5) {
             alert("해시태그는 다섯 개까지 입력 가능합니다.");
             this.value= "";
@@ -46,14 +54,3 @@ const deleteHashtag = (hashtagId) => {
     const index = id[1] - 1;
     hashtagArray[index] = undefined;
 }
-
-/**
- * tag-elements 요소들에 id를 부여해준다.
- */
-const addIdToTagElements = () => {
-    const tagElements = document.querySelectorAll(".editable-tag-elements");
-    tagElements.forEach((tagElement, index) => {
-        const tagId = `tag-${index + 1}`;
-        tagElement.id = tagId;
-    });
-};

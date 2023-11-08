@@ -109,7 +109,7 @@ const renderExistedBoard = () => {
     for(let hashtag of hashtagList) {
         hashtagElements += 
             `
-                <div class = "editable-tag-elements">#${hashtag}</div>
+                <div class = "existed-hashtag-element">#${hashtag}</div>
             `;
     }
     document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;

@@ -6,38 +6,37 @@
  */
 let hashtagArray = [];
 let hashtagCount = document.querySelectorAll(".editable-tag-elements").length;
-console.log("hashtagCount: " + hashtagCount);
 
-document.getElementById('tag-input').addEventListener('keypress', function(e) {
-    if(e.key === "Enter") {
-        hashtagCount++;
-        if(hashtagCount > 5) {
-            alert("해시태그는 다섯 개까지 입력 가능합니다.");
-            this.value= "";
-            e.preventDefault();
-        } else {
-            e.stopPropagation();
-            e.preventDefault();
-            const hashtag = this.value.trim();
-            renderHashtag(hashtag);
-            this.value = "";
-        }
-    }
-});
+// document.getElementById('tag-input').addEventListener('keypress', function(e) {
+//     if(e.key === "Enter") {
+//         hashtagCount++;
+//         if(hashtagCount > 5) {
+//             alert("해시태그는 다섯 개까지 입력 가능합니다.");
+//             this.value= "";
+//             e.preventDefault();
+//         } else {
+//             e.stopPropagation();
+//             e.preventDefault();
+//             const hashtag = this.value.trim();
+//             renderHashtag(hashtag);
+//             this.value = "";
+//         }
+//     }
+// });
 
 /**
  * 해시태그 요소를 보여준다.
  * @param hashtag: 해시태그 입력값
  */
 let hashtagElement = document.getElementById('hashtag-container');
-const renderHashtag = (hashtag) => {
-    hashtagElement.innerHTML +=
-        `
-            <div class = "editable-hashtag-elements" id = "tag-${hashtagCount}" style = "margin-right: 10px;">#${hashtag}</div>
+// const renderHashtag = (hashtag) => {
+//     hashtagElement.innerHTML +=
+//         `
+//             <div class = "editable-hashtag-elements" id = "tag-${hashtagCount}" style = "margin-right: 10px;">#${hashtag}</div>
 
-        `;
-    hashtagArray.push(hashtag);
-}
+//         `;
+//     hashtagArray.push(hashtag);
+// }
 
 hashtagElement.onclick = (e) => deleteHashtag(e.target.id);
 /**
@@ -56,7 +55,7 @@ const deleteHashtag = (hashtagId) => {
  * tag-elements 요소들에 id를 부여해준다.
  */
 const addIdToTagElements = () => {
-    const tagElements = document.querySelectorAll(".editable-tag-elements");
+    const tagElements = document.querySelectorAll(".existed-hashtag-element");
     tagElements.forEach((tagElement, index) => {
         const tagId = `tag-${index + 1}`;
         tagElement.id = tagId;
@@ -67,7 +66,7 @@ const addIdToTagElements = () => {
  * hashtagArray에 기존 해시태그 값들을 넣어준다. (수정 시 사용)
  */
 const addTagToHashtagArray = () => {
-    const tagElements = document.querySelectorAll(".editable-tag-elements");
+    const tagElements = document.querySelectorAll(".existed-hashtag-element");
     tagElements.forEach(tagElement => {
         const text = tagElement.textContent;
         const hashtag = text.substring(1);
