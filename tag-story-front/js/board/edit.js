@@ -74,3 +74,4 @@ const getExistedData = () => {
     }
 }
 
+export { boardId };

@@ -1,16 +1,17 @@
 import FileApi from "../board/fileApi.js"
+import { boardId as boardIdFrommModule } from "./edit.js";
 
 /* 해당 스크립트는 board.html에서 board_detail.js와 함께 사용된다. */ 
 
 window.addEventListener("load", function () {
-    const boardId = new URLSearchParams(window.location.search).get('boardId');
-
+    const boardIdFromURL = new URLSearchParams(window.location.search).get('boardId');
+    const boardId = boardIdFromURL == null ? boardIdFrommModule : boardIdFromURL;
     /*
      * 상세 게시글의 파일 정보를 요청하고 렌더링한다.
      */
     FileApi.getFileList(boardId).then((response) => {
-        renderFile(response);
-        renderExistedFile(response);
+        this.document.getElementById('file-area') == null
+            ? renderExistedFile(response) : renderFile(response);
     });
 });
 
@@ -83,7 +84,7 @@ const deleteExistedImg = (fileId) => {
 }
 
 /**
- * 수정 버튼 클릭 시 파일 삭제 요청을 한다.
+ * 수정 버튼 클릭 시 파일 삭제, 수정 요청을 한다.
  */
 document.getElementById("edit-button").addEventListener('click', () => {
     if(fileIdListToDelete.length > 0) {
