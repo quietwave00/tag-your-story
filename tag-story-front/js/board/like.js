@@ -18,19 +18,21 @@ const checkLiked = (boardId) => {
 /**
  * 좋아요 버튼 클릭 이벤트 함수
  */
-document.getElementById('like-button-area').addEventListener('click', () => {
-    const isLiked = likeButton.getAttribute('data-is-liked') === 'true';
-    const likeApi = isLiked ? LikeApi.cancelLike : LikeApi.like;
-    const changedStatus = !isLiked;
-
-    likeApi(boardId).then((response) => {
-        if (response === true) {
-            setStatus(changedStatus);
-        }
-        getLikeCount(boardId);
-    });
+const likeButtonArea = document.getElementById('like-button-area');
+if(likeButtonArea) {
+    likeButtonArea.addEventListener('click', () => {
+        const isLiked = likeButton.getAttribute('data-is-liked') === 'true';
+        const likeApi = isLiked ? LikeApi.cancelLike : LikeApi.like;
+        const changedStatus = !isLiked;
     
-});
+        likeApi(boardId).then((response) => {
+            if (response === true) {
+                setStatus(changedStatus);
+            }
+            getLikeCount(boardId);
+        });
+    });
+}
 
 /* 좋아요 개수를 요청한다 */
 const getLikeCount = (boardId) => {

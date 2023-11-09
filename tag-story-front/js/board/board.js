@@ -1,6 +1,8 @@
-import BoardApi from "./boardApi.js"
-import File from "./file.js"
-import FileApi from "./fileApi.js"
+import BoardApi from "./boardApi.js";
+import File from "./file.js";
+import FileApi from "./fileApi.js";
+import Hashtag from "./hashtag.js";
+import { hashtagArray as hashtagArrayFromModule } from "./hashtag.js";
 
 /**
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
@@ -44,9 +46,7 @@ const renderBoardList = (boardList) => {
  * 게시글 작성 버튼 클릭 시 이벤트 함수
  */
 document.getElementById('write-button').addEventListener('click', async () => {
-    const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
-    const writeBoardResponse = await BoardApi.writeBoard(resultHashtagArray, trackId);
-    hashtagArray = [];
+    const writeBoardResponse = await BoardApi.writeBoard(hashtagArrayFromModule, trackId);
     renderBoard(writeBoardResponse);
     if(document.getElementsByClassName('img_div').length > 0) {
         File.upload(writeBoardResponse.boardId).then((uploadResponse) => {

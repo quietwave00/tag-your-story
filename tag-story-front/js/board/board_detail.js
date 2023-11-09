@@ -89,47 +89,31 @@ const renderBoard = (board) => {
  */
 const renderEditBoardArea = () => {
     const boardId = new URLSearchParams(window.location.search).get('boardId');
-    document.getElementById("board-edit-area").innerHTML =
-        `
-            <span id="edit-board" data-bs-toggle="modal" data-bs-target="#edit-board-modal">수정</span>
-            <span id="delete-board">삭제</span>
-        `;
-        const deleteBoardElement = document.getElementById('delete-board');
+    const boardEditArea = document.getElementById("board-edit-area");
+    if(boardEditArea) {
+        boardEditArea.innerHTML =
+            `
+                <span id="edit-board">수정</span>
+                <span id="delete-board">삭제</span>
+            `;
+    } 
+
+    const editBoardElement = document.getElementById('edit-board');
+    if(editBoardElement) {
+        editBoardElement.onclick = () => {
+            location.href = `${client_host}/edit.html?hashtags=${encodeURIComponent(hashtagList)}
+                            &content=${encodeURIComponent(content)}
+                            &boardId=${encodeURIComponent(boardId)}`;
+        }
+    }
+    
+    const deleteBoardElement = document.getElementById('delete-board');
+    if(deleteBoardElement) {
         deleteBoardElement.onclick = () => {
             deleteBoard(boardId);
         };
-    document.getElementById("edit-board-modal").addEventListener("shown.bs.modal", renderExistedBoard);
-};
-
-/**
- * 수정 시 기존 데이터를 보여준다.
- */
-const renderExistedBoard = () => {
-    let hashtagElements = "";
-    for(let hashtag of hashtagList) {
-        hashtagElements += 
-            `
-                <div class = "existed-hashtag-element">#${hashtag}</div>
-            `;
     }
-    document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;
-    document.getElementById("board-input").innerHTML = `${content}`;
-
-    addIdToTagElements();
-    addTagToHashtagArray();
-}
-
-/**
- * 수정 버튼 클릭 이벤트 함수
- */
-document.getElementById("edit-button").addEventListener('click', () => {
-    const boardId = new URLSearchParams(window.location.search).get('boardId');
-    const content = document.getElementById("board-input").value;
-    const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
-    console.log("수정버튼클릭시이벤트함수 hashtagArray: " + JSON.stringify(hashtagArray));
-    BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray)
-    location.reload();
-});
+};
 
 /**
  * 게시글을 삭제한다.
@@ -144,8 +128,7 @@ const deleteBoard = (boardId) => {
 const getBoardListByHashtagName = (hashtagName) => {
     BoardApi.getBoardListByHashtagName(hashtagName).then((response) => {
         /**
-         * TODO
+         * @TODO
          */
     });
 }
-

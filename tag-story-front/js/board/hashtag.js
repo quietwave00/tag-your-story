@@ -1,33 +1,35 @@
 
-const existedHashtagElements = document.getElementsByClassName('hashtag-elements');
 let hashtagArray = [];
-let enterCount;
-let editFlag = false; // 해시태그에 수정 사항이 생겼는지 판단하는 값
-let editedHashtagArray = []; //수정 사항이 있을 때 모든 해시태그 값이 할당된다.
-
-
+let editFlag = false;
+let hashtagCount = 0;
 
 /**
  * 해시태그 입력 이벤트 함수
  */
-document.getElementById('tag-input').addEventListener('keypress', function(e) {
+const tagInput = document.getElementById('tag-input');
+tagInput.addEventListener('keypress', function(e) {
+    editFlag = true
+
+
+    hashtagCount = hashtagArray.length;
     if(e.key === "Enter") {
-        enterCount = existedHashtagElements ? existedHashtagElements.length : 0;
-        enterCount++;
-        console.log("enterCount: " + enterCount);
-        if(enterCount > 5) {
+        if(hashtagCount > 4) {
             alert("해시태그는 다섯 개까지 입력 가능합니다.");
-            this.value= "";
+            e.preventDefault();
+        } else if(!tagInput.value) {
+            alert("내용을 입력해 주세요.");
             e.preventDefault();
         } else {
             e.stopPropagation();
             e.preventDefault();
             const hashtag = this.value.trim();
-            renderHashtag(hashtag);
-            this.value = "";
+
+            renderHashtag(hashtag, hashtagCount); 
         }
+        this.value = "";
     }
 });
+
 
 /**
  * 해시태그 요소를 보여준다.
@@ -35,22 +37,65 @@ document.getElementById('tag-input').addEventListener('keypress', function(e) {
  */
 let hashtagElement = document.getElementById('hashtag-container');
 const renderHashtag = (hashtag) => {
+    hashtagCount++;
     hashtagElement.innerHTML +=
         `
-            <div class = "hashtag-elements" id = "tag-${enterCount}" style = "margin-right: 10px;">#${hashtag}</div>
+            <div class = "hashtag-elements" id = "tag-${hashtagCount}" style = "margin-right: 10px;">#${hashtag}</div>
 
         `;
     hashtagArray.push(hashtag);
+    hashtagCount = hashtagArray.length;
 }
 
-hashtagElement.onclick = (e) => deleteHashtag(e.target.id);
+
 /**
  * 해시태그 요소를 삭제한다.
  * @param hashtagId: 삭제할 해시태그 아이디의 인덱스값
  */
+hashtagElement.onclick = (e) => deleteHashtag(e.target.id);
 const deleteHashtag = (hashtagId) => {
-    document.getElementById(hashtagId).remove();
-    const id = hashtagId.match(/-(\d+)/);
-    const index = id[1] - 1;
-    hashtagArray[index] = undefined;
+    editFlag = true;
+    const element = document.getElementById(hashtagId);
+    if (element) {
+        element.remove();
+        
+        const prefix = "tag-";
+        const index = hashtagId.replace(prefix, "") - 1;
+        hashtagArray.splice(index, 1);
+    }
+    addIdToTagElements();
 }
+
+
+/**
+ * 해시태그 클릭 시 해당 태그가 포함된 게시글을 보여준다.
+ */
+const getBoardListByHashtag = () => {}
+
+
+/**
+ * 해시태그 요소들에 id를 부여해준다. (수정 시 사용)
+ */
+const addIdToTagElements = () => {
+    const tagElements = document.querySelectorAll(".hashtag-elements");
+    tagElements.forEach((tagElement, index) => {
+        const tagId = `tag-${index + 1}`;
+        tagElement.id = tagId;
+    });
+}
+
+/**
+ * hashtagArray에 기존 해시태그 값들을 넣어준다. (수정 시 사용)
+ */
+const addTagToHashtagArray = (existedHashtagArray) => {
+    hashtagArray = [];
+    existedHashtagArray.forEach(hashtag => {
+        hashtagArray.push(hashtag);
+    });
+}
+
+export { hashtagArray, editFlag};
+export default {
+    addIdToTagElements,
+    addTagToHashtagArray
+};
