@@ -15,15 +15,14 @@ window.addEventListener("load", function () {
     });
 });
 
-const fileArea = document.getElementById('file-area');
-const fileIdListToDelete = [];
-let fileId;
-let fileList;
+let fileList = new FormData();
+let fileIdListToDelete = [];
+let editFlag = false;
+
 /**
  * 상세 게시글 정보를 보여준다. 
  */
 const renderFile = (fileList) => {
-    fileList = fileList;
     fileList.forEach(file => {
         const fileId = file.fileId;
         const filePath = file.filePath;
@@ -33,13 +32,14 @@ const renderFile = (fileList) => {
         img.id = `file-${fileId}`;
         img.classList.add('file-element');
 
+        const fileArea = document.getElementById('file-area');
         fileArea.appendChild(img);
     });
 }
 
 
 /**
- * 수정 시 기존 데이터를 보여준다.
+ * 기존 데이터를 보여준다. (수정 시 사용)
  */
 const renderExistedFile = (fileList) => {
     const uploadedView = document.getElementById('uploaded_view');
@@ -61,6 +61,9 @@ const renderExistedFile = (fileList) => {
     });
 }
 
+/**
+ * 업로드된 파일을 삭제한다. (수정 시 사용) 
+ */
 const deleteExistedImg = (fileId) => {
     const parentImgDiv = document.querySelector('#uploaded_view');
     const imgDivList = parentImgDiv.querySelectorAll('.existed_img_div');
@@ -83,11 +86,15 @@ const deleteExistedImg = (fileId) => {
     });
 }
 
+
+
 /**
- * 수정 버튼 클릭 시 파일 삭제, 수정 요청을 한다.
+ * 파일 삭제, 수정 요청을 한다.
  */
 document.getElementById("edit-button").addEventListener('click', () => {
     if(fileIdListToDelete.length > 0) {
         FileApi.deleteFileList(fileIdListToDelete);
     }
 });
+
+export { fileList, editFlag };
