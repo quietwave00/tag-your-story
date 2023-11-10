@@ -10,7 +10,6 @@ const tagInput = document.getElementById('tag-input');
 tagInput.addEventListener('keypress', function(e) {
     editFlag = true
 
-
     hashtagCount = hashtagArray.length;
     if(e.key === "Enter") {
         if(hashtagCount > 4) {
@@ -55,6 +54,7 @@ const renderHashtag = (hashtag) => {
 hashtagElement.onclick = (e) => deleteHashtag(e.target.id);
 const deleteHashtag = (hashtagId) => {
     editFlag = true;
+
     const element = document.getElementById(hashtagId);
     if (element) {
         element.remove();
@@ -94,7 +94,7 @@ const addTagToHashtagArray = (existedHashtagArray) => {
     });
 }
 
-export { hashtagArray, editFlag};
+export { hashtagArray, editFlag };
 export default {
     addIdToTagElements,
     addTagToHashtagArray
