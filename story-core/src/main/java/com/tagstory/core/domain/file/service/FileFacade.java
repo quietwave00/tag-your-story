@@ -20,10 +20,16 @@ public class FileFacade {
     private final BoardService boardService;
     private final S3WebClient s3WebClient;
 
-    public List<File> upload(List<MultipartFile> fileList, UploadFileCommand uploadFileCommand) {
+    public List<File> upload(List<MultipartFile> fileList, UploadFileCommand command) {
         List<S3File> savedFileList = s3WebClient.uploadFiles(fileList);
-        Board board = boardService.getBoardByBoardId(uploadFileCommand.getBoardId());
+        Board board = boardService.getBoardByBoardId(command.getBoardId());
         return fileService.upload(savedFileList, board);
+    }
+
+    public List<File> update(List<MultipartFile> fileList, UploadFileCommand command) {
+        List<S3File> savedFileList = s3WebClient.uploadFiles(fileList);
+        Board board = boardService.getBoardByBoardId(command.getBoardId());
+        return fileService.update(savedFileList, board);
     }
 
     public List<File> getMainFileList(String trackId) {

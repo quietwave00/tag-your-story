@@ -49,6 +49,10 @@ public class FileEntity {
         this.status = FileStatus.PENDING;
     }
 
+    public void setFileLevelToMain() {
+        this.fileLevel = FileLevel.MAIN;
+    }
+
     /*
      * 형변환
      */

@@ -13,10 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeleteFileRequest {
-    List<Long> fileIdList;
+    private String boardId;
+    private List<Long> fileIdList;
 
     public DeleteFileCommand toCommand() {
         return DeleteFileCommand.builder()
+                .boardId(boardId)
                 .fileIdList(fileIdList)
                 .build();
     }

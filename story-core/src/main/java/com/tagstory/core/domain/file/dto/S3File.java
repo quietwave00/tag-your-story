@@ -27,4 +27,9 @@ public class S3File {
         this.fileLevel = fileLevel;
         return this;
     }
+
+    public S3File setFileLevelToSub() {
+        this.fileLevel = FileLevel.SUB;
+        return this;
+    }
 }
