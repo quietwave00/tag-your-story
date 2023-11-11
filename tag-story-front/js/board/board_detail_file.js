@@ -1,11 +1,12 @@
-import FileApi from "../board/fileApi.js"
-import { boardId as boardIdFrommModule } from "./edit.js";
+import File from "./file.js"
+import FileApi from "./fileApi.js"
+import { boardId as boardIdFromModule } from "./edit.js";
 
 /* 해당 스크립트는 board.html에서 board_detail.js와 함께 사용된다. */ 
 
 window.addEventListener("load", function () {
     const boardIdFromURL = new URLSearchParams(window.location.search).get('boardId');
-    const boardId = boardIdFromURL == null ? boardIdFrommModule : boardIdFromURL;
+    const boardId = boardIdFromURL == null ? boardIdFromModule : boardIdFromURL;
     /*
      * 상세 게시글의 파일 정보를 요청하고 렌더링한다.
      */
@@ -56,15 +57,16 @@ const renderExistedFile = (fileList) => {
         imgDiv.appendChild(img);
         uploadedView.appendChild(imgDiv);
         uploadedView.classList.add("show");
-
-        deleteExistedImg(fileId);
     });
+    deleteExistedImg();
 }
 
 /**
  * 업로드된 파일을 삭제한다. (수정 시 사용) 
  */
-const deleteExistedImg = (fileId) => {
+const deleteExistedImg = () => {
+    editFlag = true;
+
     const parentImgDiv = document.querySelector('#uploaded_view');
     const imgDivList = parentImgDiv.querySelectorAll('.existed_img_div');
     const btnOuter = document.querySelector(".button_outer");
@@ -75,26 +77,40 @@ const deleteExistedImg = (fileId) => {
 
     imgDivList.forEach((imgDiv) => {
         imgDiv.addEventListener('click', (event) => {
+            /* 삭제할 파일 아이디 저장 */
+            const imgDivId = event.currentTarget.id;
+            saveDeleteFileId(imgDivId);
+
             /* 미리보기에서 삭제 */
             event.currentTarget.remove();
-            btnOuter.classList.remove("file_uploading");
             btnOuter.classList.remove("file_uploaded");
-            
-            /* 삭제할 파일 아이디 저장 */
-            fileIdListToDelete.push(fileId);
         });
     });
 }
 
+/**
+ * 삭제할 파일 아이디를 저장한다.
+ */
+const saveDeleteFileId = (imgDivId) => {
+    console.log("imgDivId: " + imgDivId);
+    const prefix = "existed-img";
+    const fileId = imgDivId.replace(prefix, "");
+
+    fileIdListToDelete.push(fileId);
+}
 
 
 /**
  * 파일 삭제, 수정 요청을 한다.
  */
-document.getElementById("edit-button").addEventListener('click', () => {
+const deleteAndUpdateFile = () => {
     if(fileIdListToDelete.length > 0) {
-        FileApi.deleteFileList(fileIdListToDelete);
+        FileApi.deleteFileList(fileIdListToDelete, boardIdFromModule);
     }
-});
+    File.update(boardIdFromModule);
+}
 
 export { fileList, editFlag };
+export default {
+    deleteAndUpdateFile
+}

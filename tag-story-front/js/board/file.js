@@ -20,6 +20,7 @@ let imgCount = 0;
  *  이벤트에 따라 formData에 파일 정보를 담는다.
  */
 btnUpload.addEventListener("change", function(e) {
+    console.log("btnUpload.addEventListener");
     let ext = btnUpload.value.split('.').pop().toLowerCase();
     if (!['png', 'jpg', 'jpeg'].includes(ext)) {
         errorMsg.textContent = "이미지 파일을 선택해 주세요";
@@ -87,6 +88,25 @@ const upload = (boardId) => {
 }
 
 /**
+ * 게시글의 파일을 수정 요청한다.
+ */
+const update = (boardId) => {
+    if(!beforeFormData.entries().next().done) {
+        for (const value of beforeFormData.values()) {
+            console.log("value: " + value); 
+            afterFormData.append('fileList', value);
+        }
+        afterFormData.append('boardId', boardId);
+        afterFormData.set('enctype', 'multipart/form-data');
+        const uploadFileRequest = {
+            boardId: boardId,
+            fileList: afterFormData
+        };
+        return FileApi.update(afterFormData, uploadFileRequest);
+    }
+}
+
+/**
  * 메인 이미지 리스트를 조회한다.
  */
 const getMainFileList = (trackId) => {
@@ -117,5 +137,6 @@ const renderMainFileList = (mainFileList) => {
 
 export default {
     upload,
+    update,
     renderMainFileList
 }

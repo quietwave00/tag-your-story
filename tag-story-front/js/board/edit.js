@@ -1,8 +1,11 @@
 import UserArea from "../user/userArea.js";
 import Hashtag from "./hashtag.js";
+import BoardApi from "./boardApi.js";
+import File from "./board_detail_file.js";
 import { hashtagArray as hashtagArrayFromModule } from "./hashtag.js";
-import { editFlag } from "./hashtag.js";
-import BoardApi from "./boardApi.js"
+import { editFlag as hashtagEditFlag } from "./hashtag.js";
+import { editFlag as fileEditFlag } from "./board_detail_file.js";
+
 
 window.onload = () => {
     /**
@@ -21,7 +24,7 @@ window.onload = () => {
     renderExistedBoard();
 
     /* URL 초기화 */
-    window.history.pushState({}, '', `${client_host}/edit.html`);
+    // window.history.pushState({}, '', `${client_host}/edit.html`);
 };
 
 let hashtagArray = [];
@@ -51,8 +54,13 @@ const renderExistedBoard = () => {
  */
 document.getElementById("edit-button").addEventListener('click', () => {
     content = document.getElementById("board-input").value;
-    const resultHashtagArray = editFlag ? hashtagArrayFromModule : new Array();
+    const resultHashtagArray = hashtagEditFlag ? hashtagArrayFromModule : new Array();
     BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
+
+    if(fileEditFlag) {
+        File.deleteAndUpdateFile();
+    }
+    
     location.href = `${client_host}/board.html?boardId=${boardId}`;
 });
 
