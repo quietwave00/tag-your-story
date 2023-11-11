@@ -26,6 +26,8 @@ public class Board {
 
     private Integer count;
 
+    private Integer likeCount;
+
     private String trackId;
 
     private User user;
@@ -47,6 +49,7 @@ public class Board {
                 .content(this.getContent())
                 .status(this.getStatus())
                 .count(this.getCount())
+                .likeCount(this.getLikeCount())
                 .trackId(this.getTrackId())
                 .userEntity(this.getUser().toEntity())
                 .build();

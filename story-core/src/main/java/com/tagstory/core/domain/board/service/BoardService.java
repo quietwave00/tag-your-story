@@ -50,7 +50,12 @@ public class BoardService {
     }
 
     public List<Board> getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
-        return null;
+        Page<BoardEntity> boardEntityPage = boardRepository.
+                findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
+
+        return boardEntityPage.getContent().stream()
+                .map(BoardEntity::toBoard)
+                .collect(Collectors.toList());
     }
 
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
@@ -91,6 +96,16 @@ public class BoardService {
         } catch(Exception e) {
             throw new RuntimeException("An exception occurred While deleting the board.");
         }
+    }
+
+    @Transactional
+    public void increaseLikeCount(String boardId) {
+        boardRepository.updateLikeCount(boardId, 1);
+    }
+
+    @Transactional
+    public void decreaseLikeCount(String boardId) {
+        boardRepository.updateLikeCount(boardId, -1);
     }
 
     /*

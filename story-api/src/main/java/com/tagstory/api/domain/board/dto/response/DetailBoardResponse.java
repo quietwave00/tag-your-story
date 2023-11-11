@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class DetailBoardResponse {
     private String content;
     private String nickname;
+    private Integer likeCount;
     private LocalDateTime createdAt;
     private HashtagNameList hashtagNameList;
 
@@ -19,6 +20,7 @@ public class DetailBoardResponse {
         return builder()
                 .content(board.getContent())
                 .nickname(board.getUser().getNickname())
+                .likeCount(board.getLikeCount())
                 .createdAt(board.getCreatedAt())
                 .hashtagNameList(board.getHashtagNameList())
                 .build();

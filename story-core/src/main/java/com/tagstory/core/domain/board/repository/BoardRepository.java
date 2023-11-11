@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,4 +30,8 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     Optional<BoardEntity> findByBoardIdAndUserEntity_UserId(String BoardId, Long userId);
 
     Page<BoardEntity> findByStatusAndTrackIdOrderByCreatedAtDesc(BoardStatus status, String trackId, PageRequest of);
+
+    @Modifying
+    @Query("UPDATE BoardEntity b set b.likeCount = b.likeCount + :value WHERE b.boardId = :boardId")
+    void updateLikeCount(String boardId, int value);
 }
