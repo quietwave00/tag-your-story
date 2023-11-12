@@ -61,7 +61,11 @@ public class BoardFacade {
 
     public List<Board> getBoardListByHashtagName(String hashtagName) {
         Long hashtagId = hashtagService.getHashtagIdByHashtagName(hashtagName);
-        return boardService.getBoardListByHashtagName(hashtagId);
+        List<Board> beforeBoardList = boardService.getBoardListByHashtagId(hashtagId);
+
+        return beforeBoardList.stream().peek(board -> {
+            board.addHashtagList(boardHashtagService.getHashtagNameByBoardId(board.getBoardId()));
+        }).collect(Collectors.toList());
     }
 
     public Boolean isWriter(String boardId, Long userId) {
