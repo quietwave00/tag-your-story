@@ -1,7 +1,8 @@
 import UserArea from "../user/userArea.js";
 import BoardApi from "../board/boardApi.js"
 import Like from "../board/like.js";
-import Comment from "../comment/comment.js"
+import Comment from "../comment/comment.js";
+import Hashtag from "./hashtag.js";
 
 window.onload = () => {
     /**
@@ -67,6 +68,10 @@ const renderBoard = (board) => {
             `
             <div class = "hashtag-elements" data-bs-toggle="modal" data-bs-target="#board-hashtag-modal">#${hashtag}</div>
             `;
+            const modalElement = document.getElementById('board-hashtag-modal');
+            modalElement.addEventListener('show.bs.modal', () => {
+                Hashtag.getBoardListByHashtag(hashtag);
+            });
     }
 
     document.getElementById('board-area').innerHTML =
@@ -118,15 +123,4 @@ const renderEditBoardArea = () => {
  */
 const deleteBoard = (boardId) => {
     BoardApi.deleteBoard(boardId);
-}
-
-/**
- * 해시태그 클릭 시 해당 태그가 포함된 게시글을 보여준다.
- */
-const getBoardListByHashtagName = (hashtagName) => {
-    BoardApi.getBoardListByHashtagName(hashtagName).then((response) => {
-        /**
-         * @TODO
-         */
-    });
 }

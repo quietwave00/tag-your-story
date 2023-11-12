@@ -2,6 +2,7 @@ import BoardApi from "./boardApi.js";
 import File from "./file.js";
 import FileApi from "./fileApi.js";
 import { hashtagArray as hashtagArrayFromModule } from "./hashtag.js";
+import Hashtag from "./hashtag.js";
 
 /**
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
@@ -18,8 +19,6 @@ window.addEventListener("load", function () {
         .then((response) => {
             const perPage = response.count / pageSize;
             (perPage < 1) ? endPage = 1 : endPage = Math.ceil(perPage);
-            console.log("ceil: " + Math.ceil(perPage));
-            console.log("endPage: " + endPage);
 
             /**
              *  page-area에 대한 처리를 수행한다.
@@ -77,7 +76,7 @@ orderButtons.forEach((button) => {
             renderBoardList(response);
         });
 
-        await FileApi.getMainFileList(trackId).then((response) => {
+        await FileApi.getMainFileList(trackId, currentPage).then((response) => {
             File.renderMainFileList(response)});
     });
 });
@@ -96,10 +95,10 @@ document.getElementById('write-button').addEventListener('click', async () => {
                 "filePath": uploadResponse[0].filePath,
                 "boardId": writeBoardResponse.boardId
             }];
-            
             File.renderMainFileList(mainFileObject);
         });
     }
+    Hashtag.clearHashtagArray();
 });
 
 /**
@@ -176,10 +175,7 @@ const onPageNumberClick = async (page) => {
         renderBoardList(response)
     });
 
-    await FileApi.getMainFileList(trackId).then((response) => {
-        File.renderMainFileList(response)});
-
-    await FileApi.getMainFileList(trackId).then((response) => {
+    await FileApi.getMainFileList(trackId, page).then((response) => {
         File.renderMainFileList(response)});
 }
 

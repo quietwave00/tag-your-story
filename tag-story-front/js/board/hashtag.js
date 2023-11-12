@@ -1,3 +1,5 @@
+import BoardApi from './boardApi.js';
+
 
 let hashtagArray = [];
 let editFlag = false;
@@ -68,12 +70,6 @@ const deleteHashtag = (hashtagId) => {
 
 
 /**
- * 해시태그 클릭 시 해당 태그가 포함된 게시글을 보여준다.
- */
-const getBoardListByHashtag = () => {}
-
-
-/**
  * 해시태그 요소들에 id를 부여해준다. (수정 시 사용)
  */
 const addIdToTagElements = () => {
@@ -94,8 +90,49 @@ const addTagToHashtagArray = (existedHashtagArray) => {
     });
 }
 
+/**
+ * hashtagArray를 초기화한다.
+ */
+const clearHashtagArray = () => {
+    hashtagArray = [];
+}
+
+/**
+ * 해시태그 클릭 시 해당 태그가 포함된 게시글을 보여준다.
+ */
+const getBoardListByHashtag = (hashtagName) => {
+    BoardApi.getBoardListByHashtagName(hashtagName)
+    .then((response) => {
+        renderBoardListByHashtag(response);
+    });
+}
+
+/**
+ * 특정 해시태그가 포함된 게시글을 그려준다.
+ */
+const renderBoardListByHashtag = (boardList) => {
+    document.getElementById('board-element-area').innerHTML = "";
+
+    boardList.forEach(board => {
+        document.getElementById('board-element-area').innerHTML += 
+            `
+            <div class = "board-element">
+                <div class = "row">
+                    <div>
+                        <input type = "hidden" class = "board-id" value = "board-${board.boardId}">
+                        <div class = "content-area">${board.content}</div>
+                        <div class = "nickname-area">${board.nickname}</div>
+                    </div>
+                </div>
+            </div>
+            `;
+    });
+}
+
 export { hashtagArray, editFlag };
 export default {
     addIdToTagElements,
-    addTagToHashtagArray
+    addTagToHashtagArray,
+    clearHashtagArray,
+    getBoardListByHashtag
 };

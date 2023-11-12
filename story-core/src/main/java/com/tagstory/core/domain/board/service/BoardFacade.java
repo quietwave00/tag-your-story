@@ -61,6 +61,7 @@ public class BoardFacade {
 
     public List<Board> getBoardListByHashtagName(String hashtagName) {
         Long hashtagId = hashtagService.getHashtagIdByHashtagName(hashtagName);
+        System.out.println("hashtagId: " + hashtagId);
         List<Board> beforeBoardList = boardService.getBoardListByHashtagId(hashtagId);
 
         return beforeBoardList.stream().peek(board -> {
