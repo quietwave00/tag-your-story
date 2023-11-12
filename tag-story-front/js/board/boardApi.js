@@ -180,6 +180,28 @@ const getBoardListByHashtagName = (hashtagName) => {
     });
 }
 
+/**
+ * 트랙 아이디에 대한 전체 게시물 개수를 조회를 요청한다.
+ * 
+ * @param trackId: 트랙 아이디
+ */
+const getBoardCountByTrackId = (trackId) => {
+    return fetch(`${server_host}/api/boards/count/${trackId}`, {
+        method:"GET"
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getBoardCountByTrackId(trackId);
+                });
+        }
+    });
+}
+
 
 export default {
     writeBoard,
@@ -188,5 +210,6 @@ export default {
     isWriter,
     updateBoardAndHashtag,
     deleteBoard,
-    getBoardListByHashtagName
+    getBoardListByHashtagName,
+    getBoardCountByTrackId
 }

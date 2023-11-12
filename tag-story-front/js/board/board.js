@@ -6,9 +6,27 @@ import { hashtagArray as hashtagArrayFromModule } from "./hashtag.js";
 /**
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
  */
+
 const trackId = new URLSearchParams(window.location.search).get('trackId');
+const pageSize = 8;
 let orderType = "CREATED_AT";
 let currentPage = 1;
+let endPage;
+
+window.addEventListener("load", function () {
+    BoardApi.getBoardCountByTrackId(trackId)
+        .then((response) => {
+            const perPage = response.count / pageSize;
+            (perPage < 1) ? endPage = 1 : endPage = Math.ceil(perPage);
+            console.log("ceil: " + Math.ceil(perPage));
+            console.log("endPage: " + endPage);
+
+            /**
+             *  page-area에 대한 처리를 수행한다.
+             */
+            pagingBoardList();
+        });
+});
 
 
 /**
@@ -16,6 +34,7 @@ let currentPage = 1;
  */
 const renderBoardList = (boardList) => {
     document.getElementById('board-element-area').innerHTML = "";
+    document.getElementById('board-message-area').innerHTML = "";
     if(boardList.length === 0) {
         document.getElementById('board-message-area').innerHTML += 
             `
@@ -119,19 +138,15 @@ const pagingBoardList = () => {
     const nextButton = document.getElementById("next-button");
     const numberList = document.getElementById("number-list");
 
-    const itemsPerPage = 10;
-    const totalItems = 100;
-
     /**
      * 숫자 생성 및 페이지 업데이트
      */
-    function updatePage() {
+    const updatePage = () => {
         numberList.innerHTML = "";
 
-        const start = (currentPage - 1) * itemsPerPage + 1;
-        const end = Math.min(start + itemsPerPage, totalItems + 1);
-
-        for (let i = start; i < end; i++) {
+        const start = 1;
+        console.log("endPage: " + endPage);
+        for (let i = start; i <= endPage; i++) {
             const numberItem = document.createElement("span");
             numberItem.className = "page-number";
             numberItem.textContent = i;
@@ -143,14 +158,14 @@ const pagingBoardList = () => {
     prevButton.addEventListener("click", () => {
         if (currentPage > 1) {
             currentPage--;
-            updatePage();
+            onPageNumberClick(currentPage);
         }
     });
 
     nextButton.addEventListener("click", () => {
-        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
+        if (currentPage < endPage) {
             currentPage++;
-            updatePage();
+            onPageNumberClick(currentPage);
         }
     });
     updatePage();
@@ -167,12 +182,6 @@ const onPageNumberClick = async (page) => {
     await FileApi.getMainFileList(trackId).then((response) => {
         File.renderMainFileList(response)});
 }
-
-
-/**
- *  page-area에 대한 처리를 수행한다.
- */
-pagingBoardList();
 
 /**
  * 게시글의 상세 페이지로 이동한다.

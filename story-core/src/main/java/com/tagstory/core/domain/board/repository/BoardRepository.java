@@ -22,7 +22,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     Optional<BoardEntity> findByBoardId(String boardId);
 
-    int countByTrackId(String trackId);
+    int countByTrackIdAndStatus(String trackId, BoardStatus status);
 
     @Query("SELECT b FROM BoardEntity b JOIN BoardHashtagEntity bh ON b.boardId = bh.board.boardId WHERE bh.hashtag.hashtagId = :hashtagId")
     List<BoardEntity> findBoardsByHashtagId(@Param("hashtagId") Long hashtagId);

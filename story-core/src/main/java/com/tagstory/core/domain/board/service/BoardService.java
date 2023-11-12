@@ -64,7 +64,7 @@ public class BoardService {
     }
 
     public int getBoardCountByTrackId(String trackId) {
-        return boardRepository.countByTrackId(trackId);
+        return boardRepository.countByTrackIdAndStatus(trackId, BoardStatus.POST);
     }
 
     public List<Board> getBoardListByHashtagName(Long hashtagId) {
