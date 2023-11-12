@@ -31,6 +31,8 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     Page<BoardEntity> findByStatusAndTrackIdOrderByCreatedAtDesc(BoardStatus status, String trackId, PageRequest of);
 
+    Page<BoardEntity> findByStatusAndTrackIdOrderByLikeCountDesc(BoardStatus status, String trackId, PageRequest of);
+
     @Modifying
     @Query("UPDATE BoardEntity b set b.likeCount = b.likeCount + :value WHERE b.boardId = :boardId")
     void updateLikeCount(String boardId, int value);

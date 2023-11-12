@@ -18,34 +18,27 @@ const checkLiked = (boardId) => {
 /**
  * 좋아요 버튼 클릭 이벤트 함수
  */
+let currentLikeCount = 0;
 const likeButtonArea = document.getElementById('like-button-area');
-if(likeButtonArea) {
-    likeButtonArea.addEventListener('click', () => {
+if (likeButtonArea) {
+    likeButtonArea.addEventListener('click', async () => {
         const isLiked = likeButton.getAttribute('data-is-liked') === 'true';
         const likeApi = isLiked ? LikeApi.cancelLike : LikeApi.like;
-        const changedStatus = !isLiked;
-    
-        likeApi(boardId).then((response) => {
-            if (response === true) {
-                setStatus(changedStatus);
-            }
-            getLikeCount(boardId);
-        });
-    });
-}
 
-/* 좋아요 개수를 요청한다 */
-const getLikeCount = (boardId) => {
-    LikeApi.getLikeCount(boardId).then((response) => {
-        renderLikeCount(response.likeCount);
-    })
+        if (await likeApi(boardId)) {
+            setStatus(!isLiked);
+            currentLikeCount += isLiked ? -1 : 1;
+            renderLikeCount(currentLikeCount);
+        }
+    });
 }
     
 /**
  * 좋아요 개수를 보여준다.
  */
 const renderLikeCount = (likeCount) => {
-    document.getElementById('like-alert-area').innerHTML = `<span id = "like-alert">${likeCount} Like</span>`;
+    currentLikeCount = likeCount;
+    document.getElementById('like-alert-area').innerHTML = `<span id = "like-alert">${currentLikeCount} Like</span>`;
 }
 
 /**
@@ -54,11 +47,11 @@ const renderLikeCount = (likeCount) => {
  */
 const setStatus = (likeStatus) => {
     likeButton.setAttribute('data-is-liked', likeStatus);
-    likeStatus == true ? likeButton.innerHTML = "&#9829" : likeButton.innerHTML = "♡";
+    likeStatus ? likeButton.innerHTML = "&#9829" : likeButton.innerHTML = "♡";
 }
 
 
 export default {
     checkLiked,
-    getLikeCount
+    renderLikeCount
 }

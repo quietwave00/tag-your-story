@@ -13,6 +13,7 @@ window.onload = async () => {
 
     const trackId = new URLSearchParams(window.location.search).get('trackId');
     const defaultPage = 1;
+    const defaultOrderType = "CREATED_AT";
     /**
      * 트랙의 상세 정보를 가져온다.
      */
@@ -21,7 +22,7 @@ window.onload = async () => {
     /**
      * 게시물 리스트를 가져온다.
      */
-    await BoardApi.getBoardListByTrackId(trackId, defaultPage).then((response) => {Board.renderBoardList(response)});
+    await BoardApi.getBoardListByTrackId(trackId, defaultOrderType, defaultPage).then((response) => {Board.renderBoardList(response)});
     
 
     /**

@@ -51,7 +51,7 @@ public class BoardService {
 
     public List<Board> getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
         Page<BoardEntity> boardEntityPage = boardRepository.
-                findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
+                findByStatusAndTrackIdOrderByLikeCountDesc(status, trackId, PageRequest.of(page, 8));
 
         return boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)

@@ -14,7 +14,8 @@ window.onload = () => {
      * 상세 게시글 정보를 요청하고 렌더링한다.
      */
     BoardApi.getBoardByBoardId(boardId).then((response) => {
-        renderBoard(response)
+        renderBoard(response);
+        Like.renderLikeCount(response.likeCount);
     });
 
     /*
@@ -31,10 +32,12 @@ window.onload = () => {
      * 게시글 작성자인지 확인한다.
      */
     if(localStorage.getItem('Authorization')) {
-        const isWriter = BoardApi.isWriter(boardId);
-        if(isWriter) {
-            renderEditBoardArea();
-        }
+        BoardApi.isWriter(boardId)
+            .then((isWriter) => {
+                if(isWriter) {
+                    renderEditBoardArea();
+                }
+            });        
     }
     
     /**
@@ -43,11 +46,6 @@ window.onload = () => {
     if(localStorage.getItem("Authorization") != null) {
         Like.checkLiked(boardId);
     }
-
-    /**
-     * 좋아요 개수를 요청한다.
-     */
-    Like.getLikeCount(boardId);
 };
 
 let content;

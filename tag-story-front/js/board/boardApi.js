@@ -37,8 +37,8 @@ const writeBoard = (hashtagArray, trackId) => {
  * 
  * @param trackId: 트랙 아이디
  */
-const getBoardListByTrackId = (trackId, page) => {
-    return fetch(`${server_host}/api/boards/${trackId}/CREATED_AT?page=${page - 1}`, {
+const getBoardListByTrackId = (trackId, orderType, page) => {
+    return fetch(`${server_host}/api/boards/${trackId}?order-type=${orderType}&page=${page - 1}`, {
         method: "GET",
     })
     .then((res) => res.json())

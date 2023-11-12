@@ -1,13 +1,15 @@
 import BoardApi from "./boardApi.js";
 import File from "./file.js";
 import FileApi from "./fileApi.js";
-import Hashtag from "./hashtag.js";
 import { hashtagArray as hashtagArrayFromModule } from "./hashtag.js";
 
 /**
  * 해당 스크립트는 detail.html에서 detail.js와 함께 사용된다. 
  */
 const trackId = new URLSearchParams(window.location.search).get('trackId');
+let orderType = "CREATED_AT";
+let currentPage = 1;
+
 
 /**
  *  게시물 리스트 렌더링 함수
@@ -41,6 +43,27 @@ const renderBoardList = (boardList) => {
     }
     moveDetails();
 }
+
+/**
+ * 선택한 정렬 방식에 따라 orderType을 설정한다.
+ */
+const orderButtons = document.getElementsByName('boardOrderType');
+console.log("orderButtons", orderButtons);
+orderButtons.forEach((button) => {
+    button.addEventListener('click', async (e) => {
+        orderType = e.currentTarget.value;
+        console.log("orderType: " + orderType);
+
+        await BoardApi.getBoardListByTrackId(trackId, orderType, currentPage).then((response) => {
+            renderBoardList(response);
+        });
+
+        await FileApi.getMainFileList(trackId).then((response) => {
+            File.renderMainFileList(response)});
+    });
+});
+    
+    
 
 /**
  * 게시글 작성 버튼 클릭 시 이벤트 함수
@@ -97,7 +120,6 @@ const pagingBoardList = () => {
     const numberList = document.getElementById("number-list");
 
     const itemsPerPage = 10;
-    let currentPage = 1;
     const totalItems = 100;
 
     /**
@@ -135,9 +157,12 @@ const pagingBoardList = () => {
 }
 
 const onPageNumberClick = async (page) => {
-    await BoardApi.getBoardListByTrackId(trackId, page).then((response) => {
+    await BoardApi.getBoardListByTrackId(trackId, orderType, page).then((response) => {
         renderBoardList(response)
     });
+
+    await FileApi.getMainFileList(trackId).then((response) => {
+        File.renderMainFileList(response)});
 
     await FileApi.getMainFileList(trackId).then((response) => {
         File.renderMainFileList(response)});
