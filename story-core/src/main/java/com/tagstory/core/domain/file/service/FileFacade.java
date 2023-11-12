@@ -32,8 +32,8 @@ public class FileFacade {
         return fileService.update(savedFileList, board);
     }
 
-    public List<File> getMainFileList(String trackId) {
-        List<Board> boardList = boardService.findByTrackId(trackId);
+    public List<File> getMainFileList(String trackId, int page) {
+        List<Board> boardList = boardService.findByTrackId(trackId, page);
         return fileService.getMainFileList(boardList);
     }
 

@@ -47,8 +47,9 @@ public class FileController {
      * 트랙 아이디에 해당하는 메인 이미지 파일을 조회한다.
      */
     @GetMapping("/main/{trackId}")
-    public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId) {
-        List<File> response = fileFacade.getMainFileList(trackId);
+    public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId,
+                                                             @RequestParam("page") int page) {
+        List<File> response = fileFacade.getMainFileList(trackId, page);
         return ApiUtils.success(response.stream().map(MainFileResponse::from).collect(Collectors.toList()));
     }
 

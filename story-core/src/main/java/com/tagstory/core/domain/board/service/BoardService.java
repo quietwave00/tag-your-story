@@ -130,8 +130,8 @@ public class BoardService {
                 .collect(Collectors.toList());
     }
 
-    public List<Board> findByTrackId(String trackId) {
-        List<BoardEntity> boardEntityList = boardRepository.findByTrackId(trackId);
+    public List<Board> findByTrackId(String trackId, int page) {
+        Page<BoardEntity> boardEntityList = boardRepository.findByTrackId(trackId, PageRequest.of(page, 8));
 
         return Optional.ofNullable(boardEntityList)
                 .map(entityList -> entityList.stream().map(BoardEntity::toBoard).collect(Collectors.toList()))

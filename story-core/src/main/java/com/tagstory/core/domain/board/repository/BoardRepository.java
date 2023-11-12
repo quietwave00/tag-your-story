@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     Page<BoardEntity> findByStatusAndTrackIdOrderByBoardIdDesc(BoardStatus post, String trackId, Pageable pageable);
 
-    List<BoardEntity> findByTrackId(String trackId);
+    Page<BoardEntity> findByTrackId(String trackId, Pageable pageable);
 
     Optional<BoardEntity> findByBoardIdAndStatus(String boardId, BoardStatus status);
 
