@@ -1,6 +1,7 @@
 package com.tagstory.core.domain.comment.service.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.comment.CommentEntity;
 import com.tagstory.core.domain.comment.CommentStatus;
@@ -33,6 +34,7 @@ public class Comment {
 
     private CommentStatus status;
 
+    @JsonIgnore
     private Board board;
 
     private LocalDateTime createdAt;
@@ -67,6 +69,7 @@ public class Comment {
                 .user(entity.getUserEntity().toUser())
                 .content(entity.getContent())
                 .createdAt(entity.getCreatedAt())
+                .status(entity.getStatus())
                 .build();
     }
 }

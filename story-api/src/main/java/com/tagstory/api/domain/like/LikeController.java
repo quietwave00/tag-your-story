@@ -3,11 +3,10 @@ package com.tagstory.api.domain.like;
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.like.dto.request.CancelLikeRequest;
 import com.tagstory.api.domain.like.dto.request.LikeBoardRequest;
-import com.tagstory.api.domain.like.dto.response.LikeCountResponse;
 import com.tagstory.api.domain.like.dto.response.LikeStatusResponse;
+import com.tagstory.core.domain.like.service.LikeFacade;
 import com.tagstory.core.utils.ApiUtils;
 import com.tagstory.core.utils.dto.ApiResult;
-import com.tagstory.core.domain.like.service.LikeFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,15 +35,6 @@ public class LikeController {
     public ApiResult<Void> cancelLike(@RequestBody CancelLikeRequest cancelLikeRequest, @CurrentUserId Long userId) {
         likeFacade.cancelLike(cancelLikeRequest.toCommand(userId));
         return ApiUtils.success();
-    }
-
-    /*
-     * 게시글의 좋아요 개수를 가져온다.
-     */
-    @GetMapping("/likes/{boardId}")
-    public ApiResult<LikeCountResponse> like(@PathVariable("boardId") String boardId) {
-        int likeCount = likeFacade.getLikeCount(boardId);
-        return ApiUtils.success(LikeCountResponse.from(likeCount));
     }
 
     /*

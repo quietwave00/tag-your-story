@@ -1,0 +1,2 @@
+# Program arguments로 넘어온 Job Name이 실행된다.
+spring.batch.job.names: ${job.name:NONE}

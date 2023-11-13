@@ -24,3 +24,13 @@
     border-radius: 20px;
     margin-bottom: 10px;
 }
+
+#file-area {
+    text-align: center;
+}
+
+.file-element {
+    max-width: 30%;
+    height: auto;
+    padding: 30px;
+}

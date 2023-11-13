@@ -13,21 +13,28 @@ window.onload = async () => {
 
     const trackId = new URLSearchParams(window.location.search).get('trackId');
     const defaultPage = 1;
+    const defaultOrderType = "CREATED_AT";
     /**
      * 트랙의 상세 정보를 가져온다.
      */
-    TrackApi.getDetailTrackById(trackId).then((response) => {renderDetailTrack(response)});
+    TrackApi.getDetailTrackById(trackId).then((response) => {
+        renderDetailTrack(response)
+    });
 
     /**
      * 게시물 리스트를 가져온다.
      */
-    await BoardApi.getBoardListByTrackId(trackId, defaultPage).then((response) => {Board.renderBoardList(response)});
+    await BoardApi.getBoardListByTrackId(trackId, defaultOrderType, defaultPage).then((response) => {
+        Board.renderBoardList(response)
+    });
     
 
     /**
      * 메인 이미지 파일을 가져온다.
      */
-    await FileApi.getMainFileList(trackId).then((response) => {File.renderMainFileList(response)});
+    await FileApi.getMainFileList(trackId, defaultPage).then((response) => {
+        File.renderMainFileList(response)
+    });
 };
 
 const renderDetailTrack = (track) => {

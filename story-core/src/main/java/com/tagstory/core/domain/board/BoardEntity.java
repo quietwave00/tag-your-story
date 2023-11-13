@@ -47,7 +47,7 @@ public class BoardEntity extends BaseTime {
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "board")
     private List<FileEntity> fileList = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
@@ -79,6 +79,7 @@ public class BoardEntity extends BaseTime {
                 .content(command.getContent())
                 .status(BoardStatus.POST)
                 .count(0)
+                .likeCount(0)
                 .trackId(command.getTrackId())
                 .build();
     }
@@ -107,8 +108,10 @@ public class BoardEntity extends BaseTime {
                 .content(this.getContent())
                 .status(this.getStatus())
                 .count(this.getCount())
+                .likeCount(this.getLikeCount())
                 .trackId(this.getTrackId())
                 .user(this.getUserEntity().toUser())
+                .createdAt(this.getCreatedAt())
                 .build();
     }
 }

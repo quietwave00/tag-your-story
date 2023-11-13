@@ -50,7 +50,12 @@ public class BoardService {
     }
 
     public List<Board> getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
-        return null;
+        Page<BoardEntity> boardEntityPage = boardRepository.
+                findByStatusAndTrackIdOrderByLikeCountDesc(status, trackId, PageRequest.of(page, 8));
+
+        return boardEntityPage.getContent().stream()
+                .map(BoardEntity::toBoard)
+                .collect(Collectors.toList());
     }
 
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
@@ -59,11 +64,7 @@ public class BoardService {
     }
 
     public int getBoardCountByTrackId(String trackId) {
-        return boardRepository.countByTrackId(trackId);
-    }
-
-    public List<Board> getBoardListByHashtagName(Long hashtagId) {
-        return getBoardListByHashtagId(hashtagId);
+        return boardRepository.countByTrackIdAndStatus(trackId, BoardStatus.POST);
     }
 
     public Boolean isWriter(String boardId, Long userId) {
@@ -77,7 +78,9 @@ public class BoardService {
     }
 
     @Transactional
-    public Board updateBoardWithHashtag(UpdateBoardCommand command, BoardEntity boardEntity, List<BoardHashtagEntity> boardHashtagEntityList) {
+    public Board updateBoardWithHashtag(UpdateBoardCommand command,
+                                        BoardEntity boardEntity,
+                                        List<BoardHashtagEntity> boardHashtagEntityList) {
         return boardEntity.update(command.getContent(), boardHashtagEntityList).toBoard();
     }
 
@@ -91,27 +94,40 @@ public class BoardService {
         }
     }
 
+    @Transactional
+    public void increaseLikeCount(String boardId) {
+        boardRepository.updateLikeCount(boardId, 1);
+    }
+
+    @Transactional
+    public void decreaseLikeCount(String boardId) {
+        boardRepository.updateLikeCount(boardId, -1);
+    }
+
     /*
      * 단일 메소드
      */
     public Board getBoardByBoardId(String boardId) {
-        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND)).toBoard();
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST)
+                .orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND)).toBoard();
     }
 
     public BoardEntity getBoardEntityByBoardId(String boardId) {
-        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST).orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
+        return boardRepository.findByBoardIdAndStatus(boardId, BoardStatus.POST)
+                .orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
     public List<Board> getBoardListByTrackIdSortedCreatedAt(BoardStatus status, String trackId, int page) {
-        Page<BoardEntity> boardEntityPage = boardRepository.findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
+        Page<BoardEntity> boardEntityPage = boardRepository.
+                findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
 
         return boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)
                 .collect(Collectors.toList());
     }
 
-    public List<Board> findByTrackId(String trackId) {
-        List<BoardEntity> boardEntityList = boardRepository.findByTrackId(trackId);
+    public List<Board> findByTrackId(String trackId, int page) {
+        Page<BoardEntity> boardEntityList = boardRepository.findByTrackId(trackId, PageRequest.of(page, 8));
 
         return Optional.ofNullable(boardEntityList)
                 .map(entityList -> entityList.stream().map(BoardEntity::toBoard).collect(Collectors.toList()))

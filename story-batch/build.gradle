@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':story-core')
     implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }
 
 jar.enabled = false;

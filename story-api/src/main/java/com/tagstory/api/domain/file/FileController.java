@@ -34,11 +34,22 @@ public class FileController {
     }
 
     /*
+     * 게시글의 파일을 수정한다.(추가 업로드)
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping
+    public ApiResult<List<UploadFileResponse>> update(@ModelAttribute UploadFileRequest uploadFileRequest) {
+        List<File> response = fileFacade.update(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
+        return ApiUtils.success(response.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
+    }
+
+    /*
      * 트랙 아이디에 해당하는 메인 이미지 파일을 조회한다.
      */
     @GetMapping("/main/{trackId}")
-    public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId) {
-        List<File> response = fileFacade.getMainFileList(trackId);
+    public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId,
+                                                             @RequestParam("page") int page) {
+        List<File> response = fileFacade.getMainFileList(trackId, page);
         return ApiUtils.success(response.stream().map(MainFileResponse::from).collect(Collectors.toList()));
     }
 

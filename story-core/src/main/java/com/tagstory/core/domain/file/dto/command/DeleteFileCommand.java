@@ -8,7 +8,6 @@ import java.util.List;
 @Getter
 @Builder
 public class DeleteFileCommand {
+    String boardId;
     List<Long> fileIdList;
-
-
 }

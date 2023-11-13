@@ -19,8 +19,7 @@
                     </svg>
                 </a>
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="#" class="nav-link px-2 link-secondary">Home</a></li>
-                    <li><a href="#" class="nav-link px-2 link-dark">write</a></li>
+                    <li><a href="/index.html" class="nav-link px-2 link-secondary">Home</a></li>
                 </ul>
                 <div id="user-area"><span>Login</span></div>
             </div>
@@ -67,26 +66,26 @@
     
         <div id="board-area">
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"
+                <input class="form-check-input" type="radio" name="boardOrderType" id="createdAt" value="CREATED_AT"
                     checked>
-                <label class="form-check-label" for="inlineRadio1">최신순</label>
+                <label class="form-check-label" for="createdAt">최신순</label>
             </div>
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
-                <label class="form-check-label" for="inlineRadio2">추천순</label>
+                <input class="form-check-input" type="radio" name="boardOrderType" id="like" value="LIKE">
+                <label class="form-check-label" for="like">추천순</label>
             </div>
             <div class="row" id="board-element-area" style="margin-top: 30px;"></div>
             <div class="row" id="board-message-area" style="margin-top: 30px;"></div>
             <div id = "page-area">
-                <span id="prev-button">prev</span>
+                <span id="prev-button">⤺</span>
                     <div id="number-list"></div>
-                <span id="next-button">next</span>
+                <span id="next-button">⤻</span>
             </div>
         </div>
     </div>
 </body>
 <script src="./js/global/global.js"></script>
-<script src="./js/board/hashtag.js"></script>
+<script type="module" src="./js/board/hashtag.js"></script>
 <script type="module" src="./js/track/detail.js"></script>
 <script type="module" src="./js/board/board.js"></script>
 <script type="module" src="./js/board/file.js"></script>

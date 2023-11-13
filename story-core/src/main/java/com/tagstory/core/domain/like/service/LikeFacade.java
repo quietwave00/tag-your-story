@@ -17,17 +17,16 @@ public class LikeFacade {
     private final UserService userService;
 
     public void like(LikeBoardCommand command) {
+        boardService.increaseLikeCount(command.getBoardId());
+
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
         likeService.like(board, user);
     }
 
-    public int getLikeCount(String boardId) {
-        Board board = boardService.getBoardByBoardId(boardId);
-        return likeService.getLikeCount(board);
-    }
-
     public void cancelLike(CancelLikeCommand command) {
+        boardService.decreaseLikeCount(command.getBoardId());
+
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
         likeService.cancelLike(board, user);

@@ -39,8 +39,9 @@ public class BoardController {
     /*
      * 트랙 아이디에 해당하는 게시물 리스트를 조회한다.
      */
-    @GetMapping("/{trackId}/{orderType}")
-    public ApiResult<List<BoardResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId, @PathVariable("orderType") BoardOrderType orderType,
+    @GetMapping("/{trackId}")
+    public ApiResult<List<BoardResponse>> getBoardListByTrackId(@PathVariable("trackId") String trackId,
+                                                                @RequestParam("order-type") BoardOrderType orderType,
                                                                 @RequestParam("page") int page) {
         List<Board> response = boardFacade.getBoardListByTrackId(trackId, orderType, page);
         return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
@@ -98,7 +99,7 @@ public class BoardController {
      * 게시글을 삭제한다.
      */
     @PreAuthorize("hasRole('ROLE_USER')")
-    @PatchMapping("/status/{boardId}")
+    @DeleteMapping("/{boardId}")
     public ApiResult<Void> delete(@PathVariable("boardId") String boardId) {
         boardFacade.delete(boardId);
         return ApiUtils.success();
