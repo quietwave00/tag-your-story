@@ -66,12 +66,11 @@ public class FileService {
 
     @Transactional
     public void deleteFile(DeleteFileCommand command) {
+        /* status 변경 */
         getFileEntityListByFileId(command.getFileIdList()).forEach(FileEntity::delete);
 
         /* 파일이 삭제됨에 따라 FileLevel을 재설정한다. */
         setFileLevel(command.getBoardId());
-
-        fileRepository.saveFileIdsToDelete(command.getFileIdList(), CacheSpec.FILE_TO_DELETE);
     }
 
     /*
@@ -102,15 +101,17 @@ public class FileService {
     private void setFileLevel(String boardId) {
         /* 메인 설정 */
         List<FileEntity> fileEntityList = getFileEntityListByBoardId(boardId);
-        FileEntity mainFileEntity = fileEntityList.get(0);
-        mainFileEntity.setFileLevelToMain();
+        if(!fileEntityList.isEmpty()) {
+            FileEntity mainFileEntity = fileEntityList.get(0);
+            mainFileEntity.setFileLevelToMain();
 
-        /* 서브 설정 */
-        List<Long> subFileIdList = fileEntityList.subList(1, fileEntityList.size())
-                .stream()
-                .map(FileEntity::getFileId)
-                .collect(Collectors.toList());
+            /* 서브 설정 */
+            List<Long> subFileIdList = fileEntityList.subList(1, fileEntityList.size())
+                    .stream()
+                    .map(FileEntity::getFileId)
+                    .collect(Collectors.toList());
 
-        fileRepository.updateFileLevel(subFileIdList, FileLevel.SUB);
+            fileRepository.updateFileLevel(subFileIdList, FileLevel.SUB);
+        }
     }
 }

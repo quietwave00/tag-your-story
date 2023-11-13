@@ -67,10 +67,6 @@ public class BoardService {
         return boardRepository.countByTrackIdAndStatus(trackId, BoardStatus.POST);
     }
 
-    public List<Board> getBoardListByHashtagName(Long hashtagId) {
-        return getBoardListByHashtagId(hashtagId);
-    }
-
     public Boolean isWriter(String boardId, Long userId) {
         Board board = findBoardByBoardIdAndUserId(boardId, userId);
         return Objects.nonNull(board);
