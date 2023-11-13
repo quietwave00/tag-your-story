@@ -33,7 +33,10 @@ window.addEventListener("load", function () {
  */
 const renderBoardList = (boardList) => {
     document.getElementById('board-element-area').innerHTML = "";
-    document.getElementById('board-message-area').innerHTML = "";
+    const boardMessageArea = document.getElementById('board-message-area');
+    if(boardMessageArea) {
+        boardMessageArea.innerHTML = "";
+    }
     if(boardList.length === 0) {
         document.getElementById('board-message-area').innerHTML += 
             `
@@ -66,11 +69,9 @@ const renderBoardList = (boardList) => {
  * 선택한 정렬 방식에 따라 orderType을 설정한다.
  */
 const orderButtons = document.getElementsByName('boardOrderType');
-console.log("orderButtons", orderButtons);
 orderButtons.forEach((button) => {
     button.addEventListener('click', async (e) => {
         orderType = e.currentTarget.value;
-        console.log("orderType: " + orderType);
 
         await BoardApi.getBoardListByTrackId(trackId, orderType, currentPage).then((response) => {
             renderBoardList(response);
@@ -86,20 +87,23 @@ orderButtons.forEach((button) => {
 /**
  * 게시글 작성 버튼 클릭 시 이벤트 함수
  */
-document.getElementById('write-button').addEventListener('click', async () => {
-    const writeBoardResponse = await BoardApi.writeBoard(hashtagArrayFromModule, trackId);
-    renderBoard(writeBoardResponse);
-    if(document.getElementsByClassName('img_div').length > 0) {
-        File.upload(writeBoardResponse.boardId).then((uploadResponse) => {
-            const mainFileObject = [{
-                "filePath": uploadResponse[0].filePath,
-                "boardId": writeBoardResponse.boardId
-            }];
-            File.renderMainFileList(mainFileObject);
-        });
-    }
-    Hashtag.clearHashtagArray();
-});
+const writeButton = document.getElementById('write-button');
+if(writeButton) {
+    writeButton.addEventListener('click', async () => {
+        const writeBoardResponse = await BoardApi.writeBoard(hashtagArrayFromModule, trackId);
+        renderBoard(writeBoardResponse);
+        if(document.getElementsByClassName('img_div').length > 0) {
+            File.upload(writeBoardResponse.boardId).then((uploadResponse) => {
+                const mainFileObject = [{
+                    "filePath": uploadResponse[0].filePath,
+                    "boardId": writeBoardResponse.boardId
+                }];
+                File.renderMainFileList(mainFileObject);
+            });
+        }
+        Hashtag.clearHashtagArray();
+    });
+}
 
 /**
  * 게시글 작성 응답값을 토대로 렌더링해준다.
@@ -137,37 +141,38 @@ const pagingBoardList = () => {
     const nextButton = document.getElementById("next-button");
     const numberList = document.getElementById("number-list");
 
-    /**
-     * 숫자 생성 및 페이지 업데이트
-     */
-    const updatePage = () => {
-        numberList.innerHTML = "";
+    if(prevButton && nextButton && numberList) {
+        /**
+         * 숫자 생성 및 페이지 업데이트
+         */
+        const updatePage = () => {
+            numberList.innerHTML = "";
 
-        const start = 1;
-        console.log("endPage: " + endPage);
-        for (let i = start; i <= endPage; i++) {
-            const numberItem = document.createElement("span");
-            numberItem.className = "page-number";
-            numberItem.textContent = i;
-            numberList.appendChild(numberItem);
-            numberItem.addEventListener("click", () => onPageNumberClick(i));
+            const start = 1;
+            for (let i = start; i <= endPage; i++) {
+                const numberItem = document.createElement("span");
+                numberItem.className = "page-number";
+                numberItem.textContent = i;
+                numberList.appendChild(numberItem);
+                numberItem.addEventListener("click", () => onPageNumberClick(i));
+            }
         }
+
+        prevButton.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                onPageNumberClick(currentPage);
+            }
+        });
+
+        nextButton.addEventListener("click", () => {
+            if (currentPage < endPage) {
+                currentPage++;
+                onPageNumberClick(currentPage);
+            }
+        });
+        updatePage();
     }
-
-    prevButton.addEventListener("click", () => {
-        if (currentPage > 1) {
-            currentPage--;
-            onPageNumberClick(currentPage);
-        }
-    });
-
-    nextButton.addEventListener("click", () => {
-        if (currentPage < endPage) {
-            currentPage++;
-            onPageNumberClick(currentPage);
-        }
-    });
-    updatePage();
 }
 
 const onPageNumberClick = async (page) => {

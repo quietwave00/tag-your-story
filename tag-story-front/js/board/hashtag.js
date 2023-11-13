@@ -1,5 +1,5 @@
 import BoardApi from './boardApi.js';
-
+import Board from './board.js';
 
 let hashtagArray = [];
 let editFlag = false;
@@ -25,7 +25,7 @@ tagInput.addEventListener('keypress', function(e) {
             e.preventDefault();
             const hashtag = this.value.trim();
 
-            renderHashtag(hashtag, hashtagCount); 
+            renderHashtag(hashtag); 
         }
         this.value = "";
     }
@@ -103,7 +103,7 @@ const clearHashtagArray = () => {
 const getBoardListByHashtag = (hashtagName) => {
     BoardApi.getBoardListByHashtagName(hashtagName)
     .then((response) => {
-        renderBoardListByHashtag(response);
+        Board.renderBoardList(response);
     });
 }
 
@@ -114,14 +114,20 @@ const renderBoardListByHashtag = (boardList) => {
     document.getElementById('board-element-area').innerHTML = "";
 
     boardList.forEach(board => {
+        const boardId = board.boardId;
+        const content = board.content;
+        const nickname = board.nickname;
+        const hashtagList = board.hashtagNameList.nameList;
+        
+        
         document.getElementById('board-element-area').innerHTML += 
             `
             <div class = "board-element">
                 <div class = "row">
                     <div>
-                        <input type = "hidden" class = "board-id" value = "board-${board.boardId}">
-                        <div class = "content-area">${board.content}</div>
-                        <div class = "nickname-area">${board.nickname}</div>
+                        <input type = "hidden" class = "board-id" value = "board-${boardId}">
+                        <div class = "content-area">${content}</div>
+                        <div class = "nickname-area">${nickname}</div>
                     </div>
                 </div>
             </div>

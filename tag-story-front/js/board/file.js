@@ -20,7 +20,19 @@ let imgCount = 0;
  *  이벤트에 따라 formData에 파일 정보를 담는다.
  */
 btnUpload.addEventListener("change", function(e) {
-    console.log("btnUpload.addEventListener");
+    /* 이미지 카운팅 */
+    const existedImgDiv = document.getElementsByClassName('existed_img_div');
+    const createdImgDiv = document.getElementsByClassName('img_div');
+    imgCount = existedImgDiv ? (existedImgDiv.length + createdImgDiv.length)
+                            : createdImgDiv.length;
+
+    console.log("imgCount when uploading: " + imgCount);
+    if(imgCount >= 3) {
+        alert("이미지는 3개까지 첨부 가능합니다.");
+        return;
+    }
+    
+    /* 파일 타입 체크 */
     let ext = btnUpload.value.split('.').pop().toLowerCase();
     if (!['png', 'jpg', 'jpeg'].includes(ext)) {
         errorMsg.textContent = "이미지 파일을 선택해 주세요";
@@ -32,7 +44,7 @@ btnUpload.addEventListener("change", function(e) {
     let uploadedFile = URL.createObjectURL(e.target.files[0]);
     let imgDiv = document.createElement("div");
     imgDiv.className = "img_div"
-    imgDiv.id = `img${imgCount++}`;
+    imgDiv.id = `img${imgCount}`;
     let img = document.createElement("img");
     img.src = uploadedFile;
     imgDiv.appendChild(img);
@@ -52,15 +64,11 @@ btnUpload.addEventListener("change", function(e) {
 const deleteImg = () => {
     const parentImgDiv = document.querySelector('#uploaded_view');
     const imgDivList = parentImgDiv.querySelectorAll('.img_div');
-
-    parentImgDiv.addEventListener('click', (event) => {
-        event.stopPropagation();
-    });
-
-    imgDivList.forEach((imgDiv) => {
-        imgDiv.addEventListener('click', (event) => {
+    
+    imgDivList.forEach(imgDiv => {
+        imgDiv.addEventListener('click', (e) => {
             /* 미리보기에서 삭제 */
-            event.currentTarget.remove();
+            e.currentTarget.remove();
             btnOuter.classList.remove("file_uploading");
             btnOuter.classList.remove("file_uploaded");
             
@@ -93,7 +101,6 @@ const upload = (boardId) => {
 const update = (boardId) => {
     if(!beforeFormData.entries().next().done) {
         for (const value of beforeFormData.values()) {
-            console.log("value: " + value); 
             afterFormData.append('fileList', value);
         }
         afterFormData.append('boardId', boardId);

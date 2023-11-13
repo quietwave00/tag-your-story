@@ -71,10 +71,6 @@ const deleteExistedImg = () => {
     const imgDivList = parentImgDiv.querySelectorAll('.existed_img_div');
     const btnOuter = document.querySelector(".button_outer");
 
-    parentImgDiv.addEventListener('click', (event) => {
-        event.stopPropagation();
-    });
-
     imgDivList.forEach((imgDiv) => {
         imgDiv.addEventListener('click', (event) => {
             /* 삭제할 파일 아이디 저장 */
@@ -92,7 +88,6 @@ const deleteExistedImg = () => {
  * 삭제할 파일 아이디를 저장한다.
  */
 const saveDeleteFileId = (imgDivId) => {
-    console.log("imgDivId: " + imgDivId);
     const prefix = "existed-img";
     const fileId = imgDivId.replace(prefix, "");
 
@@ -104,7 +99,9 @@ const saveDeleteFileId = (imgDivId) => {
  * 파일 삭제, 수정 요청을 한다.
  */
 const deleteAndUpdateFile = () => {
+    console.log("deleteAndUpdateFile: " + fileIdListToDelete);
     if(fileIdListToDelete.length > 0) {
+        console.log("여기안걸림?");
         FileApi.deleteFileList(fileIdListToDelete, boardIdFromModule);
     }
     File.update(boardIdFromModule);

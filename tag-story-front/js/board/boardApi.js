@@ -107,7 +107,6 @@ const isWriter = (boardId) => {
  * 
  */
 const updateBoardAndHashtag = (boardId, content, hashtagArray) => {
-    console.log("BoardApi: " + hashtagArray);
     return fetch(`${server_host}/api/boards`,{
         method:"PATCH",
         headers: {

@@ -54,7 +54,6 @@ const update = (fileList,uploadFileRequest) => {
  * @param trackId: 트랙 아이디
  */
 const getMainFileList = (trackId, page) => {
-    console.log(page);
     return fetch(`${server_host}/api/files/main/${trackId}?page=${page - 1}`, {
         method: "GET"
     })

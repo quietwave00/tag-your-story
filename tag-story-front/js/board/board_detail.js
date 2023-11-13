@@ -63,16 +63,20 @@ const renderBoard = (board) => {
     hashtagList = board.hashtagNameList.nameList;
 
     let hashtagElements = "";
-    for(let hashtag of hashtagList) {
-        hashtagElements += 
+    hashtagList.forEach(hashtag => { 
+        hashtagElements +=
             `
-            <div class = "hashtag-elements" data-bs-toggle="modal" data-bs-target="#board-hashtag-modal">#${hashtag}</div>
+            <div class="hashtag-elements" data-bs-toggle="modal"data-bs-target="#board-hashtag-modal" data-hashtag="${hashtag}">#${hashtag}</div>
             `;
-            const modalElement = document.getElementById('board-hashtag-modal');
-            modalElement.addEventListener('show.bs.modal', () => {
-                Hashtag.getBoardListByHashtag(hashtag);
-            });
-    }
+    });
+    
+    const modalElement = document.getElementById('board-hashtag-modal');
+    modalElement.addEventListener('show.bs.modal', (e) => {
+        const clickedHashtag = e.relatedTarget.getAttribute('data-hashtag');
+        Hashtag.getBoardListByHashtag(clickedHashtag);
+    });
+    
+    document.getElementById('hashtag-container').innerHTML = hashtagElements;
 
     document.getElementById('board-area').innerHTML =
         `
