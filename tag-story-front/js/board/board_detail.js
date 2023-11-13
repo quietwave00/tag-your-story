@@ -1,7 +1,8 @@
 import UserArea from "../user/userArea.js";
 import BoardApi from "../board/boardApi.js"
 import Like from "../board/like.js";
-import Comment from "../comment/comment.js"
+import Comment from "../comment/comment.js";
+import Hashtag from "./hashtag.js";
 
 window.onload = () => {
     /**
@@ -14,7 +15,8 @@ window.onload = () => {
      * 상세 게시글 정보를 요청하고 렌더링한다.
      */
     BoardApi.getBoardByBoardId(boardId).then((response) => {
-        renderBoard(response)
+        renderBoard(response);
+        Like.renderLikeCount(response.likeCount);
     });
 
     /*
@@ -31,24 +33,20 @@ window.onload = () => {
      * 게시글 작성자인지 확인한다.
      */
     if(localStorage.getItem('Authorization')) {
-        const isWriter = BoardApi.isWriter(boardId);
-        if(isWriter) {
-            renderEditBoardArea();
-        }
+        BoardApi.isWriter(boardId)
+            .then((isWriter) => {
+                if(isWriter) {
+                    renderEditBoardArea();
+                }
+            });        
     }
     
-
     /**
      * 사용자의 게시글 좋아요 여부를 검사한다.
      */
     if(localStorage.getItem("Authorization") != null) {
         Like.checkLiked(boardId);
     }
-
-    /**
-     * 좋아요 개수를 요청한다.
-     */
-    Like.getLikeCount(boardId);
 };
 
 let content;
@@ -65,12 +63,20 @@ const renderBoard = (board) => {
     hashtagList = board.hashtagNameList.nameList;
 
     let hashtagElements = "";
-    for(let hashtag of hashtagList) {
-        hashtagElements += 
+    hashtagList.forEach(hashtag => { 
+        hashtagElements +=
             `
-            <div class = "hashtag-elements" data-bs-toggle="modal" data-bs-target="#board-hashtag-modal">#${hashtag}</div>
+            <div class="hashtag-elements" data-bs-toggle="modal"data-bs-target="#board-hashtag-modal" data-hashtag="${hashtag}">#${hashtag}</div>
             `;
-    }
+    });
+    
+    const modalElement = document.getElementById('board-hashtag-modal');
+    modalElement.addEventListener('show.bs.modal', (e) => {
+        const clickedHashtag = e.relatedTarget.getAttribute('data-hashtag');
+        Hashtag.getBoardListByHashtag(clickedHashtag);
+    });
+    
+    document.getElementById('hashtag-container').innerHTML = hashtagElements;
 
     document.getElementById('board-area').innerHTML =
         `
@@ -90,46 +96,31 @@ const renderBoard = (board) => {
  */
 const renderEditBoardArea = () => {
     const boardId = new URLSearchParams(window.location.search).get('boardId');
-    document.getElementById("board-edit-area").innerHTML =
-        `
-            <span id="edit-board" data-bs-toggle="modal" data-bs-target="#edit-board-modal">수정</span>
-            <span id="delete-board">삭제</span>
-        `;
-        const deleteBoardElement = document.getElementById('delete-board');
+    const boardEditArea = document.getElementById("board-edit-area");
+    if(boardEditArea) {
+        boardEditArea.innerHTML =
+            `
+                <span id="edit-board">수정</span>
+                <span id="delete-board">삭제</span>
+            `;
+    } 
+
+    const editBoardElement = document.getElementById('edit-board');
+    if(editBoardElement) {
+        editBoardElement.onclick = () => {
+            location.href = `${client_host}/edit.html?hashtags=${encodeURIComponent(hashtagList)}
+                            &content=${encodeURIComponent(content)}
+                            &boardId=${encodeURIComponent(boardId)}`;
+        }
+    }
+    
+    const deleteBoardElement = document.getElementById('delete-board');
+    if(deleteBoardElement) {
         deleteBoardElement.onclick = () => {
             deleteBoard(boardId);
         };
-    document.getElementById("edit-board-modal").addEventListener("shown.bs.modal", renderExistedBoard);
-};
-
-/**
- * 수정 시 기존 데이터를 보여준다.
- */
-const renderExistedBoard = () => {
-    let hashtagElements = "";
-    for(let hashtag of hashtagList) {
-        hashtagElements += 
-            `
-                <div class = "editable-tag-elements">#${hashtag}</div>
-            `;
     }
-    document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;
-    document.getElementById("board-input").innerHTML = `${content}`;
-
-    addIdToTagElements();
-    addTagToHashtagArray();
-}
-
-/**
- * 수정 버튼 클릭 이벤트 함수
- */
-document.getElementById("edit-button").addEventListener('click', () => {
-    const boardId = new URLSearchParams(window.location.search).get('boardId');
-    const content = document.getElementById("board-input").value;
-    const resultHashtagArray = hashtagArray.filter(value => value !== undefined);
-    const response = BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
-    renderBoard(response);
-});
+};
 
 /**
  * 게시글을 삭제한다.
@@ -137,13 +128,3 @@ document.getElementById("edit-button").addEventListener('click', () => {
 const deleteBoard = (boardId) => {
     BoardApi.deleteBoard(boardId);
 }
-
-/**
- * 해시태그 클릭 시 해당 태그가 포함된 게시글을 보여준다.
- */
-const getBoardListByHashtagName = (hashtagName) => {
-    BoardApi.getBoardListByHashtagName(hashtagName).then((response) => {
-        console.log(response);
-    });
-}
-

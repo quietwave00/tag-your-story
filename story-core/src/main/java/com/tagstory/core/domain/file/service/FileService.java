@@ -4,6 +4,7 @@ import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
+import com.tagstory.core.domain.file.FileStatus;
 import com.tagstory.core.domain.file.dto.S3File;
 import com.tagstory.core.domain.file.dto.command.DeleteFileCommand;
 import com.tagstory.core.domain.file.dto.response.File;
@@ -23,9 +24,9 @@ public class FileService {
     private final FileRepository fileRepository;
 
     @Transactional
-    public List<File> upload(List<S3File> saveFileList, Board board) {
+    public List<File> upload(List<S3File> savedFileList, Board board) {
         /* S3에 저장된 정보를 엔티티로 변환 */
-        List<FileEntity> fileEntityList = saveFileList.stream()
+        List<FileEntity> fileEntityList = savedFileList.stream()
                 .map(beforeS3File -> {
                     S3File s3File = addFileLevel(beforeS3File);
                     return s3File.toEntity();
@@ -41,6 +42,19 @@ public class FileService {
         return savedFileEntityList.stream().map(FileEntity::toFile).collect(Collectors.toList());
     }
 
+    @Transactional
+    public List<File> update(List<S3File> savedFileList, Board board) {
+        List<FileEntity> fileEntityList = savedFileList.stream()
+                .map(s3File -> {
+                    return s3File.setFileLevelToSub().toEntity();
+                })
+                .collect(Collectors.toList());
+
+        fileEntityList.forEach(fileEntity -> fileEntity.addBoard(board.toEntity()));
+        List<FileEntity> savedFileEntityList= new ArrayList<>(fileRepository.saveAll(fileEntityList));
+        return savedFileEntityList.stream().map(FileEntity::toFile).collect(Collectors.toList());
+    }
+
     public List<File> getMainFileList(List<Board> boardList) {
         List<String> boardIdList = boardList.stream().map(Board::getBoardId).collect(Collectors.toList());
         return getMainFileListByBoardId(boardIdList);
@@ -50,24 +64,54 @@ public class FileService {
         return getFileListByBoardId(boardId);
     }
 
+    @Transactional
     public void deleteFile(DeleteFileCommand command) {
-        fileRepository.saveFileIdsToDelete(command.getFileIdList(), CacheSpec.FILE_TO_DELETE);
+        /* status 변경 */
+        getFileEntityListByFileId(command.getFileIdList()).forEach(FileEntity::delete);
+
+        /* 파일이 삭제됨에 따라 FileLevel을 재설정한다. */
+        setFileLevel(command.getBoardId());
     }
 
     /*
      * 단일 메소드
      */
+    public List<FileEntity> getFileEntityListByFileId(List<Long> fileIdList) {
+        return fileRepository.findByFileIdIn(fileIdList);
+    }
+
     private S3File addFileLevel(S3File s3File) {
         FileLevel fileLevel = (s3File.getIndex() == 0) ? FileLevel.MAIN : FileLevel.SUB;
         return s3File.addFileLevel(fileLevel);
     }
 
     private List<File> getFileListByBoardId(String boardId) {
-        return fileRepository.findByBoard_BoardId(boardId).stream().map(FileEntity::toFile).collect(Collectors.toList());
+        return fileRepository.findByStatusAndBoard_BoardIdOrderByFileId(FileStatus.POST, boardId).stream().map(FileEntity::toFile).collect(Collectors.toList());
+    }
+
+    private List<FileEntity> getFileEntityListByBoardId(String boardId) {
+        return fileRepository.findByStatusAndBoard_BoardIdOrderByFileId(FileStatus.POST, boardId);
     }
 
     private List<File> getMainFileListByBoardId(List<String> boardIdList) {
-        return fileRepository.findByFileLevelAndBoard_BoardIdIn(FileLevel.MAIN, boardIdList)
+        return fileRepository.findByFileLevelAndStatusAndBoard_BoardIdIn(FileLevel.MAIN, FileStatus.POST, boardIdList)
                 .stream().map(FileEntity::toFile).collect(Collectors.toList());
+    }
+
+    private void setFileLevel(String boardId) {
+        /* 메인 설정 */
+        List<FileEntity> fileEntityList = getFileEntityListByBoardId(boardId);
+        if(!fileEntityList.isEmpty()) {
+            FileEntity mainFileEntity = fileEntityList.get(0);
+            mainFileEntity.setFileLevelToMain();
+
+            /* 서브 설정 */
+            List<Long> subFileIdList = fileEntityList.subList(1, fileEntityList.size())
+                    .stream()
+                    .map(FileEntity::getFileId)
+                    .collect(Collectors.toList());
+
+            fileRepository.updateFileLevel(subFileIdList, FileLevel.SUB);
+        }
     }
 }

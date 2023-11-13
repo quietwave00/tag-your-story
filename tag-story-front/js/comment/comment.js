@@ -52,12 +52,15 @@ const createReply = (parentId, replyInput) => {
 /**
  * 댓글 입력 버튼 클릭 이벤트 함수
  */
-document.getElementById("comment-write-button").addEventListener("click", () => {
-    const content = document.getElementById('comment-input').value;
-    CommentApi.writeComment(boardId, content).then((response) => {
-        renderComment(response, false, false);
-    })
-});
+const commentWriteButton = document.getElementById("comment-write-button");
+if(commentWriteButton) {
+    commentWriteButton.addEventListener("click", () => {
+        const content = document.getElementById('comment-input').value;
+        CommentApi.writeComment(boardId, content).then((response) => {
+            renderComment(response, false, false);
+        })
+    });
+}
 
 /**
  * 댓글 리스트를 보여준다.

@@ -26,10 +26,6 @@ public class LikeService {
         likeRepository.deleteByBoardAndUser(board.toEntity(), user.toEntity());
     }
 
-    public int getLikeCount(Board board) {
-        return likeRepository.countByBoard(board.toEntity());
-    }
-
     public boolean isLiked(String boardId, Long userId) {
         LikeEntity likeEntity = likeRepository.findByBoard_BoardId_AndUser_UserId(boardId, userId);
         return Objects.nonNull(likeEntity);

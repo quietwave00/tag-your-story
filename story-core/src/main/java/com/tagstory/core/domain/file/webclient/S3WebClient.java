@@ -74,7 +74,6 @@ public class S3WebClient {
         String[] pathSegments = filePath.split("/");
         String fileName = pathSegments[pathSegments.length - 1];
         String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-        log.info("fileName: {}", decodedFileName);
         DeleteObjectRequest request = new DeleteObjectRequest(bucketName, fileName);
         amazonS3Client.deleteObject(request);
     }

@@ -3,6 +3,7 @@ package com.tagstory.core.domain.file.dto.response;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
+import com.tagstory.core.domain.file.FileStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +22,8 @@ public class File {
 
     private FileLevel fileLevel;
 
+    private FileStatus status;
+
     private Board board;
 
     /*
@@ -32,6 +35,7 @@ public class File {
                 .fileName(this.getFileName())
                 .filePath(this.getFilePath())
                 .fileLevel(this.getFileLevel())
+                .status(this.getStatus())
                 .board(this.getBoard().toEntity())
                 .build();
     }

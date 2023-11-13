@@ -37,8 +37,8 @@ const writeBoard = (hashtagArray, trackId) => {
  * 
  * @param trackId: 트랙 아이디
  */
-const getBoardListByTrackId = (trackId, page) => {
-    return fetch(`${server_host}/api/boards/${trackId}/CREATED_AT?page=${page - 1}`, {
+const getBoardListByTrackId = (trackId, orderType, page) => {
+    return fetch(`${server_host}/api/boards/${trackId}?order-type=${orderType}&page=${page - 1}`, {
         method: "GET",
     })
     .then((res) => res.json())
@@ -136,8 +136,8 @@ const updateBoardAndHashtag = (boardId, content, hashtagArray) => {
  * 게시글 삭제를 요청한다.
  */
 const deleteBoard = (boardId) => {
-    fetch(`${server_host}/api/boards/status/${boardId}`,{
-        method:"PATCH",
+    fetch(`${server_host}/api/boards/${boardId}`,{
+        method:"DELETE",
         headers: {
             "Content-Type": "application/json",
             "Authorization": localStorage.getItem('Authorization')
@@ -179,6 +179,28 @@ const getBoardListByHashtagName = (hashtagName) => {
     });
 }
 
+/**
+ * 트랙 아이디에 대한 전체 게시물 개수를 조회를 요청한다.
+ * 
+ * @param trackId: 트랙 아이디
+ */
+const getBoardCountByTrackId = (trackId) => {
+    return fetch(`${server_host}/api/boards/count/${trackId}`, {
+        method:"GET"
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getBoardCountByTrackId(trackId);
+                });
+        }
+    });
+}
+
 
 export default {
     writeBoard,
@@ -187,5 +209,6 @@ export default {
     isWriter,
     updateBoardAndHashtag,
     deleteBoard,
-    getBoardListByHashtagName
+    getBoardListByHashtagName,
+    getBoardCountByTrackId
 }

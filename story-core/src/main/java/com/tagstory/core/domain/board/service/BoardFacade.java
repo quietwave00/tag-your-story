@@ -60,8 +60,14 @@ public class BoardFacade {
     }
 
     public List<Board> getBoardListByHashtagName(String hashtagName) {
+        /* 해시태그 이름으로부터 아이디값을 찾아 해당하는 아이디를 가진 게시글 리스트를 찾는다. */
         Long hashtagId = hashtagService.getHashtagIdByHashtagName(hashtagName);
-        return boardService.getBoardListByHashtagName(hashtagId);
+        List<Board> beforeBoardList = boardService.getBoardListByHashtagId(hashtagId);
+
+        /* Board 객체에 Hashtag 리스트를 찾아서 add 해주고 반환한다. */
+        return beforeBoardList.stream().peek(board -> {
+            board.addHashtagList(boardHashtagService.getHashtagNameByBoardId(board.getBoardId()));
+        }).collect(Collectors.toList());
     }
 
     public Boolean isWriter(String boardId, Long userId) {
@@ -76,6 +82,7 @@ public class BoardFacade {
             boardHashtagService.deleteHashtag(command.getBoardId());
             List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
             List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
+
             return boardService.updateBoardWithHashtag(command, boardEntity, boardHashtagEntityList);
         }
         return boardService.updateBoard(command, boardEntity);
