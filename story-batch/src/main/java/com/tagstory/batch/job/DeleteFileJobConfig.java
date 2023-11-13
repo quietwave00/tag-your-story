@@ -29,7 +29,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Configuration
 public class DeleteFileJobConfig {
-    private static final int chunkSize = 10;
+    private static final int CHUNK_SIZE = 10;
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
@@ -52,7 +52,7 @@ public class DeleteFileJobConfig {
     @Bean
     public Step deleteFile() {
         return stepBuilderFactory.get("deleteFile")
-                .<List<String>, List<String>>chunk(chunkSize)
+                .<List<String>, List<String>>chunk(CHUNK_SIZE)
                 .reader(fileItemReader())
                 .processor(fileItemProcessor())
                 .writer(fileItemWriter())
@@ -77,8 +77,8 @@ public class DeleteFileJobConfig {
     @Bean
     public JdbcPagingItemReader<List<String>> fileItemReader() {
         return new JdbcPagingItemReaderBuilder<List<String>>()
-                .pageSize(chunkSize)
-                .fetchSize(chunkSize)
+                .pageSize(CHUNK_SIZE)
+                .fetchSize(CHUNK_SIZE)
                 .dataSource(dataSource)
                 .rowMapper(new FileListRowMapper())
                 .queryProvider(pagingQueryProvider())
