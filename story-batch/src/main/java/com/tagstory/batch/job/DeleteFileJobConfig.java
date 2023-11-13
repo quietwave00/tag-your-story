@@ -2,8 +2,6 @@ package com.tagstory.batch.job;
 
 import com.tagstory.batch.item.CustomItemProcessor;
 import com.tagstory.batch.mapper.FileListRowMapper;
-import com.tagstory.core.common.CommonRedisTemplate;
-import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.file.webclient.S3WebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +33,10 @@ public class DeleteFileJobConfig {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
-    private final CommonRedisTemplate redisTemplate;
-    private final S3WebClient s3WebClient;
     private final DataSource dataSource;
+
+    private final S3WebClient s3WebClient;
+
 
     @Bean
     public Job deleteFileJob() {
@@ -55,7 +54,7 @@ public class DeleteFileJobConfig {
         return stepBuilderFactory.get("deleteFile")
                 .<List<String>, List<String>>chunk(chunkSize)
                 .reader(fileItemReader())
-                .processor(fileItemProcessor(redisTemplate))
+                .processor(fileItemProcessor())
                 .writer(fileItemWriter())
                 .build();
     }
@@ -67,7 +66,7 @@ public class DeleteFileJobConfig {
     public Step deleteFileFromDB() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return stepBuilderFactory.get("deleteFileFromDB")
-                .tasklet(new DeleteFileFromDBStep(redisTemplate, jdbcTemplate))
+                .tasklet(new DeleteFileFromDBStep(jdbcTemplate))
                 .build();
     }
 
@@ -77,16 +76,12 @@ public class DeleteFileJobConfig {
      */
     @Bean
     public JdbcPagingItemReader<List<String>> fileItemReader() {
-        Map<String, Object> parameterValues = new HashMap<>();
-        parameterValues.put("fileIdList", redisTemplate.getList("", CacheSpec.FILE_TO_DELETE));
-
         return new JdbcPagingItemReaderBuilder<List<String>>()
                 .pageSize(chunkSize)
                 .fetchSize(chunkSize)
                 .dataSource(dataSource)
                 .rowMapper(new FileListRowMapper())
                 .queryProvider(pagingQueryProvider())
-                .parameterValues(parameterValues)
                 .name("fileItemReader")
                 .build();
     }
@@ -101,7 +96,7 @@ public class DeleteFileJobConfig {
             factoryBean.setDataSource(dataSource);
             factoryBean.setSelectClause("SELECT file_path");
             factoryBean.setFromClause("FROM files");
-            factoryBean.setWhereClause("WHERE file_id IN (:fileIdList)");
+            factoryBean.setWhereClause("WHERE status = 'PENDING'");
             factoryBean.setSortKeys(sortKeys());
 
             return factoryBean.getObject();
@@ -127,9 +122,9 @@ public class DeleteFileJobConfig {
      * S3로 파일 삭제 요청을 한다.
      */
     @Bean
-    public ItemProcessor<List<String>, List<String>> fileItemProcessor(CommonRedisTemplate redisTemplate) {
+    public ItemProcessor<List<String>, List<String>> fileItemProcessor() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return new CustomItemProcessor(redisTemplate, jdbcTemplate, s3WebClient);
+        return new CustomItemProcessor(jdbcTemplate, s3WebClient);
     }
 
     /*
