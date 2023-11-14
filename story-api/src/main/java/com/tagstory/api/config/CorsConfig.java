@@ -20,6 +20,7 @@ public class CorsConfig {
         config.addAllowedMethod("POST");
         config.addAllowedMethod("PATCH");
         config.addAllowedMethod("DELETE");
+        config.addAllowedMethod("OPTIONS");
         config.addExposedHeader("Authorization");
         source.registerCorsConfiguration("/**", config);
 
