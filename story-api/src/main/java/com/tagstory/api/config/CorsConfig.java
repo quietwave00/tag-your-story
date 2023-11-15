@@ -13,8 +13,12 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
+
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
+
+        config.addAllowedOrigin("https://tagyourstory.blog");
+        config.addAllowedOrigin("https://dev-api.tagyourstory.blog");
+
         config.addAllowedHeader("*");
         config.addAllowedMethod("GET");
         config.addAllowedMethod("POST");
@@ -22,8 +26,9 @@ public class CorsConfig {
         config.addAllowedMethod("DELETE");
         config.addAllowedMethod("OPTIONS");
         config.addExposedHeader("Authorization");
-        source.registerCorsConfiguration("/**", config);
+        config.addExposedHeader("RefreshToken");
 
+        source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
 
