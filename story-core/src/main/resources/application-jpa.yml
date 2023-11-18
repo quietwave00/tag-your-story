@@ -1,8 +1,18 @@
 spring:
-  config.activate.on-profile: local
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+#    open-in-view: false
+---
+spring:
+  config.activate.on-profile: local
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+      schema-locations: classpath:db/init_schema.sql
+  jpa:
+    generate-ddl: true
     properties:
       hibernate:
         show_sql: true
@@ -11,9 +21,10 @@ spring:
 spring:
   config.activate.on-profile: dev
   jpa:
-    hibernate:
-      ddl-auto: validate
     properties:
       hibernate:
         show_sql: true
         format_sql: true
+---
+spring:
+  config.activate.on-profile: prod
