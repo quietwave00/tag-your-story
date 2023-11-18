@@ -34,7 +34,7 @@ create table comments
     content    varchar(255) not null,
     status     varchar(255) not null,
     board_id   varchar(255) not null,
-    parent_id  bigint       not null,
+    parent_id  bigint,
     user_id    bigint       not null,
 
     foreign key (board_id) references board (board_id),

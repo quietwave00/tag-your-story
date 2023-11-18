@@ -2,7 +2,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-#    open-in-view: false
+    open-in-view: false
 ---
 spring:
   config.activate.on-profile: local
