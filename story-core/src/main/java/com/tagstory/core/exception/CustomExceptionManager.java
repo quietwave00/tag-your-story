@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @Slf4j
-public class ExceptionManager {
+public class CustomExceptionManager {
     @ExceptionHandler(CustomException.class)
     public ApiResult<ExceptionResponse> handleApiException(CustomException e) {
         log.error("exceptionCode: {}, message: {}", e.getExceptionCode(), e.getMessage());

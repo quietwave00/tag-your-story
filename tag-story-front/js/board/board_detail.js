@@ -117,7 +117,9 @@ const renderEditBoardArea = () => {
     const deleteBoardElement = document.getElementById('delete-board');
     if(deleteBoardElement) {
         deleteBoardElement.onclick = () => {
-            deleteBoard(boardId);
+            if(confirm("삭제하시겠습니까?")) {
+                deleteBoard(boardId);
+            }
         };
     }
 };

@@ -1,7 +1,7 @@
 package com.tagstory.api.domain.like;
 
 import com.tagstory.api.annotations.CurrentUserId;
-import com.tagstory.api.domain.like.dto.request.CancelLikeRequest;
+import com.tagstory.api.domain.like.dto.request.UnLikeRequest;
 import com.tagstory.api.domain.like.dto.request.LikeBoardRequest;
 import com.tagstory.api.domain.like.dto.response.LikeStatusResponse;
 import com.tagstory.core.domain.like.service.LikeFacade;
@@ -10,6 +10,8 @@ import com.tagstory.core.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
@@ -22,7 +24,7 @@ public class LikeController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/likes")
-    public ApiResult<Void> like(@RequestBody LikeBoardRequest likeBoardRequest, @CurrentUserId Long userId) {
+    public ApiResult<Void> like(@RequestBody @Valid LikeBoardRequest likeBoardRequest, @CurrentUserId Long userId) {
         likeFacade.like(likeBoardRequest.toCommand(userId));
         return ApiUtils.success();
     }
@@ -32,8 +34,8 @@ public class LikeController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @DeleteMapping("/likes")
-    public ApiResult<Void> cancelLike(@RequestBody CancelLikeRequest cancelLikeRequest, @CurrentUserId Long userId) {
-        likeFacade.cancelLike(cancelLikeRequest.toCommand(userId));
+    public ApiResult<Void> unLike(@RequestBody @Valid UnLikeRequest request, @CurrentUserId Long userId) {
+        likeFacade.unLike(request.toCommand(userId));
         return ApiUtils.success();
     }
 

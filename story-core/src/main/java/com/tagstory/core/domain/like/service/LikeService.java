@@ -22,7 +22,7 @@ public class LikeService {
     }
 
     @Transactional
-    public void cancelLike(Board board, User user) {
+    public void unLike(Board board, User user) {
         likeRepository.deleteByBoardAndUser(board.toEntity(), user.toEntity());
     }
 

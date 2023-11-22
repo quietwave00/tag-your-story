@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -13,8 +16,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateBoardRequest {
+    @NotNull(message = "content는 비어 있을 수 없습니다.")
     private String content;
+
+    @NotBlank(message = "trackId는 비어 있을 수 없습니다.")
     private String trackId;
+
+    @NotEmpty(message = "해시태그는 비어 있을 수 없습니다.")
     private List<String> hashtagList;
 
     public CreateBoardCommand toCommand(Long userId) {

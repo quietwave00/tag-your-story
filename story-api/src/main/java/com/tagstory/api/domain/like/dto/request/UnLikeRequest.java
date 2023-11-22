@@ -1,20 +1,24 @@
 package com.tagstory.api.domain.like.dto.request;
 
-import com.tagstory.core.domain.like.dto.command.CancelLikeCommand;
+import com.tagstory.core.domain.like.dto.command.UnLikeCommand;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CancelLikeRequest {
+public class UnLikeRequest {
+
+    @NotBlank(message = "boardId는 비어 있을 수 없습니다.")
     private String boardId;
 
-    public CancelLikeCommand toCommand(Long userId) {
-        return CancelLikeCommand.builder()
+    public UnLikeCommand toCommand(Long userId) {
+        return UnLikeCommand.builder()
                 .boardId(boardId)
                 .userId(userId)
                 .build();

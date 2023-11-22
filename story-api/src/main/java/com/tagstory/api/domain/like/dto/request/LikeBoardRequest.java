@@ -6,11 +6,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LikeBoardRequest {
+
+    @NotBlank(message = "boardId는 비어 있을 수 없습니다.")
     private String boardId;
 
     public LikeBoardCommand toCommand(Long userId) {

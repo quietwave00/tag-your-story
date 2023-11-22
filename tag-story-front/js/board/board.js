@@ -90,6 +90,10 @@ orderButtons.forEach((button) => {
 const writeButton = document.getElementById('write-button');
 if(writeButton) {
     writeButton.addEventListener('click', async () => {
+        if(hashtagArrayFromModule.length == 0) {
+            alert("해시태그를 하나 이상 작성해 주셔야 합니다.");
+            return;
+        }
         const writeBoardResponse = await BoardApi.writeBoard(hashtagArrayFromModule, trackId);
         renderBoard(writeBoardResponse);
         if(document.getElementsByClassName('img_div').length > 0) {
