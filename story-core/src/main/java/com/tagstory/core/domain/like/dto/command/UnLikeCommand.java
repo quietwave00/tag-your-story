@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CancelLikeCommand {
+public class UnLikeCommand {
     private String boardId;
     private Long userId;
 }

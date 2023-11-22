@@ -1,12 +1,13 @@
 package com.tagstory.api.domain.board.dto.request;
 
-import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -14,8 +15,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateBoardRequest {
+
+    @NotNull(message = "boardId는 비어 있을 수 없습니다.")
     private String boardId;
+
+    @NotNull(message = "content는 비어 있을 수 없습니다.")
     private String content;
+
+    @NotEmpty(message = "해시태그는 비어 있을 수 없습니다.")
     private List<String> hashtagList;
 
     public UpdateBoardCommand toCommand() {

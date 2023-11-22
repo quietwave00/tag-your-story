@@ -4,17 +4,19 @@ import com.tagstory.api.annotations.CurrentPendingUserId;
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.user.dto.request.RegisterRequest;
 import com.tagstory.api.domain.user.dto.request.ReissueAccessTokenRequest;
+import com.tagstory.api.domain.user.dto.response.RegisterResponse;
 import com.tagstory.api.domain.user.dto.response.ReissueAccessTokenResponse;
 import com.tagstory.api.domain.user.dto.response.ReissueRefreshTokenResponse;
-import com.tagstory.api.domain.user.dto.response.RegisterResponse;
-import com.tagstory.core.utils.ApiUtils;
-import com.tagstory.core.utils.dto.ApiResult;
-import com.tagstory.core.domain.user.service.dto.response.User;
 import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.dto.response.Token;
+import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.utils.ApiUtils;
+import com.tagstory.core.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/reissue/accessToken")
-    public ApiResult<ReissueAccessTokenResponse> reissueAccessToken(@RequestBody ReissueAccessTokenRequest request) {
+    public ApiResult<ReissueAccessTokenResponse> reissueAccessToken(@RequestBody @Valid ReissueAccessTokenRequest request) {
         Token response = userService.reissueAccessToken(request.toCommand());
         return ApiUtils.success(ReissueAccessTokenResponse.from(response));
     }
@@ -64,7 +66,7 @@ public class UserController {
      */
     @PreAuthorize("hasRole('ROLE_PENDING_USER')")
     @PostMapping("/register")
-    public ApiResult<RegisterResponse> register(@RequestBody RegisterRequest request, @CurrentPendingUserId String pendingUserId) {
+    public ApiResult<RegisterResponse> register(@RequestBody @Valid RegisterRequest request, @CurrentPendingUserId String pendingUserId) {
         User response = userService.register(request.toCommand(pendingUserId));
         return ApiUtils.success(RegisterResponse.from(response));
     }

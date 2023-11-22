@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class CommentController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
-    public ApiResult<CommentResponse> create(@RequestBody CreateCommentRequest request, @CurrentUserId Long userId) {
+    public ApiResult<CommentResponse> create(@RequestBody @Valid CreateCommentRequest request, @CurrentUserId Long userId) {
         Comment comment = commentFacade.create(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
     }
@@ -39,7 +40,7 @@ public class CommentController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping
-    public ApiResult<CommentResponse> update(@RequestBody UpdateCommentRequest request) {
+    public ApiResult<CommentResponse> update(@RequestBody @Valid UpdateCommentRequest request) {
         Comment comment = commentFacade.update(request.toCommand());
         return ApiUtils.success(CommentResponse.from(comment));
     }
@@ -80,7 +81,7 @@ public class CommentController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/replies")
-    public ApiResult<CommentResponse> createReply(@RequestBody CreateReplyRequest request, @CurrentUserId Long userId) {
+    public ApiResult<CommentResponse> createReply(@RequestBody @Valid CreateReplyRequest request, @CurrentUserId Long userId) {
         Comment comment = commentFacade.createReply(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
     }

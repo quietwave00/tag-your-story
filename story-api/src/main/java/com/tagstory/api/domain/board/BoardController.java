@@ -3,19 +3,20 @@ package com.tagstory.api.domain.board;
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.board.dto.request.CreateBoardRequest;
 import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
-import com.tagstory.api.domain.board.dto.response.BoardResponse;
 import com.tagstory.api.domain.board.dto.response.BoardCountResponse;
+import com.tagstory.api.domain.board.dto.response.BoardResponse;
 import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
-import com.tagstory.core.utils.ApiUtils;
-import com.tagstory.core.utils.dto.ApiResult;
 import com.tagstory.core.domain.board.BoardOrderType;
 import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
+import com.tagstory.core.utils.ApiUtils;
+import com.tagstory.core.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
-    public ApiResult<CreateBoardResponse> create(@RequestBody CreateBoardRequest request, @CurrentUserId Long userId) {
+    public ApiResult<CreateBoardResponse> create(@RequestBody @Valid CreateBoardRequest request, @CurrentUserId Long userId) {
         Board response = boardFacade.create(request.toCommand(userId));
         return ApiUtils.success(CreateBoardResponse.from(response));
     }
@@ -90,7 +91,7 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping
-    public ApiResult<BoardResponse> updateBoardAndHashtag(@RequestBody UpdateBoardRequest request) {
+    public ApiResult<BoardResponse> updateBoardAndHashtag(@RequestBody @Valid UpdateBoardRequest request) {
         Board board = boardFacade.updateBoardAndHashtag(request.toCommand());
         return ApiUtils.success(BoardResponse.from(board));
     }

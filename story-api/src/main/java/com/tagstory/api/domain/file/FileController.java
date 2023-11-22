@@ -5,14 +5,15 @@ import com.tagstory.api.domain.file.dto.request.UploadFileRequest;
 import com.tagstory.api.domain.file.dto.response.FileResponse;
 import com.tagstory.api.domain.file.dto.response.MainFileResponse;
 import com.tagstory.api.domain.file.dto.response.UploadFileResponse;
-import com.tagstory.core.utils.ApiUtils;
-import com.tagstory.core.utils.dto.ApiResult;
 import com.tagstory.core.domain.file.dto.response.File;
 import com.tagstory.core.domain.file.service.FileFacade;
+import com.tagstory.core.utils.ApiUtils;
+import com.tagstory.core.utils.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ public class FileController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
-    public ApiResult<List<UploadFileResponse>> upload(@ModelAttribute UploadFileRequest uploadFileRequest) {
+    public ApiResult<List<UploadFileResponse>> upload(@ModelAttribute @Valid UploadFileRequest uploadFileRequest) {
         List<File> response = fileFacade.upload(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
         return ApiUtils.success(response.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
     }
@@ -38,7 +39,7 @@ public class FileController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PatchMapping
-    public ApiResult<List<UploadFileResponse>> update(@ModelAttribute UploadFileRequest uploadFileRequest) {
+    public ApiResult<List<UploadFileResponse>> update(@ModelAttribute @Valid UploadFileRequest uploadFileRequest) {
         List<File> response = fileFacade.update(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
         return ApiUtils.success(response.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
     }
@@ -67,7 +68,7 @@ public class FileController {
      * 레디스에 삭제할 파일의 정보를 저장하고 배치 작업으로 일괄 삭제 처리된다.
      */
     @DeleteMapping
-    public ApiResult<Void> deleteFile(@RequestBody DeleteFileRequest request) {
+    public ApiResult<Void> deleteFile(@RequestBody @Valid DeleteFileRequest request) {
         fileFacade.deleteFile(request.toCommand());
         return ApiUtils.success();
     }
