@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Builder
@@ -14,7 +15,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class UpdateCommentRequest {
 
-    @NotBlank(message = "commentId는 비어 있을 수 없습니다.")
+    @NotNull(message = "commentId는 비어 있을 수 없습니다.")
     private Long commentId;
 
     @NotBlank(message = "댓글 content는 비어 있을 수 없습니다.")

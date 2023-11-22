@@ -65,7 +65,7 @@ public class FileController {
 
     /*
      * 파일을 삭제한다.
-     * 레디스에 삭제할 파일의 정보를 저장하고 배치 작업으로 일괄 삭제 처리된다.
+     * 상태값만 변경 후, 추후에 배치 작업으로 S3, 테이블 일괄 삭제 처리된다.
      */
     @DeleteMapping
     public ApiResult<Void> deleteFile(@RequestBody @Valid DeleteFileRequest request) {
