@@ -23,7 +23,12 @@ tagInput.addEventListener('keypress', function(e) {
         } else {
             e.stopPropagation();
             e.preventDefault();
-            const hashtag = this.value.trim();
+            const hashtag = this.value.replace(/\s/g, '');
+            if (hashtagArray.includes(hashtag)) {
+                alert("이미 입력된 해시태그입니다.");
+                tagInput.value = "";
+                return;
+            }
 
             renderHashtag(hashtag); 
         }

@@ -56,6 +56,7 @@ const commentWriteButton = document.getElementById("comment-write-button");
 if(commentWriteButton) {
     commentWriteButton.addEventListener("click", () => {
         const content = document.getElementById('comment-input').value;
+        document.getElementById('comment-input').value = "";
         CommentApi.writeComment(boardId, content).then((response) => {
             renderComment(response, false, false);
         })
