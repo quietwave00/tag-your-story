@@ -36,7 +36,7 @@ const checkRegisterUser = () => {
     fetch(`${server_host}/api/user/check-registration`, {
         method: "GET",
         headers: {
-            "Authorization": localStorage.getItem('TempId')
+            "Authorization": localStorage.getItem('PendingId')
         }
     })
     .then((res) => res.json())
@@ -64,7 +64,7 @@ const updateNickname = (nickname) => {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": localStorage.getItem('Temp')
+            "Authorization": localStorage.getItem('Pending')
         },
         body: JSON.stringify({
             "nickname": nickname
@@ -74,8 +74,8 @@ const updateNickname = (nickname) => {
     .then(res => {
         if(res.success === true) {
             alert(`${res.response.nickname}님, 회원가입이 정상적으로 완료되었습니다. 다시 로그인 해주세요.`);
-            localStorage.removeItem('Temp');
-            CookieHandler.deleteCookie('Temp');
+            localStorage.removeItem('Pending');
+            CookieHandler.deleteCookie('Pending');
             window.location.href = `${client_host}/login.html`;
         } else {
             ExceptionHandler.handleException(res.exceptionCode)

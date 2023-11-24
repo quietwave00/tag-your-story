@@ -4,22 +4,20 @@ window.onload = () => {
      */
     const authorizationCookieValue = getCookieValue('Authorization');
     const refreshTokenCookieValue = getCookieValue('RefreshToken');
-    const tempIdCookieValue = getCookieValue('Temp');
+    const pendingCookieValue = getCookieValue('Pending');
     
     if (authorizationCookieValue) {
         const extractedAuthorizationToken = extractBearerToken(authorizationCookieValue);
         localStorage.setItem('Authorization', extractedAuthorizationToken);
-        console.log("atk: " + extractedAuthorizationToken);
     }
     
     if (refreshTokenCookieValue) {
         const extractedRefreshToken = extractBearerToken(refreshTokenCookieValue);
         localStorage.setItem('RefreshToken', extractedRefreshToken);
-        console.log("rtk: " + extractedRefreshToken);
     }
     
-    if (tempIdCookieValue) {
-        localStorage.setItem('Temp', tempIdCookieValue);
+    if (pendingCookieValue) {
+        localStorage.setItem('Pending', pendingCookieValue);
     }
     window.location.href = `${client_host}/index.html`;
 }
@@ -46,10 +44,10 @@ const getCookieValue = (cookieName) => {
 /**
  * token 값을 파싱해준다.
  * 
- * @param authorizationValue : 쿠키의 value
+ * @param token : 쿠키의 value
  * @returns 파싱된 token
  */
-const extractBearerToken = (authorizationValue) => {
+const extractBearerToken = (token) => {
     const regex = /^Bearer\+/;
-    return authorizationValue.replace(regex, '');
+    return token.replace(regex, '');
 }

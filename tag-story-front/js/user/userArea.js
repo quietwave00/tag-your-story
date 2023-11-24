@@ -36,7 +36,7 @@ const setState = () => {
 }
 
 const checkRegisterUser = () => {
-  if(localStorage.getItem('Temp') != null) {
+  if(localStorage.getItem('Pending') != null) {
     window.location.href = `${client_host}/nickname.html`;
   }
 }

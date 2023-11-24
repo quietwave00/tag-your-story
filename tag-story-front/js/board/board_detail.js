@@ -66,9 +66,9 @@ const renderBoard = (board) => {
     hashtagList.forEach(hashtag => { 
         hashtagElements +=
             `
-            <div class="hashtag-elements" data-bs-toggle="modal"data-bs-target="#board-hashtag-modal" data-hashtag="${hashtag}">#${hashtag}</div>
+            <div class="hashtag-element" data-bs-toggle="modal"data-bs-target="#board-hashtag-modal" data-hashtag="${hashtag}">#${hashtag}</div>
             `;
-    });
+    }); //here
     
     const modalElement = document.getElementById('board-hashtag-modal');
     modalElement.addEventListener('show.bs.modal', (e) => {

@@ -9,7 +9,7 @@ window.onload = () => {
     /**
      *  회원의 회원가입, 로그인 상태를 체크한다.
      */
-    if(localStorage.getItem('Temp') != null) {
+    if(localStorage.getItem('Pending') != null) {
         window.location.href = `${client_host}/nickname.html`;
     }
 }

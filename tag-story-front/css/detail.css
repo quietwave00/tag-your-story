@@ -51,18 +51,18 @@
 }
 
 
-.hashtag-elements {
+.hashtag-element {
     display: inline-block;
     margin-top: 30px;
     margin-right: 10px;
     background-color: lightgray;
     border-radius: 10px;
     padding: 5px;
-    font-size: 30px;
+    font-size: 20px;
     font-weight: bold;
 }
 
-.hashtag-elements:hover {
+.hashtag-element:hover {
     cursor: pointer;
     background-color: rgb(191, 191, 191);
 }

@@ -38,9 +38,9 @@ const renderExistedBoard = () => {
     for(let hashtag of hashtagArray) {
         hashtagElements += 
             `
-                <div class = "hashtag-elements">#${hashtag}</div>
+                <div class = "hashtag-element">#${hashtag}</div>
             `;
-    }
+    }//here
     document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;
     document.getElementById("board-input").innerHTML = `${content}`;
 

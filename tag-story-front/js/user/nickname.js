@@ -9,9 +9,8 @@ document.getElementById('nickname-button').addEventListener('click', () => {
     const nickname = document.getElementById('nickname-input').value;
     nicknameAlert.innerText = "";
     if(validate(nickname)) {
-        console.log(nickname);
         if(confirm(`${nickname}으로 가입하시겠습니까?`)) {
-            UserApi.updateNickname();
+            UserApi.updateNickname(nickname);
         }
     }
 });

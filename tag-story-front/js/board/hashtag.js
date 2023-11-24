@@ -46,9 +46,9 @@ const renderHashtag = (hashtag) => {
     hashtagCount++;
     hashtagElement.innerHTML +=
         `
-            <div class = "hashtag-elements" id = "tag-${hashtagCount}" style = "margin-right: 10px;">#${hashtag}</div>
+            <div class = "hashtag-element" id = "tag-${hashtagCount}" style = "margin-right: 10px;">#${hashtag}</div>
 
-        `;
+        `;//here
     hashtagArray.push(hashtag);
     hashtagCount = hashtagArray.length;
 }
@@ -78,8 +78,8 @@ const deleteHashtag = (hashtagId) => {
  * 해시태그 요소들에 id를 부여해준다. (수정 시 사용)
  */
 const addIdToTagElements = () => {
-    const tagElements = document.querySelectorAll(".hashtag-elements");
-    tagElements.forEach((tagElement, index) => {
+    const tagElements = document.querySelectorAll(".hashtag-element");
+    tagElements.forEach((tagElement, index) => { //here
         const tagId = `tag-${index + 1}`;
         tagElement.id = tagId;
     });
@@ -109,34 +109,6 @@ const getBoardListByHashtag = (hashtagName) => {
     BoardApi.getBoardListByHashtagName(hashtagName)
     .then((response) => {
         Board.renderBoardList(response);
-    });
-}
-
-/**
- * 특정 해시태그가 포함된 게시글을 그려준다.
- */
-const renderBoardListByHashtag = (boardList) => {
-    document.getElementById('board-element-area').innerHTML = "";
-
-    boardList.forEach(board => {
-        const boardId = board.boardId;
-        const content = board.content;
-        const nickname = board.nickname;
-        const hashtagList = board.hashtagNameList.nameList;
-        
-        
-        document.getElementById('board-element-area').innerHTML += 
-            `
-            <div class = "board-element">
-                <div class = "row">
-                    <div>
-                        <input type = "hidden" class = "board-id" value = "board-${boardId}">
-                        <div class = "content-area">${content}</div>
-                        <div class = "nickname-area">${nickname}</div>
-                    </div>
-                </div>
-            </div>
-            `;
     });
 }
 
