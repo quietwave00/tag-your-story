@@ -11,7 +11,7 @@ import static com.tagstory.core.utils.JwtProperties.*;
 @Component
 public class JwtCookieProvider {
 
-    private static final String DOMAIN = "tagyourstory.blog";
+    private static final String DOMAIN = "";
 
     public Cookie generateAccessTokenCookie(String accessToken) {
         Cookie accessCookie = new Cookie(HEADER_STRING, encodeJwt(accessToken));
@@ -31,13 +31,13 @@ public class JwtCookieProvider {
         return refreshCookie;
     }
 
-    public Cookie generatePendingUserCookie(String tempToken) {
-        Cookie tempCookie = new Cookie(TOKEN_TYPE_TEMP, tempToken);
-        tempCookie.setSecure(true);
-        tempCookie.setPath("/");
-        tempCookie.setDomain(DOMAIN);
-        tempCookie.setMaxAge(10800);
-        return tempCookie;
+    public Cookie generatePendingUserCookie(String pendingToken) {
+        Cookie pendingCookie = new Cookie(TOKEN_TYPE_PENDING, pendingToken);
+        pendingCookie.setSecure(true);
+        pendingCookie.setPath("/");
+        pendingCookie.setDomain(DOMAIN);
+        pendingCookie.setMaxAge(10800);
+        return pendingCookie;
     }
 
     public String encodeJwt(String token) {

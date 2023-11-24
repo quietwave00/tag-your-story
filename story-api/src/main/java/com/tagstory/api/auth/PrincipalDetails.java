@@ -18,17 +18,18 @@ import java.util.Map;
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private Long userId;
-    private String tempId;
+    private String pendingId;
     private Role role;
     private Map<String, Object> userInfoMap;
 
 
+    /* 생성자 */
     public PrincipalDetails(Long userId) {
         this.userId = userId;
     }
 
-    public PrincipalDetails(String tempId) {
-        this.tempId = tempId;
+    public PrincipalDetails(String pendingId) {
+        this.pendingId = pendingId;
     }
 
     public PrincipalDetails(Long userId, Role role) {
@@ -42,8 +43,8 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         this.userInfoMap = attributes;
     }
 
-    public PrincipalDetails(String tempId, Role role, Map<String, Object> attributes) {
-        this.tempId = tempId;
+    public PrincipalDetails(String pendingId, Role role, Map<String, Object> attributes) {
+        this.pendingId = pendingId;
         this.role = role;
         this.userInfoMap = attributes;
     }

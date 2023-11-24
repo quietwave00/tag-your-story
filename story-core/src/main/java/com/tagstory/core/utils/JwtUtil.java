@@ -56,11 +56,11 @@ public class JwtUtil {
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public String generateTempToken(String tempId) {
+    public String generatePendingToken(String pendingId) {
         return JWT.create()
                 .withExpiresAt(Instant.ofEpochSecond(accessTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("TOKEN_TYPE", TOKEN_TYPE_TEMP)
-                .withSubject(tempId)
+                .withClaim("TOKEN_TYPE", TOKEN_TYPE_PENDING)
+                .withSubject(pendingId)
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
@@ -68,7 +68,7 @@ public class JwtUtil {
         return Long.valueOf(validateToken(token).getSubject());
     }
 
-    public String getTempIdFromToken(String token) throws CustomException {
+    public String getPendingIdFromToken(String token) throws CustomException {
         return validateToken(token).getSubject();
     }
 

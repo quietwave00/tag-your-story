@@ -38,8 +38,8 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 
         if(Objects.isNull(userId)) {
             log.info("pendingUser");
-            String tempToken = jwtUtil.generateTempToken(principalDetails.getTempId());
-            response.addCookie(jwtCookieProvider.generatePendingUserCookie(tempToken));
+            String pendingToken = jwtUtil.generatePendingToken(principalDetails.getPendingId());
+            response.addCookie(jwtCookieProvider.generatePendingUserCookie(pendingToken));
             getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
         } else {
             log.info("registered user");
