@@ -3,6 +3,7 @@ package com.tagstory.domain.board;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.user.UserEntity;
+import com.tagstory.domain.board.fixture.BoardFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 public class BoardEntityTest {
 
-    BoardEntity boardEntity;
+    private BoardEntity boardEntity;
 
     @BeforeEach
     void setUp() {
@@ -54,6 +55,7 @@ public class BoardEntityTest {
                         .build()
         );
 
+        BoardEntity boardEntity = BoardFixture.createBoardEntityWithUser();
         boardEntity.addBoardHashTagList(boardHashtagEntityList);
 
         //then
