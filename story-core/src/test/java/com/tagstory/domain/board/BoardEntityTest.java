@@ -55,7 +55,7 @@ public class BoardEntityTest {
                         .build()
         );
 
-        BoardEntity boardEntity = BoardFixture.createBoardEntityWithUser();
+        BoardEntity boardEntity = BoardFixture.createBoardEntityWithUserEntity();
         boardEntity.addBoardHashTagList(boardHashtagEntityList);
 
         //then

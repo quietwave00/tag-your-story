@@ -6,6 +6,7 @@ import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import com.tagstory.domain.board.fixture.BoardFixture;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ public class BoardServiceTest {
 
     @InjectMocks
     private BoardService boardService;
+
 
     @Test
     void 게시글을_작성한다() {
@@ -60,7 +62,7 @@ public class BoardServiceTest {
         when(boardHashtagRepository.findHashtagNameByBoardId(any()))
                 .thenReturn(List.of("hashtag1", "hashtag2"));
 
-        Board board = boardService.create(BoardFixture.createBoardEntityWithUser(), user, boardHashtagEntityList);
+        Board board = boardService.create(BoardFixture.createBoardEntityWithUserEntity(), user, boardHashtagEntityList);
 
         // then
         assertThat(board.getBoardId()).isEqualTo("1");
@@ -76,11 +78,11 @@ public class BoardServiceTest {
 
         // when
         when(boardRepository.findByBoardIdAndUserEntity_UserId(boardId, userId))
-                .thenReturn(Optional.of(BoardFixture.createBoardEntityWithUser()));
+                .thenReturn(Optional.of(BoardFixture.createBoardEntityWithUserEntity()));
 
         // then
         Boolean result = boardService.isWriter(boardId, userId);
-        assertThat(result).isEqualTo(true);
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -95,7 +97,27 @@ public class BoardServiceTest {
 
         // then
         Boolean result = boardService.isWriter(boardId, userId);
-        assertThat(result).isEqualTo(false);
+        assertThat(result).isFalse();
     }
 
+    @Test
+    void 트랙아이디에_해당하는_게시글_리스트를_불러온다() {
+        //given
+        List<Board> boardList = List.of(
+                BoardFixture.createBoard("1"),
+                BoardFixture.createBoard("2")
+                );
+
+        List<HashtagNameList> hashtagNameList = List.of(
+                HashtagNameList.onComplete(List.of("hashtag1-1", "hashtag1-2")),
+                HashtagNameList.onComplete(List.of("hashtag2-1", "hashtag2-2"))
+                );
+
+        // when
+        List<Board> resultList = boardService.getBoardListByTrackId(boardList, hashtagNameList);
+
+        // then
+        assertThat(boardList.get(0).getHashtagNameList().getNameList().get(0)).isEqualTo("hashtag1-1");
+        assertThat(boardList.get(0).getHashtagNameList().getNameList().size()).isEqualTo(2);
+    }
 }

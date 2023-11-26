@@ -36,7 +36,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      * 인증 정보를 추출하고, 유효한 사용자인지 검증한다.
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader(HEADER_STRING);
 
         /* 토큰이 없으면 게스트 권한을 부여한다. */
@@ -54,19 +56,27 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         handleUserRequest(request, response, filterChain, token);
     }
 
-    private void handleGuestRequest(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    private void handleGuestRequest(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws IOException, ServletException {
         log.info("Request As Guest");
         registerAsGuest();
         filterChain.doFilter(request, response);
     }
 
-    private void handlePendingUserRequest(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String token) throws IOException, ServletException {
+    private void handlePendingUserRequest(HttpServletRequest request,
+                                          HttpServletResponse response,
+                                          FilterChain filterChain,
+                                          String token) throws IOException, ServletException {
         log.info("Request As Pending User");
         registerAsPendingUser(jwtUtil.getPendingIdFromToken(token));
         filterChain.doFilter(request, response);
     }
 
-    private void handleUserRequest(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String token) throws IOException, ServletException {
+    private void handleUserRequest(HttpServletRequest request,
+                                   HttpServletResponse response,
+                                   FilterChain filterChain,
+                                   String token) throws IOException, ServletException {
         try {
             log.info("Request As User");
             jwtUtil.validateToken(token);
