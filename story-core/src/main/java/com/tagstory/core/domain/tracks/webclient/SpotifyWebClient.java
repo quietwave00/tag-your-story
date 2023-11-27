@@ -66,7 +66,7 @@ public class SpotifyWebClient {
             SpotifyApi spotifyApi = getSpotifyApi();
             SearchTracksRequest searchTrackRequest = spotifyApi.searchTracks(keyword)
                     .limit(10)
-                    .offset(page)
+                    .offset(page * 10)
                     .build();
             Paging<Track> searchResult = searchTrackRequest.execute();
             return searchResult.getItems();

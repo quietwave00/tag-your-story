@@ -106,6 +106,8 @@ const pagingTrackList = () => {
 }
 
 const onPageNumberClick = (page) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     const keyword = new URLSearchParams(window.location.search).get("keyword");
     TrackApi.searchTrack(keyword, page).then((response) => {
         renderTrackList(response)
