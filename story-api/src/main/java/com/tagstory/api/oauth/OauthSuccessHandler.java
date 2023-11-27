@@ -31,17 +31,18 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        log.info("OauthSuccessHandler Execute");
+
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         Long userId = principalDetails.getUserId();
-        log.info("OatuhSuccessHandler userId: {}", userId);
 
+        /* userId가 없으면 Pending 타입의 토큰을 발급한다. */
         if(Objects.isNull(userId)) {
             log.info("pendingUser");
             String pendingToken = jwtUtil.generatePendingToken(principalDetails.getPendingId());
             response.addCookie(jwtCookieProvider.generatePendingUserCookie(pendingToken));
             getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
         } else {
+            /* userId가 있으면 AccessToken과 RefreshToken을 발급한다. */
             log.info("registered user");
             String accessToken = jwtUtil.generateAccessToken(userId);
             String refreshToken = redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
