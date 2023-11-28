@@ -4,6 +4,7 @@ import BoardApi from "../board/boardApi.js";
 import File from "../board/file.js";
 import FileApi from "../board/fileApi.js";
 import Board from "../board/board.js";
+import { trackManager } from "./trackManager.js";
 
 window.onload = async () => {
     /**
@@ -68,3 +69,9 @@ const renderDetailTrack = (track) => {
                 </div> 
             `;
 }
+
+document.getElementById('back-area').addEventListener('click', () => {
+    const keyword = trackManager.getTrackInfo().selectedKeyword;
+    const page = trackManager.getTrackInfo().selectedPage;
+    window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${page}`;
+});

@@ -136,3 +136,11 @@
 #prev-button, #next-button {
     cursor: pointer;
 }
+
+#back-area {
+    text-align: left;
+}
+
+#back-area:hover {
+    cursor: pointer;
+}

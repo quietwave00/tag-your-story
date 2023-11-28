@@ -3,6 +3,7 @@ import BoardApi from "../board/boardApi.js"
 import Like from "../board/like.js";
 import Comment from "../comment/comment.js";
 import Hashtag from "./hashtag.js";
+import { trackManager } from "../track/trackManager.js"
 
 window.onload = () => {
     /**
@@ -18,6 +19,11 @@ window.onload = () => {
         renderBoard(response);
         Like.renderLikeCount(response.likeCount);
     });
+    
+    /**
+     * 뒤로가기 버튼을 보여준다.
+     */
+    renderBackArea();
 
     /*
      * 댓글 리스트를 보여준다.
@@ -129,4 +135,17 @@ const renderEditBoardArea = () => {
  */
 const deleteBoard = (boardId) => {
     BoardApi.deleteBoard(boardId);
+}
+
+/**
+ * 돌아가기 버튼을 생성한다.
+ */
+const renderBackArea = () => {
+    const title = trackManager.getSelectedTitle();
+    const trackId = trackManager.getSelectedTrackId();
+    document.getElementById('back-title').innerText = title;
+
+    document.getElementById('back-area').addEventListener('clikc', () => {
+        window.location.href = `${client_host}/detail.html?trackId=${trackId}`;
+    });
 }

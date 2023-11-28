@@ -1,5 +1,6 @@
 import UserArea from "../user/userArea.js";
 import TrackApi from "../track/trackApi.js";
+import { trackManager } from "../track/trackManager.js";
 
 window.onload = () => {
     /**
@@ -17,7 +18,7 @@ window.onload = () => {
      */
     const keyword = new URLSearchParams(window.location.search).get("keyword");
     const page = new URLSearchParams(window.location.search).get("page");
-    TrackApi.searchTrack(keyword, page).then((response) => {renderTrackList(response)});
+    TrackApi.searchTrack(keyword, page).then((response) => {renderTrackList(response.trackDataList)});
 }
 
 /**
@@ -85,7 +86,10 @@ const pagingTrackList = () => {
             numberItem.className = "page-number";
             numberItem.textContent = i;
             numberList.appendChild(numberItem);
-            numberItem.addEventListener("click", () => onPageNumberClick(i));
+            numberItem.addEventListener("click", () => {
+                onPageNumberClick(i);
+                trackManager.setPage(i);
+            });
         }
     }
 
@@ -107,10 +111,10 @@ const pagingTrackList = () => {
 
 const onPageNumberClick = (page) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
+
     const keyword = new URLSearchParams(window.location.search).get("keyword");
     TrackApi.searchTrack(keyword, page).then((response) => {
-        renderTrackList(response)
+        renderTrackList(response.trackDataList);
     });
 }
 
@@ -120,11 +124,16 @@ const onPageNumberClick = (page) => {
 const moveDetails = () => {
     const trackElements = document.getElementsByClassName('track');
 
-    for (let element of trackElements) {
-        element.addEventListener('click', (e) => {
+    Array.from(trackElements).forEach(trackElement => {
+        trackElement.addEventListener('click', (e) => {
             const trackId = e.currentTarget.querySelector('.track-id').value;
+            const title = e.currentTarget.querySelector('.title').textContent;
+            
+            trackManager.setTrackId(trackId);
+            trackManager.setTitle(title);
+            
             window.location.href = `detail.html?trackId=${trackId}`;
         });
-    }
+    });
 }
 
