@@ -1,25 +1,22 @@
 package com.tagstory.api.domain.tracks.dto.response;
 
-import com.tagstory.core.domain.tracks.service.dto.response.SearchTracks;
+import com.tagstory.core.domain.tracks.service.dto.TrackData;
+import com.tagstory.core.domain.tracks.service.dto.response.SearchTrackList;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 @Builder
 public class SearchTracksResponse {
-    private String trackId;
-    private String title;
-    private String artistName;
-    private String albumName;
-    private String imageUrl;
+    private List<TrackData> trackDataList;
+    private Integer totalCount;
 
-    public static SearchTracksResponse from(SearchTracks searchTracks) {
+    public static SearchTracksResponse from(SearchTrackList searchTrackList) {
         return builder()
-                .trackId(searchTracks.getTrackId())
-                .title(searchTracks.getTitle())
-                .artistName(searchTracks.getArtistName())
-                .albumName(searchTracks.getAlbumName())
-                .imageUrl(searchTracks.getImageUrl())
+                .trackDataList(searchTrackList.getTrackDataList())
+                .totalCount(searchTrackList.getTotalCount())
                 .build();
     }
 }

@@ -1,8 +1,9 @@
 package com.tagstory.core.domain.tracks.service;
 
-import com.tagstory.core.domain.tracks.service.dto.response.DetailTrack;
-import com.tagstory.core.domain.tracks.service.dto.response.SearchTracks;
+import com.tagstory.core.domain.tracks.service.dto.TrackData;
+import com.tagstory.core.domain.tracks.service.dto.response.SearchTrackList;
 import com.tagstory.core.domain.tracks.webclient.SpotifyWebClient;
+import com.tagstory.core.domain.tracks.webclient.dto.TrackInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,19 +23,21 @@ public class TrackService {
 
     private final SpotifyWebClient spotifyWebClient;
 
-    public List<SearchTracks> search(String keyword, int page) {
-        Track[] tracks = spotifyWebClient.getTrackInfoByKeyword(keyword, page);
-        return Arrays.stream(tracks)
-                .map(track -> getTrackData(track, SearchTracks::onComplete))
+    public SearchTrackList search(String keyword, int page) {
+        TrackInfo trackInfo = spotifyWebClient.getTrackInfoByKeyword(keyword, page);
+        List<TrackData> trackDataList = Arrays.stream(trackInfo.getTracks())
+                .map(this::getTrackData)
                 .collect(Collectors.toList());
+
+        return SearchTrackList.onComplete(trackDataList, trackInfo.getTotalCount());
     }
 
-    public DetailTrack getDetail(String trackId) {
+    public TrackData getDetail(String trackId) {
         Track track = spotifyWebClient.getDetailTrackInfo(trackId);
-        return getTrackData(track, DetailTrack::onComplete);
+        return getTrackData(track);
     }
 
-    private <T> T getTrackData(Track track, TrackDataConverter<T> converter) {
+    private TrackData getTrackData(Track track) {
         ArtistSimplified[] artists = track.getArtists();
         String artistName = artists[0].getName();
 
@@ -44,11 +47,6 @@ public class TrackService {
         Image[] images = album.getImages();
         String imageUrl = (images.length > 0) ? images[0].getUrl() : "NO_IMAGE";
 
-        return converter.convert(track.getId(), artistName, track.getName(), albumName, imageUrl);
-    }
-
-    @FunctionalInterface
-    interface TrackDataConverter<T> {
-        T convert(String trackId, String artistName, String title, String albumName, String imageUrl);
+        return TrackData.of(track.getId(), artistName, track.getName(), albumName, imageUrl);
     }
 }
