@@ -144,7 +144,7 @@ public class BoardService {
     }
 
     @Nullable
-    public Board findBoardByBoardIdAndUserId(String boardId, Long userId) {
+    private Board findBoardByBoardIdAndUserId(String boardId, Long userId) {
         Optional<BoardEntity> boardEntityOptional = boardRepository.findByBoardIdAndUserEntity_UserId(boardId, userId);
         return boardEntityOptional.map(BoardEntity::toBoard).orElse(null);
     }

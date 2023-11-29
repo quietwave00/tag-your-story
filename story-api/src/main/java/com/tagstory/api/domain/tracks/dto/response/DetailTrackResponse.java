@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.tracks.dto.response;
 
-import com.tagstory.core.domain.tracks.service.dto.response.DetailTrack;
+import com.tagstory.core.domain.tracks.service.dto.TrackData;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,7 +13,7 @@ public class DetailTrackResponse {
     private String albumName;
     private String imageUrl;
 
-    public static DetailTrackResponse from(DetailTrack detailTrack) {
+    public static DetailTrackResponse from(TrackData detailTrack) {
         return builder()
                 .trackId(detailTrack.getTrackId())
                 .title(detailTrack.getTitle())

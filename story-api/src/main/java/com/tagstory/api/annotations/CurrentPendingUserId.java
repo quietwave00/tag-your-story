@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@AuthenticationPrincipal(expression = "tempId")
+@AuthenticationPrincipal(expression = "pendingId")
 public @interface CurrentPendingUserId {
 
 }

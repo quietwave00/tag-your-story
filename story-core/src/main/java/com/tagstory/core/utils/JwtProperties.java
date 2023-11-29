@@ -7,5 +7,5 @@ public final class JwtProperties {
     public static final String HEADER_STRING = "Authorization";
     public static final String TOKEN_TYPE_ACCESS = "AccessToken";
     public static final String TOKEN_TYPE_REFRESH = "RefreshToken";
-    public static final String TOKEN_TYPE_TEMP = "Temp";
+    public static final String TOKEN_TYPE_PENDING = "Pending";
 }

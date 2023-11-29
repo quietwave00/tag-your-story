@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcPagingItemReader;
@@ -16,6 +18,7 @@ import org.springframework.batch.item.database.Order;
 import org.springframework.batch.item.database.PagingQueryProvider;
 import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
 import org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,16 +36,21 @@ public class DeleteFileJobConfig {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
+    private final DeleteFileJobListener listener;
     private final DataSource dataSource;
 
     private final S3WebClient s3WebClient;
 
 
+    /*
+     * 삭제된 파일을 지우는 Job 등록
+     */
     @Bean
     public Job deleteFileJob() {
         return jobBuilderFactory.get("deleteFileJob")
-                .start(deleteFile())
-                .next(deleteFileFromDB())
+                .start(deleteFile(null))
+                .next(deleteFileFromDB(null))
+                .listener(listener)
                 .build();
     }
 
@@ -50,12 +58,13 @@ public class DeleteFileJobConfig {
      * 파일을 삭제한다.
      */
     @Bean
-    public Step deleteFile() {
+    @JobScope
+    public Step deleteFile(@Value("#{jobParameters[requestDate]}") String requestDate) {
         return stepBuilderFactory.get("deleteFile")
                 .<List<String>, List<String>>chunk(CHUNK_SIZE)
-                .reader(fileItemReader())
-                .processor(fileItemProcessor())
-                .writer(fileItemWriter())
+                .reader(fileItemReader(requestDate))
+                .processor(fileItemProcessor(requestDate))
+                .writer(fileItemWriter(requestDate))
                 .build();
     }
 
@@ -63,7 +72,8 @@ public class DeleteFileJobConfig {
      * 파일을 DB에서 삭제한다.
      */
     @Bean
-    public Step deleteFileFromDB() {
+    @JobScope
+    public Step deleteFileFromDB(@Value("#{jobParameters[requestDate]}") String requestDate) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return stepBuilderFactory.get("deleteFileFromDB")
                 .tasklet(new DeleteFileFromDBStep(jdbcTemplate))
@@ -75,7 +85,8 @@ public class DeleteFileJobConfig {
      * 파일 아이디에 해당하는 파일 경로를 읽는다.
      */
     @Bean
-    public JdbcPagingItemReader<List<String>> fileItemReader() {
+    @StepScope
+    public JdbcPagingItemReader<List<String>> fileItemReader(@Value("#{jobParameters[requestDate]}") String requestDate) {
         return new JdbcPagingItemReaderBuilder<List<String>>()
                 .pageSize(CHUNK_SIZE)
                 .fetchSize(CHUNK_SIZE)
@@ -122,7 +133,8 @@ public class DeleteFileJobConfig {
      * S3로 파일 삭제 요청을 한다.
      */
     @Bean
-    public ItemProcessor<List<String>, List<String>> fileItemProcessor() {
+    @StepScope
+    public ItemProcessor<List<String>, List<String>> fileItemProcessor(@Value("#{jobParameters[requestDate]}") String requestDate) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return new CustomItemProcessor(jdbcTemplate, s3WebClient);
     }
@@ -132,11 +144,12 @@ public class DeleteFileJobConfig {
      *
      */
     @Bean
-    public ItemWriter<List<String>> fileItemWriter() {
+    @StepScope
+    public ItemWriter<List<String>> fileItemWriter(@Value("#{jobParameters[requestDate]}") String requestDate) {
         return new ItemWriter<>() {
             @Override
-            public void write(List<? extends List<String>> items) throws Exception {
-                log.info(">>>>>>>ItemWriter!!<<<<<<");
+            public void write(List<? extends List<String>> items) {
+                log.info("Job Completed");
             }
         };
     }

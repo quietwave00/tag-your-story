@@ -33,9 +33,9 @@ body {
     cursor: pointer;
 }
 
-.hashtag-elements, .existed-hashtag-element {
+.hashtag-element, .existed-hashtag-element {
     display: inline-block;
-    margin-top: 30px;
+    margin-top: 5%;
     margin-right: 10px;
     background-color: lightgray;
     border-radius: 10px;

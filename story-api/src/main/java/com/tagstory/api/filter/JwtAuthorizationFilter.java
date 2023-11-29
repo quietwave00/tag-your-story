@@ -36,41 +36,64 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      * 인증 정보를 추출하고, 유효한 사용자인지 검증한다.
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        log.info("JwtAuthorizationFilter Execute");
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader(HEADER_STRING);
 
-        /* 토큰이 존재하지 않으면 게스트 역할이 부여된다. */
-        if(StringUtils.isBlank(token)) {
-            log.info("Request As Guest");
-            registerAsGuest();
-            filterChain.doFilter(request, response);
+        /* 토큰이 없으면 게스트 권한을 부여한다. */
+        if (StringUtils.isBlank(token)) {
+            handleGuestRequest(request, response, filterChain);
             return;
         }
 
-        /* 회원 가입이 완료되지 않은 역할이 부여된다. */
-        if(TOKEN_TYPE_TEMP.equals(jwtUtil.getTokenTypeFromToken(token))) {
-            log.info("Request As Pending User");
-            registerAsPendingUser(jwtUtil.getTempIdFromToken(token));
-            filterChain.doFilter(request, response);
+        /* 토큰 타입이 PENDING이면 PENDING 권한을 부여한다. */
+        if (TOKEN_TYPE_PENDING.equals(jwtUtil.getTokenTypeFromToken(token))) {
+            handlePendingUserRequest(request, response, filterChain, token);
             return;
         }
 
-        /* 유저 권한을 갖는다 */
+        handleUserRequest(request, response, filterChain, token);
+    }
+
+    private void handleGuestRequest(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws IOException, ServletException {
+        log.info("Request As Guest");
+        registerAsGuest();
+        filterChain.doFilter(request, response);
+    }
+
+    private void handlePendingUserRequest(HttpServletRequest request,
+                                          HttpServletResponse response,
+                                          FilterChain filterChain,
+                                          String token) throws IOException, ServletException {
+        log.info("Request As Pending User");
+        registerAsPendingUser(jwtUtil.getPendingIdFromToken(token));
+        filterChain.doFilter(request, response);
+    }
+
+    private void handleUserRequest(HttpServletRequest request,
+                                   HttpServletResponse response,
+                                   FilterChain filterChain,
+                                   String token) throws IOException, ServletException {
         try {
+            log.info("Request As User");
             jwtUtil.validateToken(token);
             Long userId = jwtUtil.getUserIdFromToken(request.getHeader(HEADER_STRING).replace(TOKEN_PREFIX, ""));
-            log.info("Filter userId: {}", userId);
 
-            PrincipalDetails principalDetails = new PrincipalDetails(userId, Role.ROLE_USER);
-            Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            setAuthentication(userId);
 
-            log.info("Authorization Complete");
             filterChain.doFilter(request, response);
-        } catch(CustomException e) {
+        } catch (CustomException e) {
             sendExceptionMessage(response, e);
         }
+    }
+
+    private void setAuthentication(Long userId) {
+        PrincipalDetails principalDetails = new PrincipalDetails(userId, Role.ROLE_USER);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     /*
@@ -85,8 +108,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     /*
      * Pending User 권한을 부여해준다.
      */
-    private void registerAsPendingUser(String tempId) {
-        PrincipalDetails principalDetails = new PrincipalDetails(tempId);
+    private void registerAsPendingUser(String pendingId) {
+        PrincipalDetails principalDetails = new PrincipalDetails(pendingId);
         List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_PENDING_USER.toString()));
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -104,7 +127,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                             .build();
             objectMapper.writeValue(response.getOutputStream(), exceptionResponse);
         } catch(IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
+
 }

@@ -1,14 +1,14 @@
 package com.tagstory.core.domain.tracks.webclient;
 
 import com.mysql.cj.util.StringUtils;
+import com.tagstory.core.common.CommonRedisTemplate;
+import com.tagstory.core.config.CacheSpec;
+import com.tagstory.core.domain.tracks.webclient.dto.TrackInfo;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
-import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.common.CommonRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.ParseException;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
@@ -33,6 +33,9 @@ public class SpotifyWebClient {
 
     private final CommonRedisTemplate redisTemplate;
 
+    /*
+     * 스포티파이 라이브러리의 AccessToken을 생성한다.
+     */
     private String generateAccessToken() {
         ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();
         try {
@@ -45,13 +48,19 @@ public class SpotifyWebClient {
         }
     }
 
+    /*
+     * SpotifyApi를 반환한다.
+     */
     private SpotifyApi getSpotifyApi() {
         return new SpotifyApi.Builder()
                 .setAccessToken(getAccessToken())
                 .build();
     }
 
-    @Cacheable(value = "spotifyAccessToken")
+    /*
+     * 레디스에서 AccessToken을 반환한다.
+     * 값이 없을 시 생성하여 반환한다.
+     */
     public String getAccessToken() {
         String accessToken = redisTemplate.get("", CacheSpec.SPOTIFY_ACCESS_TOKEN);
         if(StringUtils.isNullOrEmpty(accessToken)) {
@@ -61,21 +70,28 @@ public class SpotifyWebClient {
         return accessToken;
     }
 
-    public Track[] getTrackInfoByKeyword(String keyword, int page) {
+    /*
+     * 키워드에 따른 검색 결과를 반환한다.
+     */
+    public TrackInfo getTrackInfoByKeyword(String keyword, int page) {
         try {
             SpotifyApi spotifyApi = getSpotifyApi();
             SearchTracksRequest searchTrackRequest = spotifyApi.searchTracks(keyword)
                     .limit(10)
-                    .offset(page)
+                    .offset(page * 10)
                     .build();
             Paging<Track> searchResult = searchTrackRequest.execute();
-            return searchResult.getItems();
+            Track[] tracks = searchResult.getItems();
+            return TrackInfo.of(tracks, searchResult.getTotal());
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());
             throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
         }
     }
 
+    /*
+     * 트랙 아이디에 따른 상세정보를 반환한다.
+     */
     public Track getDetailTrackInfo(String trackId) {
         try {
             SpotifyApi spotifyApi = getSpotifyApi();
