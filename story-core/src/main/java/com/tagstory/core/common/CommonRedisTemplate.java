@@ -8,6 +8,7 @@ import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +17,7 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class CommonRedisTemplate {
+public class CommonRedisTemplate extends RedisTemplate<String, Object> {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
@@ -66,7 +67,8 @@ public class CommonRedisTemplate {
      */
     public <T> T getList(Object id, CacheSpec cacheSpec) {
         List<String> jsonList = redisTemplate.opsForList().range(cacheSpec.generateKey(id), 0, -1);
-        if(jsonList.size() > 0) {
+        assert jsonList != null;
+        if(!jsonList.isEmpty()) {
             try {
                 return objectMapper.readValue(String.valueOf(jsonList), cacheSpec.getTypeReference());
             } catch (JsonProcessingException e) {

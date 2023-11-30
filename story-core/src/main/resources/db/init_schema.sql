@@ -82,6 +82,20 @@ create table likes
     foreign key (user_id) references users (user_id)
 ) ENGINE = InnoDB;
 
+create table notification
+(
+    notification_id bigint auto_increment primary key,
+    publisher_id bigint not null,
+    subscriber_id bigint not null,
+    type VARCHAR(10) not null,
+    content_id VARCHAR(255) not null,
+    created_at  datetime(6)  not null,
+    updated_at  datetime(6)  not null,
+
+    foreign key (publisher_id) references users (user_id),
+    foreign key (subscriber_id) references users (user_id)
+) ENGINE = InnoDB;
+
 -- batch
 CREATE TABLE BATCH_JOB_INSTANCE
 (
