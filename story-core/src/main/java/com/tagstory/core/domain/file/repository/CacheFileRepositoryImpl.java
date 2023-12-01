@@ -23,11 +23,4 @@ public class CacheFileRepositoryImpl implements CacheFileRepository {
             redisTemplate.set(cacheKey, file, cacheSpec);
         });
     }
-
-    @Override
-    public void saveFileIdsToDelete(List<Long> fileIdList, CacheSpec cacheSpec) {
-        fileIdList.forEach(fileId -> {
-            redisTemplate.setList("", fileId, cacheSpec);
-        });
-    }
 }

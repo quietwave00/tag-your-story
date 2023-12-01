@@ -1,6 +1,7 @@
 package com.tagstory.core.domain.notification.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tagstory.core.domain.notification.service.dto.response.NotificationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
@@ -17,17 +18,14 @@ import java.util.List;
 public class NotificationSubService implements MessageListener {
 
     private final ObjectMapper objectMapper;
-    private static List<String> notificationList = new ArrayList<>();
+//    private static List<String> notificationList = new ArrayList<>();
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
-            Notification notification = objectMapper.readValue(message.getBody(), Notification.class);
-            notificationList.add(notification.toString());
+            NotificationResponse response = objectMapper.readValue(message.getBody(), NotificationResponse.class);
 
-            log.info("received notification: " + notification.getNotificationId());
-            log.info("sender: " + notification.getPublisher().getUserId());
-            log.info("receiver: " + notification.getSubscriber().getUserId());
+            log.info("received notification: " + response.getType());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

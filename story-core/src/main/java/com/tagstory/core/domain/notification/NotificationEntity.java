@@ -1,6 +1,7 @@
 package com.tagstory.core.domain.notification;
 
 import com.tagstory.core.domain.BaseTime;
+import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.user.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +37,7 @@ public class NotificationEntity extends BaseTime {
 
 
     /*
-     * 비즈니스 로직
+     * 연관관계 설정
      */
     public void addPublisher(UserEntity userEntity) {
         this.publisher = userEntity;
@@ -44,5 +45,31 @@ public class NotificationEntity extends BaseTime {
 
     public void addSubscriber(UserEntity userEntity) {
         this.subscriber = userEntity;
+    }
+
+
+    /*
+     * 비즈니스 로직
+     */
+    public static NotificationEntity onEvent(UserEntity publisher, UserEntity subscriber, NotificationType type, String contentId) {
+        return NotificationEntity.builder()
+                .publisher(publisher)
+                .subscriber(subscriber)
+                .type(type)
+                .contentId(contentId)
+                .build();
+    }
+
+    /*
+     * 형변환
+     */
+    public Notification toNotification() {
+        return Notification.builder()
+                .notificationId(this.notificationId)
+                .publisher(this.publisher.toUser())
+                .subscriber(this.subscriber.toUser())
+                .type(this.type)
+                .contentId(this.contentId)
+                .build();
     }
 }

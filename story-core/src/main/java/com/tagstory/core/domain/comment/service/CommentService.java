@@ -9,11 +9,14 @@ import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
+import com.tagstory.core.domain.notification.NotificationEntity;
+import com.tagstory.core.domain.notification.NotificationType;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Comment create(Board board, User user, CreateCommentCommand command) {
@@ -47,7 +51,8 @@ public class CommentService {
         try {
             commentEntity.delete();
         } catch (Exception e) {
-            throw new RuntimeException("An exception occurred While deleting the comment.");
+            log.error(e.getMessage());
+            throw new RuntimeException();
         }
     }
 
@@ -96,5 +101,13 @@ public class CommentService {
     private List<Comment> getCommentListByBoardIdAndUserId(String boardId, Long userId) {
         return commentRepository.findByBoardEntity_BoardIdAndUserEntity_UserId(boardId, userId)
                 .stream().map(CommentEntity::toComment).collect(Collectors.toList());
+    }
+
+    private void onEvent(User user, Board board) {
+        eventPublisher.publishEvent(NotificationEntity.onEvent(user.toEntity(),
+                board.getUser().toEntity(),
+                NotificationType.COMMENT,
+                board.getBoardId()
+        ));
     }
 }
