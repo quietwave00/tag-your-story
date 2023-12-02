@@ -47,19 +47,6 @@ public class NotificationEntity extends BaseTime {
         this.subscriber = userEntity;
     }
 
-
-    /*
-     * 비즈니스 로직
-     */
-    public static NotificationEntity onEvent(UserEntity publisher, UserEntity subscriber, NotificationType type, String contentId) {
-        return NotificationEntity.builder()
-                .publisher(publisher)
-                .subscriber(subscriber)
-                .type(type)
-                .contentId(contentId)
-                .build();
-    }
-
     /*
      * 형변환
      */

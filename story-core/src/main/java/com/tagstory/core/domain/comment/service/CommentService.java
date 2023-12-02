@@ -9,8 +9,8 @@ import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
-import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
+import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
@@ -36,6 +36,7 @@ public class CommentService {
         commentEntity.addUser(user.toEntity());
         commentEntity.addBoard(board.toEntity());
 
+        onEvent(user, board);
         return commentRepository.save(commentEntity).toComment();
     }
 
@@ -104,8 +105,8 @@ public class CommentService {
     }
 
     private void onEvent(User user, Board board) {
-        eventPublisher.publishEvent(NotificationEntity.onEvent(user.toEntity(),
-                board.getUser().toEntity(),
+        eventPublisher.publishEvent(Notification.onEvent(user,
+                board.getUser(),
                 NotificationType.COMMENT,
                 board.getBoardId()
         ));

@@ -24,6 +24,7 @@ public class CommentFacade {
     public Comment create(CreateCommentCommand command) {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
+
         return commentService.create(board, user, command);
     }
 

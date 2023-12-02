@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class NotificationResponse {
     private Long userId;
 
+    private String nickname;
+
     private NotificationType type;
 
     private String contentId;
