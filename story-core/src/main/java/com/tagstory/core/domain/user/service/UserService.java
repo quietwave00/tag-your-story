@@ -2,7 +2,7 @@ package com.tagstory.core.domain.user.service;
 
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
-import com.tagstory.core.utils.JwtUtil;
+import com.tagstory.core.utils.jwt.JwtUtil;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.domain.user.UserEntity;

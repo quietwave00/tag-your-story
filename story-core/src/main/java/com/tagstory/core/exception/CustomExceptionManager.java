@@ -1,6 +1,6 @@
 package com.tagstory.core.exception;
 
-import com.tagstory.core.utils.dto.ApiResult;
+import com.tagstory.core.utils.api.dto.ApiResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

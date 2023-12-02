@@ -4,8 +4,8 @@ import com.tagstory.api.domain.tracks.dto.response.SearchTracksResponse;
 import com.tagstory.core.domain.tracks.service.TrackService;
 import com.tagstory.core.domain.tracks.service.dto.TrackData;
 import com.tagstory.core.domain.tracks.service.dto.response.SearchTrackList;
-import com.tagstory.core.utils.ApiUtils;
-import com.tagstory.core.utils.dto.ApiResult;
+import com.tagstory.core.utils.api.ApiUtils;
+import com.tagstory.core.utils.api.dto.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

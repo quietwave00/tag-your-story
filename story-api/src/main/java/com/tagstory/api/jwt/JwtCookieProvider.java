@@ -6,7 +6,7 @@ import javax.servlet.http.Cookie;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import static com.tagstory.core.utils.JwtProperties.*;
+import static com.tagstory.core.utils.jwt.JwtProperties.*;
 
 @Component
 public class JwtCookieProvider {

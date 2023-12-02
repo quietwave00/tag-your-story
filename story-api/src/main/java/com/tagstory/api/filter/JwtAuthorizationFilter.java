@@ -5,7 +5,7 @@ import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionResponse;
-import com.tagstory.core.utils.JwtUtil;
+import com.tagstory.core.utils.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-import static com.tagstory.core.utils.JwtProperties.*;
+import static com.tagstory.core.utils.jwt.JwtProperties.*;
 
 
 @Slf4j
