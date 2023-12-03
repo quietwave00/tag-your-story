@@ -1,6 +1,6 @@
 package com.tagstory.core.exception;
 
-import com.tagstory.core.utils.api.dto.ApiResult;
+import com.tagstory.core.utils.api.ApiResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

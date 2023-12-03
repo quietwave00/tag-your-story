@@ -6,7 +6,7 @@ import com.tagstory.api.domain.like.dto.request.LikeBoardRequest;
 import com.tagstory.api.domain.like.dto.response.LikeStatusResponse;
 import com.tagstory.core.domain.like.service.LikeFacade;
 import com.tagstory.core.utils.api.ApiUtils;
-import com.tagstory.core.utils.api.dto.ApiResult;
+import com.tagstory.core.utils.api.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

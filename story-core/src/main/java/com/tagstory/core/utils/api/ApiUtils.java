@@ -1,6 +1,5 @@
 package com.tagstory.core.utils.api;
 
-import com.tagstory.core.utils.api.dto.ApiResult;
 import lombok.Getter;
 
 

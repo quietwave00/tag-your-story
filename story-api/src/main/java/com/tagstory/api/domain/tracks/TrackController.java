@@ -5,7 +5,7 @@ import com.tagstory.core.domain.tracks.service.TrackService;
 import com.tagstory.core.domain.tracks.service.dto.TrackData;
 import com.tagstory.core.domain.tracks.service.dto.response.SearchTrackList;
 import com.tagstory.core.utils.api.ApiUtils;
-import com.tagstory.core.utils.api.dto.ApiResult;
+import com.tagstory.core.utils.api.ApiResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
