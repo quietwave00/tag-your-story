@@ -1,6 +1,12 @@
 import UserArea from './user/userArea.js';
 import { trackManager } from './track/trackManager.js';
 
+const test = async () => {
+    const eventTest = await subscribe();
+    console.log(eventTest);
+}
+
+
 window.onload = () => {
     /**
      * user-area에 대한 처리를 수행한다.
@@ -13,6 +19,12 @@ window.onload = () => {
     if(localStorage.getItem('Pending') != null) {
         window.location.href = `${client_host}/nickname.html`;
     }
+
+    const eventSource = new EventSourcePolyfill(`${server_host}/api/notification/subscription`, {
+        headers : {
+            "Authorization": localStorage.getItem("Authorization")
+        }
+    });
 }
 const searchInput = document.getElementById("search-input");
 const searchButton = document.getElementById("search-button");
@@ -22,7 +34,7 @@ const searchButton = document.getElementById("search-button");
  */
 searchInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
-      searchButton.click();
+        searchButton.click();
     }
 });
 
@@ -36,3 +48,4 @@ searchButton.addEventListener('click', () => {
     
     window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
 });
+
