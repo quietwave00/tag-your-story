@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.notification.sse;
 
+import com.tagstory.core.domain.notification.sse.object.CustomSseEmitter;
 import com.tagstory.core.domain.notification.sse.object.SseKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ public class SseManager {
     /*
      * SseEmitter를 생성한다.
      */
-    public SseEmitter create(Long userId, LocalDateTime createdAt) {
+    public CustomSseEmitter create(Long userId, LocalDateTime createdAt) {
         String key = SseKey.generate(userId, createdAt);
 
         CustomSseEmitter sseEmitter = CustomSseEmitter.of(key, new SseEmitter());
@@ -33,6 +34,6 @@ public class SseManager {
      * SseEmitter를 가져온다.
      */
     public SseEmitter get(String key) {
-        return sseStorage.get(key);
+        return sseStorage.get(key).getSseEmitter();
     }
 }

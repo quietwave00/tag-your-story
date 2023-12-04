@@ -16,8 +16,10 @@ public class CorsConfig {
 
         config.setAllowCredentials(true);
 
-        config.addAllowedOrigin("https://tagyourstory.blog");
-        config.addAllowedOrigin("https://dev-api.tagyourstory.blog");
+//        config.addAllowedOrigin("https://tagyourstory.blog");
+//        config.addAllowedOrigin("https://dev-api.tagyourstory.blog");
+
+        config.addAllowedOriginPattern("*");
 
         config.addAllowedHeader("*");
         config.addAllowedMethod("GET");
@@ -27,6 +29,7 @@ public class CorsConfig {
         config.addAllowedMethod("OPTIONS");
         config.addExposedHeader("Authorization");
         config.addExposedHeader("RefreshToken");
+        config.addExposedHeader("Last-Event-ID");
 
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

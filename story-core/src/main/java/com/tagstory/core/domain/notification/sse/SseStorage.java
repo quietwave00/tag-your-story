@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.notification.sse;
 
+import com.tagstory.core.domain.notification.sse.object.CustomSseEmitter;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,12 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class SseStorage {
 
-    public static Map<String, SseEmitter> sseEmitterMap = new ConcurrentHashMap<>();
+    public static Map<String, CustomSseEmitter> sseEmitterMap = new ConcurrentHashMap<>();
 
     /*
      * SseEmitter를 저장한다.
      */
-    public void save(String key, SseEmitter sseEmitter) {
+    public void save(String key, CustomSseEmitter sseEmitter) {
         sseEmitterMap.put(key, sseEmitter);
     }
 
@@ -28,7 +28,7 @@ public class SseStorage {
     /*
      * SseEmitter를 반환한다.
      */
-    public SseEmitter get(String key) {
+    public CustomSseEmitter get(String key) {
         return sseEmitterMap.get(key);
     }
 
