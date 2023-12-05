@@ -7,7 +7,7 @@ public class SseKey {
     private Long userId;
     private LocalDateTime createdAt;
 
-    private static final String SEPARATOR = "";
+    private static final String SEPARATOR = "_";
 
     public static String generate(Long userId, LocalDateTime createdAt) {
         return userId + SEPARATOR +  createdAt.toString();

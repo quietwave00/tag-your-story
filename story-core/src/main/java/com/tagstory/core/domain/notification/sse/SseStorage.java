@@ -28,8 +28,17 @@ public class SseStorage {
     /*
      * SseEmitter를 반환한다.
      */
-    public CustomSseEmitter get(String key) {
-        return sseEmitterMap.get(key);
+    public CustomSseEmitter get(Long userId) {
+        for (Map.Entry<String, CustomSseEmitter> entry : sseEmitterMap.entrySet()) {
+            String[] parts = entry.getKey().split("_");
+            if (parts.length > 0) {
+                Long entryUserId = Long.parseLong(parts[0]);
+                if (entryUserId.equals(userId)) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     /* log용 임시 */

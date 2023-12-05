@@ -1,13 +1,21 @@
 package com.tagstory.core.domain.notification.listener;
 
 import com.tagstory.core.domain.notification.service.Notification;
-import org.springframework.context.event.EventListener;
+import com.tagstory.core.domain.notification.service.NotificationService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
+@RequiredArgsConstructor
 @Component
+@Slf4j
 public class NotificationListener {
-    @EventListener
+
+    private final NotificationService notificationService;
+
+    @TransactionalEventListener
     public void handleNotification(Notification notification) {
-        System.out.println("Received notification: " + notification.getPublisher().getNickname());
+        notificationService.save(notification);
     }
 }

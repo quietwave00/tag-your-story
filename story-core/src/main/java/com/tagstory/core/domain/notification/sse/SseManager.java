@@ -29,13 +29,14 @@ public class SseManager {
         sseStorage.save(key, sseEmitter);
 
         log.info("현재 Sse Map 크기: {}", sseStorage.getSseEmitterMap().size());
+        log.info("현재 Sse Map key값: {}", sseStorage.getSseEmitterMap().keySet().iterator().next());
         return sseEmitter;
     }
 
     /*
      * SseEmitter를 가져온다.
      */
-    public SseEmitter get(String key) {
-        return sseStorage.get(key);
+    public SseEmitter get(Long userId) {
+        return sseStorage.get(userId);
     }
 }
