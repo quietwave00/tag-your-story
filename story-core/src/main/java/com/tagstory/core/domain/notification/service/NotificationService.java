@@ -24,6 +24,6 @@ public class NotificationService {
     }
 
     public SseEmitter subscribe(Long userId, String lastEventId, LocalDateTime createdAt) {
-        return sseFactory.create(userId, createdAt).getSseEmitter();
+        return sseFactory.create(userId, createdAt);
     }
 }

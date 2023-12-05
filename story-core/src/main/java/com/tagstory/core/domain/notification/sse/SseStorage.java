@@ -32,4 +32,9 @@ public class SseStorage {
         return sseEmitterMap.get(key);
     }
 
+    /* log용 임시 */
+    public Map<String, CustomSseEmitter> getSseEmitterMap() {
+        return sseEmitterMap;
+    }
+
 }

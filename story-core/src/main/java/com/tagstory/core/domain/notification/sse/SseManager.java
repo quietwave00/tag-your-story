@@ -22,11 +22,13 @@ public class SseManager {
     public CustomSseEmitter create(Long userId, LocalDateTime createdAt) {
         String key = SseKey.generate(userId, createdAt);
 
-        CustomSseEmitter sseEmitter = CustomSseEmitter.of(key, new SseEmitter());
+        CustomSseEmitter sseEmitter = new CustomSseEmitter(sseStorage, key);
         sseEmitter.setUp();
         sseEmitter.init();
 
         sseStorage.save(key, sseEmitter);
+
+        log.info("현재 Sse Map 크기: {}", sseStorage.getSseEmitterMap().size());
         return sseEmitter;
     }
 
@@ -34,6 +36,6 @@ public class SseManager {
      * SseEmitter를 가져온다.
      */
     public SseEmitter get(String key) {
-        return sseStorage.get(key).getSseEmitter();
+        return sseStorage.get(key);
     }
 }
