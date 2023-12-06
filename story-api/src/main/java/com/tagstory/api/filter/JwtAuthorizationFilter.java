@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import static com.tagstory.core.utils.jwt.JwtProperties.*;
 
@@ -39,7 +40,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = request.getHeader(HEADER_STRING);
+        String token = extractToken(request);
+        log.info("token: {}", token);
 
         /* 토큰이 없으면 게스트 권한을 부여한다. */
         if (StringUtils.isBlank(token)) {
@@ -54,6 +56,20 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
 
         handleUserRequest(request, response, filterChain, token);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String headerToken = request.getHeader(HEADER_STRING);
+        if (Objects.nonNull(headerToken)) {
+            return headerToken;
+        }
+
+        String queryToken = request.getParameter(TOKEN_TYPE_ACCESS);
+        if (Objects.nonNull(queryToken)) {
+            return queryToken;
+        }
+
+        return null;
     }
 
     private void handleGuestRequest(HttpServletRequest request,
@@ -80,7 +96,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         try {
             log.info("Request As User");
             jwtUtil.validateToken(token);
-            Long userId = jwtUtil.getUserIdFromToken(request.getHeader(HEADER_STRING).replace(TOKEN_PREFIX, ""));
+            Long userId = jwtUtil.getUserIdFromToken(token.replace(TOKEN_PREFIX, ""));
 
             setAuthentication(userId);
 
