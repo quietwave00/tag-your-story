@@ -11,7 +11,7 @@ import static com.tagstory.core.utils.jwt.JwtProperties.*;
 @Component
 public class JwtCookieProvider {
 
-    private static final String DOMAIN = "";
+    private static final String DOMAIN = "tagyourstory.blog";
 
     public Cookie generateAccessTokenCookie(String accessToken) {
         Cookie accessCookie = new Cookie(HEADER_STRING, encodeJwt(accessToken));
