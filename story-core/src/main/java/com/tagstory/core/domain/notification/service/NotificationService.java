@@ -1,11 +1,15 @@
 package com.tagstory.core.domain.notification.service;
 
+import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
 import com.tagstory.core.domain.notification.repository.NotificationRepository;
 import com.tagstory.core.domain.notification.service.dto.command.NotificationCommand;
 import com.tagstory.core.domain.notification.sse.SseManager;
+import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +17,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,5 +55,21 @@ public class NotificationService {
         } catch(IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    public List<Notification> getNotificationList(User user, int page) {
+        return findNotificationListByUserId(user, page);
+    }
+
+    /*
+     * private
+     */
+    public List<Notification> findNotificationListByUserId(User user, int page) {
+        Page<NotificationEntity> notificationEntityList = notificationRepository.findBySubscriber(user.toEntity(), PageRequest.of(page, 5))
+                .orElse(Page.empty());
+
+        return notificationEntityList.stream()
+                .map(NotificationEntity::toNotification)
+                .collect(Collectors.toList());
     }
 }
