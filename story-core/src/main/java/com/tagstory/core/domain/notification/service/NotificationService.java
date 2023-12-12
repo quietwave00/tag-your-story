@@ -38,11 +38,9 @@ public class NotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void save(Notification notification) {
         notificationRepository.save(notification.toEntity());
-        send(notification);
     }
 
     public void send(Notification notification) {
-        log.info("send 들어옴");
         SseEmitter sseEmitter = sseManager.get(notification.getSubscriber().getUserId());
         try {
             sseEmitter.send(SseEmitter.event()

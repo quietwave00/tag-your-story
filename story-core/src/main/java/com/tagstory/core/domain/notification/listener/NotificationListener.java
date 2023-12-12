@@ -17,5 +17,10 @@ public class NotificationListener {
     @TransactionalEventListener
     public void handleNotification(Notification notification) {
         notificationService.save(notification);
+        sendNotification(notification);
+    }
+
+    public void sendNotification(Notification notification) {
+        notificationService.send(notification);
     }
 }
