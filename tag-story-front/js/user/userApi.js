@@ -23,7 +23,7 @@ const logout = () => {
         } else {
             ExceptionHandler.handleException(res.exceptionCode)
             .then(() => {
-                logout();
+                // logout();
             });
         }
     });

@@ -28,6 +28,7 @@ const setState = () => {
             `;
     }
     
+    /* 로그아웃 처리를 한다 */
     if(document.getElementById('logout-a') != null) {
       document.getElementById('logout-a').addEventListener ('click', function() {
         UserApi.logout();
@@ -35,12 +36,14 @@ const setState = () => {
     }
 }
 
+/**
+ * 회원가입이 완료된 사용자인지 확인한다.
+ */
 const checkRegisterUser = () => {
   if(localStorage.getItem('Pending') != null) {
     window.location.href = `${client_host}/nickname.html`;
   }
 }
-
 
 export default {
   setState,
