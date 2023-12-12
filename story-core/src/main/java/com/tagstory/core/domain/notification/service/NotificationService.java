@@ -45,7 +45,7 @@ public class NotificationService {
         try {
             sseEmitter.send(SseEmitter.event()
                     .name("Notification")
-                    .data(notification.toString()));
+                    .data(notificationManager.getNotificationData(notification)));
         } catch(IOException e) {
             log.error(e.getMessage());
         }

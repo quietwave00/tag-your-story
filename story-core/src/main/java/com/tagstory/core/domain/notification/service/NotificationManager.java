@@ -41,4 +41,13 @@ public class NotificationManager implements MessageListener {
             throw new RuntimeException(e);
         }
     }
+
+    public String getNotificationData(Notification notification) {
+        try {
+            return objectMapper.writeValueAsString(notification);
+        } catch(JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
 }
