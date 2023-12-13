@@ -89,7 +89,7 @@ create table notification
     subscriber_id bigint not null,
     type VARCHAR(10) not null,
     content_id VARCHAR(255) not null,
-#     is_read tinyint(1) not null default 0,
+    is_read tinyint(1) not null default 0,
     created_at  datetime(6)  not null,
     updated_at  datetime(6)  not null,
 

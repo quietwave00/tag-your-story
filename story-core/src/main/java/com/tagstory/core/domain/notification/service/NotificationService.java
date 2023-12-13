@@ -67,14 +67,10 @@ public class NotificationService {
 
     @Transactional
     public void setAsRead(NotificationReadCommand command) {
-//        NotificationEntity notificationEntity = getNotificationEntityByNotificationId(command.getNotificationId());
-//        Long subscriberId = getUserIdByNotification(notificationEntity);
-//
-//        if(Objects.equals(command.getUserId(), subscriberId)) {
-//            notificationEntity.setAsRead();
-//        } else {
-//            throw new CustomException(ExceptionCode.NO_READ_PERMISSION);
-//        }
+        NotificationEntity notificationEntity = getNotificationEntityByNotificationId(command.getNotificationId());
+        checkReadPermission(command.getUserId(), notificationEntity);
+
+        notificationEntity.setAsRead();
     }
 
     /*
@@ -98,4 +94,10 @@ public class NotificationService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOTIFICATION_NOT_FOUND));
     }
 
+    private void checkReadPermission(Long userId, NotificationEntity notificationEntity) {
+        Long subscriberId = getUserIdByNotification(notificationEntity);
+        if (!userId.equals(subscriberId)) {
+            throw new CustomException(ExceptionCode.NO_READ_PERMISSION);
+        }
+    }
 }

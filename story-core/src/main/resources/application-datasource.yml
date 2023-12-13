@@ -1,7 +1,7 @@
 spring:
   config.activate.on-profile: local
   datasource:
-    url: jdbc:mysql://localhost:3306/tagStory
+    url: jdbc:mysql://localhost:3306/tagStory?tinyInt1isBit=false
     username: tagStory
     password: tagStory
     driver-class-name: com.mysql.cj.jdbc.Driver

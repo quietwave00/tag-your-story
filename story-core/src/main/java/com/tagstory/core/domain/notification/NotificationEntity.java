@@ -37,7 +37,7 @@ public class NotificationEntity extends BaseTime {
     private String contentId;
 
     @ColumnDefault("false")
-    @Column(columnDefinition = "TINYINT(1)")
+    @Column(nullable = false, columnDefinition = "TINYINT", length = 1)
     private Boolean isRead;
 
 
@@ -55,9 +55,9 @@ public class NotificationEntity extends BaseTime {
     /*
      * 비즈니스 로직
      */
-//    public void setAsRead() {
-//        this.isRead = true;
-//    }
+    public void setAsRead() {
+        this.isRead = true;
+    }
 
     /*
      * 형변환
