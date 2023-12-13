@@ -1,23 +1,25 @@
 /**
  * 실시간 알림 메시지를 보여준다.
  * 
- * @param notification: 알림 내용 
+ * @param beforeNotification: 알림 내용(문자열)
  */
 let notificationCount = 0;
 
-const renderNotification = (notification) => {
+const renderNotification = (beforeNotification) => {
+  const notification = JSON.parse(beforeNotification);
+
   /* 알림 div */
   const notificationDiv = document.createElement("div");
   notificationDiv.className = "notification-div";
   notificationDiv.id = `notification-${notificationCount++}`;
 
-  notificationDiv.textContent = getNotificationMessage(JSON.parse(notification));
+  notificationDiv.textContent = getNotificationMessage(notification);
   notificationDiv.style.top = `${10 + notificationCount * 80}px`;
 
   notificationDiv.addEventListener('click', () => {
-    window.location.href = `${client_host}/board.html?boardId=${JSON.parse(notification).contentId}`;;
+    window.location.href = `${client_host}/board.html?boardId=${notification.contentId}`;
   });
-  
+
   /* 닫기 버튼 */
   const closeButton = document.createElement("span");
   closeButton.textContent = "×";

@@ -38,6 +38,9 @@ window.onload = async () => {
     });
 };
 
+/**
+ * 트랙의 상세 정보를 보여준다.
+ */
 const renderDetailTrack = (track) => {
     let title = track.title;
     let artist = track.artistName;
@@ -70,6 +73,9 @@ const renderDetailTrack = (track) => {
             `;
 }
 
+/**
+ * 뒤로가기 버튼을 처리한다.
+ */
 document.getElementById('back-area').addEventListener('click', () => {
     const keyword = trackManager.getTrackInfo().selectedKeyword;
     const page = trackManager.getTrackInfo().selectedPage;
