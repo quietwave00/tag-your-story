@@ -1,0 +1,14 @@
+.notification-div {
+    position: fixed;
+    right: 10px;
+    background-color: lightgray;
+    padding: 15px;
+    margin: 30px;
+    border-radius: 20px;
+    opacity: 20%;
+    cursor: pointer;
+}
+
+.notification-close-button {
+    margin-left: 3%;
+}
