@@ -1,6 +1,7 @@
 package com.tagstory.api.domain.notification;
 
 import com.tagstory.api.annotations.CurrentUserId;
+import com.tagstory.api.domain.notification.dto.request.NotificationReadRequest;
 import com.tagstory.api.domain.notification.dto.response.NotificationResponse;
 import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.notification.service.NotificationFacade;
@@ -43,5 +44,16 @@ public class NotificationController {
                                                                      @RequestParam int page) {
         List<Notification> notificationList = notificationFacade.getNotificationList(userId, page);
         return ApiUtils.success(notificationList.stream().map(NotificationResponse::from).collect(Collectors.toList()));
+    }
+
+    /*
+     * 알림 항목을 읽음 처리한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping
+    public ApiResult<Void> setAsRead(@CurrentUserId Long userId,
+                                     @RequestBody NotificationReadRequest request) {
+        notificationFacade.setAsRead(request.toCommand(userId));
+        return ApiUtils.success();
     }
 }

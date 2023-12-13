@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 
@@ -35,6 +36,10 @@ public class NotificationEntity extends BaseTime {
 
     private String contentId;
 
+    @ColumnDefault("false")
+    @Column(columnDefinition = "TINYINT(1)")
+    private Boolean isRead;
+
 
     /*
      * 연관관계 설정
@@ -48,6 +53,13 @@ public class NotificationEntity extends BaseTime {
     }
 
     /*
+     * 비즈니스 로직
+     */
+//    public void setAsRead() {
+//        this.isRead = true;
+//    }
+
+    /*
      * 형변환
      */
     public Notification toNotification() {
@@ -57,6 +69,7 @@ public class NotificationEntity extends BaseTime {
                 .subscriber(this.subscriber.toUser())
                 .type(this.type)
                 .contentId(this.contentId)
+//                .isRead(this.isRead)
                 .build();
     }
 }

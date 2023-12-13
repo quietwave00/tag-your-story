@@ -36,7 +36,6 @@ public class NotificationManager implements MessageListener {
     public void onMessage(Message message, byte[] pattern) {
         try {
             NotificationMessage response = objectMapper.readValue(message.getBody(), NotificationMessage.class);
-            log.info("received notification: " + response.getNickname());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

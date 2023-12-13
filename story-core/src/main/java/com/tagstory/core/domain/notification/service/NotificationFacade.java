@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.notification.service;
 
+import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
@@ -24,5 +25,9 @@ public class NotificationFacade {
     public List<Notification> getNotificationList(Long userId, int page) {
         User user = userService.getCacheByUserId(userId);
         return notificationService.getNotificationList(user, page);
+    }
+
+    public void setAsRead(NotificationReadCommand command) {
+        notificationService.setAsRead(command);
     }
 }

@@ -24,6 +24,8 @@ public class Notification {
 
     private String contentId;
 
+//    private Boolean isRead;
+
     /*
      * 비즈니스 로직
      */
@@ -46,6 +48,7 @@ public class Notification {
                 .subscriber(this.subscriber.toEntity())
                 .type(this.type)
                 .contentId(this.contentId)
+//                .isRead(this.isRead)
                 .build();
     }
 }

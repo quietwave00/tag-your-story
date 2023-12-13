@@ -2,10 +2,13 @@ package com.tagstory.core.domain.notification.service;
 
 import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
+import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagstory.core.domain.notification.repository.NotificationRepository;
 import com.tagstory.core.domain.notification.service.dto.command.NotificationCommand;
 import com.tagstory.core.domain.notification.sse.SseManager;
 import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.exception.CustomException;
+import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class NotificationService {
 
     private final NotificationManager notificationManager;
@@ -42,8 +46,8 @@ public class NotificationService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void save(Notification notification) {
-        notificationRepository.save(notification.toEntity());
+    public Notification save(Notification notification) {
+        return notificationRepository.save(notification.toEntity()).toNotification();
     }
 
     public void send(Notification notification) {
@@ -61,10 +65,22 @@ public class NotificationService {
         return findNotificationListByUserId(user, page);
     }
 
+    @Transactional
+    public void setAsRead(NotificationReadCommand command) {
+//        NotificationEntity notificationEntity = getNotificationEntityByNotificationId(command.getNotificationId());
+//        Long subscriberId = getUserIdByNotification(notificationEntity);
+//
+//        if(Objects.equals(command.getUserId(), subscriberId)) {
+//            notificationEntity.setAsRead();
+//        } else {
+//            throw new CustomException(ExceptionCode.NO_READ_PERMISSION);
+//        }
+    }
+
     /*
-     * private
+     * 단일 메소드
      */
-    public List<Notification> findNotificationListByUserId(User user, int page) {
+    private List<Notification> findNotificationListByUserId(User user, int page) {
         Page<NotificationEntity> notificationEntityList = notificationRepository.findBySubscriber(user.toEntity(), PageRequest.of(page, 5))
                 .orElse(Page.empty());
 
@@ -72,4 +88,14 @@ public class NotificationService {
                 .map(NotificationEntity::toNotification)
                 .collect(Collectors.toList());
     }
+
+    private Long getUserIdByNotification(NotificationEntity notificationEntity) {
+        return notificationEntity.getSubscriber().getUserId();
+    }
+
+    private NotificationEntity getNotificationEntityByNotificationId(Long notificationId) {
+        return notificationRepository.findByNotificationId(notificationId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOTIFICATION_NOT_FOUND));
+    }
+
 }

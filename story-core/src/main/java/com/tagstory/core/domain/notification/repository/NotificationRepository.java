@@ -10,4 +10,6 @@ import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
     Optional<Page<NotificationEntity>> findBySubscriber(UserEntity userEntity, PageRequest pageRequest);
+
+    Optional<NotificationEntity> findByNotificationId(Long notificationId);
 }
