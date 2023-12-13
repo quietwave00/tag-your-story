@@ -28,8 +28,8 @@ public class SseManager {
 
         sseStorage.save(key, sseEmitter);
 
-        log.info("현재 Sse Map 크기: {}", sseStorage.getSseEmitterMap().size());
-        log.info("현재 Sse Map key값: {}", sseStorage.getSseEmitterMap().keySet().iterator().next());
+//        log.info("현재 Sse Map 크기: {}", sseStorage.getSseEmitterMap().size());
+//        log.info("현재 Sse Map key값: {}", sseStorage.getSseEmitterMap().keySet().iterator().next());
         return sseEmitter;
     }
 
@@ -43,7 +43,7 @@ public class SseManager {
     /*
      * SseEmitter의 상태를 정의한다.
      */
-    private void setUp(SseEmitter sseEmitter, String key) {
+    public void setUp(SseEmitter sseEmitter, String key) {
         /* SSE 연결이 종료됐을 때 */
         sseEmitter.onCompletion(() -> {
             log.info("SSE on Complete");
@@ -61,7 +61,7 @@ public class SseManager {
     /*
      * 초기 데이터를 보낸다.
      */
-    private void init(SseEmitter sseEmitter) {
+    public void init(SseEmitter sseEmitter) {
         try {
             sseEmitter.send(SseEmitter.event()
                     .name("init")
