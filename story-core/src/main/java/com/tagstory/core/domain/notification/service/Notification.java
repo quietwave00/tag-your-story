@@ -24,11 +24,22 @@ public class Notification {
 
     private String contentId;
 
-//    private Boolean isRead;
+    private Boolean isRead;
 
     /*
      * 비즈니스 로직
      */
+    public static NotificationEntity create(Notification notification) {
+        return NotificationEntity.builder()
+                .notificationId(notification.getNotificationId())
+                .publisher(notification.getPublisher().toEntity())
+                .subscriber(notification.getSubscriber().toEntity())
+                .type(notification.getType())
+                .contentId(notification.getContentId())
+                .isRead(false)
+                .build();
+    }
+
     public static Notification onEvent(User publisher, User subscriber, NotificationType type, String contentId) {
         return Notification.builder()
                 .publisher(publisher)
@@ -48,7 +59,7 @@ public class Notification {
                 .subscriber(this.subscriber.toEntity())
                 .type(this.type)
                 .contentId(this.contentId)
-//                .isRead(this.isRead)
+                .isRead(this.isRead)
                 .build();
     }
 }

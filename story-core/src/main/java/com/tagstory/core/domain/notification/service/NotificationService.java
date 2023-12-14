@@ -47,7 +47,7 @@ public class NotificationService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification save(Notification notification) {
-        return notificationRepository.save(notification.toEntity()).toNotification();
+        return notificationRepository.save(Notification.create(notification)).toNotification();
     }
 
     public void send(Notification notification) {

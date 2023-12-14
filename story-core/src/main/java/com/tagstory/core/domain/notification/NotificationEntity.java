@@ -69,7 +69,7 @@ public class NotificationEntity extends BaseTime {
                 .subscriber(this.subscriber.toUser())
                 .type(this.type)
                 .contentId(this.contentId)
-//                .isRead(this.isRead)
+                .isRead(this.isRead)
                 .build();
     }
 }
