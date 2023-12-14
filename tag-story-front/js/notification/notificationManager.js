@@ -1,3 +1,5 @@
+import { setAsRead } from './notificationApi.js';
+
 /**
  * 실시간 알림 메시지를 보여준다.
  * 
@@ -17,6 +19,7 @@ const renderNotification = (beforeNotification) => {
   notificationDiv.style.top = `${10 + notificationCount * 80}px`;
 
   notificationDiv.addEventListener('click', () => {
+    setAsRead(notification.notificationId);
     window.location.href = `${client_host}/board.html?boardId=${notification.contentId}`;
   });
 

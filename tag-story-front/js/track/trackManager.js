@@ -28,6 +28,7 @@ const trackManager = (() => {
         selectedPage = sessionStorage.getItem("page");
     }
   
+    savePage(selectedPage); // default settings
     return {
       setTrackId: (trackId) => {
         saveTrackId(trackId);
