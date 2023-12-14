@@ -30,4 +30,9 @@ public class NotificationFacade {
     public void setAsRead(NotificationReadCommand command) {
         notificationService.setAsRead(command);
     }
+
+    public int getNotificationCount(Long userId) {
+        User user = userService.getCacheByUserId(userId);
+        return notificationService.getNotificationCount(user);
+    }
 }

@@ -69,15 +69,18 @@ public class NotificationService {
     public void setAsRead(NotificationReadCommand command) {
         NotificationEntity notificationEntity = getNotificationEntityByNotificationId(command.getNotificationId());
         checkReadPermission(command.getUserId(), notificationEntity);
-
         notificationEntity.setAsRead();
+    }
+
+    public int getNotificationCount(User user) {
+        return getNotificationCountBySubscriber(user);
     }
 
     /*
      * 단일 메소드
      */
     private List<Notification> findNotificationListByUserId(User user, int page) {
-        Page<NotificationEntity> notificationEntityList = notificationRepository.findBySubscriber(user.toEntity(), PageRequest.of(page, 5))
+        Page<NotificationEntity> notificationEntityList = notificationRepository.findBySubscriberOrderByCreatedAtDesc(user.toEntity(), PageRequest.of(page, 5))
                 .orElse(Page.empty());
 
         return notificationEntityList.stream()
@@ -99,5 +102,9 @@ public class NotificationService {
         if (!userId.equals(subscriberId)) {
             throw new CustomException(ExceptionCode.NO_READ_PERMISSION);
         }
+    }
+
+    private int getNotificationCountBySubscriber(User user) {
+        return notificationRepository.countBySubscriber(user.toEntity());
     }
 }

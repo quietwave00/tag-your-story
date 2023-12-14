@@ -2,6 +2,7 @@ package com.tagstory.api.domain.notification;
 
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.notification.dto.request.NotificationReadRequest;
+import com.tagstory.api.domain.notification.dto.response.NotificationCountResponse;
 import com.tagstory.api.domain.notification.dto.response.NotificationResponse;
 import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.notification.service.NotificationFacade;
@@ -55,5 +56,15 @@ public class NotificationController {
                                      @RequestBody NotificationReadRequest request) {
         notificationFacade.setAsRead(request.toCommand(userId));
         return ApiUtils.success();
+    }
+
+    /*
+     * 알림의 전체 개수를 조회한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/count")
+    public ApiResult<NotificationCountResponse> getNotificationCount(@CurrentUserId Long userId) {
+        int count = notificationFacade.getNotificationCount(userId);
+        return ApiUtils.success(NotificationCountResponse.from(count));
     }
 }
