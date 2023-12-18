@@ -9,14 +9,16 @@ import com.tagstory.api.domain.comment.dto.response.CommentWithRepliesResponse;
 import com.tagstory.core.domain.comment.service.CommentFacade;
 import com.tagstory.core.domain.comment.service.dto.Comment;
 import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
-import com.tagstory.core.utils.api.ApiUtils;
 import com.tagstory.core.utils.api.ApiResult;
+import com.tagstory.core.utils.api.ApiUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,8 +32,8 @@ public class CommentController {
      */
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
-    public ApiResult<CommentResponse> create(@RequestBody @Valid CreateCommentRequest request, @CurrentUserId Long userId) {
-        Comment comment = commentFacade.create(request.toCommand(userId));
+    public ApiResult<CommentResponse> create(@RequestBody @Valid CreateCommentRequest request, @CurrentUserId Long userId) throws ExecutionException, InterruptedException {
+        CompletableFuture<Comment> comment = commentFacade.create(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
     }
 

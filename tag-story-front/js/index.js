@@ -1,10 +1,7 @@
 import UserArea from './user/userArea.js';
 import { trackManager } from './track/trackManager.js';
-
-const test = async () => {
-    const eventTest = await subscribe();
-    console.log(eventTest);
-}
+import { eventSource } from './notification/notificationManager.js'
+import { renderNotification } from './notification/notificationManager.js';
 
 
 window.onload = () => {
@@ -14,17 +11,20 @@ window.onload = () => {
     UserArea.setState();
 
     /**
+     * 실시간 알림을 수행한다.
+     */
+    if(eventSource) {
+        eventSource.addEventListener('Notification', (e) => {
+            renderNotification(e.data);
+        });
+    }
+
+    /**
      *  회원의 회원가입, 로그인 상태를 체크한다.
      */
     if(localStorage.getItem('Pending') != null) {
         window.location.href = `${client_host}/nickname.html`;
     }
-
-    const eventSource = new EventSourcePolyfill(`${server_host}/api/notification/subscription`, {
-        headers : {
-            "Authorization": localStorage.getItem("Authorization")
-        }
-    });
 }
 const searchInput = document.getElementById("search-input");
 const searchButton = document.getElementById("search-button");
@@ -32,7 +32,7 @@ const searchButton = document.getElementById("search-button");
 /**
  * 검색창에서 Enter를 누를 시 이벤트 리스너
  */
-searchInput.addEventListener("keydown", function (event) {
+searchInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
         searchButton.click();
     }

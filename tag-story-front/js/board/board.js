@@ -12,14 +12,14 @@ const trackId = new URLSearchParams(window.location.search).get('trackId');
 const pageSize = 8;
 let orderType = "CREATED_AT";
 let currentPage = 1;
-let endPage;
+let endPage = 0;
 
-window.addEventListener("load", function () {
+window.addEventListener("load", () => {
     BoardApi.getBoardCountByTrackId(trackId)
         .then((response) => {
             const perPage = response.count / pageSize;
             (perPage < 1) ? endPage = 1 : endPage = Math.ceil(perPage);
-
+            
             /**
              *  page-area에 대한 처리를 수행한다.
              */

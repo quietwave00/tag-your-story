@@ -16,6 +16,7 @@ const handleException = (exceptionCode) => {
  * @param _refreshToken : 리프레쉬 토큰
  */
 const handleExpiredJwt = () => {
+    console.log("드렁옴?");
     return fetch(`${server_host}/api/user/reissue/accessToken`, {
         method: "POST",
         headers: {

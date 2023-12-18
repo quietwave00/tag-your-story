@@ -1,11 +1,18 @@
 package com.tagstory.core.domain.notification.service;
 
+import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
+import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagstory.core.domain.notification.repository.NotificationRepository;
 import com.tagstory.core.domain.notification.service.dto.command.NotificationCommand;
 import com.tagstory.core.domain.notification.sse.SseManager;
+import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.exception.CustomException;
+import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,10 +20,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class NotificationService {
 
     private final NotificationManager notificationManager;
@@ -36,20 +46,65 @@ public class NotificationService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void save(Notification notification) {
-        notificationRepository.save(notification.toEntity());
-        send(notification);
+    public Notification save(Notification notification) {
+        return notificationRepository.save(Notification.create(notification)).toNotification();
     }
 
     public void send(Notification notification) {
-        log.info("send 들어옴");
         SseEmitter sseEmitter = sseManager.get(notification.getSubscriber().getUserId());
         try {
             sseEmitter.send(SseEmitter.event()
                     .name("Notification")
-                    .data(notification.toString()));
+                    .data(notificationManager.getNotificationData(notification)));
         } catch(IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    public List<Notification> getNotificationList(User user, int page) {
+        return findNotificationListByUserId(user, page);
+    }
+
+    @Transactional
+    public void setAsRead(NotificationReadCommand command) {
+        NotificationEntity notificationEntity = getNotificationEntityByNotificationId(command.getNotificationId());
+        checkReadPermission(command.getUserId(), notificationEntity);
+        notificationEntity.setAsRead();
+    }
+
+    public int getNotificationCount(User user) {
+        return getNotificationCountBySubscriber(user);
+    }
+
+    /*
+     * 단일 메소드
+     */
+    private List<Notification> findNotificationListByUserId(User user, int page) {
+        Page<NotificationEntity> notificationEntityList = notificationRepository.findBySubscriberOrderByCreatedAtDesc(user.toEntity(), PageRequest.of(page, 5))
+                .orElse(Page.empty());
+
+        return notificationEntityList.stream()
+                .map(NotificationEntity::toNotification)
+                .collect(Collectors.toList());
+    }
+
+    private Long getUserIdByNotification(NotificationEntity notificationEntity) {
+        return notificationEntity.getSubscriber().getUserId();
+    }
+
+    private NotificationEntity getNotificationEntityByNotificationId(Long notificationId) {
+        return notificationRepository.findByNotificationId(notificationId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOTIFICATION_NOT_FOUND));
+    }
+
+    private void checkReadPermission(Long userId, NotificationEntity notificationEntity) {
+        Long subscriberId = getUserIdByNotification(notificationEntity);
+        if (!userId.equals(subscriberId)) {
+            throw new CustomException(ExceptionCode.NO_READ_PERMISSION);
+        }
+    }
+
+    private int getNotificationCountBySubscriber(User user) {
+        return notificationRepository.countBySubscriber(user.toEntity());
     }
 }

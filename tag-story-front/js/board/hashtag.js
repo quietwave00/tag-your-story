@@ -9,7 +9,7 @@ let hashtagCount = 0;
  * 해시태그 입력 이벤트 함수
  */
 const tagInput = document.getElementById('tag-input');
-tagInput.addEventListener('keypress', function(e) {
+tagInput.addEventListener('keypress', (e) => {
     editFlag = true
 
     hashtagCount = hashtagArray.length;
@@ -23,7 +23,7 @@ tagInput.addEventListener('keypress', function(e) {
         } else {
             e.stopPropagation();
             e.preventDefault();
-            const hashtag = this.value.replace(/\s/g, '');
+            const hashtag = tagInput.value.replace(/\s/g, '');
             if (hashtagArray.includes(hashtag)) {
                 alert("이미 입력된 해시태그입니다.");
                 tagInput.value = "";
@@ -32,7 +32,7 @@ tagInput.addEventListener('keypress', function(e) {
 
             renderHashtag(hashtag); 
         }
-        this.value = "";
+        tagInput.value = "";
     }
 });
 
@@ -48,7 +48,7 @@ const renderHashtag = (hashtag) => {
         `
             <div class = "hashtag-element" id = "tag-${hashtagCount}" style = "margin-right: 10px;">#${hashtag}</div>
 
-        `;//here
+        `;
     hashtagArray.push(hashtag);
     hashtagCount = hashtagArray.length;
 }
@@ -79,7 +79,7 @@ const deleteHashtag = (hashtagId) => {
  */
 const addIdToTagElements = () => {
     const tagElements = document.querySelectorAll(".hashtag-element");
-    tagElements.forEach((tagElement, index) => { //here
+    tagElements.forEach((tagElement, index) => {
         const tagId = `tag-${index + 1}`;
         tagElement.id = tagId;
     });

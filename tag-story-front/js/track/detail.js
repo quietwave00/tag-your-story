@@ -5,12 +5,23 @@ import File from "../board/file.js";
 import FileApi from "../board/fileApi.js";
 import Board from "../board/board.js";
 import { trackManager } from "./trackManager.js";
+import { eventSource } from '../notification/notificationManager.js'
+import { renderNotification } from '../notification/notificationManager.js';
 
 window.onload = async () => {
     /**
      * user-area에 대한 처리를 수행한다.
      */
     UserArea.setState();
+
+    /**
+     * 실시간 알림을 수행한다.
+     */
+    if(eventSource) {
+        eventSource.addEventListener('Notification', (e) => {
+            renderNotification(e.data);
+        });
+    }
 
     const trackId = new URLSearchParams(window.location.search).get('trackId');
     const defaultPage = 1;
@@ -38,6 +49,9 @@ window.onload = async () => {
     });
 };
 
+/**
+ * 트랙의 상세 정보를 보여준다.
+ */
 const renderDetailTrack = (track) => {
     let title = track.title;
     let artist = track.artistName;
@@ -70,6 +84,9 @@ const renderDetailTrack = (track) => {
             `;
 }
 
+/**
+ * 뒤로가기 버튼을 처리한다.
+ */
 document.getElementById('back-area').addEventListener('click', () => {
     const keyword = trackManager.getTrackInfo().selectedKeyword;
     const page = trackManager.getTrackInfo().selectedPage;

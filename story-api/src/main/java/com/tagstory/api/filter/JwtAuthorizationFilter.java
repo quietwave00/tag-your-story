@@ -41,21 +41,23 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = extractToken(request);
-        log.info("token: {}", token);
 
-        /* 토큰이 없으면 게스트 권한을 부여한다. */
-        if (StringUtils.isBlank(token)) {
-            handleGuestRequest(request, response, filterChain);
-            return;
+        try {
+            /* 토큰이 없으면 게스트 권한을 부여한다. */
+            if (StringUtils.isBlank(token)) {
+                handleGuestRequest(request, response, filterChain);
+                return;
+            }
+
+            /* 토큰 타입이 PENDING이면 PENDING 권한을 부여한다. */
+            if (TOKEN_TYPE_PENDING.equals(jwtUtil.getTokenTypeFromToken(token))) {
+                handlePendingUserRequest(request, response, filterChain, token);
+                return;
+            }
+            handleUserRequest(request, response, filterChain, token);
+        } catch(CustomException e) {
+            sendExceptionMessage(response, e);
         }
-
-        /* 토큰 타입이 PENDING이면 PENDING 권한을 부여한다. */
-        if (TOKEN_TYPE_PENDING.equals(jwtUtil.getTokenTypeFromToken(token))) {
-            handlePendingUserRequest(request, response, filterChain, token);
-            return;
-        }
-
-        handleUserRequest(request, response, filterChain, token);
     }
 
     private String extractToken(HttpServletRequest request) {
@@ -68,7 +70,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         if (Objects.nonNull(queryToken)) {
             return queryToken;
         }
-
         return null;
     }
 

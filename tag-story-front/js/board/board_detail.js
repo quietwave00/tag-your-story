@@ -4,12 +4,23 @@ import Like from "../board/like.js";
 import Comment from "../comment/comment.js";
 import Hashtag from "./hashtag.js";
 import { trackManager } from "../track/trackManager.js"
+import { eventSource } from '../notification/notificationManager.js'
+import { renderNotification } from '../notification/notificationManager.js';
 
 window.onload = () => {
     /**
      * user-area에 대한 처리를 수행한다.
      */
     UserArea.setState();
+
+    /**
+     * 실시간 알림을 수행한다.
+     */
+    if(eventSource) {
+        eventSource.addEventListener('Notification', (e) => {
+            renderNotification(e.data);
+        });
+    }
 
     const boardId = new URLSearchParams(window.location.search).get('boardId');
     /*
@@ -74,7 +85,7 @@ const renderBoard = (board) => {
             `
             <div class="hashtag-element" data-bs-toggle="modal"data-bs-target="#board-hashtag-modal" data-hashtag="${hashtag}">#${hashtag}</div>
             `;
-    }); //here
+    });
     
     const modalElement = document.getElementById('board-hashtag-modal');
     modalElement.addEventListener('show.bs.modal', (e) => {
@@ -141,11 +152,11 @@ const deleteBoard = (boardId) => {
  * 돌아가기 버튼을 생성한다.
  */
 const renderBackArea = () => {
-    const title = trackManager.getSelectedTitle();
-    const trackId = trackManager.getSelectedTrackId();
+    const title = trackManager.getTrackInfo().selectedTitle;
+    const trackId = trackManager.getTrackInfo().selectedTrackId;
     document.getElementById('back-title').innerText = title;
 
-    document.getElementById('back-area').addEventListener('clikc', () => {
+    document.getElementById('back-area').addEventListener('click', () => {
         window.location.href = `${client_host}/detail.html?trackId=${trackId}`;
     });
 }

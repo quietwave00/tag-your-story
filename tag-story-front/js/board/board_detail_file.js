@@ -4,14 +4,14 @@ import { boardId as boardIdFromModule } from "./edit.js";
 
 /* 해당 스크립트는 board.html에서 board_detail.js와 함께 사용된다. */ 
 
-window.addEventListener("load", function () {
+window.addEventListener("load", () => {
     const boardIdFromURL = new URLSearchParams(window.location.search).get('boardId');
     const boardId = boardIdFromURL == null ? boardIdFromModule : boardIdFromURL;
     /*
      * 상세 게시글의 파일 정보를 요청하고 렌더링한다.
      */
     FileApi.getFileList(boardId).then((response) => {
-        this.document.getElementById('file-area') == null
+        document.getElementById('file-area') == null
             ? renderExistedFile(response) : renderFile(response);
     });
 });
@@ -101,7 +101,6 @@ const saveDeleteFileId = (imgDivId) => {
 const deleteAndUpdateFile = () => {
     console.log("deleteAndUpdateFile: " + fileIdListToDelete);
     if(fileIdListToDelete.length > 0) {
-        console.log("여기안걸림?");
         FileApi.deleteFileList(fileIdListToDelete, boardIdFromModule);
     }
     File.update(boardIdFromModule);

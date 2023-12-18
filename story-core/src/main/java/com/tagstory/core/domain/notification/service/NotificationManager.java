@@ -3,7 +3,7 @@ package com.tagstory.core.domain.notification.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tagstory.core.domain.notification.service.dto.command.NotificationCommand;
-import com.tagstory.core.domain.notification.service.dto.response.NotificationResponse;
+import com.tagstory.core.domain.notification.service.dto.response.NotificationMessage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,10 +35,18 @@ public class NotificationManager implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
-            NotificationResponse response = objectMapper.readValue(message.getBody(), NotificationResponse.class);
-            log.info("received notification: " + response.getNickname());
+            NotificationMessage response = objectMapper.readValue(message.getBody(), NotificationMessage.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getNotificationData(Notification notification) {
+        try {
+            return objectMapper.writeValueAsString(notification);
+        } catch(JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
+        return null;
     }
 }

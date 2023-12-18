@@ -1,0 +1,67 @@
+#notification-area {
+    position: relative;
+    display: inline-block;
+}
+
+#notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 20px;
+    width: 700%;
+}
+
+#notification-dropdown p {
+    margin: 0;
+    cursor: pointer;
+}
+
+#notification-dropdown p:hover {
+    background-color: rgb(229, 229, 229);
+    border-radius: 20px;
+}
+
+#notification-icon {
+    width: 35px;
+    height: 35px;
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+.notification-div {
+    position: fixed;
+    right: 10px;
+    background-color: lightgray;
+    padding: 15px;
+    border-radius: 20px;
+    opacity: 20%;
+    cursor: pointer;
+}
+
+.notification-close-button {
+    margin-left: 3%;
+}
+
+.readed {
+    font-style: italic;
+    color: rgb(217, 217, 217);
+}
+
+#notification-next {
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 10px;
+    float: right;
+}
+
+#notification-prev {
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    float: left;
+}

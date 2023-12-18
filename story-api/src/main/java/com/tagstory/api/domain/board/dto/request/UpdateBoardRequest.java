@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -22,7 +21,6 @@ public class UpdateBoardRequest {
     @NotNull(message = "content는 비어 있을 수 없습니다.")
     private String content;
 
-    @NotEmpty(message = "해시태그는 비어 있을 수 없습니다.")
     private List<String> hashtagList;
 
     public UpdateBoardCommand toCommand() {

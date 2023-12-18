@@ -5,6 +5,8 @@ import File from "./board_detail_file.js";
 import { hashtagArray as hashtagArrayFromModule } from "./hashtag.js";
 import { editFlag as hashtagEditFlag } from "./hashtag.js";
 import { editFlag as fileEditFlag } from "./board_detail_file.js";
+import { eventSource } from '../notification/notificationManager.js'
+import { renderNotification } from '../notification/notificationManager.js';
 
 
 window.onload = () => {
@@ -12,6 +14,15 @@ window.onload = () => {
      * user-area에 대한 처리를 수행한다.
      */
     UserArea.setState();
+
+    /**
+     * 실시간 알림을 수행한다.
+     */
+    if(eventSource) {
+        eventSource.addEventListener('Notification', (e) => {
+            renderNotification(e.data);
+        });
+    }
 
     /**
      * 사용자가 작성했던 게시글의 정보를 가져온다.
@@ -24,7 +35,7 @@ window.onload = () => {
     renderExistedBoard();
 
     /* URL 초기화 */
-    // window.history.pushState({}, '', `${client_host}/edit.html`);
+    window.history.pushState({}, '', `${client_host}/edit.html`);
 };
 
 let hashtagArray = [];
@@ -40,7 +51,7 @@ const renderExistedBoard = () => {
             `
                 <div class = "hashtag-element">#${hashtag}</div>
             `;
-    }//here
+    }
     document.getElementById("hashtag-container").innerHTML = `${hashtagElements}`;
     document.getElementById("board-input").innerHTML = `${content}`;
 
@@ -54,6 +65,7 @@ const renderExistedBoard = () => {
  */
 document.getElementById("edit-button").addEventListener('click', () => {
     content = document.getElementById("board-input").value;
+    console.log("hashtagEditFlag: " + hashtagEditFlag);
     const resultHashtagArray = hashtagEditFlag ? hashtagArrayFromModule : new Array();
     BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
 

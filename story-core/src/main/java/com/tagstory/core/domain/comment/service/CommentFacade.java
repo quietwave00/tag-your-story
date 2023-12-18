@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor
@@ -21,11 +22,11 @@ public class CommentFacade {
     private final UserService userService;
     private final CommentService commentService;
 
-    public Comment create(CreateCommentCommand command) {
+    public CompletableFuture<Comment> create(CreateCommentCommand command) {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
 
-        return commentService.create(board, user, command);
+        return commentService.createWithNotification(board, user, command);
     }
 
     public Comment update(UpdateCommentCommand command) {
