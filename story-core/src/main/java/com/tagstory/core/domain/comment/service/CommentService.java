@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,12 +32,19 @@ public class CommentService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
+    public CompletableFuture<Comment> createWithNotification(Board board, User user, CreateCommentCommand command) {
+        return CompletableFuture.supplyAsync(() -> create(board, user, command))
+                .thenApplyAsync(comment -> {
+                    onEvent(user, board);
+                    return comment;
+                });
+    }
+
     public Comment create(Board board, User user, CreateCommentCommand command) {
         CommentEntity commentEntity = CommentEntity.create(command.getContent());
         commentEntity.addUser(user.toEntity());
         commentEntity.addBoard(board.toEntity());
 
-        onEvent(user, board);
         return commentRepository.save(commentEntity).toComment();
     }
 

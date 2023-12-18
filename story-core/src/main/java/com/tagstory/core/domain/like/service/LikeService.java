@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -20,11 +21,11 @@ public class LikeService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void like(Board board, User user) {
+    public CompletableFuture<Void> like(Board board, User user) {
         LikeEntity like = LikeEntity.createLike(user, board);
         likeRepository.save(like);
 
-        onEvent(user, board);
+        return CompletableFuture.runAsync(() -> onEvent(user, board));
     }
 
     @Transactional
