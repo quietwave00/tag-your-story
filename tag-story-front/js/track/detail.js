@@ -5,12 +5,23 @@ import File from "../board/file.js";
 import FileApi from "../board/fileApi.js";
 import Board from "../board/board.js";
 import { trackManager } from "./trackManager.js";
+import { eventSource } from '../notification/notificationManager.js'
+import { renderNotification } from '../notification/notificationManager.js';
 
 window.onload = async () => {
     /**
      * user-area에 대한 처리를 수행한다.
      */
     UserArea.setState();
+
+    /**
+     * 실시간 알림을 수행한다.
+     */
+    if(eventSource) {
+        eventSource.addEventListener('Notification', (e) => {
+            renderNotification(e.data);
+        });
+    }
 
     const trackId = new URLSearchParams(window.location.search).get('trackId');
     const defaultPage = 1;

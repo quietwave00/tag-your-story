@@ -11,16 +11,19 @@ window.onload = () => {
     UserArea.setState();
 
     /**
-     *  회원의 회원가입, 로그인 상태를 체크한다.
+     * 실시간 알림을 수행한다.
      */
-    if(localStorage.getItem('Pending') != null) {
-        window.location.href = `${client_host}/nickname.html`;
-    }
-
     if(eventSource) {
         eventSource.addEventListener('Notification', (e) => {
             renderNotification(e.data);
         });
+    }
+
+    /**
+     *  회원의 회원가입, 로그인 상태를 체크한다.
+     */
+    if(localStorage.getItem('Pending') != null) {
+        window.location.href = `${client_host}/nickname.html`;
     }
 }
 const searchInput = document.getElementById("search-input");
