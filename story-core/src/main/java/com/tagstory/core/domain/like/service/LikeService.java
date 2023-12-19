@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class LikeService {
     private final LikeRepository likeRepository;
     private final ApplicationEventPublisher eventPublisher;
