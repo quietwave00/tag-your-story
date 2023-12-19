@@ -18,7 +18,6 @@ public class JwtCookieProvider {
         accessCookie.setSecure(true);
         accessCookie.setPath("/");
         accessCookie.setDomain(DOMAIN);
-        accessCookie.setMaxAge(10800);
         return accessCookie;
     }
 
@@ -27,7 +26,6 @@ public class JwtCookieProvider {
         refreshCookie.setSecure(true);
         refreshCookie.setPath("/");
         refreshCookie.setDomain(DOMAIN);
-        refreshCookie.setMaxAge(86400);
         return refreshCookie;
     }
 
@@ -36,7 +34,6 @@ public class JwtCookieProvider {
         pendingCookie.setSecure(true);
         pendingCookie.setPath("/");
         pendingCookie.setDomain(DOMAIN);
-        pendingCookie.setMaxAge(10800);
         return pendingCookie;
     }
 
