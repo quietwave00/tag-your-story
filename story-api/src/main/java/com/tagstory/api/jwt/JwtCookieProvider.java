@@ -17,7 +17,6 @@ public class JwtCookieProvider {
 
     public Cookie generateAccessTokenCookie(String accessToken) {
         Cookie accessCookie = new Cookie(HEADER_STRING, encodeJwt(accessToken));
-        accessCookie.setSecure(true);
         accessCookie.setPath("/");
         accessCookie.setDomain(DOMAIN);
         return accessCookie;
@@ -25,7 +24,6 @@ public class JwtCookieProvider {
 
     public Cookie generateRefreshTokenCookie(String refreshToken) {
         Cookie refreshCookie = new Cookie(TOKEN_TYPE_REFRESH, encodeJwt(refreshToken));
-        refreshCookie.setSecure(true);
         refreshCookie.setPath("/");
         refreshCookie.setDomain(DOMAIN);
         return refreshCookie;
@@ -33,7 +31,6 @@ public class JwtCookieProvider {
 
     public Cookie generatePendingUserCookie(String pendingToken) {
         Cookie pendingCookie = new Cookie(TOKEN_TYPE_PENDING, pendingToken);
-        pendingCookie.setSecure(true);
         pendingCookie.setPath("/");
         pendingCookie.setDomain(DOMAIN);
         return pendingCookie;
