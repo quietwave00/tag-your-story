@@ -5,9 +5,11 @@ spotify:
 spring:
   config.activate.on-profile: local
 api:
-  redirect-url: "http://localhost:5500/token.html"
+  redirect-url: "http://localhost:5501/token.html"
+  domain: ""
 ---
 spring:
   config.activate.on-profile: dev
 api:
   redirect-url: "https://tagyourstory.blog/token.html"
+  domain: "tagyourstory.blog"

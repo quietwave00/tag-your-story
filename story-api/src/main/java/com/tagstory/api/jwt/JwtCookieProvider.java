@@ -1,5 +1,6 @@
 package com.tagstory.api.jwt;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
@@ -11,7 +12,8 @@ import static com.tagstory.core.utils.jwt.JwtProperties.*;
 @Component
 public class JwtCookieProvider {
 
-    private static final String DOMAIN = "tagyourstory.blog";
+    @Value("${api.domain}")
+    private String DOMAIN;
 
     public Cookie generateAccessTokenCookie(String accessToken) {
         Cookie accessCookie = new Cookie(HEADER_STRING, encodeJwt(accessToken));
