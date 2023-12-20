@@ -31,6 +31,7 @@ public class JwtCookieProvider {
 
     public Cookie generatePendingUserCookie(String pendingToken) {
         Cookie pendingCookie = new Cookie(TOKEN_TYPE_PENDING, pendingToken);
+        pendingCookie.setHttpOnly(false);
         pendingCookie.setPath("/");
         pendingCookie.setDomain(DOMAIN);
         return pendingCookie;
