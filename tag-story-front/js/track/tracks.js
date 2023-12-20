@@ -4,6 +4,11 @@ import { trackManager } from "../track/trackManager.js";
 import { eventSource } from '../notification/notificationManager.js'
 import { renderNotification } from '../notification/notificationManager.js';
 
+
+const pageSize = 10;
+let currentPage = 1;
+let endPage = 0;
+
 window.onload = () => {
     /**
      * user-area에 대한 처리를 수행한다.
@@ -20,21 +25,23 @@ window.onload = () => {
     }
 
     /**
-     *  page-area에 대한 처리를 수행한다.
-     */
-    pagingTrackList();
-
-    /**
      *  검색 키워드에 따른 목록을 보여준다.
      */
     const keyword = new URLSearchParams(window.location.search).get("keyword");
     const page = new URLSearchParams(window.location.search).get("page");
-    TrackApi.searchTrack(keyword, page).then((response) => {renderTrackList(response.trackDataList)});
+    TrackApi.searchTrack(keyword, page).then((response) => {
+        renderTrackList(response.trackDataList);
+
+        const perPage = response.totalCount / pageSize;
+        (perPage < 1) ? endPage = 1 : endPage = Math.ceil(perPage);
+
+        pagingTrackList();
+    });
 }
 
 /**
  * 트랙 리스트를 렌더링한다.
- * @param trackList: 트랙 리스트
+ * @param resposne: 트랙 리스트, 전체 검색 결과 개수
  */
 const renderTrackList = (trackList) => {
     document.getElementById('track-area').innerHTML = "";
@@ -79,52 +86,47 @@ const pagingTrackList = () => {
     const nextButton = document.getElementById("next-button");
     const numberList = document.getElementById("number-list");
 
-    const itemsPerPage = 10;
-    let currentPage = 1;
-    const totalItems = 100;
+    if(prevButton && nextButton && numberList) {
+        console.log("안들어와?");
+        /**
+         * 숫자 생성 및 페이지 업데이트
+         */
+        const updatePage = () => {
+            numberList.innerHTML = "";
+            console.log("endPage: " + endPage);
 
-    /**
-     * 숫자 생성 및 페이지 업데이트
-     */
-    function updatePage() {
-        numberList.innerHTML = "";
-
-        const start = (currentPage - 1) * itemsPerPage + 1;
-        const end = Math.min(start + itemsPerPage, totalItems + 1);
-
-        for (let i = start; i < end; i++) {
-            const numberItem = document.createElement("span");
-            numberItem.className = "page-number";
-            numberItem.textContent = i;
-            numberList.appendChild(numberItem);
-            numberItem.addEventListener("click", () => {
-                onPageNumberClick(i);
-                trackManager.setPage(i);
-            });
+            const start = 1;
+            for (let i = start; i <= endPage; i++) {
+                const numberItem = document.createElement("span");
+                numberItem.className = "page-number";
+                numberItem.textContent = i;
+                numberList.appendChild(numberItem);
+                numberItem.addEventListener("click", () => onPageNumberClick(i));
+            }
         }
+
+        prevButton.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                onPageNumberClick(currentPage);
+            }
+        });
+
+        nextButton.addEventListener("click", () => {
+            if (currentPage < endPage) {
+                currentPage++;
+                onPageNumberClick(currentPage);
+            }
+        });
+        updatePage();
     }
-
-    prevButton.addEventListener("click", () => {
-        if (currentPage > 1) {
-            currentPage--;
-            updatePage();
-        }
-    });
-
-    nextButton.addEventListener("click", () => {
-        if (currentPage < Math.ceil(totalItems / itemsPerPage)) {
-            currentPage++;
-            updatePage();
-        }
-    });
-    updatePage();
 }
 
-const onPageNumberClick = (page) => {
+const onPageNumberClick = async (page) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const keyword = new URLSearchParams(window.location.search).get("keyword");
-    TrackApi.searchTrack(keyword, page).then((response) => {
+    await TrackApi.searchTrack(keyword, page).then((response) => {
         renderTrackList(response.trackDataList);
     });
 }
