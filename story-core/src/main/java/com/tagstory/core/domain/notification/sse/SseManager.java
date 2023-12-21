@@ -9,6 +9,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+import static com.tagstory.core.domain.notification.properties.NotificationProperties.INIT_NAME;
+import static com.tagstory.core.domain.notification.properties.NotificationProperties.INIT_DATA;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -46,13 +49,11 @@ public class SseManager {
     public void setUp(SseEmitter sseEmitter, String key) {
         /* SSE 연결이 종료됐을 때 */
         sseEmitter.onCompletion(() -> {
-            log.info("SSE on Complete");
             sseStorage.delete(key);
         });
 
         /* SSE 지연 시간 도달 */
         sseEmitter.onTimeout(() -> {
-            log.info("SSE on Time Out");
             sseEmitter.complete();
             sseStorage.delete(key);
         });
@@ -64,8 +65,8 @@ public class SseManager {
     public void init(SseEmitter sseEmitter) {
         try {
             sseEmitter.send(SseEmitter.event()
-                    .name("init")
-                    .data("Subscribe"));
+                    .name(INIT_NAME)
+                    .data(INIT_DATA));
         } catch (IOException e) {
             log.error(e.getMessage());
         }

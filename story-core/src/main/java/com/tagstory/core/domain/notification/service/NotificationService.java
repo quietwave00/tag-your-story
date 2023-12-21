@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.tagstory.core.domain.notification.properties.NotificationProperties.NOTIFICATION_NAME;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -54,7 +56,7 @@ public class NotificationService {
         SseEmitter sseEmitter = sseManager.get(notification.getSubscriber().getUserId());
         try {
             sseEmitter.send(SseEmitter.event()
-                    .name("Notification")
+                    .name(NOTIFICATION_NAME)
                     .data(notificationManager.getNotificationData(notification)));
         } catch(IOException e) {
             log.error(e.getMessage());
