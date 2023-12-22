@@ -1,11 +1,13 @@
 /**
- * 반환받은 ExceptionCode에 따라 예외를 처리해준다.
+ * 서버로부터 반환받은 ExceptionCode에 따라 예외를 처리해준다.
+ * 
+ * @param exceptionCode 
  */
 const handleException = (exceptionCode) => {
     switch (exceptionCode) {
         case 'TOKEN_HAS_EXPIRED':
-            return handleExpiredJwt();
-        case 'USER_NOT_FOUND':
+            return handleExpiredAccessToken();
+        default:
             window.location.href = `${client_host}/exception.html`;
     }
 }
@@ -15,8 +17,7 @@ const handleException = (exceptionCode) => {
  * 새로운 AccessToken을 설정한다.
  * @param _refreshToken : 리프레쉬 토큰
  */
-const handleExpiredJwt = () => {
-    console.log("드렁옴?");
+const handleExpiredAccessToken = () => {
     return fetch(`${server_host}/api/user/reissue/accessToken`, {
         method: "POST",
         headers: {
@@ -30,10 +31,12 @@ const handleExpiredJwt = () => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
-            console.log("handleExpiredJwt() Success");
-            setJwt(res.response.newJwt);
+            console.log("handleExpiredAccessToken() Success");
+            setAccessToken(res.response.newJwt);
         } else {
-            console.log(JSON.stringify(res));
+            if(res.exceptionCode === "TOKEN_HAS_EXPIRED") {
+                handleExpiredRefreshToken();
+            }
         }
     });
 }
@@ -55,9 +58,10 @@ const handleExpiredRefreshToken = () => {
     .then((res) => res.json())
     .then(res => {
         if(res.result === true) {
-            setJwt(res.response.newJwt);
+            console.log("handleExpiredRefreshToken() Success");
+            setRefreshToken(res.response.newJwt);
         } else {
-        
+            handleException(res.exceptionCode);
         }
     });
 }
@@ -65,11 +69,21 @@ const handleExpiredRefreshToken = () => {
 /**
  *  발급받은 AccessToken을 설정한다.
  * 
- * @param newJwt : 서버로부터 발급받은 새로운 AccessToken
+ * @param accessToken: 새로운 AccessToken
  */
-const setJwt = (newJwt) => {
+const setAccessToken = (accessToken) => {
     localStorage.removeItem('Authorization');
-    localStorage.setItem('Authorization', newJwt);
+    localStorage.setItem('Authorization', accessToken);
+}
+
+/**
+ *  발급받은 RefreshToken을 설정한다.
+ * 
+ * @param refreshToken: 새로운 RefreshToken
+ */
+const setRefreshToken = (refreshToken) => {
+    localStorage.removeItem('RefreshToken');
+    localStorage.setItem('RefreshToken', refreshToken);
 }
 
 export default {

@@ -4,12 +4,29 @@ import CommentApi from './commentApi.js';
 
 
 const boardId = new URLSearchParams(window.location.search).get('boardId');
+const pageSize = 20;
+let currentPage = 1;
+let endPage = 0;
+
+window.addEventListener("load", () => {
+    CommentApi.getCommentCountByBoardId(boardId)
+        .then((response) => {
+            const perPage = response.count / pageSize;
+            (perPage < 1) ? endPage = 1 : endPage = Math.ceil(perPage);
+            
+            /**
+             *  page-area에 대한 처리를 수행한다.
+             */
+            pagingCommentList();
+        });
+});
+
 
 /**
  * 댓글 리스트를 요청한다.
  */
 const getCommentList = (boardId) => {
-    return CommentApi.getCommentList(boardId)
+    return CommentApi.getCommentList(boardId, currentPage)
         .then((response) => {
             if (response.length > 0) {
                 renderCommentList(response);
@@ -66,13 +83,20 @@ if(commentWriteButton) {
 /**
  * 댓글 리스트를 보여준다.
  */
-const renderCommentList = (commentWithReplyList) => {
-    commentWithReplyList.forEach(commentWithReply => {
-        renderComment(commentWithReply.comment, true, false);
-        if(commentWithReply.children.length > 0) {
-            commentWithReply.children.forEach(child => {
+const renderCommentList = (commentList) => {
+    const commentElements = document.getElementById('comment-elements');
+    commentElements.innerHTML = "";
+
+    commentList.forEach(comment => {
+        renderComment(comment.comment, true, false);
+        if(comment.children.length > 0) {
+            comment.children.slice(0, 5).forEach(child => {
                 renderComment(child, true, true);
-            })
+            });
+        }
+
+        if(comment.children.length > 5) {
+            renderAdditionalReplyList(comment.children[4].commentId);
         }
     });
 }
@@ -105,7 +129,7 @@ const renderComment = (comment, isList, isReply) => {
     const replyButton = document.createElement('span');
     replyButton.className = 'reply-button';
     replyButton.textContent = '↳';
-
+ 
     /* 답글 이벤트 */
     replyButton.addEventListener('click', () => {
         const parentId = isReply ? comment.parentId : comment.comentId;
@@ -139,6 +163,19 @@ const renderComment = (comment, isList, isReply) => {
     }
 }
 
+/**
+ * 답글 더보기 버튼을 그려준다.
+ * 
+ * @param commentId: 댓글 아이디
+ */
+const renderAdditionalReplyList = (commentId) => {
+    const comment = document.getElementById(`comment-${commentId}`);
+    const additionalReplyButton = document.createElement('span');
+    additionalReplyButton.className = "more-replies";
+    additionalReplyButton.textContent = "● ● ●";
+
+    comment.insertAdjacentElement('afterend', additionalReplyButton);
+}
 
 /**
  * 댓글 리스트에 대한 권한을 확인한다.
@@ -220,6 +257,54 @@ const renderEditCommentArea = (commentIdList) => {
                 deleteComment(commentId);
             });
         }
+    });
+}
+
+/**
+ *  페이징 관련 함수
+ */
+const pagingCommentList = () => {
+    const prevButton = document.getElementById("prev-button");
+    const nextButton = document.getElementById("next-button");
+    const numberList = document.getElementById("number-list");
+
+    if(prevButton && nextButton && numberList) {
+        /**
+         * 숫자 생성 및 페이지 업데이트
+         */
+        const updatePage = () => {
+            numberList.innerHTML = "";
+
+            const start = 1;
+            for (let i = start; i <= endPage; i++) {
+                const numberItem = document.createElement("span");
+                numberItem.className = "page-number";
+                numberItem.textContent = i;
+                numberList.appendChild(numberItem);
+                numberItem.addEventListener("click", () => onPageNumberClick(i));
+            }
+        }
+
+        prevButton.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                onPageNumberClick(currentPage);
+            }
+        });
+
+        nextButton.addEventListener("click", () => {
+            if (currentPage < endPage) {
+                currentPage++;
+                onPageNumberClick(currentPage);
+            }
+        });
+        updatePage();
+    }
+}
+
+const onPageNumberClick = (page) => {
+    CommentApi.getCommentList(boardId, page).then((response) => {
+        renderCommentList(response);
     });
 }
 
