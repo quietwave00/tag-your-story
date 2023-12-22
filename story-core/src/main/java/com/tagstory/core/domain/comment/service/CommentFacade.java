@@ -37,8 +37,8 @@ public class CommentFacade {
         commentService.delete(commentId);
     }
 
-    public List<CommentWithReplies> getCommentList(String boardId) {
-        return commentService.getCommentList(boardId);
+    public List<CommentWithReplies> getCommentList(String boardId, int page) {
+        return commentService.getCommentList(boardId, page);
     }
 
     public List<Long> getUserCommentId(String boardId, Long userId) {
@@ -49,5 +49,13 @@ public class CommentFacade {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
         return commentService.createReply(board, user, command);
+    }
+
+    public int getCommentCountByBoardId(String boardId) {
+        return commentService.getCommentCountByBoardId(boardId);
+    }
+
+    public List<Comment> getReplyList(Long parentId, int page) {
+        return commentService.getReplyList(parentId, page);
     }
 }
