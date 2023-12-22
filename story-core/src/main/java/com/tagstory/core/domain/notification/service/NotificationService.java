@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.tagstory.core.domain.notification.properties.NotificationProperties.NOTIFICATION_NAME;
@@ -43,8 +44,12 @@ public class NotificationService {
     }
 
     /* eventPublisher 구현 방법 */
-    public SseEmitter subscribe(Long userId, String lastEventId, LocalDateTime createdAt) {
-        return sseManager.create(userId, createdAt);
+    public SseEmitter subscribe(Long userId, LocalDateTime createdAt) {
+        SseEmitter sseEmitter = sseManager.get(userId);
+
+        return Objects.isNull(sseEmitter) ?
+                sseManager.create(userId, createdAt) :
+                sseEmitter;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -54,12 +59,14 @@ public class NotificationService {
 
     public void send(Notification notification) {
         SseEmitter sseEmitter = sseManager.get(notification.getSubscriber().getUserId());
-        try {
-            sseEmitter.send(SseEmitter.event()
-                    .name(NOTIFICATION_NAME)
-                    .data(notificationManager.getNotificationData(notification)));
-        } catch(IOException e) {
-            log.error(e.getMessage());
+        if(Objects.nonNull(sseEmitter)) {
+            try {
+                sseEmitter.send(SseEmitter.event()
+                        .name(NOTIFICATION_NAME)
+                        .data(notificationManager.getNotificationData(notification)));
+            } catch(IOException e) {
+                log.error(e.getMessage());
+            }
         }
     }
 

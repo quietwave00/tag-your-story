@@ -31,9 +31,8 @@ public class NotificationController {
     @GetMapping(value = "/subscription", produces = "text/event-stream")
     public SseEmitter subscribe(
                                 @RequestParam("AccessToken") String token,
-                                @CurrentUserId Long userId,
-                                @RequestHeader(value = "Last-Event-ID", required = false) String lastEventId) {
-        return notificationFacade.subscribe(userId, lastEventId, LocalDateTime.now());
+                                @CurrentUserId Long userId) {
+        return notificationFacade.subscribe(userId, LocalDateTime.now());
     }
 
     /*

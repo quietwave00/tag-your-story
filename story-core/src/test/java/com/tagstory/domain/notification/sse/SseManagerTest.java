@@ -40,7 +40,7 @@ public class SseManagerTest {
     void SseEmitter의_상태를_정의한다() {
         // given
         SseEmitter sseEmitter = Mockito.mock(SseEmitter.class);
-        String key = "key";
+        Long key = 1L;
 
         // when
         sseManager.setUp(sseEmitter, key);
