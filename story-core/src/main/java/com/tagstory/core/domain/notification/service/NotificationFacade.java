@@ -37,7 +37,7 @@ public class NotificationFacade {
     }
 
     public void setAllAsRead(Long userId) {
-        User user = userService.findByUserId(userId);
-        notificationService.setAllAsRead(user, userId);
+        User user = userService.getCacheByUserId(userId);
+        notificationService.setAllAsRead(user);
     }
 }

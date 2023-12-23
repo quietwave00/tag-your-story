@@ -86,7 +86,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public void setAllAsRead(User user, Long userId) {
+    public void setAllAsRead(User user) {
         notificationRepository.updateIsReadBySubscriber(user.toEntity());
     }
 
