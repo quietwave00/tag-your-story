@@ -73,10 +73,6 @@ public class CommentService {
         List<Comment> commentList = findCommentListByBoardId(boardId, page);
         return commentList.stream()
                 .map(comment -> {
-//                    List<Comment> childrenList = comment.getChildren()
-//                                    .stream()
-//                                    .limit(5)
-//                                    .collect(Collectors.toList());
                     return CommentWithReplies.of(comment, comment.getChildren());
                 })
                 .collect(Collectors.toList());
