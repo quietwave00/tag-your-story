@@ -1,8 +1,6 @@
 import NotificationApi from './notificationApi.js';
 import { setAsRead } from './notificationApi.js';
 
-
-const notificationArea = document.getElementById('notification-area');
 const notificationIcon = document.getElementById('notification-icon');
 let currentPage = 0;
 let pageSize = 5;
@@ -36,6 +34,10 @@ const renderNotificationList = () => {
     NotificationApi.getNotificationList(currentPage).then((notificationList) => {
         dropDown.innerHTML = "";
         
+        if(notificationList.length == 0) {
+            dropDown.innerHTML = "알림 내역이 없습니다.";
+        }
+
         notificationList.forEach(notification => {
             const notificationLink = `${client_host}/board.html?boardId=${notification.contentId}`;
 
@@ -118,12 +120,11 @@ const getNotificationMessage = (notification) => {
 
     const type = notification.type;
     if(type === "COMMENT") {
-      message = `${notification.pubNickname} 님이 내 글에 댓글을 달았습니다.`;
+        message = `${notification.pubNickname} 님이 내 글에 댓글을 달았습니다.`;
     }
-  
+
     if(type === "LIKE") {
-      message = `${notification.pubNickname} 님이 내 글에 좋아요를 눌렀습니다.`;
+        message = `${notification.pubNickname} 님이 내 글에 좋아요를 눌렀습니다.`;
     }
-  
     return message;
-  }
+}

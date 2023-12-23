@@ -2,7 +2,6 @@ import CommentApi from './commentApi.js';
 
 /* 해당 스크립트는 board.html에서 함께 사용된다. */
 
-
 const boardId = new URLSearchParams(window.location.search).get('boardId');
 const pageSize = 20;
 let currentPage = 1;
@@ -93,12 +92,42 @@ const renderCommentList = (commentList) => {
             comment.children.slice(0, 5).forEach(child => {
                 renderComment(child, true, true);
             });
+            saveReplyList(comment.comment.commentId, comment.children, 1);
         }
 
         if(comment.children.length > 5) {
-            renderAdditionalReplyList(comment.children[4].commentId);
+            const parentId = comment.comment.commentId;
+            // if(!isLastReplyPage(parentId)) {
+                renderAdditionalReplyListForm(parentId, comment.children[4].commentId);
+            // }
         }
     });
+}
+
+/**
+ *  답글이 마지막 페이지인지 여부를 돌려준다.
+ * 
+ * @param parentId: 답글의 부모 아이디
+ */
+const isLastReplyPage = (parentId) => {
+    const replyListValue = replyListMap.get(parentId);
+    let replyPage = replyListValue[1];
+    return slicedReplyList.length < 6;
+}
+
+/**
+ * 부모 댓글에 대한 답글 리스트를 저장해둔다.
+ * value: 답글 리스트, 답글 페이지
+ * @param parentId: 부모 아이디
+ * @param replyList: 답글 리스트
+ * @param replyPage: 답글 페이지
+ */
+const replyListMap = new Map();
+const saveReplyList = (parentId, replyList, replyPage) => {
+    console.log("호출안됨?");
+    let value = [replyList, replyPage];
+    replyListMap.set(parentId, value);
+    console.log("value: " + replyListMap.get(parentId));
 }
 
 
@@ -125,16 +154,17 @@ const renderComment = (comment, isList, isReply) => {
     const commentContent = document.createElement('div');
     commentContent.className = 'col-4 comment-content';
 
+    let replyButton;
     /* 답글 버튼 */
-    const replyButton = document.createElement('span');
-    replyButton.className = 'reply-button';
-    replyButton.textContent = '↳';
- 
-    /* 답글 이벤트 */
-    replyButton.addEventListener('click', () => {
-        const parentId = isReply ? comment.parentId : comment.comentId;
-        renderReplyForm(comment.commentId);
-    });
+    if(!isReply) {
+        replyButton = document.createElement('span');
+        replyButton.className = 'reply-button';
+        replyButton.textContent = '↳';
+
+        replyButton.addEventListener('click', () => {
+            renderReplyForm(comment.commentId);
+        });
+    }
 
     /* append */
     if (isReply) {
@@ -143,7 +173,10 @@ const renderComment = (comment, isList, isReply) => {
     }
     const textNode = document.createTextNode(comment.content);
     commentContent.appendChild(textNode);
-    commentContent.appendChild(replyButton);
+    if(!isReply) {
+        commentContent.appendChild(replyButton);
+    }
+    
 
     /* 댓글 아이디 */
     const commentIdInput = document.createElement('input');
@@ -156,25 +189,70 @@ const renderComment = (comment, isList, isReply) => {
     newCommentElement.appendChild(commentIdInput);
 
     /* 보여주는 순서 */
-    if (isList) {
-        commentElements.appendChild(newCommentElement);
-    } else {
-        commentElements.insertBefore(newCommentElement, commentElements.firstChild);
-    }
+    isList ?
+        commentElements.appendChild(newCommentElement)
+        : commentElements.insertBefore(newCommentElement, commentElements.firstChild);
 }
 
 /**
  * 답글 더보기 버튼을 그려준다.
- * 
- * @param commentId: 댓글 아이디
+ *
+ * @param parentId: 답글의 부모 아이디 
+ * @param lastReplyId: 화면에 보여지는 마지막 답글의 아이디
  */
-const renderAdditionalReplyList = (commentId) => {
-    const comment = document.getElementById(`comment-${commentId}`);
+const renderAdditionalReplyListForm = (parentId, lastReplyId) => {
+    const comment = document.getElementById(`comment-${lastReplyId}`);
     const additionalReplyButton = document.createElement('span');
     additionalReplyButton.className = "more-replies";
     additionalReplyButton.textContent = "● ● ●";
 
     comment.insertAdjacentElement('afterend', additionalReplyButton);
+
+    additionalReplyButton.addEventListener('click', () => {
+        renderAdditionalReplyList(parentId, lastReplyId);
+    });
+}
+
+/**
+ * 답글을 추가로 보여준다.
+ * 
+ * @param parentId: 답글의 부모 아이디
+ * @param lastReplyId: 화면에 보여지는 마지막 답글의 아이디
+ */
+const renderAdditionalReplyList = (parentId, lastReplyId) => {
+    const lastReplyElement = document.getElementById(`comment-${lastReplyId}`);
+
+    const replyListValue = replyListMap.get(parentId);
+    const replyList = replyListValue[0];
+    let replyPage = replyListValue[1];
+    saveReplyList(parentId, replyList, ++replyPage);
+    const slicedReplyList = replyList.slice(replyPage * 5 - 5, replyPage * 5);
+
+    slicedReplyList.forEach(reply => {
+        /* 답글 엘리먼트 */
+        const replyElement = document.createElement('div');
+        replyElement.className = 'row reply-element';
+        replyElement.id = `comment-${reply.commentId}`;
+
+        /* 닉네임 */
+        const commentNickname = document.createElement('div');
+        commentNickname.className = 'col-2 comment-nickname';
+        commentNickname.textContent = reply.user.nickname;
+
+        /* 내용 */
+        const commentContent = document.createElement('div');
+        commentContent.className = 'col-4 comment-content';
+        const replySymbol = document.createTextNode('↳ ');
+        commentContent.appendChild(replySymbol);
+
+        const textNode = document.createTextNode(reply.content);
+        commentContent.appendChild(textNode);
+
+        replyElement.appendChild(commentNickname);
+        replyElement.appendChild(commentContent);
+
+        lastReplyElement.appendChild(replyElement);
+    });
 }
 
 /**

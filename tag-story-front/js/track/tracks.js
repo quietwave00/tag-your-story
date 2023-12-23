@@ -41,7 +41,7 @@ window.onload = () => {
 
 /**
  * 트랙 리스트를 렌더링한다.
- * @param resposne: 트랙 리스트, 전체 검색 결과 개수
+ * @param trackList: 트랙 리스트, 전체 검색 결과 개수
  */
 const renderTrackList = (trackList) => {
     document.getElementById('track-area').innerHTML = "";
