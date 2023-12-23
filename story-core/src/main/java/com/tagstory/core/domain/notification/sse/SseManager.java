@@ -27,9 +27,6 @@ public class SseManager {
         init(sseEmitter);
 
         sseStorage.save(userId, sseEmitter);
-
-        log.info("현재 Sse Map 크기: {}", sseStorage.getSseEmitterMap().size());
-        log.info("현재 Sse Map key값: {}", sseStorage.getSseEmitterMap().keySet().iterator().next());
         return sseEmitter;
     }
 

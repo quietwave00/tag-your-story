@@ -43,6 +43,7 @@ public class CommentService {
                 });
     }
 
+    @Transactional
     public Comment create(Board board, User user, CreateCommentCommand command) {
         CommentEntity commentEntity = CommentEntity.create(command.getContent());
         commentEntity.addUser(user.toEntity());

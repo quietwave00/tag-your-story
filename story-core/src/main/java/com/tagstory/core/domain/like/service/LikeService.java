@@ -26,7 +26,9 @@ public class LikeService {
         LikeEntity like = LikeEntity.createLike(user, board);
         likeRepository.save(like);
 
-        return CompletableFuture.runAsync(() -> onEvent(user, board));
+        return isWriter(board, user) ?
+                CompletableFuture.completedFuture(null)
+                : CompletableFuture.runAsync(() -> onEvent(user, board));
     }
 
     @Transactional
@@ -45,5 +47,9 @@ public class LikeService {
                 NotificationType.LIKE,
                 board.getBoardId()
         ));
+    }
+
+    private boolean isWriter(Board board, User user) {
+        return Objects.equals(board.getUser().getUserId(), user.getUserId());
     }
 }
