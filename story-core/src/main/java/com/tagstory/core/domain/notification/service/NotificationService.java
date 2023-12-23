@@ -85,6 +85,11 @@ public class NotificationService {
         return getNotificationCountBySubscriber(user);
     }
 
+    @Transactional
+    public void setAllAsRead(User user, Long userId) {
+        notificationRepository.updateIsReadBySubscriber(user.toEntity());
+    }
+
     /*
      * 단일 메소드
      */

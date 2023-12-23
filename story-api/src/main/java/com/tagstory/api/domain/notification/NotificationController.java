@@ -66,4 +66,14 @@ public class NotificationController {
         int count = notificationFacade.getNotificationCount(userId);
         return ApiUtils.success(NotificationCountResponse.from(count));
     }
-}
+
+    /*
+     * 알림을 모두 읽음 처리한다.
+     */
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @PatchMapping("/all")
+    public ApiResult<Void> setAllAsRead(@CurrentUserId Long userId) {
+        notificationFacade.setAllAsRead(userId);
+        return ApiUtils.success();
+    }
+ }

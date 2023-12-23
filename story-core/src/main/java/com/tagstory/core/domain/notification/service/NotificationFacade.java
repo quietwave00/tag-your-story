@@ -35,4 +35,9 @@ public class NotificationFacade {
         User user = userService.getCacheByUserId(userId);
         return notificationService.getNotificationCount(user);
     }
+
+    public void setAllAsRead(Long userId) {
+        User user = userService.findByUserId(userId);
+        notificationService.setAllAsRead(user, userId);
+    }
 }
