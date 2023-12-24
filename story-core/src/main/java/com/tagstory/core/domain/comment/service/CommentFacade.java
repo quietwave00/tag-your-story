@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -26,7 +27,10 @@ public class CommentFacade {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
 
-        return commentService.createWithNotification(board, user, command);
+        /* 자신의 글에 댓글을 단 경우엔 알림을 생성하지 않는다 */
+        return isWriter(board, user) ?
+                CompletableFuture.completedFuture(commentService.create(board, user, command))
+                : commentService.createWithNotification(board, user, command);
     }
 
     public Comment update(UpdateCommentCommand command) {
@@ -37,8 +41,8 @@ public class CommentFacade {
         commentService.delete(commentId);
     }
 
-    public List<CommentWithReplies> getCommentList(String boardId) {
-        return commentService.getCommentList(boardId);
+    public List<CommentWithReplies> getCommentList(String boardId, int page) {
+        return commentService.getCommentList(boardId, page);
     }
 
     public List<Long> getUserCommentId(String boardId, Long userId) {
@@ -49,5 +53,17 @@ public class CommentFacade {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
         return commentService.createReply(board, user, command);
+    }
+
+    public int getCommentCountByBoardId(String boardId) {
+        return commentService.getCommentCountByBoardId(boardId);
+    }
+
+    public List<Comment> getReplyList(Long parentId, int page) {
+        return commentService.getReplyList(parentId, page);
+    }
+
+    private boolean isWriter(Board board, User user) {
+        return Objects.equals(board.getUser().getUserId(), user.getUserId());
     }
 }

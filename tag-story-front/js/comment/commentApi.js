@@ -5,8 +5,8 @@ import ExceptionHandler from '../global/exceptionHandler.js';
  * 
  * @param boardId: 게시글 아이디 
  */
-const getCommentList = (boardId) => {
-    return fetch(`${server_host}/api/comments/${boardId}`, {
+const getCommentList = (boardId, page) => {
+    return fetch(`${server_host}/api/comments/${boardId}/${page - 1}`, {
         method: "GET"
     })
     .then((res) => res.json())
@@ -110,6 +110,11 @@ const updateComment = (commentId, content) => {
     });
 }
 
+/**
+ * 댓글 삭제를 요청한다.
+ * 
+ * @param commentId: 댓글 아이디
+ */
 const deleteComment = (commentId) => {
     fetch(`${server_host}/api/comments/status/${commentId}`,{
         method:"PATCH",
@@ -166,6 +171,57 @@ const createReply = (boardId, parentId, content) => {
     });
 }
 
+/**
+ * 게시글에 대한 전체 댓글 개수를 요청한다.
+ * 
+ * @param boardId: 게시글 아이디
+ */
+const getCommentCountByBoardId = (boardId) => {
+    return fetch(`${server_host}/api/comments/count/${boardId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if (res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getCommentCountByBoardId(boardId);
+                });
+        }
+    });
+}
+
+/**
+ * 부모 댓글에 대한 답글 조회를 요청한다.
+ * 
+ * @param parentId: 부모 댓글 아이디
+ * @param page: 페이지 수 
+ */
+const getReplyList = (parentId, page) => {
+    return fetch(`${server_host}/api/comments/replies/${parentId}/${page}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if (res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getReplyList(parentId, page);
+                });
+        }
+    });
+}
+
 
 
 export default {
@@ -174,5 +230,7 @@ export default {
     getUserCommentId,
     updateComment,
     deleteComment,
-    createReply
+    createReply,
+    getCommentCountByBoardId,
+    getReplyList
 }

@@ -4,6 +4,7 @@ import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.comment.dto.request.CreateCommentRequest;
 import com.tagstory.api.domain.comment.dto.request.CreateReplyRequest;
 import com.tagstory.api.domain.comment.dto.request.UpdateCommentRequest;
+import com.tagstory.api.domain.comment.dto.response.CommentCountResponse;
 import com.tagstory.api.domain.comment.dto.response.CommentResponse;
 import com.tagstory.api.domain.comment.dto.response.CommentWithRepliesResponse;
 import com.tagstory.core.domain.comment.service.CommentFacade;
@@ -60,9 +61,10 @@ public class CommentController {
     /*
      * 게시글에 해당하는 댓글 리스트를 조회한다.
      */
-    @GetMapping("/{boardId}")
-    public ApiResult<List<CommentWithRepliesResponse>> getCommentList(@PathVariable("boardId") String boardId) {
-        List<CommentWithReplies> commentList = commentFacade.getCommentList(boardId);
+    @GetMapping("/{boardId}/{page}")
+    public ApiResult<List<CommentWithRepliesResponse>> getCommentList(@PathVariable("boardId") String boardId,
+                                                                      @PathVariable("page") int page) {
+        List<CommentWithReplies> commentList = commentFacade.getCommentList(boardId, page);
         return ApiUtils.success(commentList.stream().map(CommentWithRepliesResponse::from).collect(Collectors.toList()));
     }
 
@@ -77,6 +79,15 @@ public class CommentController {
         return ApiUtils.success(commentIdList);
     }
 
+    /*
+     * 게시글에 대한 전체 댓글 개수를 조회한다.
+     */
+    @GetMapping("/count/{boardId}")
+    public ApiResult<CommentCountResponse> getCommentCountByBoardId(@PathVariable("boardId") String boardId) {
+        int count = commentFacade.getCommentCountByBoardId(boardId);
+        return ApiUtils.success(CommentCountResponse.from(count));
+    }
+
 
     /*
      * 답글을 작성한다.
@@ -86,5 +97,15 @@ public class CommentController {
     public ApiResult<CommentResponse> createReply(@RequestBody @Valid CreateReplyRequest request, @CurrentUserId Long userId) {
         Comment comment = commentFacade.createReply(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
+    }
+
+    /*
+     * 답글을 조회한다.
+     */
+    @GetMapping("/replies/{parentId}/{page}")
+    public ApiResult<List<CommentResponse>> getReplyList(@PathVariable("parentId") Long parentId,
+                                                         @PathVariable("page") int page) {
+        List<Comment> commentList = commentFacade.getReplyList(parentId, page);
+        return ApiUtils.success(commentList.stream().map(CommentResponse::from).collect(Collectors.toList()));
     }
 }

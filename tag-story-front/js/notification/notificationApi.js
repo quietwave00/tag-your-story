@@ -78,8 +78,31 @@ const getNotificationCount = () => {
     });
 }
 
+/**
+ * 알림 모두 읽음 처리를 요청한다.
+ */
+const setAllAsRead = () => {
+    fetch(`${server_host}/api/notification/all`,{
+        method:"PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": localStorage.getItem('Authorization')
+        }
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success == false) {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    setAllAsRead();
+                });
+        }
+    });
+}
+
 export { setAsRead };
 export default {
     getNotificationList,
-    getNotificationCount
+    getNotificationCount,
+    setAllAsRead
 }

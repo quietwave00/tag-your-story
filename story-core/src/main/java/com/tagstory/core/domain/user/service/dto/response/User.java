@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.user.service.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.UserStatus;
@@ -17,14 +18,18 @@ public class User {
 
     private Long userId;
 
+    @JsonIgnore
     private String userKey;
 
+    @JsonIgnore
     private String email;
 
     private String nickname;
 
+    @JsonIgnore
     private Role role;
 
+    @JsonIgnore
     private UserStatus userStatus;
 
     /*

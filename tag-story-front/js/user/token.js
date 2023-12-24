@@ -16,7 +16,7 @@ window.onload = () => {
         localStorage.setItem('RefreshToken', extractedRefreshToken);
     }
     
-    if (pendingCookieValue) {
+    if (pendingCookieValue && !authorizationCookieValue) {
         localStorage.setItem('Pending', pendingCookieValue);
     }
     window.location.href = `${client_host}/index.html`;

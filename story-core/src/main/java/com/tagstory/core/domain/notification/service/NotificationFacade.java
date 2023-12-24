@@ -17,8 +17,8 @@ public class NotificationFacade {
     private final NotificationService notificationService;
     private final UserService userService;
 
-    public SseEmitter subscribe(Long userId, String lastEventId, LocalDateTime createdAt) {
-        return notificationService.subscribe(userId, lastEventId, createdAt);
+    public SseEmitter subscribe(Long userId, LocalDateTime createdAt) {
+        return notificationService.subscribe(userId, createdAt);
     }
 
 
@@ -34,5 +34,10 @@ public class NotificationFacade {
     public int getNotificationCount(Long userId) {
         User user = userService.getCacheByUserId(userId);
         return notificationService.getNotificationCount(user);
+    }
+
+    public void setAllAsRead(Long userId) {
+        User user = userService.getCacheByUserId(userId);
+        notificationService.setAllAsRead(user);
     }
 }

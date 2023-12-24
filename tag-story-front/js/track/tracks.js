@@ -41,7 +41,7 @@ window.onload = () => {
 
 /**
  * 트랙 리스트를 렌더링한다.
- * @param resposne: 트랙 리스트, 전체 검색 결과 개수
+ * @param trackList: 트랙 리스트, 전체 검색 결과 개수
  */
 const renderTrackList = (trackList) => {
     document.getElementById('track-area').innerHTML = "";
@@ -87,13 +87,11 @@ const pagingTrackList = () => {
     const numberList = document.getElementById("number-list");
 
     if(prevButton && nextButton && numberList) {
-        console.log("안들어와?");
         /**
          * 숫자 생성 및 페이지 업데이트
          */
         const updatePage = () => {
             numberList.innerHTML = "";
-            console.log("endPage: " + endPage);
 
             const start = 1;
             for (let i = start; i <= endPage; i++) {

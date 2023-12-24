@@ -17,6 +17,8 @@ import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,7 @@ public class CommentService {
                 });
     }
 
+    @Transactional
     public Comment create(Board board, User user, CreateCommentCommand command) {
         CommentEntity commentEntity = CommentEntity.create(command.getContent());
         commentEntity.addUser(user.toEntity());
@@ -66,10 +69,12 @@ public class CommentService {
         }
     }
 
-    public List<CommentWithReplies> getCommentList(String boardId) {
-        List<Comment> commentList = getCommentListByBoardId(boardId);
+    public List<CommentWithReplies> getCommentList(String boardId, int page) {
+        List<Comment> commentList = findCommentListByBoardId(boardId, page);
         return commentList.stream()
-                .map(comment -> CommentWithReplies.of(comment, comment.getChildren()))
+                .map(comment -> {
+                    return CommentWithReplies.of(comment, comment.getChildren());
+                })
                 .collect(Collectors.toList());
     }
 
@@ -90,6 +95,17 @@ public class CommentService {
         return commentRepository.save(replyEntity).toComment();
     }
 
+    public List<Comment> getReplyList(Long parentId, int page) {
+        Comment parentComment = getCommentByCommentId(parentId);
+        return getReplyListByParentComment(parentComment, page);
+    }
+
+    public int getCommentCountByBoardId(String boardId) {
+        return commentRepository.countByBoardEntity_BoardIdAndStatus(boardId, CommentStatus.POST);
+    }
+
+
+
     /*
      * 단일 메소드
      */
@@ -103,14 +119,28 @@ public class CommentService {
                 () -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
     }
 
-    private List<Comment> getCommentListByBoardId(String boardId) {
-        return commentRepository.findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId)
-                .stream().map(CommentEntity::toComment).collect(Collectors.toList());
+    private List<Comment> findCommentListByBoardId(String boardId, int page) {
+         Page<CommentEntity> commentEntityList = commentRepository
+                 .findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId, PageRequest.of(page, 20))
+                 .orElse(Page.empty());
+
+         return commentEntityList.stream()
+                 .map(CommentEntity::toComment)
+                 .collect(Collectors.toList());
     }
 
     private List<Comment> getCommentListByBoardIdAndUserId(String boardId, Long userId) {
         return commentRepository.findByBoardEntity_BoardIdAndUserEntity_UserId(boardId, userId)
                 .stream().map(CommentEntity::toComment).collect(Collectors.toList());
+    }
+
+    private List<Comment> getReplyListByParentComment(Comment parentComment, int page) {
+        Page<CommentEntity> replyList = commentRepository.
+                findByParentAndStatus(parentComment.toEntity(), CommentStatus.POST, PageRequest.of(page, 5));
+
+        return replyList.stream()
+                .map(CommentEntity::toComment)
+                .collect(Collectors.toList());
     }
 
     private void onEvent(User user, Board board) {
