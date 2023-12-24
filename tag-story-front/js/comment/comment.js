@@ -124,10 +124,8 @@ const isLastReplyPage = (parentId) => {
  */
 const replyListMap = new Map();
 const saveReplyList = (parentId, replyList, replyPage) => {
-    console.log("호출안됨?");
     let value = [replyList, replyPage];
     replyListMap.set(parentId, value);
-    console.log("value: " + replyListMap.get(parentId));
 }
 
 

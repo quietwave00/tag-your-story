@@ -42,7 +42,7 @@ const renderNotificationList = () => {
             const notificationLink = `${client_host}/board.html?boardId=${notification.contentId}`;
 
             const notificationElement = document.createElement('p');
-            notificationElement.className = notification.read ? 'readed' : 'un-read';
+            notificationElement.className = notification.read ? 'notification-element readed' : 'notification-element un-read';
             notificationElement.id = `notification-${notification.notificationId}`;
             notificationElement.innerHTML = getNotificationMessage(notification);
 
@@ -54,11 +54,28 @@ const renderNotificationList = () => {
             dropDown.appendChild(notificationElement);
         });
 
+        /* 모두 읽음 */
+        const allReadDiv = document.createElement('div');
+        allReadDiv.id = 'all-read-button';
+        allReadDiv.textContent = '모두 읽음';
+        dropDown.appendChild(allReadDiv);
+
+        allReadDiv.addEventListener('click', () => {
+            NotificationApi.setAllAsRead();
+            const notificationElements = document.getElementsByClassName('notification-element');
+
+            Array.from(notificationElements).forEach(element => {
+                element.classList.add('readed');
+            });
+        });
+
         /* 페이징 */
+        const pageAreaDiv = document.createElement('div');
+        pageAreaDiv.id = 'notification-page-area';
         const notificationPrev = document.createElement('span');
         notificationPrev.id = 'notification-prev';
         notificationPrev.textContent = '<';
-        dropDown.appendChild(notificationPrev);
+        pageAreaDiv.appendChild(notificationPrev);
 
         notificationPrev.addEventListener('click', () => {
             if(currentPage > 0) {
@@ -70,7 +87,8 @@ const renderNotificationList = () => {
         const notificationNext = document.createElement('span');
         notificationNext.id = 'notification-next';
         notificationNext.textContent = '>';
-        dropDown.appendChild(notificationNext);
+        pageAreaDiv.appendChild(notificationNext);
+        dropDown.appendChild(pageAreaDiv);
 
         notificationNext.addEventListener('click', () => {
             if (currentPage < endPage) {
