@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static com.tagstory.core.domain.notification.properties.NotificationProperties.NOTIFICATION_NAME;
+
 @Component
 @RequiredArgsConstructor
 @Getter
@@ -26,7 +28,7 @@ public class NotificationManager implements MessageListener {
     public void sendMessage(NotificationCommand command) {
         try {
             String jsonMessage = objectMapper.writeValueAsString(command);
-            notificationTemplate.convertAndSend("Notification", jsonMessage);
+            notificationTemplate.convertAndSend(NOTIFICATION_NAME, jsonMessage);
         } catch(JsonProcessingException e) {
             log.error(e.getMessage());
         }
