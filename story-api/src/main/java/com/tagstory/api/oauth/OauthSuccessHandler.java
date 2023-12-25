@@ -2,9 +2,11 @@ package com.tagstory.api.oauth;
 
 import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.jwt.JwtCookieProvider;
-import com.tagstory.core.utils.jwt.JwtUtil;
 import com.tagstory.core.common.CommonRedisTemplate;
 import com.tagstory.core.config.CacheSpec;
+import com.tagstory.core.utils.jwt.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 
