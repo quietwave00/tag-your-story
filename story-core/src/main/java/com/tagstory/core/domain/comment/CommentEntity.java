@@ -36,6 +36,7 @@ public class CommentEntity extends BaseTime {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.PERSIST)
     private List<CommentEntity> children = new ArrayList<>();
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private CommentStatus status;
 

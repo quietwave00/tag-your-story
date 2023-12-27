@@ -24,9 +24,11 @@ public class FileEntity {
 
     private String filePath;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private FileLevel fileLevel;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private FileStatus status;
 

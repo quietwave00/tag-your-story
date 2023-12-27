@@ -30,9 +30,10 @@ public class BoardEntity extends BaseTime {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private String boardId;
 
-    @Lob
+    @Column(length = 16_777_216)
     private String content;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private BoardStatus status;
 

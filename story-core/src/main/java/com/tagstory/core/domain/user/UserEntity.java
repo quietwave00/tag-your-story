@@ -38,9 +38,11 @@ public class UserEntity extends BaseTime implements Serializable {
 
     private String nickname;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
