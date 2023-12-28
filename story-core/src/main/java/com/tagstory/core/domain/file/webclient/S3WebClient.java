@@ -19,7 +19,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -37,7 +36,7 @@ public class S3WebClient {
         AtomicInteger indexCounter = new AtomicInteger(-1);
         return multipartFileList.stream()
                 .map(multipartFile -> uploadFile(multipartFile, indexCounter))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /*

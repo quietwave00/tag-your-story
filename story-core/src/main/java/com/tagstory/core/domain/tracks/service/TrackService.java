@@ -15,7 +15,6 @@ import se.michaelthelin.spotify.model_objects.specification.Track;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,7 @@ public class TrackService {
         TrackInfo trackInfo = spotifyWebClient.getTrackInfoByKeyword(keyword, page);
         List<TrackData> trackDataList = Arrays.stream(trackInfo.getTracks())
                 .map(this::getTrackData)
-                .collect(Collectors.toList());
+                .toList();
 
         return SearchTrackList.onComplete(trackDataList, trackInfo.getTotalCount());
     }

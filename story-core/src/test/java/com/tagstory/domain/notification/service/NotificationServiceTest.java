@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -43,12 +42,11 @@ public class NotificationServiceTest {
     void SseEmitter를_구독시_SseEmitter가_존재하는_경우() {
         // given
         Long userId = 1L;
-        LocalDateTime createdAt = LocalDateTime.now();
         SseEmitter mockSseEmitter = mock(SseEmitter.class);
 
         // when
         when(sseManager.get(userId)).thenReturn(mockSseEmitter);
-        SseEmitter result = notificationService.subscribe(userId, createdAt);
+        SseEmitter result = notificationService.subscribe(userId);
 
         // then
         assertThat(result).isEqualTo(mockSseEmitter);
@@ -58,13 +56,12 @@ public class NotificationServiceTest {
     void SseEmitter를_구독시_SseEmitter가_존재하지_않는_경우() {
         // given
         Long userId = 1L;
-        LocalDateTime createdAt = LocalDateTime.now();
         SseEmitter mockSseEmitter = mock(SseEmitter.class);
 
         // when
         when(sseManager.get(userId)).thenReturn(null);
-        when(sseManager.create(userId, createdAt)).thenReturn(mockSseEmitter);
-        SseEmitter result = notificationService.subscribe(userId, createdAt);
+        when(sseManager.create(userId)).thenReturn(mockSseEmitter);
+        SseEmitter result = notificationService.subscribe(userId);
 
         // then
         assertThat(result).isEqualTo(mockSseEmitter);

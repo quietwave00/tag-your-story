@@ -19,10 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.tagstory.core.domain.notification.properties.NotificationProperties.NOTIFICATION_NAME;
 
@@ -44,11 +42,11 @@ public class NotificationService {
     }
 
     /* eventPublisher 구현 방법 */
-    public SseEmitter subscribe(Long userId, LocalDateTime createdAt) {
+    public SseEmitter subscribe(Long userId) {
         SseEmitter sseEmitter = sseManager.get(userId);
 
         return Objects.isNull(sseEmitter) ?
-                sseManager.create(userId, createdAt) :
+                sseManager.create(userId) :
                 sseEmitter;
     }
 
@@ -99,7 +97,7 @@ public class NotificationService {
 
         return notificationEntityList.stream()
                 .map(NotificationEntity::toNotification)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Long getUserIdByNotification(NotificationEntity notificationEntity) {

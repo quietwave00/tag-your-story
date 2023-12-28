@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -19,7 +18,7 @@ public class CommentWithReplies {
     public static CommentWithReplies of(Comment comment, List<Comment> children) {
         children = children.stream()
                 .filter(child -> CommentStatus.POST == child.getStatus())
-                .collect(Collectors.toList());
+                .toList();
 
         return CommentWithReplies.builder()
                 .comment(comment)

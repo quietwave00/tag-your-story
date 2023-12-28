@@ -32,7 +32,7 @@ public class NotificationController {
     public SseEmitter subscribe(
                                 @RequestParam("AccessToken") String token,
                                 @CurrentUserId Long userId) {
-        return notificationFacade.subscribe(userId, LocalDateTime.now());
+        return notificationFacade.subscribe(userId);
     }
 
     /*

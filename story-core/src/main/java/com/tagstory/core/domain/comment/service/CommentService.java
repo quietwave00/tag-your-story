@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -75,12 +74,13 @@ public class CommentService {
                 .map(comment -> {
                     return CommentWithReplies.of(comment, comment.getChildren());
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<Long> getUserCommentId(String boardId, Long userId) {
         return getCommentListByBoardIdAndUserId(boardId, userId)
-                .stream().map(Comment::getCommentId).collect(Collectors.toList());
+                .stream().map(Comment::getCommentId)
+                .toList();
     }
 
 
@@ -126,12 +126,13 @@ public class CommentService {
 
          return commentEntityList.stream()
                  .map(CommentEntity::toComment)
-                 .collect(Collectors.toList());
+                 .toList();
     }
 
     private List<Comment> getCommentListByBoardIdAndUserId(String boardId, Long userId) {
         return commentRepository.findByBoardEntity_BoardIdAndUserEntity_UserId(boardId, userId)
-                .stream().map(CommentEntity::toComment).collect(Collectors.toList());
+                .stream().map(CommentEntity::toComment)
+                .toList();
     }
 
     private List<Comment> getReplyListByParentComment(Comment parentComment, int page) {
@@ -140,7 +141,7 @@ public class CommentService {
 
         return replyList.stream()
                 .map(CommentEntity::toComment)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private void onEvent(User user, Board board) {

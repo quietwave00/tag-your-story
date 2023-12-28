@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,7 +21,7 @@ public class BoardHashtagService {
     private final BoardHashtagRepository boardHashtagRepository;
 
     public List<BoardHashtagEntity> makeBoardHashtagList(BoardEntity boardEntity, List<HashtagEntity> hashtagEntityList) {
-        return hashtagEntityList.stream().map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity)).collect(Collectors.toList());
+        return hashtagEntityList.stream().map(hashtagEntity -> BoardHashtagEntity.of(boardEntity, hashtagEntity)).toList();
     }
 
     public HashtagNameList getHashtagNameByBoardId(String boardId) {

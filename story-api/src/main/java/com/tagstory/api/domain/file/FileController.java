@@ -41,7 +41,7 @@ public class FileController {
     @PatchMapping
     public ApiResult<List<UploadFileResponse>> update(@ModelAttribute @Valid UploadFileRequest uploadFileRequest) {
         List<File> response = fileFacade.update(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
-        return ApiUtils.success(response.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(UploadFileResponse::from).toList());
     }
 
     /*
@@ -51,7 +51,7 @@ public class FileController {
     public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId,
                                                              @RequestParam("page") int page) {
         List<File> response = fileFacade.getMainFileList(trackId, page);
-        return ApiUtils.success(response.stream().map(MainFileResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(MainFileResponse::from).toList());
     }
 
     /*
@@ -60,7 +60,7 @@ public class FileController {
     @GetMapping("/{boardId}")
     public ApiResult<List<FileResponse>> getFileList(@PathVariable("boardId") String boardId) {
         List<File> response = fileFacade.getFileList(boardId);
-        return ApiUtils.success(response.stream().map(FileResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(FileResponse::from).toList());
     }
 
     /*

@@ -66,7 +66,8 @@ public class UserController {
      */
     @PreAuthorize("hasRole('PENDING_USER')")
     @PostMapping("/register")
-    public ApiResult<RegisterResponse> register(@RequestBody @Valid RegisterRequest request, @CurrentPendingUserId String pendingUserId) {
+    public ApiResult<RegisterResponse> register(@RequestBody @Valid RegisterRequest request,
+                                                @CurrentPendingUserId String pendingUserId) {
         User response = userService.register(request.toCommand(pendingUserId));
         return ApiUtils.success(RegisterResponse.from(response));
     }

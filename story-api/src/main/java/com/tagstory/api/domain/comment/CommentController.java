@@ -106,6 +106,6 @@ public class CommentController {
     public ApiResult<List<CommentResponse>> getReplyList(@PathVariable("parentId") Long parentId,
                                                          @PathVariable("page") int page) {
         List<Comment> commentList = commentFacade.getReplyList(parentId, page);
-        return ApiUtils.success(commentList.stream().map(CommentResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(commentList.stream().map(CommentResponse::from).toList());
     }
 }

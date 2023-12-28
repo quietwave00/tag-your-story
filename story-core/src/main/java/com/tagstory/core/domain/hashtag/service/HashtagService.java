@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -23,7 +22,8 @@ public class HashtagService {
     public List<HashtagEntity> makeHashtagList(List<String> hashtagStrList) {
         return hashtagStrList.stream()
             .map(hashtagStr -> hashtagRepository.findByName(hashtagStr)
-            .orElseGet(() -> HashtagEntity.create(hashtagStr))).collect(Collectors.toList());
+            .orElseGet(() -> HashtagEntity.create(hashtagStr)))
+            .toList();
     }
 
     public Long getHashtagIdByHashtagName(String hashtagName) {

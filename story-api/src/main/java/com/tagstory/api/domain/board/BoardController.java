@@ -12,13 +12,12 @@ import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
 import com.tagstory.core.utils.api.ApiResult;
 import com.tagstory.core.utils.api.ApiUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,7 +44,7 @@ public class BoardController {
                                                                 @RequestParam("order-type") BoardOrderType orderType,
                                                                 @RequestParam("page") int page) {
         List<Board> response = boardFacade.getBoardListByTrackId(trackId, orderType, page);
-        return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(BoardResponse::from).toList());
     }
 
     /*
@@ -73,7 +72,7 @@ public class BoardController {
     @GetMapping("/hashtags")
     public ApiResult<List<BoardResponse>> getBoardListByHashtagName(@RequestParam("hashtagName") String hashtagName) {
         List<Board> response = boardFacade.getBoardListByHashtagName(hashtagName);
-        return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(BoardResponse::from).toList());
     }
 
     /*

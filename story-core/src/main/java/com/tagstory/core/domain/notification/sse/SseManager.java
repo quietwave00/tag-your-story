@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 import static com.tagstory.core.domain.notification.properties.NotificationProperties.INIT_DATA;
 import static com.tagstory.core.domain.notification.properties.NotificationProperties.INIT_NAME;
@@ -21,7 +20,7 @@ public class SseManager {
     /*
      * SseEmitter를 생성한다.
      */
-    public SseEmitter create(Long userId, LocalDateTime createdAt) {
+    public SseEmitter create(Long userId) {
         SseEmitter sseEmitter = new SseEmitter();
         setUp(sseEmitter, userId);
         init(sseEmitter);
