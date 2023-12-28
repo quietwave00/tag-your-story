@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +36,7 @@ public class CommentEntity extends BaseTime {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.PERSIST)
     private List<CommentEntity> children = new ArrayList<>();
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private CommentStatus status;
 

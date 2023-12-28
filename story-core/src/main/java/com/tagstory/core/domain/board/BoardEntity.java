@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,9 +30,10 @@ public class BoardEntity extends BaseTime {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     private String boardId;
 
-    @Lob
+    @Column(length = 16_777_216)
     private String content;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private BoardStatus status;
 

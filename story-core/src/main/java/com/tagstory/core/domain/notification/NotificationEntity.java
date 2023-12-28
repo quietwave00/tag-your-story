@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Getter
 @NoArgsConstructor
@@ -31,6 +31,7 @@ public class NotificationEntity extends BaseTime {
     @JoinColumn(name = "subscriber_id")
     private UserEntity subscriber;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 

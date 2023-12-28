@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +38,11 @@ public class UserEntity extends BaseTime implements Serializable {
 
     private String nickname;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 

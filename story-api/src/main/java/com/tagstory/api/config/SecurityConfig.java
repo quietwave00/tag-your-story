@@ -8,7 +8,7 @@ import com.tagstory.core.utils.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -30,29 +30,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .apply(new CustomDsl())
-                .and()
-                .oauth2Login()
-                .userInfoEndpoint()
-                .userService(principalOauth2UserService)
-                .and()
-                .successHandler(oauthSuccessHandler);
+        http
+            .csrf(AbstractHttpConfigurer::disable);
 
+        http
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable);
+
+        http
+            .addFilter(corsConfig.corsFilter())
+            .addFilterAfter(new JwtAuthorizationFilter(jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
+
+        http
+            .oauth2Login(oauth2 -> oauth2
+                    .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
+                            .userService(principalOauth2UserService))
+                    .successHandler(oauthSuccessHandler));
         return http.build();
-    }
-
-    public class CustomDsl extends AbstractHttpConfigurer<CustomDsl, HttpSecurity> {
-        @Override
-        public void configure(HttpSecurity http){
-            http
-                    .addFilter(corsConfig.corsFilter())
-                    .addFilterAfter(new JwtAuthorizationFilter(jwtUtil, objectMapper), UsernamePasswordAuthenticationFilter.class);
-        }
     }
 }
 

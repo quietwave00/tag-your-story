@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Getter
 @Builder
@@ -24,9 +24,11 @@ public class FileEntity {
 
     private String filePath;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private FileLevel fileLevel;
 
+    @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private FileStatus status;
 
