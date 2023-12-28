@@ -27,7 +27,7 @@ public class FileController {
     /*
      * 파일을 게시한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ApiResult<List<UploadFileResponse>> upload(@ModelAttribute @Valid UploadFileRequest uploadFileRequest) {
         List<File> response = fileFacade.upload(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
@@ -37,7 +37,7 @@ public class FileController {
     /*
      * 게시글의 파일을 수정한다.(추가 업로드)
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping
     public ApiResult<List<UploadFileResponse>> update(@ModelAttribute @Valid UploadFileRequest uploadFileRequest) {
         List<File> response = fileFacade.update(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());

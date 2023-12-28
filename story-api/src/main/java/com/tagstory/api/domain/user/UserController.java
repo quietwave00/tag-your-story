@@ -25,7 +25,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("hasRole('ROLE_GUEST')")
+    @PreAuthorize("hasRole('GUEST')")
     @GetMapping("/test")
     public ApiResult<String> test() {
         return ApiUtils.success("success");
@@ -34,7 +34,7 @@ public class UserController {
     /*
      * AccessToken을 재발급한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/reissue/accessToken")
     public ApiResult<ReissueAccessTokenResponse> reissueAccessToken(@RequestBody @Valid ReissueAccessTokenRequest request) {
         Token response = userService.reissueAccessToken(request.toCommand());
@@ -44,7 +44,7 @@ public class UserController {
     /*
      * RefreshToken을 재발급한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/reissue/refreshToken")
     public ApiResult<ReissueRefreshTokenResponse> reissueRefreshToken(@CurrentUserId Long userId) {
         Token response = userService.reissueRefreshToken(userId);
@@ -54,7 +54,7 @@ public class UserController {
     /*
      * 로그아웃을 수행한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/logout")
     public ApiResult<Void> logout() {
         userService.logout();
@@ -64,7 +64,7 @@ public class UserController {
     /*
      * 회원가입을 완료한다.
      */
-    @PreAuthorize("hasRole('ROLE_PENDING_USER')")
+    @PreAuthorize("hasRole('PENDING_USER')")
     @PostMapping("/register")
     public ApiResult<RegisterResponse> register(@RequestBody @Valid RegisterRequest request, @CurrentPendingUserId String pendingUserId) {
         User response = userService.register(request.toCommand(pendingUserId));

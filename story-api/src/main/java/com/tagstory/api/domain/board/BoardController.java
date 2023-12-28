@@ -30,7 +30,7 @@ public class BoardController {
     /*
      * 게시글을 작성한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ApiResult<CreateBoardResponse> create(@RequestBody @Valid CreateBoardRequest request, @CurrentUserId Long userId) {
         Board response = boardFacade.create(request.toCommand(userId));
@@ -79,7 +79,7 @@ public class BoardController {
     /*
      * 게시글에 대한 권한을 확인한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/auth/{boardId}")
     public ApiResult<Boolean> isWriter(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
         Boolean isWriter = boardFacade.isWriter(boardId, userId);
@@ -89,7 +89,7 @@ public class BoardController {
     /*
      * 게시글을 수정한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping
     public ApiResult<BoardResponse> updateBoardAndHashtag(@RequestBody @Valid UpdateBoardRequest request) {
         Board board = boardFacade.updateBoardAndHashtag(request.toCommand());
@@ -99,7 +99,7 @@ public class BoardController {
     /*
      * 게시글을 삭제한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{boardId}")
     public ApiResult<Void> delete(@PathVariable("boardId") String boardId) {
         boardFacade.delete(boardId);

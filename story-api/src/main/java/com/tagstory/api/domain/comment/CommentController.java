@@ -31,7 +31,7 @@ public class CommentController {
     /*
      * 댓글을 작성한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ApiResult<CommentResponse> create(@RequestBody @Valid CreateCommentRequest request, @CurrentUserId Long userId) throws ExecutionException, InterruptedException {
         CompletableFuture<Comment> comment = commentFacade.create(request.toCommand(userId));
@@ -41,7 +41,7 @@ public class CommentController {
     /*
      * 댓글을 수정한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping
     public ApiResult<CommentResponse> update(@RequestBody @Valid UpdateCommentRequest request) {
         Comment comment = commentFacade.update(request.toCommand());
@@ -51,7 +51,7 @@ public class CommentController {
     /*
      * 댓글을 삭제한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping("/status/{commentId}")
     public ApiResult<Void> delete(@PathVariable("commentId") Long commentId) {
         commentFacade.delete(commentId);
@@ -72,7 +72,7 @@ public class CommentController {
      * 댓글에 대한 권한을 확인한다.
      * @return 사용자가 작성한 댓글의 아이디
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/auth/{boardId}")
     public ApiResult<List<Long>> getUserCommentId(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
         List<Long> commentIdList = commentFacade.getUserCommentId(boardId, userId);
@@ -92,7 +92,7 @@ public class CommentController {
     /*
      * 답글을 작성한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/replies")
     public ApiResult<CommentResponse> createReply(@RequestBody @Valid CreateReplyRequest request, @CurrentUserId Long userId) {
         Comment comment = commentFacade.createReply(request.toCommand(userId));
