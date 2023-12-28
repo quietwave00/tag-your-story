@@ -1,6 +1,6 @@
 package com.tagstory.core.domain.tracks.webclient;
 
-import com.mysql.cj.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.tagstory.core.common.CommonRedisTemplate;
 import com.tagstory.core.config.CacheSpec;
 import com.tagstory.core.domain.tracks.webclient.dto.TrackInfo;
@@ -63,7 +63,7 @@ public class SpotifyWebClient {
      */
     public String getAccessToken() {
         String accessToken = redisTemplate.get("", CacheSpec.SPOTIFY_ACCESS_TOKEN);
-        if(StringUtils.isNullOrEmpty(accessToken)) {
+        if(StringUtils.isEmpty(accessToken)) {
             accessToken = generateAccessToken();
             redisTemplate.set("", accessToken, CacheSpec.SPOTIFY_ACCESS_TOKEN);
         }
