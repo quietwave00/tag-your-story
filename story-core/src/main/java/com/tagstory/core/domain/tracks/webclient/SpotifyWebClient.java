@@ -2,7 +2,7 @@ package com.tagstory.core.domain.tracks.webclient;
 
 import org.apache.commons.lang3.StringUtils;
 import com.tagstory.core.common.CommonRedisTemplate;
-import com.tagstory.core.config.CacheSpec;
+import com.tagstory.core.common.CacheSpec;
 import com.tagstory.core.domain.tracks.webclient.dto.TrackInfo;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;

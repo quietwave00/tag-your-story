@@ -20,7 +20,6 @@ public class NotificationFacade {
         return notificationService.subscribe(userId);
     }
 
-
     public List<Notification> getNotificationList(Long userId, int page) {
         User user = userService.getCacheByUserId(userId);
         return notificationService.getNotificationList(user, page);

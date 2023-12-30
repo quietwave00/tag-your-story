@@ -1,6 +1,5 @@
 package com.tagstory.core.domain.user.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.UserStatus;
@@ -14,22 +13,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+    /* @Todo:  Response에 유저 정보 노출되어 @JsonIgnore 처리했는데
+         메소드 내에서 쓰일 때도 ignore 처리돼서 Response Dto 구조 수정 필요 */
+
     private String pendingUserId;
 
     private Long userId;
 
-    @JsonIgnore
     private String userKey;
 
-    @JsonIgnore
     private String email;
 
     private String nickname;
 
-    @JsonIgnore
     private Role role;
 
-    @JsonIgnore
     private UserStatus userStatus;
 
     /*

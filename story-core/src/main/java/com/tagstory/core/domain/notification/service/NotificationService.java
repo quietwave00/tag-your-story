@@ -82,7 +82,8 @@ public class NotificationService {
      * 단일 메소드
      */
     private List<Notification> findNotificationListByUserId(User user, int page) {
-        Page<NotificationEntity> notificationEntityList = notificationRepository.findBySubscriberOrderByCreatedAtDesc(user.toEntity(), PageRequest.of(page, 5))
+        Page<NotificationEntity> notificationEntityList = notificationRepository
+                .findBySubscriberOrderByCreatedAtDesc(user.toEntity(), PageRequest.of(page, 5))
                 .orElse(Page.empty());
 
         return notificationEntityList.stream()
