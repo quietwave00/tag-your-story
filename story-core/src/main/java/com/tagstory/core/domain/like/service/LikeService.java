@@ -1,11 +1,11 @@
 package com.tagstory.core.domain.like.service;
 
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.like.repository.LikeRepository;
 import com.tagstory.core.domain.notification.NotificationType;
 import com.tagstory.core.domain.notification.service.Notification;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;

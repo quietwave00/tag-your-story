@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.comment.service.dto.response;
 
 import com.tagstory.core.domain.comment.CommentStatus;
-import com.tagstory.core.domain.comment.service.dto.Comment;
+import com.tagstory.core.domain.comment.service.Comment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

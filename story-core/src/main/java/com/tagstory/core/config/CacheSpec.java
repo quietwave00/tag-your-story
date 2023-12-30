@@ -1,7 +1,7 @@
 package com.tagstory.core.config;
 
 import com.tagstory.core.domain.file.FileEntity;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

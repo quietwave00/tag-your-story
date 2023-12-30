@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.user.repository;
 
 import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 
 public interface CacheUserRepository {
 

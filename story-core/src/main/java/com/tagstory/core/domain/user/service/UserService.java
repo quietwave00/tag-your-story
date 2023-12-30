@@ -11,7 +11,6 @@ import com.tagstory.core.domain.user.repository.UserRepository;
 import com.tagstory.core.domain.user.service.dto.command.RegisterCommand;
 import com.tagstory.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
 import com.tagstory.core.domain.user.service.dto.response.Token;
-import com.tagstory.core.domain.user.service.dto.response.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;

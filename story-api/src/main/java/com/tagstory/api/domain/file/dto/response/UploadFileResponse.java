@@ -1,7 +1,7 @@
 package com.tagstory.api.domain.file.dto.response;
 
 import com.tagstory.core.domain.file.FileLevel;
-import com.tagstory.core.domain.file.dto.response.File;
+import com.tagstory.core.domain.file.service.File;
 import lombok.Builder;
 import lombok.Getter;
 

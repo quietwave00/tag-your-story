@@ -1,11 +1,10 @@
 package com.tagstory.core.domain.file.service;
 
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.file.dto.S3File;
 import com.tagstory.core.domain.file.dto.command.DeleteFileCommand;
 import com.tagstory.core.domain.file.dto.command.UploadFileCommand;
-import com.tagstory.core.domain.file.dto.response.File;
 import com.tagstory.core.domain.file.webclient.S3WebClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

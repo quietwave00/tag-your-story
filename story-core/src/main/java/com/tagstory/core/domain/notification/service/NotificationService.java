@@ -6,7 +6,7 @@ import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand
 import com.tagstory.core.domain.notification.repository.NotificationRepository;
 import com.tagstory.core.domain.notification.service.dto.command.NotificationCommand;
 import com.tagstory.core.domain.notification.sse.SseManager;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;

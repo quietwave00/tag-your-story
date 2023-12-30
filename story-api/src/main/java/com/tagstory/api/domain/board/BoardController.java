@@ -8,7 +8,7 @@ import com.tagstory.api.domain.board.dto.response.BoardResponse;
 import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
 import com.tagstory.core.domain.board.BoardOrderType;
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
 import com.tagstory.core.utils.api.ApiResult;
 import com.tagstory.core.utils.api.ApiUtils;

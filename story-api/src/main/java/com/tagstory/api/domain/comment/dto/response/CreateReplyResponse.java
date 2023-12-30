@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.comment.dto.response;
 
-import com.tagstory.core.domain.comment.service.dto.Comment;
+import com.tagstory.core.domain.comment.service.Comment;
 import lombok.Builder;
 import lombok.Getter;
 

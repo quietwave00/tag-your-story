@@ -1,17 +1,16 @@
 package com.tagstory.core.domain.comment.service;
 
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.comment.CommentEntity;
 import com.tagstory.core.domain.comment.CommentStatus;
 import com.tagstory.core.domain.comment.repository.CommentRepository;
-import com.tagstory.core.domain.comment.service.dto.Comment;
 import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
 import com.tagstory.core.domain.notification.NotificationType;
 import com.tagstory.core.domain.notification.service.Notification;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;

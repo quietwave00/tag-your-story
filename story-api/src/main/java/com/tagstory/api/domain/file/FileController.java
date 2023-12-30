@@ -5,7 +5,7 @@ import com.tagstory.api.domain.file.dto.request.UploadFileRequest;
 import com.tagstory.api.domain.file.dto.response.FileResponse;
 import com.tagstory.api.domain.file.dto.response.MainFileResponse;
 import com.tagstory.api.domain.file.dto.response.UploadFileResponse;
-import com.tagstory.core.domain.file.dto.response.File;
+import com.tagstory.core.domain.file.service.File;
 import com.tagstory.core.domain.file.service.FileFacade;
 import com.tagstory.core.utils.api.ApiUtils;
 import com.tagstory.core.utils.api.ApiResult;

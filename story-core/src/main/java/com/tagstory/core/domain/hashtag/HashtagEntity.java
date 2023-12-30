@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.hashtag;
 
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
-import com.tagstory.core.domain.hashtag.service.dto.Hashtag;
+import com.tagstory.core.domain.hashtag.service.Hashtag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

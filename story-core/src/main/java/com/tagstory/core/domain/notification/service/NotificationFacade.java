@@ -2,7 +2,7 @@ package com.tagstory.core.domain.notification.service;
 
 import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagstory.core.domain.user.service.UserService;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

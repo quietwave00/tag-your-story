@@ -8,7 +8,7 @@ import com.tagstory.api.domain.comment.dto.response.CommentCountResponse;
 import com.tagstory.api.domain.comment.dto.response.CommentResponse;
 import com.tagstory.api.domain.comment.dto.response.CommentWithRepliesResponse;
 import com.tagstory.core.domain.comment.service.CommentFacade;
-import com.tagstory.core.domain.comment.service.dto.Comment;
+import com.tagstory.core.domain.comment.service.Comment;
 import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
 import com.tagstory.core.utils.api.ApiResult;
 import com.tagstory.core.utils.api.ApiUtils;

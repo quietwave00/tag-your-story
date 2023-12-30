@@ -2,7 +2,6 @@ package com.tagstory.core.domain.hashtag.service;
 
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.repository.HashtagRepository;
-import com.tagstory.core.domain.hashtag.service.dto.Hashtag;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;

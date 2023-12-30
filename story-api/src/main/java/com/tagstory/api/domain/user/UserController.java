@@ -9,7 +9,7 @@ import com.tagstory.api.domain.user.dto.response.ReissueAccessTokenResponse;
 import com.tagstory.api.domain.user.dto.response.ReissueRefreshTokenResponse;
 import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.dto.response.Token;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import com.tagstory.core.utils.api.ApiUtils;
 import com.tagstory.core.utils.api.ApiResult;
 import lombok.RequiredArgsConstructor;

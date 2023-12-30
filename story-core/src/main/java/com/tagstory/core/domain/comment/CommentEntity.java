@@ -2,7 +2,7 @@ package com.tagstory.core.domain.comment;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.comment.service.dto.Comment;
+import com.tagstory.core.domain.comment.service.Comment;
 import com.tagstory.core.domain.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

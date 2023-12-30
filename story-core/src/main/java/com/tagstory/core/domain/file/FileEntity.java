@@ -1,7 +1,7 @@
 package com.tagstory.core.domain.file;
 
 import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.file.dto.response.File;
+import com.tagstory.core.domain.file.service.File;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
