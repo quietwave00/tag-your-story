@@ -1,10 +1,8 @@
 package com.tagstory.core.domain.notification.service;
 
 import com.tagstory.core.domain.notification.NotificationEntity;
-import com.tagstory.core.domain.notification.NotificationType;
 import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagstory.core.domain.notification.repository.NotificationRepository;
-import com.tagstory.core.domain.notification.service.dto.command.NotificationCommand;
 import com.tagstory.core.domain.notification.sse.SseManager;
 import com.tagstory.core.domain.user.service.User;
 import com.tagstory.core.exception.CustomException;
@@ -34,14 +32,6 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SseManager sseManager;
 
-
-    /* pub/sub 구현 방법 */
-    public void notifyComment(Long userId, String nickname, String contentId) {
-        NotificationCommand command = NotificationCommand.of(userId, nickname, NotificationType.COMMENT, contentId);
-        notificationManager.sendMessage(command);
-    }
-
-    /* eventPublisher 구현 방법 */
     public SseEmitter subscribe(Long userId) {
         SseEmitter sseEmitter = sseManager.get(userId);
 
