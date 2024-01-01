@@ -28,9 +28,7 @@ public class NotificationController {
      */
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/subscription", produces = "text/event-stream")
-    public SseEmitter subscribe(
-                                @RequestParam("AccessToken") String token,
-                                @CurrentUserId Long userId) {
+    public SseEmitter subscribe(@CurrentUserId Long userId) {
         return notificationFacade.subscribe(userId);
     }
 
@@ -40,7 +38,7 @@ public class NotificationController {
     @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ApiResult<List<NotificationResponse>> getNotificationList(@CurrentUserId Long userId,
-                                                                     @RequestParam int page) {
+                                                                     @RequestParam("page") int page) {
         List<Notification> notificationList = notificationFacade.getNotificationList(userId, page);
         return ApiUtils.success(notificationList.stream().map(NotificationResponse::from).collect(Collectors.toList()));
     }

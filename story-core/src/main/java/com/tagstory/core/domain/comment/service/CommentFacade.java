@@ -6,14 +6,12 @@ import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
-import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.User;
+import com.tagstory.core.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor
@@ -22,14 +20,10 @@ public class CommentFacade {
     private final UserService userService;
     private final CommentService commentService;
 
-    public CompletableFuture<Comment> create(CreateCommentCommand command) {
+    public Comment create(CreateCommentCommand command) {
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
-
-        /* 자신의 글에 댓글을 단 경우엔 알림을 생성하지 않는다 */
-        return isWriter(board, user) ?
-                CompletableFuture.completedFuture(commentService.create(board, user, command))
-                : commentService.createWithNotification(board, user, command);
+        return commentService.create(board, user, command);
     }
 
     public Comment update(UpdateCommentCommand command) {
@@ -60,9 +54,5 @@ public class CommentFacade {
 
     public List<Comment> getReplyList(Long parentId, int page) {
         return commentService.getReplyList(parentId, page);
-    }
-
-    private boolean isWriter(Board board, User user) {
-        return Objects.equals(board.getUser().getUserId(), user.getUserId());
     }
 }

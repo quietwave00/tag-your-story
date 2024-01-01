@@ -8,21 +8,19 @@ import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand
 import com.tagstory.core.domain.comment.service.dto.command.CreateReplyCommand;
 import com.tagstory.core.domain.comment.service.dto.command.UpdateCommentCommand;
 import com.tagstory.core.domain.comment.service.dto.response.CommentWithReplies;
-import com.tagstory.core.domain.notification.NotificationType;
-import com.tagstory.core.domain.notification.service.Notification;
+import com.tagstory.core.domain.event.publisher.CommonEventPublisher;
 import com.tagstory.core.domain.user.service.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -30,16 +28,7 @@ import java.util.concurrent.CompletableFuture;
 @Transactional(readOnly = true)
 public class CommentService {
     private final CommentRepository commentRepository;
-    private final ApplicationEventPublisher eventPublisher;
-
-    @Transactional
-    public CompletableFuture<Comment> createWithNotification(Board board, User user, CreateCommentCommand command) {
-        return CompletableFuture.supplyAsync(() -> create(board, user, command))
-                .thenApplyAsync(comment -> {
-                    onEvent(user, board);
-                    return comment;
-                });
-    }
+    private final CommonEventPublisher eventPublisher;
 
     @Transactional
     public Comment create(Board board, User user, CreateCommentCommand command) {
@@ -47,6 +36,10 @@ public class CommentService {
         commentEntity.addUser(user.toEntity());
         commentEntity.addBoard(board.toEntity());
 
+        /* 댓글 작성자가 글쓴이가 아닌 경우에만 알림 이벤트를 발행한다. */
+        if(!isWriter(user, board)) {
+            eventPublisher.onEventFromComment(user, board);
+        }
         return commentRepository.save(commentEntity).toComment();
     }
 
@@ -104,7 +97,6 @@ public class CommentService {
     }
 
 
-
     /*
      * 단일 메소드
      */
@@ -119,13 +111,13 @@ public class CommentService {
     }
 
     private List<Comment> findCommentListByBoardId(String boardId, int page) {
-         Page<CommentEntity> commentEntityList = commentRepository
-                 .findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId, PageRequest.of(page, 20))
-                 .orElse(Page.empty());
+        Page<CommentEntity> commentEntityList = commentRepository
+                .findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId, PageRequest.of(page, 20))
+                .orElse(Page.empty());
 
-         return commentEntityList.stream()
-                 .map(CommentEntity::toComment)
-                 .toList();
+        return commentEntityList.stream()
+                .map(CommentEntity::toComment)
+                .toList();
     }
 
     private List<Comment> getCommentListByBoardIdAndUserId(String boardId, Long userId) {
@@ -143,11 +135,7 @@ public class CommentService {
                 .toList();
     }
 
-    private void onEvent(User user, Board board) {
-        eventPublisher.publishEvent(Notification.onEvent(user,
-                board.getUser(),
-                NotificationType.COMMENT,
-                board.getBoardId()
-        ));
+    private boolean isWriter(User user, Board board) {
+        return Objects.equals(board.getUser().getUserId(), user.getUserId());
     }
 }
