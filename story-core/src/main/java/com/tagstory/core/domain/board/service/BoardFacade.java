@@ -29,7 +29,7 @@ public class BoardFacade {
     private final BoardHashtagService boardHashtagService;
 
     public Board create(CreateBoardCommand command) {
-        BoardEntity boardEntity = BoardEntity.create(command);
+        BoardEntity boardEntity = BoardEntity.create(command.getContent(), command.getTrackId());
         User user = userService.getCacheByUserId(command.getUserId());
         List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
         List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
