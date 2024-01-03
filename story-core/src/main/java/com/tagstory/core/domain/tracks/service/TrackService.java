@@ -1,7 +1,9 @@
 package com.tagstory.core.domain.tracks.service;
 
 import com.tagstory.core.domain.tracks.service.dto.TrackData;
+import com.tagstory.core.domain.tracks.service.dto.response.RankingList;
 import com.tagstory.core.domain.tracks.service.dto.response.SearchTrackList;
+import com.tagstory.core.domain.tracks.util.SearchKeywordTracker;
 import com.tagstory.core.domain.tracks.webclient.SpotifyWebClient;
 import com.tagstory.core.domain.tracks.webclient.dto.TrackInfo;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +25,13 @@ import java.util.List;
 public class TrackService {
 
     private final SpotifyWebClient spotifyWebClient;
+    private final SearchKeywordTracker tracker;
 
     public SearchTrackList search(String keyword, int page) {
+        /*  검색 키워드 순위 계산을 위하여 저장 */
+        tracker.save(keyword);
+
+        /* 검색 과정 */
         TrackInfo trackInfo = spotifyWebClient.getTrackInfoByKeyword(keyword, page);
         List<TrackData> trackDataList = Arrays.stream(trackInfo.getTracks())
                 .map(this::getTrackData)
@@ -36,6 +43,10 @@ public class TrackService {
     public TrackData getDetail(String trackId) {
         Track track = spotifyWebClient.getDetailTrackInfo(trackId);
         return getTrackData(track);
+    }
+
+    public RankingList getKeywordRanking() {
+        return RankingList.onComplete(tracker.getTopSearchKeywordList());
     }
 
     private TrackData getTrackData(Track track) {
