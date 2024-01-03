@@ -1,24 +1,20 @@
 package com.tagstory.core.domain.notification.service;
 
+import com.tagstory.core.domain.event.Event;
 import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
-import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification {
+public class Notification extends Event {
 
     private Long notificationId;
-
-    private User publisher;
-
-    private User subscriber;
 
     private NotificationType type;
 
@@ -40,23 +36,14 @@ public class Notification {
                 .build();
     }
 
-    public static Notification onEvent(User publisher, User subscriber, NotificationType type, String contentId) {
-        return Notification.builder()
-                .publisher(publisher)
-                .subscriber(subscriber)
-                .type(type)
-                .contentId(contentId)
-                .build();
-    }
-
     /*
      * 형변환
      */
     public NotificationEntity toEntity() {
         return NotificationEntity.builder()
                 .notificationId(this.notificationId)
-                .publisher(this.publisher.toEntity())
-                .subscriber(this.subscriber.toEntity())
+                .publisher(super.getPublisher().toEntity())
+                .subscriber(super.getSubscriber().toEntity())
                 .type(this.type)
                 .contentId(this.contentId)
                 .isRead(this.isRead)
