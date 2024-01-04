@@ -1,20 +1,25 @@
 package com.tagstory.core.domain.notification.service;
 
-import com.tagstory.core.domain.event.Event;
 import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
+import com.tagstory.core.domain.notification.adaptor.NotificationAdaptor;
+import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Getter
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification extends Event {
+public class Notification {
 
     private Long notificationId;
+
+    private User publisher;
+
+    private User subscriber;
 
     private NotificationType type;
 
@@ -25,13 +30,12 @@ public class Notification extends Event {
     /*
      * 비즈니스 로직
      */
-    public static NotificationEntity create(Notification notification) {
+    public static NotificationEntity create(NotificationAdaptor adaptor) {
         return NotificationEntity.builder()
-                .notificationId(notification.getNotificationId())
-                .publisher(notification.getPublisher().toEntity())
-                .subscriber(notification.getSubscriber().toEntity())
-                .type(notification.getType())
-                .contentId(notification.getContentId())
+                .publisher(adaptor.getPublisher().toEntity())
+                .subscriber(adaptor.getSubscriber().toEntity())
+                .type(adaptor.getType())
+                .contentId(adaptor.getContentId())
                 .isRead(false)
                 .build();
     }
@@ -42,11 +46,12 @@ public class Notification extends Event {
     public NotificationEntity toEntity() {
         return NotificationEntity.builder()
                 .notificationId(this.notificationId)
-                .publisher(super.getPublisher().toEntity())
-                .subscriber(super.getSubscriber().toEntity())
+                .publisher(this.publisher.toEntity())
+                .subscriber(this.subscriber.toEntity())
                 .type(this.type)
                 .contentId(this.contentId)
                 .isRead(this.isRead)
                 .build();
     }
+
 }

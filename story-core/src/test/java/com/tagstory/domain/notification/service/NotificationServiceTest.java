@@ -7,7 +7,6 @@ import com.tagstory.core.domain.notification.service.NotificationManager;
 import com.tagstory.core.domain.notification.service.NotificationService;
 import com.tagstory.core.domain.notification.sse.SseManager;
 import com.tagstory.core.exception.CustomException;
-import com.tagstory.core.exception.ExceptionCode;
 import com.tagstory.domain.notification.fixture.NotificationFixture;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +19,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -94,11 +94,13 @@ public class NotificationServiceTest {
                 .thenReturn(Optional.of(NotificationFixture.createNotificationEntity(1L)));
 
         // then
-        try {
-            notificationService.setAsRead(command);
-        } catch(CustomException e) {
-            assertThat(ExceptionCode.NO_READ_PERMISSION).isEqualTo(e.getExceptionCode());
-        }
+
+        assertThatThrownBy(()->notificationService.setAsRead(command)).isInstanceOf(CustomException.class);
+//        try {
+//            notificationService.setAsRead(command);
+//        } catch(CustomException e) {
+//            assertThat(ExceptionCode.NO_READ_PERMISSION).isEqualTo(e.getExceptionCode());
+//        }
     }
 
     @Test

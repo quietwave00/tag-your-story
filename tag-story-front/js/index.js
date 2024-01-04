@@ -2,6 +2,7 @@ import UserArea from './user/userArea.js';
 import { trackManager } from './track/trackManager.js';
 import { eventSource } from './notification/notificationManager.js'
 import { renderNotification } from './notification/notificationManager.js';
+import TrackApi from './track/trackApi.js';
 
 
 window.onload = () => {
@@ -25,6 +26,13 @@ window.onload = () => {
     if(localStorage.getItem('Pending') != null) {
         window.location.href = `${client_host}/nickname.html`;
     }
+
+    /**
+     * 검색어 랭킹을 보여준다.
+     */
+    TrackApi.getKeywordRanking().then((response) => {
+        renderRankingArea(response);
+    });
 }
 const searchInput = document.getElementById("search-input");
 const searchButton = document.getElementById("search-button");
@@ -38,6 +46,23 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
+/** 
+ * 랭킹 리스트 화면을 그려준다.
+ */
+const renderRankingArea = (response) => {
+    const rankingArea = document.getElementById('keyword-ranking-area');
+    const titleSpan = document.createElement('span');
+    titleSpan.className = "ranking-area-title";
+    titleSpan.textContent = "지금 많이 검색하는 노래";
+
+    rankingArea.appendChild(titleSpan);
+    const rankingList = response.rankingList.keywordList;
+    rankingList.forEach((keyword, index) => {
+        index++;
+        
+
+    });
+}
 /**
  * 검색 리스트로 이동
  */

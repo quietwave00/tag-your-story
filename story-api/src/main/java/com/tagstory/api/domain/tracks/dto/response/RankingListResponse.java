@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class RankingListResponse {
+    // @TODO
     RankingList rankingList;
 
     public static RankingListResponse from(RankingList rankingList) {

@@ -1,6 +1,7 @@
 package com.tagstory.core.domain.event.publisher;
 
 import com.tagstory.core.domain.board.service.Board;
+import com.tagstory.core.domain.event.CommonEvent;
 import com.tagstory.core.domain.notification.NotificationType;
 import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.user.service.User;
@@ -30,6 +31,11 @@ public class CommonEventPublisher {
                         .build();
 
         eventPublisher.publishEvent(notification);
+    }
+
+    @Async
+    public void onEventFromComment(CommonEvent commonEvent) {
+        eventPublisher.publishEvent(commonEvent);
     }
 
     /*

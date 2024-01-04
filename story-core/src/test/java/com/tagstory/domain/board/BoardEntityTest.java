@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 
@@ -39,20 +39,21 @@ public class BoardEntityTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(boardEntity.getUserEntity()).isNotNull();
-            softly.assertThat(boardEntity.getUserEntity().getUserId()).isEqualTo(1L);
+            softly.assertThat(boardEntity.getUserEntity()).isEqualTo(userEntity);
         });
     }
 
     @Test
     void 해시태그_리스트를_추가한다() {
         // given
+        BoardHashtagEntity hashtagEntity1 =   BoardHashtagEntity.builder()
+                .boardHashtagId(1L)
+                .build();
+        BoardHashtagEntity hashtagEntity2 =  BoardHashtagEntity.builder()
+                .boardHashtagId(2L)
+                .build();
         List<BoardHashtagEntity> boardHashtagEntityList = List.of(
-                BoardHashtagEntity.builder()
-                        .boardHashtagId(1L)
-                        .build(),
-                BoardHashtagEntity.builder()
-                        .boardHashtagId(2L)
-                        .build()
+                hashtagEntity1, hashtagEntity2
         );
 
         BoardEntity boardEntity = BoardFixture.createBoardEntityWithUserEntity();
@@ -62,5 +63,7 @@ public class BoardEntityTest {
         assertThat(boardEntity.getBoardHashtagEntityList()).isNotNull();
         assertThat(boardEntity.getBoardHashtagEntityList().get(0).getBoardHashtagId()).isEqualTo(1L);
         assertThat(boardEntity.getBoardHashtagEntityList().size()).isEqualTo(2);
+
+      //  assertThat(boardEntity.getBoardHashtagEntityList()).containsExactly(hashtagEntity1, hashtagEntity2);
     }
 }

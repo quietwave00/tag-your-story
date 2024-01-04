@@ -15,6 +15,7 @@ import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,12 +29,13 @@ public class BoardFacade {
     private final HashtagService hashtagService;
     private final BoardHashtagService boardHashtagService;
 
+    @Transactional
     public Board create(CreateBoardCommand command) {
         BoardEntity boardEntity = BoardEntity.create(command.getContent(), command.getTrackId());
         User user = userService.getCacheByUserId(command.getUserId());
         List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
         List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
-        return boardService.create(boardEntity, user, boardHashtagEntityList);
+        return boardService.create(boardEntity, user, boardHashtagEntityList, command);
     }
 
     public List<Board> getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {

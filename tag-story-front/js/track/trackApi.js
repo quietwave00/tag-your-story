@@ -45,7 +45,28 @@ const getDetailTrackById = (trackId) => {
     });
 }
 
+/**
+ * 트랙의 검색어 랭킹을 요청한다.
+ */
+const getKeywordRanking = () => {
+    return fetch(`${server_host}/api/tracks/ranking`, {
+        method: "GET"
+    })
+    .then((res) => res.json())
+    .then(res => {
+        if(res.success === true) {
+            return Promise.resolve(res.response);
+        } else {
+            ExceptionHandler.handleException(res.exceptionCode)
+                .then(() => {
+                    getKeywordRanking();
+                });
+        }
+    });
+}
+
 export default {
     searchTrack,
-    getDetailTrackById
+    getDetailTrackById,
+    getKeywordRanking
 }

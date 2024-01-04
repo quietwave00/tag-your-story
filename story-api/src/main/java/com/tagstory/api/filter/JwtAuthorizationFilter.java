@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -61,7 +62,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
-        String headerToken = request.getHeader(HEADER_STRING);
+        //
+        String headerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (Objects.nonNull(headerToken)) {
             return headerToken;
         }

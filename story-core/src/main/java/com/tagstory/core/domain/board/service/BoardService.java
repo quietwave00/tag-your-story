@@ -2,6 +2,7 @@ package com.tagstory.core.domain.board.service;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
+import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
@@ -33,11 +34,11 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardHashtagRepository boardHashtagRepository;
 
-    @Transactional
-    public Board create(BoardEntity boardEntity, User user, List<BoardHashtagEntity> boardHashtagEntityList) {
+    public Board create(BoardEntity boardEntity, User user, List<BoardHashtagEntity> boardHashtagEntityList, CreateBoardCommand command) {
         boardEntity.addUser(user.toEntity());
         boardEntity.addBoardHashTagList(boardHashtagEntityList);
         BoardEntity savedBoard = boardRepository.save(boardEntity);
+        // @TODO
         HashtagNameList hashtagNameList = getHashtagNameListByBoardId(savedBoard.getBoardId());
         return savedBoard.toBoard().addHashtagList(hashtagNameList);
     }
@@ -117,9 +118,9 @@ public class BoardService {
     }
 
     public List<Board> getBoardListByTrackIdSortedCreatedAt(BoardStatus status, String trackId, int page) {
+        // @TODO
         Page<BoardEntity> boardEntityPage = boardRepository.
                 findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
-
         return boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)
                 .toList();
