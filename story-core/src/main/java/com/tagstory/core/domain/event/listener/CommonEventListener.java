@@ -2,6 +2,7 @@ package com.tagstory.core.domain.event.listener;
 
 
 import com.tagstory.core.domain.event.CommonEvent;
+import com.tagstory.core.domain.notification.adaptor.NotificationAdaptor;
 import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -17,15 +18,12 @@ public class CommonEventListener {
     private final NotificationService notificationService;
 
     @EventListener
-    public void handleEvent(Notification notification) {
-        Notification savedNotification = notificationService.save(notification);
-        sendNotification(savedNotification);
-    }
-
-    @EventListener
     public void handleEvent(CommonEvent commonEvent) {
-        Notification savedNotification = notificationService.save(commonEvent);
-        sendNotification(savedNotification);
+        if(commonEvent instanceof NotificationAdaptor) {
+            Notification notification = commonEvent.getNotification();
+            Notification savedNotification = notificationService.save(notification);
+            sendNotification(savedNotification);
+        }
     }
 
     public void sendNotification(Notification notification) {

@@ -1,14 +1,8 @@
 package com.tagstory.core.domain.event;
 
-import com.tagstory.core.domain.notification.NotificationType;
-import com.tagstory.core.domain.user.service.User;
+import com.tagstory.core.domain.notification.service.Notification;
 
 public interface CommonEvent {
-    User getPublisher();
 
-    User getSubscriber();
-
-    NotificationType getType();
-
-    String getContentId();
+    Notification getNotification();
 }

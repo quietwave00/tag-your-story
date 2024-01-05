@@ -1,8 +1,8 @@
 package com.tagstory.core.domain.event.publisher;
 
 import com.tagstory.core.domain.board.service.Board;
-import com.tagstory.core.domain.event.CommonEvent;
 import com.tagstory.core.domain.notification.NotificationType;
+import com.tagstory.core.domain.notification.adaptor.NotificationAdaptor;
 import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
@@ -19,37 +19,20 @@ public class CommonEventPublisher {
     private final ApplicationEventPublisher eventPublisher;
 
     /*
-     * 댓글 이벤트를 발행한다.
+     * 댓글 알림 이벤트를 발행한다.
      */
     @Async
     public void onEventFromComment(User user, Board board) {
-        Notification notification = Notification.builder()
-                        .publisher(user)
-                        .subscriber(board.getUser())
-                        .type(NotificationType.COMMENT)
-                        .contentId(board.getBoardId())
-                        .build();
-
-        eventPublisher.publishEvent(notification);
-    }
-
-    @Async
-    public void onEventFromComment(CommonEvent commonEvent) {
-        eventPublisher.publishEvent(commonEvent);
+        Notification notification = Notification.create(user, board, NotificationType.COMMENT);
+        eventPublisher.publishEvent(NotificationAdaptor.of(notification));
     }
 
     /*
-     * 좋아요 이벤트를 발행한다.
+     * 좋아요 알림 이벤트를 발행한다.
      */
     @Async
     public void onEventFromLike(User user, Board board) {
-        Notification notification = Notification.builder()
-                .publisher(user)
-                .subscriber(board.getUser())
-                .type(NotificationType.LIKE)
-                .contentId(board.getBoardId())
-                .build();
-
-        eventPublisher.publishEvent(notification);
+        Notification notification = Notification.create(user, board, NotificationType.LIKE);
+        eventPublisher.publishEvent(NotificationAdaptor.of(notification));
     }
 }

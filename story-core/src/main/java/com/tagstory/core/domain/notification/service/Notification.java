@@ -1,8 +1,8 @@
 package com.tagstory.core.domain.notification.service;
 
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
-import com.tagstory.core.domain.notification.adaptor.NotificationAdaptor;
 import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,12 +30,12 @@ public class Notification {
     /*
      * 비즈니스 로직
      */
-    public static NotificationEntity create(NotificationAdaptor adaptor) {
-        return NotificationEntity.builder()
-                .publisher(adaptor.getPublisher().toEntity())
-                .subscriber(adaptor.getSubscriber().toEntity())
-                .type(adaptor.getType())
-                .contentId(adaptor.getContentId())
+    public static Notification create(User user, Board board, NotificationType type) {
+        return Notification.builder()
+                .publisher(user)
+                .subscriber(board.getUser())
+                .type(type)
+                .contentId(board.getBoardId())
                 .isRead(false)
                 .build();
     }
@@ -53,5 +53,4 @@ public class Notification {
                 .isRead(this.isRead)
                 .build();
     }
-
 }

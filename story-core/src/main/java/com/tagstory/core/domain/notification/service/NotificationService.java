@@ -1,8 +1,6 @@
 package com.tagstory.core.domain.notification.service;
 
-import com.tagstory.core.domain.event.CommonEvent;
 import com.tagstory.core.domain.notification.NotificationEntity;
-import com.tagstory.core.domain.notification.adaptor.NotificationAdaptor;
 import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagstory.core.domain.notification.repository.NotificationRepository;
 import com.tagstory.core.domain.notification.sse.SseManager;
@@ -44,14 +42,9 @@ public class NotificationService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification save(Notification notification) {
-
-        return notificationRepository.save(Notification.create(notification)).toNotification();
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Notification save(CommonEvent commonEvent) {
-        NotificationAdaptor adapter = new NotificationAdaptor(commonEvent);
-        return notificationRepository.save(Notification.create(commonEvent)).toNotification();
+        return notificationRepository
+                .save(notification.toEntity())
+                .toNotification();
     }
 
     public void send(Notification notification) {
