@@ -7,8 +7,8 @@ import com.tagstory.core.domain.notification.service.Notification;
 import com.tagstory.core.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @RequiredArgsConstructor
 @Component
@@ -17,7 +17,7 @@ public class CommonEventListener {
 
     private final NotificationService notificationService;
 
-    @EventListener
+    @TransactionalEventListener
     public void handleEvent(CommonEvent commonEvent) {
         if(commonEvent instanceof NotificationAdaptor) {
             Notification notification = commonEvent.getNotification();

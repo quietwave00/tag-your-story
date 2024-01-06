@@ -8,7 +8,6 @@ import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,7 +20,6 @@ public class CommonEventPublisher {
     /*
      * 댓글 알림 이벤트를 발행한다.
      */
-    @Async
     public void onEventFromComment(User user, Board board) {
         Notification notification = Notification.create(user, board, NotificationType.COMMENT);
         eventPublisher.publishEvent(NotificationAdaptor.of(notification));
@@ -30,7 +28,6 @@ public class CommonEventPublisher {
     /*
      * 좋아요 알림 이벤트를 발행한다.
      */
-    @Async
     public void onEventFromLike(User user, Board board) {
         Notification notification = Notification.create(user, board, NotificationType.LIKE);
         eventPublisher.publishEvent(NotificationAdaptor.of(notification));
