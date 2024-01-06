@@ -36,6 +36,7 @@ window.onload = () => {
 }
 const searchInput = document.getElementById("search-input");
 const searchButton = document.getElementById("search-button");
+const defaultPage = 1;
 
 /**
  * 검색창에서 Enter를 누를 시 이벤트 리스너
@@ -50,27 +51,54 @@ searchInput.addEventListener("keydown", (event) => {
  * 랭킹 리스트 화면을 그려준다.
  */
 const renderRankingArea = (response) => {
-    const rankingArea = document.getElementById('keyword-ranking-area');
+    const rankingArea = document.getElementById('ranking-area');
     const titleSpan = document.createElement('span');
     titleSpan.className = "ranking-area-title";
     titleSpan.textContent = "지금 많이 검색하는 노래";
-
     rankingArea.appendChild(titleSpan);
-    const rankingList = response.rankingList.keywordList;
+
+    const rankingList = response.keywordList;
     rankingList.forEach((keyword, index) => {
         index++;
         
+        const keywordDiv = document.createElement('div');
+        keywordDiv.className = "keyword-list";
 
+        /* 순위 */
+        const rankingSpan = document.createElement('span');
+        rankingSpan.className = "ranking-index";
+        rankingSpan.textContent = index;
+
+        /* 키워드 */
+        const keywordSpan = document.createElement('span');
+        keywordSpan.className = "keyword";
+        keywordSpan.textContent = keyword;
+
+        /* 키워드 이벤트 리스너 */
+        keywordSpan.addEventListener('click', () => {
+            moveToSearchResult(keyword);
+        })
+
+        keywordDiv.appendChild(rankingSpan);
+        keywordDiv.appendChild(keywordSpan);
+        rankingArea.appendChild(keywordDiv);
     });
 }
+
+/**
+ * 랭킹 키워드 클릭 시 검색 리스트로 이동한다.
+ */
+const moveToSearchResult = (keyword) => {
+    trackManager.setKeyword(keyword);
+    window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
+}
+
 /**
  * 검색 리스트로 이동
  */
 searchButton.addEventListener('click', () => {
     const keyword = searchInput.value;
-    const defaultPage = 1;
     trackManager.setKeyword(keyword);
-    
     window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
 });
 
