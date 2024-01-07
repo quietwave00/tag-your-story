@@ -2,16 +2,14 @@ package com.tagstory.core.domain.like;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.service.Board;
+import com.tagstory.core.domain.like.service.Like;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.core.domain.user.service.User;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
+@Builder
 @Entity
 @Table(name = "likes")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,11 +19,11 @@ public class LikeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long likeId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private BoardEntity board;
 
@@ -35,6 +33,17 @@ public class LikeEntity {
     private LikeEntity(UserEntity user, BoardEntity board) {
         this.user = user;
         this.board = board;
+    }
+
+    /*
+     * 형변환
+     */
+    public Like toLike() {
+        return Like.builder()
+                .likeId(this.likeId)
+                .board(this.board.toBoard())
+                .user(this.user.toUser())
+                .build();
     }
 
     /*

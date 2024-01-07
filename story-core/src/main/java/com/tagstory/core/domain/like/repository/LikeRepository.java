@@ -5,6 +5,8 @@ import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.user.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface LikeRepository extends JpaRepository<LikeEntity, Long> {
     int countByBoard(BoardEntity board);
 
@@ -12,5 +14,7 @@ public interface LikeRepository extends JpaRepository<LikeEntity, Long> {
 
     void countByBoard_BoardId_AndUser_UserId(String boardId, Long userId);
 
-    LikeEntity findByBoard_BoardId_AndUser_UserId(String boardId, Long userId);
+    Optional<LikeEntity> findByBoard_BoardId_AndUser_UserId(String boardId, Long userId);
+
+    void deleteByBoard_BoardId_AndUser_UserId(String boardId, Long userId);
 }

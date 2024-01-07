@@ -31,6 +31,7 @@ subprojects {
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
 		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+		implementation 'org.redisson:redisson-spring-boot-starter:3.18.0'
 		implementation 'com.github.ulisesbocchio:jasypt-spring-boot:3.0.5'
 		implementation 'org.apache.commons:commons-lang3'
 		implementation 'com.auth0:java-jwt:4.2.1'
