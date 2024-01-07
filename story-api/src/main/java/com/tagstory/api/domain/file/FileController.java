@@ -5,7 +5,7 @@ import com.tagstory.api.domain.file.dto.request.UploadFileRequest;
 import com.tagstory.api.domain.file.dto.response.FileResponse;
 import com.tagstory.api.domain.file.dto.response.MainFileResponse;
 import com.tagstory.api.domain.file.dto.response.UploadFileResponse;
-import com.tagstory.core.domain.file.dto.response.File;
+import com.tagstory.core.domain.file.service.File;
 import com.tagstory.core.domain.file.service.FileFacade;
 import com.tagstory.core.utils.api.ApiUtils;
 import com.tagstory.core.utils.api.ApiResult;
@@ -27,7 +27,7 @@ public class FileController {
     /*
      * 파일을 게시한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ApiResult<List<UploadFileResponse>> upload(@ModelAttribute @Valid UploadFileRequest uploadFileRequest) {
         List<File> response = fileFacade.upload(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
@@ -37,11 +37,11 @@ public class FileController {
     /*
      * 게시글의 파일을 수정한다.(추가 업로드)
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping
     public ApiResult<List<UploadFileResponse>> update(@ModelAttribute @Valid UploadFileRequest uploadFileRequest) {
         List<File> response = fileFacade.update(uploadFileRequest.getFileList(), uploadFileRequest.toCommand());
-        return ApiUtils.success(response.stream().map(UploadFileResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(UploadFileResponse::from).toList());
     }
 
     /*
@@ -51,7 +51,7 @@ public class FileController {
     public ApiResult<List<MainFileResponse>> getMainFileList(@PathVariable("trackId") String trackId,
                                                              @RequestParam("page") int page) {
         List<File> response = fileFacade.getMainFileList(trackId, page);
-        return ApiUtils.success(response.stream().map(MainFileResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(MainFileResponse::from).toList());
     }
 
     /*
@@ -60,7 +60,7 @@ public class FileController {
     @GetMapping("/{boardId}")
     public ApiResult<List<FileResponse>> getFileList(@PathVariable("boardId") String boardId) {
         List<File> response = fileFacade.getFileList(boardId);
-        return ApiUtils.success(response.stream().map(FileResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(FileResponse::from).toList());
     }
 
     /*

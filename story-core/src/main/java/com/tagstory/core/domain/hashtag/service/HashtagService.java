@@ -2,7 +2,6 @@ package com.tagstory.core.domain.hashtag.service;
 
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.repository.HashtagRepository;
-import com.tagstory.core.domain.hashtag.service.dto.Hashtag;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -23,7 +21,8 @@ public class HashtagService {
     public List<HashtagEntity> makeHashtagList(List<String> hashtagStrList) {
         return hashtagStrList.stream()
             .map(hashtagStr -> hashtagRepository.findByName(hashtagStr)
-            .orElseGet(() -> HashtagEntity.create(hashtagStr))).collect(Collectors.toList());
+            .orElseGet(() -> HashtagEntity.create(hashtagStr)))
+            .toList();
     }
 
     public Long getHashtagIdByHashtagName(String hashtagName) {

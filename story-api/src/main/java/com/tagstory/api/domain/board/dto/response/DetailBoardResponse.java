@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.board.dto.response;
 
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import lombok.Builder;
 import lombok.Getter;

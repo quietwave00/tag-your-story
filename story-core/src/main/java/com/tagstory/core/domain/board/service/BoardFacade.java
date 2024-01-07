@@ -5,20 +5,19 @@ import com.tagstory.core.domain.board.BoardOrderType;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
 import com.tagstory.core.domain.user.service.UserService;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -30,12 +29,13 @@ public class BoardFacade {
     private final HashtagService hashtagService;
     private final BoardHashtagService boardHashtagService;
 
+    @Transactional
     public Board create(CreateBoardCommand command) {
-        BoardEntity boardEntity = BoardEntity.create(command);
+        BoardEntity boardEntity = BoardEntity.create(command.getContent(), command.getTrackId());
         User user = userService.getCacheByUserId(command.getUserId());
         List<HashtagEntity> hashtagEntityList = hashtagService.makeHashtagList(command.getHashtagList());
         List<BoardHashtagEntity> boardHashtagEntityList = boardHashtagService.makeBoardHashtagList(boardEntity, hashtagEntityList);
-        return boardService.create(boardEntity, user, boardHashtagEntityList);
+        return boardService.create(boardEntity, user, boardHashtagEntityList, command);
     }
 
     public List<Board> getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
@@ -45,7 +45,7 @@ public class BoardFacade {
 
         List<HashtagNameList> hashtagNameListByBoardList = boardList.stream()
                 .map(board -> boardHashtagService.getHashtagNameByBoardId(board.getBoardId()))
-                .collect(Collectors.toList());
+                .toList();
 
         return boardService.getBoardListByTrackId(boardList, hashtagNameListByBoardList);
     }
@@ -67,7 +67,7 @@ public class BoardFacade {
         /* Board 객체에 Hashtag 리스트를 찾아서 add 해주고 반환한다. */
         return beforeBoardList.stream().peek(board -> {
             board.addHashtagList(boardHashtagService.getHashtagNameByBoardId(board.getBoardId()));
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     public Boolean isWriter(String boardId, Long userId) {

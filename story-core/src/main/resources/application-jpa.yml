@@ -2,6 +2,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    open-in-view: false
 ---
 spring:
   config.activate.on-profile: local
@@ -16,6 +17,14 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
+        use_sql_comments: true
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
 ---
 spring:
   config.activate.on-profile: dev

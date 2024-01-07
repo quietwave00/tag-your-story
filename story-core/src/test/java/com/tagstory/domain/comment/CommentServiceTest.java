@@ -3,7 +3,7 @@ package com.tagstory.domain.comment;
 import com.tagstory.core.domain.comment.CommentEntity;
 import com.tagstory.core.domain.comment.repository.CommentRepository;
 import com.tagstory.core.domain.comment.service.CommentService;
-import com.tagstory.core.domain.comment.service.dto.Comment;
+import com.tagstory.core.domain.comment.service.Comment;
 import com.tagstory.core.domain.comment.service.dto.command.CreateCommentCommand;
 import com.tagstory.core.domain.user.UserEntity;
 import com.tagstory.domain.board.fixture.BoardFixture;

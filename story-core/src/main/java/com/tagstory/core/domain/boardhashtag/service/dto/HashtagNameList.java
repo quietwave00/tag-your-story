@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -20,7 +19,7 @@ public class HashtagNameList {
 
     public static HashtagNameList of(List<HashtagEntity> hashtagEntityList) {
         return builder()
-                .nameList(hashtagEntityList.stream().map(HashtagEntity::getName).collect(Collectors.toList()))
+                .nameList(hashtagEntityList.stream().map(HashtagEntity::getName).toList())
                 .build();
     }
 }

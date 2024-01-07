@@ -1,12 +1,10 @@
 package com.tagstory.core.domain.notification.service;
 
 import com.tagstory.core.domain.notification.NotificationEntity;
-import com.tagstory.core.domain.notification.NotificationType;
 import com.tagstory.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagstory.core.domain.notification.repository.NotificationRepository;
-import com.tagstory.core.domain.notification.service.dto.command.NotificationCommand;
 import com.tagstory.core.domain.notification.sse.SseManager;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.tagstory.core.domain.notification.properties.NotificationProperties.NOTIFICATION_NAME;
 
@@ -36,25 +32,19 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SseManager sseManager;
 
-
-    /* pub/sub 구현 방법 */
-    public void notifyComment(Long userId, String nickname, String contentId) {
-        NotificationCommand command = NotificationCommand.of(userId, nickname, NotificationType.COMMENT, contentId);
-        notificationManager.sendMessage(command);
-    }
-
-    /* eventPublisher 구현 방법 */
-    public SseEmitter subscribe(Long userId, LocalDateTime createdAt) {
+    public SseEmitter subscribe(Long userId) {
         SseEmitter sseEmitter = sseManager.get(userId);
 
         return Objects.isNull(sseEmitter) ?
-                sseManager.create(userId, createdAt) :
+                sseManager.create(userId) :
                 sseEmitter;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification save(Notification notification) {
-        return notificationRepository.save(Notification.create(notification)).toNotification();
+        return notificationRepository
+                .save(notification.toEntity())
+                .toNotification();
     }
 
     public void send(Notification notification) {
@@ -94,12 +84,13 @@ public class NotificationService {
      * 단일 메소드
      */
     private List<Notification> findNotificationListByUserId(User user, int page) {
-        Page<NotificationEntity> notificationEntityList = notificationRepository.findBySubscriberOrderByCreatedAtDesc(user.toEntity(), PageRequest.of(page, 5))
+        Page<NotificationEntity> notificationEntityList = notificationRepository
+                .findBySubscriberOrderByCreatedAtDesc(user.toEntity(), PageRequest.of(page, 5))
                 .orElse(Page.empty());
 
         return notificationEntityList.stream()
                 .map(NotificationEntity::toNotification)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Long getUserIdByNotification(NotificationEntity notificationEntity) {

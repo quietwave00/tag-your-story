@@ -1,10 +1,10 @@
-package com.tagstory.core.domain.board.dto.response;
+package com.tagstory.core.domain.board.service;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
-import com.tagstory.core.domain.file.dto.response.File;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.file.service.File;
+import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

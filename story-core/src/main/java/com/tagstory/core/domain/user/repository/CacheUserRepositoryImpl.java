@@ -1,8 +1,8 @@
 package com.tagstory.core.domain.user.repository;
 
 import com.tagstory.core.common.CommonRedisTemplate;
-import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.common.CacheSpec;
+import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;

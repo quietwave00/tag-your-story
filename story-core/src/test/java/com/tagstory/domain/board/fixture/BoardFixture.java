@@ -1,9 +1,9 @@
 package com.tagstory.domain.board.fixture;
 
 import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.user.UserEntity;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 
 public class BoardFixture {
     public static BoardEntity createBoardEntity() {

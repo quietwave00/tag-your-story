@@ -1,11 +1,11 @@
-package com.tagstory.core.domain.comment.service.dto;
+package com.tagstory.core.domain.comment.service;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.comment.CommentEntity;
 import com.tagstory.core.domain.comment.CommentStatus;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -55,7 +54,7 @@ public class Comment {
         }
 
         if (Objects.nonNull(this.getChildren())) {
-            commentEntityBuilder.children(this.getChildren().stream().map(Comment::toEntity).collect(Collectors.toList()));
+            commentEntityBuilder.children(this.getChildren().stream().map(Comment::toEntity).toList());
         }
         return commentEntityBuilder.build();
     }

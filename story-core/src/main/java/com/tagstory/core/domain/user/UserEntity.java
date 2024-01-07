@@ -2,7 +2,7 @@ package com.tagstory.core.domain.user;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

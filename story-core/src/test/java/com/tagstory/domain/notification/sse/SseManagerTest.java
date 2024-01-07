@@ -30,7 +30,7 @@ public class SseManagerTest {
         LocalDateTime createdAt = LocalDateTime.now();
 
         // when
-        SseEmitter sseEmitter = sseManager.create(userId, createdAt);
+        SseEmitter sseEmitter = sseManager.create(userId);
 
         // then
         assertThat(sseEmitter).isNotNull();

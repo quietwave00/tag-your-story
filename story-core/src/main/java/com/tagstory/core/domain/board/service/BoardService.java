@@ -1,16 +1,16 @@
 package com.tagstory.core.domain.board.service;
 
-import com.tagstory.core.exception.CustomException;
-import com.tagstory.core.exception.ExceptionCode;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
+import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.Board;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
+import com.tagstory.core.exception.CustomException;
+import com.tagstory.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
@@ -35,11 +34,11 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardHashtagRepository boardHashtagRepository;
 
-    @Transactional
-    public Board create(BoardEntity boardEntity, User user, List<BoardHashtagEntity> boardHashtagEntityList) {
+    public Board create(BoardEntity boardEntity, User user, List<BoardHashtagEntity> boardHashtagEntityList, CreateBoardCommand command) {
         boardEntity.addUser(user.toEntity());
         boardEntity.addBoardHashTagList(boardHashtagEntityList);
         BoardEntity savedBoard = boardRepository.save(boardEntity);
+        // @TODO
         HashtagNameList hashtagNameList = getHashtagNameListByBoardId(savedBoard.getBoardId());
         return savedBoard.toBoard().addHashtagList(hashtagNameList);
     }
@@ -47,7 +46,7 @@ public class BoardService {
     public List<Board> getBoardListByTrackId(List<Board> boardList, List<HashtagNameList> hashtagNameListByBoardList) {
         return IntStream.range(0, boardList.size())
                 .mapToObj(i -> boardList.get(i).addHashtagList(hashtagNameListByBoardList.get(i)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<Board> getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
@@ -56,7 +55,7 @@ public class BoardService {
 
         return boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
@@ -119,24 +118,24 @@ public class BoardService {
     }
 
     public List<Board> getBoardListByTrackIdSortedCreatedAt(BoardStatus status, String trackId, int page) {
+        // @TODO
         Page<BoardEntity> boardEntityPage = boardRepository.
                 findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
-
         return boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<Board> findByTrackId(String trackId, int page) {
         Page<BoardEntity> boardEntityList = boardRepository.findByTrackId(trackId, PageRequest.of(page, 8));
 
         return Optional.ofNullable(boardEntityList)
-                .map(entityList -> entityList.stream().map(BoardEntity::toBoard).collect(Collectors.toList()))
+                .map(entityList -> entityList.stream().map(BoardEntity::toBoard).toList())
                 .orElse(Collections.emptyList());
     }
 
     public List<Board> getBoardListByHashtagId(Long hashtagId) {
-        return boardRepository.findBoardsByHashtagId(hashtagId).stream().map(BoardEntity::toBoard).collect(Collectors.toList());
+        return boardRepository.findBoardsByHashtagId(hashtagId).stream().map(BoardEntity::toBoard).toList();
     }
 
     public HashtagNameList getHashtagNameListByBoardId(String boardId) {

@@ -1,11 +1,11 @@
 package com.tagstory.core.domain.like.service;
 
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.like.dto.command.UnLikeCommand;
 import com.tagstory.core.domain.like.dto.command.LikeBoardCommand;
 import com.tagstory.core.domain.user.service.UserService;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

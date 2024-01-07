@@ -22,7 +22,7 @@ public class LikeController {
     /*
      * 게시글에 좋아요를 등록한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/likes")
     public ApiResult<Void> like(@RequestBody @Valid LikeBoardRequest likeBoardRequest, @CurrentUserId Long userId) {
         likeFacade.like(likeBoardRequest.toCommand(userId));
@@ -32,7 +32,7 @@ public class LikeController {
     /*
      * 게시글에 좋아요를 취소한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/likes")
     public ApiResult<Void> unLike(@RequestBody @Valid UnLikeRequest request, @CurrentUserId Long userId) {
         likeFacade.unLike(request.toCommand(userId));
@@ -42,7 +42,7 @@ public class LikeController {
     /*
      * 사용자의 좋아요 여부를 체크한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/likes/status/{boardId}")
     public ApiResult<LikeStatusResponse> isLiked(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
         boolean isLiked = likeFacade.isLiked(boardId, userId);

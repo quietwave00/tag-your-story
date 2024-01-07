@@ -1,13 +1,13 @@
 package com.tagstory.domain.board.service;
 
 import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import com.tagstory.domain.board.fixture.BoardFixture;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

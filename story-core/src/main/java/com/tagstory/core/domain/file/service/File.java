@@ -1,6 +1,6 @@
-package com.tagstory.core.domain.file.dto.response;
+package com.tagstory.core.domain.file.service;
 
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
 import com.tagstory.core.domain.file.FileStatus;

@@ -1,13 +1,12 @@
 package com.tagstory.core.domain.file.service;
 
-import com.tagstory.core.config.CacheSpec;
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.common.CacheSpec;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.file.FileLevel;
 import com.tagstory.core.domain.file.FileStatus;
 import com.tagstory.core.domain.file.dto.S3File;
 import com.tagstory.core.domain.file.dto.command.DeleteFileCommand;
-import com.tagstory.core.domain.file.dto.response.File;
 import com.tagstory.core.domain.file.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +30,7 @@ public class FileService {
                     S3File s3File = addFileLevel(beforeS3File);
                     return s3File.toEntity();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         /* 변환한 엔티티 객체를 저장 */
         fileEntityList.forEach(fileEntity -> fileEntity.addBoard(board.toEntity()));
@@ -40,7 +38,7 @@ public class FileService {
 
         /* 캐싱 */
         fileRepository.saveCache(savedFileEntityList, CacheSpec.FILE);
-        return savedFileEntityList.stream().map(FileEntity::toFile).collect(Collectors.toList());
+        return savedFileEntityList.stream().map(FileEntity::toFile).toList();
     }
 
     @Transactional
@@ -49,15 +47,15 @@ public class FileService {
                 .map(s3File -> {
                     return s3File.setFileLevelToSub().toEntity();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         fileEntityList.forEach(fileEntity -> fileEntity.addBoard(board.toEntity()));
         List<FileEntity> savedFileEntityList= new ArrayList<>(fileRepository.saveAll(fileEntityList));
-        return savedFileEntityList.stream().map(FileEntity::toFile).collect(Collectors.toList());
+        return savedFileEntityList.stream().map(FileEntity::toFile).toList();
     }
 
     public List<File> getMainFileList(List<Board> boardList) {
-        List<String> boardIdList = boardList.stream().map(Board::getBoardId).collect(Collectors.toList());
+        List<String> boardIdList = boardList.stream().map(Board::getBoardId).toList();
         return getMainFileListByBoardId(boardIdList);
     }
 
@@ -87,7 +85,7 @@ public class FileService {
     }
 
     private List<File> getFileListByBoardId(String boardId) {
-        return fileRepository.findByStatusAndBoard_BoardIdOrderByFileId(FileStatus.POST, boardId).stream().map(FileEntity::toFile).collect(Collectors.toList());
+        return fileRepository.findByStatusAndBoard_BoardIdOrderByFileId(FileStatus.POST, boardId).stream().map(FileEntity::toFile).toList();
     }
 
     private List<FileEntity> getFileEntityListByBoardId(String boardId) {
@@ -96,7 +94,8 @@ public class FileService {
 
     private List<File> getMainFileListByBoardId(List<String> boardIdList) {
         return fileRepository.findByFileLevelAndStatusAndBoard_BoardIdIn(FileLevel.MAIN, FileStatus.POST, boardIdList)
-                .stream().map(FileEntity::toFile).collect(Collectors.toList());
+                .stream().map(FileEntity::toFile)
+                .toList();
     }
 
     private void setFileLevel(String boardId) {
@@ -110,7 +109,7 @@ public class FileService {
             List<Long> subFileIdList = fileEntityList.subList(1, fileEntityList.size())
                     .stream()
                     .map(FileEntity::getFileId)
-                    .collect(Collectors.toList());
+                    .toList();
 
             fileRepository.updateFileLevel(subFileIdList, FileLevel.SUB);
         }

@@ -1,6 +1,6 @@
 package com.tagstory.api.domain.user.dto.response;
 
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.Builder;
 import lombok.Getter;
 

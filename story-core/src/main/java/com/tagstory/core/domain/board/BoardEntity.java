@@ -1,12 +1,12 @@
 package com.tagstory.core.domain.board;
 
 import com.tagstory.core.domain.BaseTime;
-import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.file.FileEntity;
 import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.user.UserEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,13 +74,13 @@ public class BoardEntity extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static BoardEntity create(CreateBoardCommand command) {
+    public static BoardEntity create(String content, String trackId) {
         return builder()
-                .content(command.getContent())
+                .content(content)
                 .status(BoardStatus.POST)
                 .count(0)
                 .likeCount(0)
-                .trackId(command.getTrackId())
+                .trackId(trackId)
                 .build();
     }
 

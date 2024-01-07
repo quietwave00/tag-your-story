@@ -1,4 +1,4 @@
-package com.tagstory.core.domain.hashtag.service.dto;
+package com.tagstory.core.domain.hashtag.service;
 
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import lombok.Builder;

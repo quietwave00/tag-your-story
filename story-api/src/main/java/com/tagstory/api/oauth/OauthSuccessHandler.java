@@ -3,7 +3,7 @@ package com.tagstory.api.oauth;
 import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.api.jwt.JwtCookieProvider;
 import com.tagstory.core.common.CommonRedisTemplate;
-import com.tagstory.core.config.CacheSpec;
+import com.tagstory.core.common.CacheSpec;
 import com.tagstory.core.utils.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

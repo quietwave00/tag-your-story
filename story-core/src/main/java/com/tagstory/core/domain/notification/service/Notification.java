@@ -1,8 +1,9 @@
 package com.tagstory.core.domain.notification.service;
 
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.notification.NotificationEntity;
 import com.tagstory.core.domain.notification.NotificationType;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,23 +30,13 @@ public class Notification {
     /*
      * 비즈니스 로직
      */
-    public static NotificationEntity create(Notification notification) {
-        return NotificationEntity.builder()
-                .notificationId(notification.getNotificationId())
-                .publisher(notification.getPublisher().toEntity())
-                .subscriber(notification.getSubscriber().toEntity())
-                .type(notification.getType())
-                .contentId(notification.getContentId())
-                .isRead(false)
-                .build();
-    }
-
-    public static Notification onEvent(User publisher, User subscriber, NotificationType type, String contentId) {
+    public static Notification create(User user, Board board, NotificationType type) {
         return Notification.builder()
-                .publisher(publisher)
-                .subscriber(subscriber)
+                .publisher(user)
+                .subscriber(board.getUser())
                 .type(type)
-                .contentId(contentId)
+                .contentId(board.getBoardId())
+                .isRead(false)
                 .build();
     }
 

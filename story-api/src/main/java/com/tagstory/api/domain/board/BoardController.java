@@ -8,17 +8,16 @@ import com.tagstory.api.domain.board.dto.response.BoardResponse;
 import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
 import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
 import com.tagstory.core.domain.board.BoardOrderType;
-import com.tagstory.core.domain.board.dto.response.Board;
+import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
 import com.tagstory.core.utils.api.ApiResult;
 import com.tagstory.core.utils.api.ApiUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class BoardController {
     /*
      * 게시글을 작성한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ApiResult<CreateBoardResponse> create(@RequestBody @Valid CreateBoardRequest request, @CurrentUserId Long userId) {
         Board response = boardFacade.create(request.toCommand(userId));
@@ -45,7 +44,7 @@ public class BoardController {
                                                                 @RequestParam("order-type") BoardOrderType orderType,
                                                                 @RequestParam("page") int page) {
         List<Board> response = boardFacade.getBoardListByTrackId(trackId, orderType, page);
-        return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(BoardResponse::from).toList());
     }
 
     /*
@@ -73,13 +72,13 @@ public class BoardController {
     @GetMapping("/hashtags")
     public ApiResult<List<BoardResponse>> getBoardListByHashtagName(@RequestParam("hashtagName") String hashtagName) {
         List<Board> response = boardFacade.getBoardListByHashtagName(hashtagName);
-        return ApiUtils.success(response.stream().map(BoardResponse::from).collect(Collectors.toList()));
+        return ApiUtils.success(response.stream().map(BoardResponse::from).toList());
     }
 
     /*
      * 게시글에 대한 권한을 확인한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/auth/{boardId}")
     public ApiResult<Boolean> isWriter(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
         Boolean isWriter = boardFacade.isWriter(boardId, userId);
@@ -89,7 +88,7 @@ public class BoardController {
     /*
      * 게시글을 수정한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PatchMapping
     public ApiResult<BoardResponse> updateBoardAndHashtag(@RequestBody @Valid UpdateBoardRequest request) {
         Board board = boardFacade.updateBoardAndHashtag(request.toCommand());
@@ -99,7 +98,7 @@ public class BoardController {
     /*
      * 게시글을 삭제한다.
      */
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{boardId}")
     public ApiResult<Void> delete(@PathVariable("boardId") String boardId) {
         boardFacade.delete(boardId);

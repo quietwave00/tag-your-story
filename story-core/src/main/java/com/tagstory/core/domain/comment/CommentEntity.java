@@ -2,18 +2,17 @@ package com.tagstory.core.domain.comment;
 
 import com.tagstory.core.domain.BaseTime;
 import com.tagstory.core.domain.board.BoardEntity;
-import com.tagstory.core.domain.comment.service.dto.Comment;
+import com.tagstory.core.domain.comment.service.Comment;
 import com.tagstory.core.domain.user.UserEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -105,7 +104,7 @@ public class CommentEntity extends BaseTime {
         if (Objects.nonNull(this.getChildren())) {
             List<Comment> children = this.getChildren().stream()
                     .map(Comment::createReply)
-                    .collect(Collectors.toList());
+                            .toList();
             commentBuilder.children(children);
         }
         return commentBuilder.build();

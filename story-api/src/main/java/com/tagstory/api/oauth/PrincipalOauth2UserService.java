@@ -4,7 +4,7 @@ import com.tagstory.api.auth.PrincipalDetails;
 import com.tagstory.core.domain.user.Role;
 import com.tagstory.core.domain.user.UserStatus;
 import com.tagstory.core.domain.user.service.UserService;
-import com.tagstory.core.domain.user.service.dto.response.User;
+import com.tagstory.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
