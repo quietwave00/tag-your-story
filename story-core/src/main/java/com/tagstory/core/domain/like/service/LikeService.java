@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,16 +33,23 @@ public class LikeService {
     }
 
     @Transactional
-    public void unLike(Board board, User user) {
-        likeRepository.deleteByBoardAndUser(board.toEntity(), user.toEntity());
+    public void unLike(String boardId, Long userId) {
+        likeRepository.deleteByBoard_BoardId_AndUser_UserId(boardId, userId);
     }
 
     public boolean isLiked(String boardId, Long userId) {
-        LikeEntity likeEntity = likeRepository.findByBoard_BoardId_AndUser_UserId(boardId, userId);
-        return Objects.nonNull(likeEntity);
+        Like findedLike = findByBoardIdAndUserId(boardId, userId);
+        return Objects.nonNull(findedLike);
     }
 
     private boolean isWriter(User user, Board board) {
         return Objects.equals(user.getUserId(), board.getUser().getUserId());
+    }
+
+    public Like findByBoardIdAndUserId(String boardId, Long userId) {
+        Optional<LikeEntity> likeEntityOptional =
+                likeRepository.findByBoard_BoardId_AndUser_UserId(boardId, userId);
+
+        return likeEntityOptional.map(LikeEntity::toLike).orElse(null);
     }
 }
