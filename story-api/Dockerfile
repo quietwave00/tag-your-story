@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11
+FROM adoptopenjdk/openjdk17:alpine
 
 COPY build/libs/*.jar ./app.jar
 
