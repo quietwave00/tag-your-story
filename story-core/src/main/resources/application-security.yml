@@ -39,8 +39,10 @@ spring:
               - profile
 jwt:
   key: ENC(OX2CLXRBL2Rm2ZyGHUy/VDFzZohB6Z8o)
-  expiration: 99999
+  expiration: 3
   refresh:
+    expiration: 86400
+  pending:
     expiration: 86400
 
 jasypt:
