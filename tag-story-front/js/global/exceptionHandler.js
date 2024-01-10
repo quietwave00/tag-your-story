@@ -31,8 +31,7 @@ const handleExpiredAccessToken = () => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
-            console.log("handleExpiredAccessToken() Success");
-            setAccessToken(res.response.token);
+            setAccessToken(res.response.newAccessToken);
         } else {
             if(res.exceptionCode === "TOKEN_HAS_EXPIRED") {
                 handleExpiredRefreshToken();

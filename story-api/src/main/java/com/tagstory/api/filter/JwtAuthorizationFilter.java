@@ -68,7 +68,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             return headerToken;
         }
 
-        String queryToken = request.getParameter(TOKEN_TYPE_ACCESS);
+        String queryToken = request.getParameter(HttpHeaders.AUTHORIZATION);
         if (Objects.nonNull(queryToken)) {
             return queryToken;
         }
