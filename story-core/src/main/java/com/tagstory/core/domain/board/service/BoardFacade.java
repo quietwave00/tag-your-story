@@ -5,6 +5,7 @@ import com.tagstory.core.domain.board.BoardOrderType;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
+import com.tagstory.core.domain.board.service.dto.BoardList;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
@@ -38,16 +39,17 @@ public class BoardFacade {
         return boardService.create(boardEntity, user, boardHashtagEntityList, command);
     }
 
-    public List<Board> getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
-        List<Board> boardList = BoardOrderType.CREATED_AT.equals(orderType)
+    public BoardList getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
+        BoardList boardListResponse = BoardOrderType.CREATED_AT.equals(orderType)
                 ? boardService.getBoardListByTrackIdSortedCreatedAt(BoardStatus.POST, trackId, page)
                 : boardService.getBoardListByTrackIdSortedLike(BoardStatus.POST, trackId, page);
 
+        List<Board> boardList = boardListResponse.getBoardList();
         List<HashtagNameList> hashtagNameListByBoardList = boardList.stream()
                 .map(board -> boardHashtagService.getHashtagNameByBoardId(board.getBoardId()))
                 .toList();
 
-        return boardService.getBoardListByTrackId(boardList, hashtagNameListByBoardList);
+        return boardService.getBoardListByTrackId(boardListResponse, hashtagNameListByBoardList);
     }
 
     public Board getDetailBoard(String boardId) {
@@ -74,6 +76,7 @@ public class BoardFacade {
         return boardService.isWriter(boardId, userId);
     }
 
+    @Transactional
     public Board updateBoardAndHashtag(UpdateBoardCommand command) {
         BoardEntity boardEntity = boardService.getBoardEntityByBoardId(command.getBoardId());
 

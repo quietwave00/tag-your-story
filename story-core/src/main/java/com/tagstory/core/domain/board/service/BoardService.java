@@ -5,6 +5,7 @@ import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.repository.BoardRepository;
+import com.tagstory.core.domain.board.service.dto.BoardList;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
@@ -19,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.util.annotation.Nullable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Service
@@ -38,24 +36,22 @@ public class BoardService {
         boardEntity.addUser(user.toEntity());
         boardEntity.addBoardHashTagList(boardHashtagEntityList);
         BoardEntity savedBoard = boardRepository.save(boardEntity);
-        // @TODO
-        HashtagNameList hashtagNameList = getHashtagNameListByBoardId(savedBoard.getBoardId());
+
+        HashtagNameList hashtagNameList = HashtagNameList.onComplete(command.getHashtagList());
         return savedBoard.toBoard().addHashtagList(hashtagNameList);
     }
 
-    public List<Board> getBoardListByTrackId(List<Board> boardList, List<HashtagNameList> hashtagNameListByBoardList) {
-        return IntStream.range(0, boardList.size())
-                .mapToObj(i -> boardList.get(i).addHashtagList(hashtagNameListByBoardList.get(i)))
-                .toList();
-    }
+    public BoardList getBoardListByTrackId(BoardList boardListResponse, List<HashtagNameList> hashtagNameListByBoardList) {
+        List<Board> pagedBoardList = boardListResponse.getBoardList();
+        List<Board> boardList = new ArrayList<>();
 
-    public List<Board> getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
-        Page<BoardEntity> boardEntityPage = boardRepository.
-                findByStatusAndTrackIdOrderByLikeCountDesc(status, trackId, PageRequest.of(page, 8));
+        for (int i = 0; i < pagedBoardList.size(); i++) {
+            Board board = pagedBoardList.get(i);
+            HashtagNameList hashtagNameList = hashtagNameListByBoardList.get(i);
+            boardList.add(board.addHashtagList(hashtagNameList));
+        }
 
-        return boardEntityPage.getContent().stream()
-                .map(BoardEntity::toBoard)
-                .toList();
+        return BoardList.onComplete(boardList, boardListResponse.getTotalCount());
     }
 
     public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
@@ -72,12 +68,10 @@ public class BoardService {
         return Objects.nonNull(board);
     }
 
-    @Transactional
     public Board updateBoard(UpdateBoardCommand command, BoardEntity boardEntity) {
         return boardEntity.update(command.getContent()).toBoard();
     }
 
-    @Transactional
     public Board updateBoardWithHashtag(UpdateBoardCommand command,
                                         BoardEntity boardEntity,
                                         List<BoardHashtagEntity> boardHashtagEntityList) {
@@ -117,13 +111,28 @@ public class BoardService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.BOARD_NOT_FOUND));
     }
 
-    public List<Board> getBoardListByTrackIdSortedCreatedAt(BoardStatus status, String trackId, int page) {
-        // @TODO
+    public BoardList getBoardListByTrackIdSortedCreatedAt(BoardStatus status, String trackId, int page) {
         Page<BoardEntity> boardEntityPage = boardRepository.
                 findByStatusAndTrackIdOrderByCreatedAtDesc(status, trackId, PageRequest.of(page, 8));
-        return boardEntityPage.getContent().stream()
+
+        long totalCount = boardEntityPage.getTotalElements();
+        List<Board> boardList = boardEntityPage.getContent().stream()
                 .map(BoardEntity::toBoard)
                 .toList();
+
+        return BoardList.onComplete(boardList, totalCount);
+    }
+
+    public BoardList getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
+        Page<BoardEntity> boardEntityPage = boardRepository.
+                findByStatusAndTrackIdOrderByLikeCountDesc(status, trackId, PageRequest.of(page, 8));
+
+        long totalCount = boardEntityPage.getTotalElements();
+        List<Board> boardList = boardEntityPage.getContent().stream()
+                .map(BoardEntity::toBoard)
+                .toList();
+
+        return BoardList.onComplete(boardList, totalCount);
     }
 
     public List<Board> findByTrackId(String trackId, int page) {
