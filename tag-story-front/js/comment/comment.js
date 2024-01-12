@@ -41,7 +41,7 @@ const renderReplyForm = (commentId) => {
     const childDiv = document.createElement('div');
     childDiv.classList.add('reply-area');
     childDiv.innerHTML = `
-                        <input type = "text" class = "reply-input" placeholder = "Write Reply">
+                        <input type = "text" class = "reply-input">
                         <button class = "btn btn-sm btn-dark reply-button">write</button>
                         `;
     parentElement.appendChild(childDiv);
@@ -72,6 +72,10 @@ const commentWriteButton = document.getElementById("comment-write-button");
 if(commentWriteButton) {
     commentWriteButton.addEventListener("click", () => {
         const content = document.getElementById('comment-input').value;
+        if(content == '') {
+            alert("댓글 내용을 입력해 주세요.");
+            return;
+        }
         document.getElementById('comment-input').value = "";
         CommentApi.writeComment(boardId, content).then((response) => {
             renderComment(response, false, false);

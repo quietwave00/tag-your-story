@@ -3,7 +3,7 @@ import TrackApi from "../track/trackApi.js";
 import { trackManager } from "../track/trackManager.js";
 import { eventSource } from '../notification/notificationManager.js'
 import { renderNotification } from '../notification/notificationManager.js';
-
+import Board from '../board/board.js'
 
 const pageSize = 10;
 let currentPage = 1;
@@ -37,6 +37,11 @@ window.onload = () => {
 
         pagingTrackList();
     });
+
+    /**
+     * 트랙에 따른 게시글 리스트를 보여준다.
+     */
+    Board.setUp();
 }
 
 /**

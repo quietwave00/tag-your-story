@@ -1,14 +1,11 @@
 import UserArea from "../user/userArea.js";
 import TrackApi from "./trackApi.js";
-import BoardApi from "../board/boardApi.js";
-import File from "../board/file.js";
-import FileApi from "../board/fileApi.js";
-import Board from "../board/board.js";
+import Board from '../board/board.js'
 import { trackManager } from "./trackManager.js";
 import { eventSource } from '../notification/notificationManager.js'
 import { renderNotification } from '../notification/notificationManager.js';
 
-window.onload = async () => {
+window.onload = () => {
     /**
      * user-area에 대한 처리를 수행한다.
      */
@@ -24,8 +21,6 @@ window.onload = async () => {
     }
 
     const trackId = new URLSearchParams(window.location.search).get('trackId');
-    const defaultPage = 1;
-    const defaultOrderType = "CREATED_AT";
     /**
      * 트랙의 상세 정보를 가져온다.
      */
@@ -34,19 +29,9 @@ window.onload = async () => {
     });
 
     /**
-     * 게시물 리스트를 가져온다.
+     * 트랙에 따른 게시글 리스트를 보여준다.
      */
-    await BoardApi.getBoardListByTrackId(trackId, defaultOrderType, defaultPage).then((response) => {
-        Board.renderBoardList(response)
-    });
-    
-
-    /**
-     * 메인 이미지 파일을 가져온다.
-     */
-    await FileApi.getMainFileList(trackId, defaultPage).then((response) => {
-        File.renderMainFileList(response)
-    });
+    Board.setUp();
 };
 
 /**

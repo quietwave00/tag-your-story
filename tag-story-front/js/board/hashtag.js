@@ -1,5 +1,5 @@
 import BoardApi from './boardApi.js';
-import Board from './board.js';
+import { renderBoardList } from './board.js';
 
 let hashtagArray = [];
 let editFlag = false;
@@ -108,7 +108,7 @@ const clearHashtagArray = () => {
 const getBoardListByHashtag = (hashtagName) => {
     BoardApi.getBoardListByHashtagName(hashtagName)
     .then((response) => {
-        Board.renderBoardList(response);
+        renderBoardList(response);
     });
 }
 
