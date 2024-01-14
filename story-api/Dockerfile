@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk17:alpine
+FROM openjdk:17-jdk-slim
 
 COPY build/libs/*.jar ./app.jar
 
