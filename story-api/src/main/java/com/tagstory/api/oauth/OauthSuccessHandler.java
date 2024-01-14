@@ -45,12 +45,9 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
             /* userId가 있으면 AccessToken과 RefreshToken을 발급한다. */
             log.info("registered user");
             String accessToken = jwtUtil.generateAccessToken(userId);
-            String refreshToken = redisTemplate.get(userId, CacheSpec.REFRESH_TOKEN);
+            String refreshToken = jwtUtil.generateRefreshToken(userId);
+            redisTemplate.set(userId, refreshToken, CacheSpec.REFRESH_TOKEN);
 
-            if (Objects.isNull(refreshToken)) {
-                refreshToken = jwtUtil.generateRefreshToken(userId);
-                redisTemplate.set(userId, refreshToken, CacheSpec.REFRESH_TOKEN);
-            }
             response.addCookie(jwtCookieProvider.generateAccessTokenCookie(accessToken));
             response.addCookie(jwtCookieProvider.generateRefreshTokenCookie(refreshToken));
             getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);

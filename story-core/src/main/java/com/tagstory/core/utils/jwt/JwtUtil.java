@@ -32,6 +32,9 @@ public class JwtUtil {
     @Value("${jwt.refresh.expiration}")
     private int refreshTokenExpiration;
 
+    @Value("${jwt.pending.expiration}")
+    private int pendingTokenExpiration;
+
 //    private final JWTVerifier jwtVerifier;
 //
 //    public JwtUtil(@Value("${jwt.key}") String jwtKey) {
@@ -58,7 +61,7 @@ public class JwtUtil {
 
     public String generatePendingToken(String pendingId) {
         return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(accessTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
+                .withExpiresAt(Instant.ofEpochSecond(pendingTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
                 .withClaim("TOKEN_TYPE", TOKEN_TYPE_PENDING)
                 .withSubject(pendingId)
                 .sign(Algorithm.HMAC512(jwtKey));

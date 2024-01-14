@@ -4,6 +4,7 @@
  * @param exceptionCode 
  */
 const handleException = (exceptionCode) => {
+    console.log("handleException 들아옴");
     switch (exceptionCode) {
         case 'TOKEN_HAS_EXPIRED':
             return handleExpiredAccessToken();
@@ -15,7 +16,6 @@ const handleException = (exceptionCode) => {
 /**
  * 만료된 AccessToken으로 요청 시 실행된다.
  * 새로운 AccessToken을 설정한다.
- * @param _refreshToken : 리프레쉬 토큰
  */
 const handleExpiredAccessToken = () => {
     return fetch(`${server_host}/api/user/reissue/accessToken`, {
@@ -31,8 +31,7 @@ const handleExpiredAccessToken = () => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
-            console.log("handleExpiredAccessToken() Success");
-            setAccessToken(res.response.newJwt);
+            setAccessToken(res.response.newAccessToken);
         } else {
             if(res.exceptionCode === "TOKEN_HAS_EXPIRED") {
                 handleExpiredRefreshToken();
@@ -46,24 +45,9 @@ const handleExpiredAccessToken = () => {
  * 새로운 RefreshToken을 설정한다.
  */
 const handleExpiredRefreshToken = () => {
-    fetch(`${server_host}/api/user/reissue/refreshToken`, {
-        method: "POST",
-        headers: {
-            "Authorization": localStorage.getItem('Authorization')
-        },
-        body: JSON.stringify({
-            "refreshToken": localStorage.getItem('RefreshToken')
-        })
-    })
-    .then((res) => res.json())
-    .then(res => {
-        if(res.result === true) {
-            console.log("handleExpiredRefreshToken() Success");
-            setRefreshToken(res.response.newJwt);
-        } else {
-            handleException(res.exceptionCode);
-        }
-    });
+    console.log("RefreshToken executed");
+    alert("로그인 인증 정보가 만료되었습니다. 다시 로그인 해주세요.");
+    window.location.href = `${client_host}/login.html`;
 }
 
 /**
@@ -72,6 +56,7 @@ const handleExpiredRefreshToken = () => {
  * @param accessToken: 새로운 AccessToken
  */
 const setAccessToken = (accessToken) => {
+    console.log("setAccessToken Executed");
     localStorage.removeItem('Authorization');
     localStorage.setItem('Authorization', accessToken);
 }
@@ -82,6 +67,7 @@ const setAccessToken = (accessToken) => {
  * @param refreshToken: 새로운 RefreshToken
  */
 const setRefreshToken = (refreshToken) => {
+    console.log("setRefreshToken Executed");
     localStorage.removeItem('RefreshToken');
     localStorage.setItem('RefreshToken', refreshToken);
 }

@@ -4,6 +4,7 @@ import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
+import com.tagstory.core.domain.board.service.dto.BoardList;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
@@ -113,11 +114,17 @@ public class BoardServiceTest {
                 HashtagNameList.onComplete(List.of("hashtag2-1", "hashtag2-2"))
                 );
 
+        BoardList pagedBoardList = BoardList.builder()
+                .boardList(boardList)
+                .totalCount(boardList.size())
+                .build();
+
         // when
-        List<Board> resultList = boardService.getBoardListByTrackId(boardList, hashtagNameList);
+        BoardList resultList = boardService.getBoardListByTrackId(pagedBoardList, hashtagNameList);
 
         // then
-        assertThat(boardList.get(0).getHashtagNameList().getNameList().get(0)).isEqualTo("hashtag1-1");
-        assertThat(boardList.get(0).getHashtagNameList().getNameList().size()).isEqualTo(2);
+        List<Board> resultBoardList = resultList.getBoardList();
+        assertThat(resultBoardList.get(0).getHashtagNameList().getNameList().get(0)).isEqualTo("hashtag1-1");
+        assertThat(resultBoardList.get(0).getHashtagNameList().getNameList().size()).isEqualTo(2);
     }
 }

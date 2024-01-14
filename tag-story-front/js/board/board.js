@@ -10,23 +10,35 @@ import Hashtag from "./hashtag.js";
 
 const trackId = new URLSearchParams(window.location.search).get('trackId');
 const pageSize = 8;
+const defaultPage = 1;
+const defaultOrderType = "CREATED_AT";
 let orderType = "CREATED_AT";
 let currentPage = 1;
 let endPage = 0;
 
-window.addEventListener("load", () => {
-    BoardApi.getBoardCountByTrackId(trackId)
-        .then((response) => {
-            const perPage = response.count / pageSize;
-            (perPage < 1) ? endPage = 1 : endPage = Math.ceil(perPage);
-            
-            /**
-             *  page-area에 대한 처리를 수행한다.
-             */
-            pagingBoardList();
-        });
-});
+const setUp = async () => {
+    /**
+     * 게시물 리스트를 가져온다.
+     */
+    await BoardApi.getBoardListByTrackId(trackId, defaultOrderType, defaultPage).then((response) => {
+        const perPage = response.totalCount / pageSize;
+        (perPage < 1) ? endPage = 1 : endPage = Math.ceil(perPage);
+        
+        /**
+         *  page-area에 대한 처리를 수행한다.
+         */
+        pagingBoardList();
+        renderBoardList(response.boardList);
+    });
+    
 
+    /**
+     * 메인 이미지 파일을 가져온다.
+     */
+    await FileApi.getMainFileList(trackId, defaultPage).then((response) => {
+        File.renderMainFileList(response);
+    });
+}
 
 /**
  *  게시물 리스트 렌더링 함수
@@ -181,11 +193,14 @@ const pagingBoardList = () => {
 
 const onPageNumberClick = async (page) => {
     await BoardApi.getBoardListByTrackId(trackId, orderType, page).then((response) => {
-        renderBoardList(response)
+        renderBoardList(response.boardList)
     });
 
     await FileApi.getMainFileList(trackId, page).then((response) => {
-        File.renderMainFileList(response)});
+        if(response.length > 0) {
+            File.renderMainFileList(response.boardList)        
+        }
+    });
 }
 
 /**
@@ -206,6 +221,5 @@ const moveDetails = () => {
     }
 }
 
-export default {
-    renderBoardList
-}
+export { renderBoardList }
+export default { setUp }
