@@ -16,10 +16,10 @@ public class CorsConfig {
 
         config.setAllowCredentials(true);
 
-//        config.addAllowedOrigin("https://tagyourstory.blog");
-//        config.addAllowedOrigin("https://dev-api.tagyourstory.blog");
+        config.addAllowedOrigin("https://tagyourstory.blog");
+        config.addAllowedOrigin("https://dev-api.tagyourstory.blog");
 
-        config.addAllowedOriginPattern("*");
+//        config.addAllowedOriginPattern("*");
 
         config.addAllowedHeader("*");
         config.addAllowedMethod("GET");
