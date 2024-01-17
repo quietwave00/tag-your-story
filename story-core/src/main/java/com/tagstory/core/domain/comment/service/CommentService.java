@@ -40,6 +40,7 @@ public class CommentService {
         if(!isWriter(user, board)) {
             eventPublisher.onEventFromComment(user, board);
         }
+        log.info("publish event");
         return commentRepository.save(commentEntity).toComment();
     }
 

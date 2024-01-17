@@ -33,8 +33,10 @@ public class NotificationService {
     private final SseManager sseManager;
 
     public SseEmitter subscribe(Long userId) {
+        log.info("SSE subscribe");
         SseEmitter sseEmitter = sseManager.get(userId);
 
+        log.info("Get SSE");
         return Objects.isNull(sseEmitter) ?
                 sseManager.create(userId) :
                 sseEmitter;
@@ -51,6 +53,7 @@ public class NotificationService {
         SseEmitter sseEmitter = sseManager.get(notification.getSubscriber().getUserId());
         if(Objects.nonNull(sseEmitter)) {
             try {
+                log.info("Send notification");
                 sseEmitter.send(SseEmitter.event()
                         .name(NOTIFICATION_NAME)
                         .data(notificationManager.getNotificationData(notification)));

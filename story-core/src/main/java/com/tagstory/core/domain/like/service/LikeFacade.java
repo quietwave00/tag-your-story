@@ -25,6 +25,9 @@ public class LikeFacade {
 
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
+
+        /* api 중복 요청 방지를 위한 분산락 적용 */
+        //lockManager.lock(Like.getLockNameOfKey(savedLike.getLikeId()));
         likeService.like(board, user);
     }
 

@@ -29,9 +29,6 @@ public class LikeService {
         LikeEntity like = LikeEntity.createLike(user, board);
         LikeEntity savedLike = likeRepository.save(like);
 
-        /* api 중복 요청 방지를 위한 분산락 적용 */
-        lockManager.lock(Like.getLockNameOfKey(savedLike.getLikeId()));
-
         /* 좋아요를 누른 유저가 글쓴이가 아닌 경우에만 알림 이벤트를 발행한다. */
         if(!isWriter(user, board)) {
             eventPublisher.onEventFromLike(user, board);

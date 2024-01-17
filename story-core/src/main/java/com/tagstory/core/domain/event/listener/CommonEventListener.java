@@ -21,6 +21,7 @@ public class CommonEventListener {
     @TransactionalEventListener
     @Async
     public void handleEvent(CommonEvent commonEvent) {
+        log.info("Event Listen");
         if(commonEvent instanceof NotificationAdaptor) {
             Notification notification = commonEvent.getNotification();
             Notification savedNotification = notificationService.save(notification);

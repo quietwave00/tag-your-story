@@ -26,6 +26,7 @@ public class SseManager {
         init(sseEmitter);
 
         sseStorage.save(userId, sseEmitter);
+        log.info("Create SSE");
         return sseEmitter;
     }
 
