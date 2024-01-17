@@ -62,7 +62,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
-        //
         String headerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (Objects.nonNull(headerToken)) {
             return headerToken;
@@ -78,7 +77,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private void handleGuestRequest(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws IOException, ServletException {
-        log.info("Request As Guest");
         registerAsGuest();
         filterChain.doFilter(request, response);
     }
@@ -87,7 +85,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                                           HttpServletResponse response,
                                           FilterChain filterChain,
                                           String token) throws IOException, ServletException {
-        log.info("Request As Pending User");
         registerAsPendingUser(jwtUtil.getPendingIdFromToken(token));
         filterChain.doFilter(request, response);
     }
@@ -97,12 +94,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                                    FilterChain filterChain,
                                    String token) throws IOException, ServletException {
         try {
-            log.info("Request As User");
             jwtUtil.validateToken(token);
             Long userId = jwtUtil.getUserIdFromToken(token.replace(TOKEN_PREFIX, ""));
-
             setAuthentication(userId);
-
             filterChain.doFilter(request, response);
         } catch (CustomException e) {
             sendExceptionMessage(response, e);

@@ -37,13 +37,11 @@ public class OauthSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 
         /* userId가 없으면 Pending 타입의 토큰을 발급한다. */
         if(Objects.isNull(userId)) {
-            log.info("pendingUser");
             String pendingToken = jwtUtil.generatePendingToken(principalDetails.getPendingId());
             response.addCookie(jwtCookieProvider.generatePendingUserCookie(pendingToken));
             getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
         } else {
             /* userId가 있으면 AccessToken과 RefreshToken을 발급한다. */
-            log.info("registered user");
             String accessToken = jwtUtil.generateAccessToken(userId);
             String refreshToken = jwtUtil.generateRefreshToken(userId);
             redisTemplate.set(userId, refreshToken, CacheSpec.REFRESH_TOKEN);

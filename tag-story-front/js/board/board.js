@@ -86,7 +86,7 @@ orderButtons.forEach((button) => {
         orderType = e.currentTarget.value;
 
         await BoardApi.getBoardListByTrackId(trackId, orderType, currentPage).then((response) => {
-            renderBoardList(response);
+            renderBoardList(response.boardList);
         });
 
         await FileApi.getMainFileList(trackId, currentPage).then((response) => {

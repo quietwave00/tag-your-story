@@ -9,6 +9,7 @@ import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.utils.lock.LockManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -27,12 +28,13 @@ public class LikeFacade {
         likeService.like(board, user);
     }
 
+    @Transactional
     public void unLike(UnLikeCommand command) {
         boardService.decreaseLikeCount(command.getBoardId());
 
         /* 데이터 정합성을 위하여 대상 Like 객체에 락을 건다. */
         Like like = likeService.findByBoardIdAndUserId(command.getBoardId(), command.getUserId());
-        lockManager.lock(Like.getLockNameOfKey(like.getLikeId()));
+//        lockManager.lock(Like.getLockNameOfKey(like.getLikeId()));
 
         likeService.unLike(command.getBoardId(), command.getUserId());
     }
