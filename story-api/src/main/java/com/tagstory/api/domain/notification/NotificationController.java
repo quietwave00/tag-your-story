@@ -9,10 +9,12 @@ import com.tagstory.core.domain.notification.service.NotificationFacade;
 import com.tagstory.core.utils.api.ApiResult;
 import com.tagstory.core.utils.api.ApiUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +29,7 @@ public class NotificationController {
      * 알림 수신을 위한 SSE를 구독한다.
      */
     @PreAuthorize("hasRole('USER')")
-    @GetMapping(value = "/subscription", produces = "text/event-stream")
+    @GetMapping(value = "/subscription", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@CurrentUserId Long userId) {
         return notificationFacade.subscribe(userId);
     }

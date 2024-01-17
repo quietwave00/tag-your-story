@@ -5,6 +5,7 @@ import com.tagstory.core.domain.event.publisher.CommonEventPublisher;
 import com.tagstory.core.domain.like.LikeEntity;
 import com.tagstory.core.domain.like.repository.LikeRepository;
 import com.tagstory.core.domain.user.service.User;
+import com.tagstory.core.utils.lock.LockManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,10 +22,15 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final CommonEventPublisher eventPublisher;
 
+    private final LockManager lockManager;
+
     @Transactional
     public void like(Board board, User user) {
         LikeEntity like = LikeEntity.createLike(user, board);
-        likeRepository.save(like);
+        LikeEntity savedLike = likeRepository.save(like);
+
+        /* api 중복 요청 방지를 위한 분산락 적용 */
+        lockManager.lock(Like.getLockNameOfKey(savedLike.getLikeId()));
 
         /* 좋아요를 누른 유저가 글쓴이가 아닌 경우에만 알림 이벤트를 발행한다. */
         if(!isWriter(user, board)) {
@@ -32,7 +38,7 @@ public class LikeService {
         }
     }
 
-    @Transactional
+
     public void unLike(String boardId, Long userId) {
         likeRepository.deleteByBoard_BoardId_AndUser_UserId(boardId, userId);
     }

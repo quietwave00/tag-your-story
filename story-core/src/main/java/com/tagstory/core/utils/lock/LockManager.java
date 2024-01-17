@@ -18,10 +18,12 @@ public class LockManager {
      * 키값으로 락을 건다.
      */
     public void lock(String key) {
-        log.info("락 진입");
+        log.info("락 진입: {}", key);
         RLock lock = redissonClient.getLock(key);
+        boolean available = false;
         try {
-            boolean available = lock.tryLock(10, 1, TimeUnit.SECONDS);
+            available = lock.tryLock(10, 3, TimeUnit.SECONDS);
+            log.info("lock.isLocked(): {}, lock.getName(): {}", lock.isLocked(), lock.getName());
             if (!available) {
                 log.warn("redisson getLock timeout");
                 throw new IllegalArgumentException();
@@ -29,7 +31,9 @@ public class LockManager {
         } catch(InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlock();
+            if(available) {
+                lock.unlock();
+            }
             log.info("락 해제");
         }
     }
