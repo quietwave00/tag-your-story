@@ -10,13 +10,13 @@ import java.util.List;
 @Getter
 @Builder
 public class CommentWithRepliesResponse {
-    private Comment comment;
-    private List<Comment> children;
+    private CommentResponse comment;
+    private List<CommentResponse> children;
 
     public static CommentWithRepliesResponse from(CommentWithReplies commentWithReplies) {
         return CommentWithRepliesResponse.builder()
-                .comment(commentWithReplies.getComment())
-                .children(commentWithReplies.getChildren())
+                .comment(CommentResponse.from(commentWithReplies.getComment()))
+                .children(commentWithReplies.getChildren().stream().map(CommentResponse::from).toList())
                 .build();
     }
 }
