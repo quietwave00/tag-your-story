@@ -12,12 +12,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -34,6 +34,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
+    private static final String EMPTY_TOKEN = "null";
+
     /*
      * 인증 정보를 추출하고, 유효한 사용자인지 검증한다.
      */
@@ -45,7 +47,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         try {
             /* 토큰이 없으면 게스트 권한을 부여한다. */
-            if (StringUtils.isBlank(token)) {
+            if (!StringUtils.hasText(token) || EMPTY_TOKEN.equals(token)) {
                 handleGuestRequest(request, response, filterChain);
                 return;
             }
@@ -113,8 +115,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      * Guest 권한을 부여해준다.
      */
     private void registerAsGuest() {
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_GUEST.toString()));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, authorities);
+        PrincipalDetails principalDetails = new PrincipalDetails(null, Role.ROLE_GUEST);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
