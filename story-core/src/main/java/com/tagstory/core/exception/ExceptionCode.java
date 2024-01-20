@@ -19,7 +19,8 @@ public enum ExceptionCode {
     HASHTAG_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 해시태그입니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
-    NO_READ_PERMISSION(HttpStatus.FORBIDDEN, "조회 권한이 없습니다.")
+    NO_READ_PERMISSION(HttpStatus.FORBIDDEN, "조회 권한이 없습니다."),
+    NO_PERMISSION(HttpStatus.FORBIDDEN, "권한이 없습니다.")
     ;
 
     private final HttpStatus httpStatus;
