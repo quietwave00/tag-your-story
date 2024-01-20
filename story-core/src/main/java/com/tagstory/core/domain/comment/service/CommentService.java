@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -63,10 +64,9 @@ public class CommentService {
 
     public List<CommentWithReplies> getCommentList(String boardId, int page) {
         List<Comment> commentList = findCommentListByBoardId(boardId, page);
+
         return commentList.stream()
-                .map(comment -> {
-                    return CommentWithReplies.of(comment, comment.getChildren());
-                })
+                .map(comment -> CommentWithReplies.of(comment, comment.getChildren()))
                 .toList();
     }
 

@@ -150,14 +150,14 @@ const renderComment = (comment, isList, isReply) => {
     /* 닉네임 */
     const commentNickname = document.createElement('div');
     commentNickname.className = 'col-2 comment-nickname';
-    commentNickname.textContent = comment.user.nickname;
+    commentNickname.textContent = comment.nickname;
 
     /* 내용 */
     const commentContent = document.createElement('div');
     commentContent.className = 'col-4 comment-content';
 
-    let replyButton;
     /* 답글 버튼 */
+    let replyButton;
     if(!isReply) {
         replyButton = document.createElement('span');
         replyButton.className = 'reply-button';
@@ -179,7 +179,6 @@ const renderComment = (comment, isList, isReply) => {
         commentContent.appendChild(replyButton);
     }
     
-
     /* 댓글 아이디 */
     const commentIdInput = document.createElement('input');
     commentIdInput.type = 'hidden';
@@ -239,7 +238,7 @@ const renderAdditionalReplyList = (parentId, lastReplyId) => {
         /* 닉네임 */
         const commentNickname = document.createElement('div');
         commentNickname.className = 'col-2 comment-nickname';
-        commentNickname.textContent = reply.user.nickname;
+        commentNickname.textContent = reply.nickname;
 
         /* 내용 */
         const commentContent = document.createElement('div');

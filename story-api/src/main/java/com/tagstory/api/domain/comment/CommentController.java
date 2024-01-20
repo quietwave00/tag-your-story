@@ -62,7 +62,7 @@ public class CommentController {
      */
     @GetMapping("/{boardId}/{page}")
     public ApiResult<List<CommentWithRepliesResponse>> getCommentList(@PathVariable("boardId") String boardId,
-                                                                      @PathVariable("page") int page) {
+                                                                                                                          @PathVariable("page") int page) {
         List<CommentWithReplies> commentList = commentFacade.getCommentList(boardId, page);
         return ApiUtils.success(commentList.stream().map(CommentWithRepliesResponse::from).collect(Collectors.toList()));
     }
@@ -93,17 +93,18 @@ public class CommentController {
      */
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/replies")
-    public ApiResult<CommentResponse> createReply(@RequestBody @Valid CreateReplyRequest request, @CurrentUserId Long userId) {
+    public ApiResult<CommentResponse> createReply(@RequestBody @Valid CreateReplyRequest request,
+                                                                                      @CurrentUserId Long userId) {
         Comment comment = commentFacade.createReply(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
     }
 
     /*
-     * 답글을 조회한다.
+     * 답글을 조회한다. (페이징용)
      */
     @GetMapping("/replies/{parentId}/{page}")
     public ApiResult<List<CommentResponse>> getReplyList(@PathVariable("parentId") Long parentId,
-                                                         @PathVariable("page") int page) {
+                                                                                                @PathVariable("page") int page) {
         List<Comment> commentList = commentFacade.getReplyList(parentId, page);
         return ApiUtils.success(commentList.stream().map(CommentResponse::from).toList());
     }

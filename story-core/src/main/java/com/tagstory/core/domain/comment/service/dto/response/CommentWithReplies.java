@@ -16,10 +16,6 @@ public class CommentWithReplies {
     private List<Comment> children;
 
     public static CommentWithReplies of(Comment comment, List<Comment> children) {
-        children = children.stream()
-                .filter(child -> CommentStatus.POST == child.getStatus())
-                .toList();
-
         return CommentWithReplies.builder()
                 .comment(comment)
                 .children(children)
