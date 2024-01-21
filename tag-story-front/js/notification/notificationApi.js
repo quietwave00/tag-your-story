@@ -17,10 +17,7 @@ const setAsRead = (notificationId) => {
     .then((res) => res.json())
     .then(res => {
         if(res.success == false) {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    setAsRead(notificationId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -44,10 +41,7 @@ const getNotificationList = (page) => {
         if (res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    getNotificationList(page);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -70,10 +64,7 @@ const getNotificationCount = () => {
         if (res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    getNotificationCount();
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -92,10 +83,7 @@ const setAllAsRead = () => {
     .then((res) => res.json())
     .then(res => {
         if(res.success == false) {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    setAllAsRead();
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }

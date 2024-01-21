@@ -44,6 +44,14 @@ window.onload = () => {
  */
 const renderTrackList = (trackList) => {
     document.getElementById('track-area').innerHTML = "";
+
+    if(trackList.length == 0) {
+        document.getElementById('track-area').innerHTML = 
+            `
+                <div style = "margin-left: 30%; margin-top: 10%;">검색 결과가 없습니다.</div>
+            `;
+    }
+
     for(let track of trackList) {
         let trackId = track.trackId;
         let title = track.title;

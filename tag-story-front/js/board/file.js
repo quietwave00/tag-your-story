@@ -26,7 +26,6 @@ btnUpload.addEventListener("change", function(e) {
     imgCount = existedImgDiv ? (existedImgDiv.length + createdImgDiv.length)
                             : createdImgDiv.length;
 
-    console.log("imgCount when uploading: " + imgCount);
     if(imgCount >= 3) {
         alert("이미지는 3개까지 첨부 가능합니다.");
         return;
@@ -111,15 +110,6 @@ const update = (boardId) => {
         };
         return FileApi.update(afterFormData, uploadFileRequest);
     }
-}
-
-/**
- * 메인 이미지 리스트를 조회한다.
- */
-const getMainFileList = (trackId) => {
-    FileApi.getMainFileList(trackId).then((response) => {
-        renderMainFileList(response);
-    });
 }
 
 /**

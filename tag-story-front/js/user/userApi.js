@@ -21,10 +21,7 @@ const logout = () => {
             alert("로그아웃되었습니다.");
             window.location.href = `${client_host}/index.html`;
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-            .then(() => {
-                // logout();
-            });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -46,10 +43,7 @@ const checkRegisterUser = () => {
                 window.location.href = `${client_host}/nickname.html`;
             }
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-            .then(() => {
-                checkRegisterUser();
-            })
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     })
 }
@@ -78,10 +72,7 @@ const updateNickname = (nickname) => {
             CookieHandler.deleteCookie('Pending');
             window.location.href = `${client_host}/login.html`;
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-            .then(() => {
-                updateNickname(nickname);
-            });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }

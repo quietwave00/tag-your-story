@@ -99,11 +99,10 @@ const saveDeleteFileId = (imgDivId) => {
  * 파일 삭제, 수정 요청을 한다.
  */
 const deleteAndUpdateFile = () => {
-    console.log("deleteAndUpdateFile: " + fileIdListToDelete);
     if(fileIdListToDelete.length > 0) {
         FileApi.deleteFileList(fileIdListToDelete, boardIdFromModule);
     }
-    File.update(boardIdFromModule);
+    return File.update(boardIdFromModule);
 }
 
 export { fileList, editFlag };

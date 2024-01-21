@@ -1,4 +1,5 @@
 import { setAsRead } from './notificationApi.js';
+import exceptionHandler from '../global/exceptionHandler.js';
 
 /**
  * 실시간 알림 메시지를 보여준다.
@@ -95,5 +96,13 @@ const authorizationToken = localStorage.getItem("Authorization");
 export const eventSource = authorizationToken
   ? new EventSource(`${server_host}/api/notification/subscription?Authorization=${authorizationToken}`)
   : null;
+
+if (eventSource) {
+  eventSource.addEventListener('error', (e) => {
+    if(e.currentTarget.withCredentials == false) {
+      exceptionHandler.handleException('TOKEN_HAS_EXPIRED');
+    }
+  });
+}
 
 export { renderNotification };

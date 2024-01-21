@@ -21,10 +21,7 @@ const like = (boardId) => {
         if(res.success === true) {
             return Promise.resolve(res.success);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() =>{
-                    like(boardId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -50,10 +47,7 @@ const cancelLike = (boardId) => {
         if(res.success === true) {
             return Promise.resolve(res.success);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() =>{
-                    cancelLike(boardId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -76,10 +70,7 @@ const checkLiked = (boardId) => {
         if(res.success === true) {
             return Promise.resolve(res.response)
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    checkLiked(boardId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }

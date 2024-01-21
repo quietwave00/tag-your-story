@@ -14,10 +14,7 @@ const searchTrack = (keyword, page) => {
         if (res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    searchTrack(keyword);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     })
 }
@@ -37,10 +34,7 @@ const getDetailTrackById = (trackId) => {
         if(res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    getDetailTrackById(trackId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -57,10 +51,7 @@ const getKeywordRanking = () => {
         if(res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    getKeywordRanking();
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }

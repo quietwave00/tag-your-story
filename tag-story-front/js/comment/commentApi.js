@@ -45,10 +45,7 @@ const writeComment = (boardId, content) => {
         if(res.success == true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    writeComment(boardId, content);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -71,10 +68,7 @@ const getUserCommentId = (boardId) => {
         if (res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    getUserCommentId(boardId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     })
 }
@@ -102,10 +96,7 @@ const updateComment = (commentId, content) => {
         if(res.success == true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    updateComment(commentId, content);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -129,10 +120,7 @@ const deleteComment = (commentId) => {
             alert("삭제되었습니다.");
             location.reload();
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    deleteComment(commentId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -163,10 +151,7 @@ const createReply = (boardId, parentId, content) => {
         if(res.success == true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    createReply(boardId, parentId, content);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -188,10 +173,7 @@ const getCommentCountByBoardId = (boardId) => {
         if (res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    getCommentCountByBoardId(boardId);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }
@@ -214,10 +196,7 @@ const getReplyList = (parentId, page) => {
         if (res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode)
-                .then(() => {
-                    getReplyList(parentId, page);
-                });
+            ExceptionHandler.handleException(res.exceptionCode);
         }
     });
 }

@@ -65,15 +65,13 @@ const renderExistedBoard = () => {
  */
 document.getElementById("edit-button").addEventListener('click', () => {
     content = document.getElementById("board-input").value;
-    console.log("hashtagEditFlag: " + hashtagEditFlag);
     const resultHashtagArray = hashtagEditFlag ? hashtagArrayFromModule : new Array();
     BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
 
     if(fileEditFlag) {
         File.deleteAndUpdateFile();
     }
-    
-    location.href = `${client_host}/board.html?boardId=${boardId}`;
+    location.reload();
 });
 
 /**
