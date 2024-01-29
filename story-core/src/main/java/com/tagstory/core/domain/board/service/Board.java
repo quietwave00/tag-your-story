@@ -2,6 +2,7 @@ package com.tagstory.core.domain.board.service;
 
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
+import com.tagstory.core.domain.boardhashtag.service.BoardHashtag;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import com.tagstory.core.domain.file.service.File;
 import com.tagstory.core.domain.user.service.User;
@@ -33,6 +34,8 @@ public class Board {
     private User user;
 
     private HashtagNameList hashtagNameList;
+
+    private List<BoardHashtag> boardHashtagList;
 
     private LocalDateTime createdAt;
 

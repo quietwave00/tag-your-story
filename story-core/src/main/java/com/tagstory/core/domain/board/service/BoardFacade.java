@@ -11,8 +11,8 @@ import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
 import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
-import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.User;
+import com.tagstory.core.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -40,7 +40,7 @@ public class BoardFacade {
     }
 
     public BoardList getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
-        BoardList boardListResponse = BoardOrderType.CREATED_AT.equals(orderType)
+        BoardList boardListResponse = orderType.isCreatedAt()
                 ? boardService.getBoardListByTrackIdSortedCreatedAt(BoardStatus.POST, trackId, page)
                 : boardService.getBoardListByTrackIdSortedLike(BoardStatus.POST, trackId, page);
 
