@@ -7,8 +7,9 @@ import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.service.dto.BoardList;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
+import com.tagstory.core.domain.boardhashtag.service.BoardHashtag;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
-import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNames;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
 import com.tagstory.core.domain.user.service.User;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -45,15 +47,29 @@ public class BoardFacade {
                 : boardService.getBoardListByTrackIdSortedLike(BoardStatus.POST, trackId, page);
 
         List<Board> boardList = boardListResponse.getBoardList();
-        List<HashtagNameList> hashtagNameListByBoardList = boardList.stream()
-                .map(board -> boardHashtagService.getHashtagNameByBoardId(board.getBoardId()))
-                .toList();
+        List<List<BoardHashtag>> boardHashtagList = boardList.stream().map(Board::getBoardHashtagList).toList();
+        List<HashtagNames> hashtagNamesList = boardHashtagList.stream().map(boardHashtags -> {
+            boardHashtags.stream().map(boardHashtag -> {
+                boardHashtag.getHashtag().getName();
+            }).collect(Collectors.toList());
+        }).collect(Collectors.toList());
+//
+        List<HashtagNames> hashtagNamesList = boardHashtagList.stream().map(boardHashtags -> {
+            List<String> hashtagNames = boardHashtags.stream()
+                    .map(boardHashtag -> boardHashtag.getHashtag().getName())
+                    .collect(Collectors.toList());
+
+            HashtagNames.of(hashtagNames);
+
+            return hashtagNamesObj;
+        }).collect(Collectors.toList());
+
 
         return boardService.getBoardListByTrackId(boardListResponse, hashtagNameListByBoardList);
     }
 
     public Board getDetailBoard(String boardId) {
-        HashtagNameList hashtagNameList = boardHashtagService.getHashtagNameByBoardId(boardId);
+        HashtagNames hashtagNameList = boardHashtagService.getHashtagNameByBoardId(boardId);
         return boardService.getDetailBoard(boardId, hashtagNameList);
     }
 

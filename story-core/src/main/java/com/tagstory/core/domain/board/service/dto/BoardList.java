@@ -12,7 +12,7 @@ public class BoardList {
     private List<Board> boardList;
     private long totalCount;
 
-    public static BoardList onComplete(List<Board> boardList, long totalCount) {
+    public static BoardList of(List<Board> boardList, long totalCount) {
         return BoardList.builder()
                 .boardList(boardList)
                 .totalCount(totalCount)

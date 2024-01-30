@@ -110,9 +110,8 @@ public class BoardEntity extends BaseTime {
                 .count(this.getCount())
                 .likeCount(this.getLikeCount())
                 .trackId(this.getTrackId())
+                .boardHashtagList(this.getBoardHashtagEntityList().stream().map(BoardHashtagEntity::toBoardHashtag).toList())
                 .user(this.getUserEntity().toUser())
-                .boardHashtagList(this.getBoardHashtagEntityList().stream()
-                        .map(BoardHashtagEntity::toBoardHashtag).toList())
                 .createdAt(this.getCreatedAt())
                 .build();
     }

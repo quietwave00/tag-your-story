@@ -55,7 +55,6 @@ public class BoardHashtagEntity {
     public BoardHashtag toBoardHashtag() {
         return BoardHashtag.builder()
                 .boardHashtagId(this.getBoardHashtagId())
-                .board(this.getBoard().toBoard())
                 .hashtag(this.getHashtag().toHashtag())
                 .build();
     }

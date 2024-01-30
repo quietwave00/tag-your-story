@@ -21,13 +21,13 @@ public class LikeFacade {
     private final LockManager lockManager;
 
     public void like(LikeBoardCommand command) {
-        boardService.increaseLikeCount(command.getBoardId());
+        /* api 중복 요청 방지를 위한 분산 락 적용 */
+        lockManager.lock(Like.getLockNameOfKey(command.getUserId(), command.getBoardId()));
 
+        boardService.increaseLikeCount(command.getBoardId());
         Board board = boardService.getBoardByBoardId(command.getBoardId());
         User user = userService.getCacheByUserId(command.getUserId());
 
-        /* api 중복 요청 방지를 위한 분산락 적용 */
-        //lockManager.lock(Like.getLockNameOfKey(savedLike.getLikeId()));
         likeService.like(board, user);
     }
 
@@ -36,7 +36,7 @@ public class LikeFacade {
         boardService.decreaseLikeCount(command.getBoardId());
 
         /* 데이터 정합성을 위하여 대상 Like 객체에 락을 건다. */
-        Like like = likeService.findByBoardIdAndUserId(command.getBoardId(), command.getUserId());
+        likeService.findByBoardIdAndUserId(command.getBoardId(), command.getUserId());
 //        lockManager.lock(Like.getLockNameOfKey(like.getLikeId()));
 
         likeService.unLike(command.getBoardId(), command.getUserId());

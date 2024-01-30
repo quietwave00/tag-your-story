@@ -1,7 +1,7 @@
 package com.tagstory.api.domain.board.dto.response;
 
 import com.tagstory.core.domain.board.service.Board;
-import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNames;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,7 +14,7 @@ public class CreateBoardResponse {
     private String nickname;
     private String content;
     private LocalDateTime createdAt;
-    private HashtagNameList hashtagList;
+    private HashtagNames hashtagList;
 
     public static CreateBoardResponse from(Board board) {
         return builder()

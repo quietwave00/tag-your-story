@@ -30,11 +30,18 @@ public class LockManager {
             }
         } catch(InterruptedException e) {
             throw new RuntimeException(e);
-        } finally {
-            if(available) {
-                lock.unlock();
-            }
-            log.info("락 해제");
         }
+    }
+
+    /**
+     * 키 값으로 락을 푼다.
+     */
+    public void unlock(String key) {
+        RLock lock = redissonClient.getLock(key);
+        boolean available = lock.isLocked();
+        if (available) {
+            lock.unlock();
+        }
+        log.info("락 해제");
     }
 }

@@ -27,14 +27,15 @@ public class LikeService {
     @Transactional
     public void like(Board board, User user) {
         LikeEntity like = LikeEntity.createLike(user, board);
-        LikeEntity savedLike = likeRepository.save(like);
+        likeRepository.save(like);
 
         /* 좋아요를 누른 유저가 글쓴이가 아닌 경우에만 알림 이벤트를 발행한다. */
         if(!isWriter(user, board)) {
             eventPublisher.onEventFromLike(user, board);
         }
-    }
 
+//        lockManager.unlock(Like.getLockNameOfKey(user.getUserId(), board.getBoardId()));
+    }
 
     public void unLike(String boardId, Long userId) {
         likeRepository.deleteByBoard_BoardId_AndUser_UserId(boardId, userId);
