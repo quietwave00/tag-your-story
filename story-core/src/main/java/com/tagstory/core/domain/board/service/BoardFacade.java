@@ -48,24 +48,15 @@ public class BoardFacade {
 
         List<Board> boardList = boardListResponse.getBoardList();
         List<List<BoardHashtag>> boardHashtagList = boardList.stream().map(Board::getBoardHashtagList).toList();
-        List<HashtagNames> hashtagNamesList = boardHashtagList.stream().map(boardHashtags -> {
-            boardHashtags.stream().map(boardHashtag -> {
-                boardHashtag.getHashtag().getName();
-            }).collect(Collectors.toList());
-        }).collect(Collectors.toList());
-//
+
         List<HashtagNames> hashtagNamesList = boardHashtagList.stream().map(boardHashtags -> {
             List<String> hashtagNames = boardHashtags.stream()
                     .map(boardHashtag -> boardHashtag.getHashtag().getName())
                     .collect(Collectors.toList());
+            return HashtagNames.ofNameList(hashtagNames);
+        }).toList();
 
-            HashtagNames.of(hashtagNames);
-
-            return hashtagNamesObj;
-        }).collect(Collectors.toList());
-
-
-        return boardService.getBoardListByTrackId(boardListResponse, hashtagNameListByBoardList);
+        return boardService.getBoardListByTrackId(boardListResponse, hashtagNamesList);
     }
 
     public Board getDetailBoard(String boardId) {

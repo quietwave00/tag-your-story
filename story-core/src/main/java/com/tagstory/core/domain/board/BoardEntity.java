@@ -47,12 +47,6 @@ public class BoardEntity extends BaseTime {
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
-    @OneToMany(mappedBy = "board")
-    private List<FileEntity> fileList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
-    private List<LikeEntity> likeList = new ArrayList<>();
-
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<BoardHashtagEntity> boardHashtagEntityList = new ArrayList<>();
 

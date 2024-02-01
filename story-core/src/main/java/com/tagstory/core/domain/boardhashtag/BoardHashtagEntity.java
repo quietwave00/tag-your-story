@@ -26,7 +26,7 @@ public class BoardHashtagEntity {
     @JoinColumn(name = "board_id")
     private BoardEntity board;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "hashtag_id")
     private HashtagEntity hashtag;
 
@@ -44,10 +44,6 @@ public class BoardHashtagEntity {
         this.board = board;
     }
 
-    public void addHashTag(HashtagEntity hashtag) {
-        this.hashtag = hashtag;
-        hashtag.addBoardHashTag(this);
-    }
 
     /*
      * 형변환

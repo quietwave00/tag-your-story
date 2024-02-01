@@ -3,10 +3,7 @@ package com.tagstory.api.domain.board;
 import com.tagstory.api.annotations.CurrentUserId;
 import com.tagstory.api.domain.board.dto.request.CreateBoardRequest;
 import com.tagstory.api.domain.board.dto.request.UpdateBoardRequest;
-import com.tagstory.api.domain.board.dto.response.BoardCountResponse;
-import com.tagstory.api.domain.board.dto.response.BoardResponse;
-import com.tagstory.api.domain.board.dto.response.CreateBoardResponse;
-import com.tagstory.api.domain.board.dto.response.DetailBoardResponse;
+import com.tagstory.api.domain.board.dto.response.*;
 import com.tagstory.core.domain.board.BoardOrderType;
 import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.service.BoardFacade;
@@ -41,11 +38,11 @@ public class BoardController {
      * 트랙 아이디에 해당하는 게시물 리스트를 조회한다.
      */
     @GetMapping("/{trackId}")
-    public ApiResult<BoardList> getBoardListByTrackId(@PathVariable("trackId") String trackId,
-                                                      @RequestParam("order-type") BoardOrderType orderType,
-                                                      @RequestParam("page") int page) {
+    public ApiResult<BoardListResponse> getBoardListByTrackId(@PathVariable("trackId") String trackId,
+                                                              @RequestParam("order-type") BoardOrderType orderType,
+                                                              @RequestParam("page") int page) {
         BoardList boardList = boardFacade.getBoardListByTrackId(trackId, orderType, page);
-        return ApiUtils.success(boardList);
+        return ApiUtils.success(BoardListResponse.from(boardList));
     }
 
     /*
@@ -72,8 +69,8 @@ public class BoardController {
      */
     @GetMapping("/hashtags")
     public ApiResult<List<BoardResponse>> getBoardListByHashtagName(@RequestParam("hashtagName") String hashtagName) {
-        List<Board> response = boardFacade.getBoardListByHashtagName(hashtagName);
-        return ApiUtils.success(response.stream().map(BoardResponse::from).toList());
+        List<Board> boardList = boardFacade.getBoardListByHashtagName(hashtagName);
+        return ApiUtils.success(boardList.stream().map(BoardResponse::from).toList());
     }
 
     /*

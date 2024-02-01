@@ -1,5 +1,6 @@
 package com.tagstory.core.domain.board.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtag;
@@ -35,6 +36,7 @@ public class Board {
 
     private HashtagNames hashtagNameList;
 
+    @JsonIgnore
     private List<BoardHashtag> boardHashtagList;
 
     private LocalDateTime createdAt;

@@ -17,7 +17,7 @@ public class HashtagNames {
                 .build();
     }
 
-    public static HashtagNames of(List<HashtagEntity> hashtagEntityList) {
+    public static HashtagNames ofEntityList(List<HashtagEntity> hashtagEntityList) {
         return builder()
                 .nameList(hashtagEntityList.stream().map(HashtagEntity::getName).toList())
                 .build();

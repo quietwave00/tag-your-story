@@ -36,8 +36,7 @@ public class BoardService {
         boardEntity.addBoardHashTagList(boardHashtagEntityList);
         BoardEntity savedBoard = boardRepository.save(boardEntity);
 
-        HashtagNames hashtagNameList = HashtagNames.of(command.getHashtagList());
-        return savedBoard.toBoard().addHashtagList(hashtagNameList);
+        return savedBoard.toBoard().addHashtagList(HashtagNames.ofNameList(command.getHashtagList()));
     }
 
     public BoardList getBoardListByTrackId(BoardList boardListResponse, List<HashtagNames> hashtagNameListByBoardList) {
@@ -148,7 +147,7 @@ public class BoardService {
 
     public HashtagNames getHashtagNameListByBoardId(String boardId) {
         List<String> hashtagName = boardHashtagRepository.findHashtagNameByBoardId(boardId);
-        return HashtagNames.of(hashtagName);
+        return HashtagNames.ofNameList(hashtagName);
     }
 
     @Nullable

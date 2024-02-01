@@ -32,7 +32,7 @@ public class BoardHashtagService {
      */
     public HashtagNames getHashtagNameByBoardId(String boardId) {
         List<String> nameList = boardHashtagRepository.findHashtagNameByBoardId(boardId);
-        return HashtagNames.of(nameList);
+        return HashtagNames.ofNameList(nameList);
     }
 
     /**
