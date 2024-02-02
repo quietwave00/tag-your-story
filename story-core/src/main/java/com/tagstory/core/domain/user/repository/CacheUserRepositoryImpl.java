@@ -16,13 +16,16 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
 
     private final CommonRedisTemplate redisTemplate;
 
+
     @Override
     public User saveCache(User user, CacheSpec cacheSpec) {
-        if(Objects.nonNull(user.getUserId())) {
-            redisTemplate.set(user.getUserId(), user, cacheSpec);
-        } else {
-            redisTemplate.set(user.getPendingUserId(), user, cacheSpec);
-        }
+        redisTemplate.set(
+                Objects.nonNull(user.getUserId()) ?
+                        user.getUserId()
+                        : user.getPendingUserId(),
+                user,
+                cacheSpec
+        );
         return user;
     }
 

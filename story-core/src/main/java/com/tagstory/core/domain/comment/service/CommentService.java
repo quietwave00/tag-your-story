@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -63,10 +62,10 @@ public class CommentService {
     }
 
     public List<CommentWithReplies> getCommentList(String boardId, int page) {
-        List<Comment> commentList = findCommentListByBoardId(boardId, page);
+        List<Comment> commentList = getCommentListByBoardId(boardId, page);
 
         return commentList.stream()
-                .map(comment -> CommentWithReplies.of(comment, comment.getChildren()))
+                .map(comment -> CommentWithReplies.of(comment, getPostChildren(comment)))
                 .toList();
     }
 
@@ -111,7 +110,7 @@ public class CommentService {
                 () -> new CustomException(ExceptionCode.COMMENT_NOT_FOUND));
     }
 
-    private List<Comment> findCommentListByBoardId(String boardId, int page) {
+    private List<Comment> getCommentListByBoardId(String boardId, int page) {
         Page<CommentEntity> commentEntityList = commentRepository
                 .findByStatusAndParentIsNullAndBoardEntity_BoardIdOrderByCommentIdDesc(CommentStatus.POST, boardId, PageRequest.of(page, 20))
                 .orElse(Page.empty());
@@ -133,6 +132,12 @@ public class CommentService {
 
         return replyList.stream()
                 .map(CommentEntity::toComment)
+                .toList();
+    }
+
+    private List<Comment> getPostChildren(Comment comment) {
+        return comment.getChildren().stream()
+                .filter(child -> CommentStatus.POST.equals(child.getStatus()))
                 .toList();
     }
 
