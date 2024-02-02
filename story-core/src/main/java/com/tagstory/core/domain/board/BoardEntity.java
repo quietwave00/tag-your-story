@@ -15,7 +15,9 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Builder
 @NoArgsConstructor
@@ -104,7 +106,13 @@ public class BoardEntity extends BaseTime {
                 .count(this.getCount())
                 .likeCount(this.getLikeCount())
                 .trackId(this.getTrackId())
-                .boardHashtagList(this.getBoardHashtagEntityList().stream().map(BoardHashtagEntity::toBoardHashtag).toList())
+                .boardHashtagList(
+                        Optional.ofNullable(this.getBoardHashtagEntityList())
+                                .orElse(Collections.emptyList())
+                                .stream()
+                                .map(BoardHashtagEntity::toBoardHashtag)
+                                .toList()
+                )
                 .user(this.getUserEntity().toUser())
                 .createdAt(this.getCreatedAt())
                 .build();

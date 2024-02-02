@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Builder
@@ -94,19 +95,14 @@ public class CommentEntity extends BaseTime {
                 .status(this.getStatus())
                 .board(this.getBoardEntity().toBoard());
 
-        if (Objects.nonNull(this.getParent())) {
-            Comment comment = Comment.builder()
-                    .commentId(this.getParent().getCommentId())
-                    .build();
-            commentBuilder.parent(comment);
-        }
+        Optional.ofNullable(this.getParent())
+                .map(parent -> Comment.builder().commentId(parent.getCommentId()).build())
+                .ifPresent(commentBuilder::parent);
 
-        if (Objects.nonNull(this.getChildren())) {
-            List<Comment> children = this.getChildren().stream()
-                    .map(Comment::createReply)
-                            .toList();
-            commentBuilder.children(children);
-        }
+        Optional.ofNullable(this.getChildren())
+                .map(children -> children.stream().map(Comment::createReply).toList())
+                .ifPresent(commentBuilder::children);
+
         return commentBuilder.build();
     }
 }
