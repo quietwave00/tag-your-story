@@ -28,7 +28,7 @@ const setUp = async () => {
          *  page-area에 대한 처리를 수행한다.
          */
         pagingBoardList();
-        renderBoardList(response.boardList);
+        renderBoardList(response.boardResponseList);
     });
     
 
@@ -86,7 +86,7 @@ orderButtons.forEach((button) => {
         orderType = e.currentTarget.value;
 
         await BoardApi.getBoardListByTrackId(trackId, orderType, currentPage).then((response) => {
-            renderBoardList(response.boardList);
+            renderBoardList(response.boardResponseList);
         });
 
         await FileApi.getMainFileList(trackId, currentPage).then((response) => {
@@ -193,7 +193,7 @@ const pagingBoardList = () => {
 
 const onPageNumberClick = async (page) => {
     await BoardApi.getBoardListByTrackId(trackId, orderType, page).then((response) => {
-        renderBoardList(response.boardList)
+        renderBoardList(response.boardResponseList)
     });
 
     await FileApi.getMainFileList(trackId, page).then((response) => {

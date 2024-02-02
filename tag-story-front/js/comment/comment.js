@@ -59,10 +59,11 @@ const renderReplyForm = (commentId) => {
  * 답글 작성을 요청한다.
  */
 const createReply = (parentId, replyInput) => {
-    CommentApi.createReply(boardId, parentId, replyInput).then((response) => {
+    CommentApi.createReply(boardId, parentId, replyInput)
+    .then((response) => {
         renderComment(response, false, true);
-    });
-    location.reload();
+        location.reload();
+    })
 }
 
 /**
