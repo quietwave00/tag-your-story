@@ -120,8 +120,8 @@ public class BoardServiceTest {
                 );
 
         List<HashtagNames> hashtagNameList = List.of(
-                HashtagNames.of(List.of("hashtag1-1", "hashtag1-2")),
-                HashtagNames.of(List.of("hashtag2-1", "hashtag2-2"))
+                HashtagNames.ofNameList(List.of("hashtag1-1", "hashtag1-2")),
+                HashtagNames.ofNameList(List.of("hashtag2-1", "hashtag2-2"))
                 );
 
         BoardList pagedBoardList = BoardList.builder()
