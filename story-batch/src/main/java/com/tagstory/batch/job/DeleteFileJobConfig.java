@@ -7,12 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.JobScope;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcPagingItemReader;
 import org.springframework.batch.item.database.Order;
 import org.springframework.batch.item.database.PagingQueryProvider;
@@ -23,7 +23,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import jakarta.sql.DataSource;
+import javax.sql.DataSource;
+import org.springframework.transaction.PlatformTransactionManager;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +36,11 @@ import java.util.Map;
 public class DeleteFileJobConfig {
     private static final int CHUNK_SIZE = 10;
 
-    private final JobBuilderFactory jobBuilderFactory;
-    private final StepBuilderFactory stepBuilderFactory;
     private final DeleteFileJobListener listener;
     private final DataSource dataSource;
+
+    private final JobRepository jobRepository;
+    private final PlatformTransactionManager transactionManager;
 
     private final S3WebClient s3WebClient;
 
@@ -47,7 +50,7 @@ public class DeleteFileJobConfig {
      */
     @Bean
     public Job deleteFileJob() {
-        return jobBuilderFactory.get("deleteFileJob")
+        return new JobBuilder("deleteFileJob", jobRepository)
                 .start(deleteFile(null))
                 .next(deleteFileFromDB(null))
                 .listener(listener)
@@ -60,11 +63,10 @@ public class DeleteFileJobConfig {
     @Bean
     @JobScope
     public Step deleteFile(@Value("#{jobParameters[requestDate]}") String requestDate) {
-        return stepBuilderFactory.get("deleteFile")
-                .<List<String>, List<String>>chunk(CHUNK_SIZE)
+        return new StepBuilder("deleteFile", jobRepository)
+                .<List<String>, List<String>>chunk(CHUNK_SIZE, transactionManager)
                 .reader(fileItemReader(requestDate))
                 .processor(fileItemProcessor(requestDate))
-                .writer(fileItemWriter(requestDate))
                 .build();
     }
 
@@ -75,8 +77,8 @@ public class DeleteFileJobConfig {
     @JobScope
     public Step deleteFileFromDB(@Value("#{jobParameters[requestDate]}") String requestDate) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return stepBuilderFactory.get("deleteFileFromDB")
-                .tasklet(new DeleteFileFromDBStep(jdbcTemplate))
+        return new StepBuilder("deleteFileFromDB", jobRepository)
+                .tasklet(new DeleteFileFromDBStep(jdbcTemplate), transactionManager)
                 .build();
     }
 
@@ -137,20 +139,5 @@ public class DeleteFileJobConfig {
     public ItemProcessor<List<String>, List<String>> fileItemProcessor(@Value("#{jobParameters[requestDate]}") String requestDate) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return new CustomItemProcessor(jdbcTemplate, s3WebClient);
-    }
-
-    /*
-     * ItemWriter
-     *
-     */
-    @Bean
-    @StepScope
-    public ItemWriter<List<String>> fileItemWriter(@Value("#{jobParameters[requestDate]}") String requestDate) {
-        return new ItemWriter<>() {
-            @Override
-            public void write(List<? extends List<String>> items) {
-                log.info("Job Completed");
-            }
-        };
     }
 }
