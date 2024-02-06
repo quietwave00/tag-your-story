@@ -24,8 +24,9 @@ if (likeButtonArea) {
     likeButtonArea.addEventListener('click', async () => {
         const isLiked = likeButton.getAttribute('data-is-liked') === 'true';
         const likeApi = isLiked ? LikeApi.cancelLike : LikeApi.like;
-
-        if (await likeApi(boardId)) {
+        const result = await likeApi(boardId);
+        console.log("result: " + result);
+        if (result) {
             setStatus(!isLiked);
             currentLikeCount += isLiked ? -1 : 1;
             renderLikeCount(currentLikeCount);

@@ -8,11 +8,13 @@ import com.tagstory.core.domain.like.service.LikeFacade;
 import com.tagstory.core.utils.api.ApiUtils;
 import com.tagstory.core.utils.api.ApiResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -24,9 +26,11 @@ public class LikeController {
      */
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/likes")
-    public ApiResult<Void> like(@RequestBody @Valid LikeBoardRequest likeBoardRequest, @CurrentUserId Long userId) {
-        likeFacade.like(likeBoardRequest.toCommand(userId));
-        return ApiUtils.success();
+    public ApiResult<Boolean> like(@RequestBody @Valid LikeBoardRequest likeBoardRequest, @CurrentUserId Long userId) {
+        log.info("요청드러옴");
+        Boolean result = likeFacade.like(likeBoardRequest.toCommand(userId));
+        log.info("result: {}", result);
+        return ApiUtils.success(result);
     }
 
     /*
