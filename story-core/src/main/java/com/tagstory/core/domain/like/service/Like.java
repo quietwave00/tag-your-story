@@ -24,7 +24,7 @@ public class Like {
      */
     private static final String LOCK_NAME = "like:";
     private static final String SEPARATOR = ":";
-    public static String getLockNameOfKey(Long userId, String boardId) {
+    public static String getLockName(Long userId, String boardId) {
         return LOCK_NAME + userId + SEPARATOR + boardId;
     }
 

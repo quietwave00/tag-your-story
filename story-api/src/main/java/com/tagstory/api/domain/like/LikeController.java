@@ -27,9 +27,7 @@ public class LikeController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/likes")
     public ApiResult<Boolean> like(@RequestBody @Valid LikeBoardRequest likeBoardRequest, @CurrentUserId Long userId) {
-        log.info("요청드러옴");
         Boolean result = likeFacade.like(likeBoardRequest.toCommand(userId));
-        log.info("result: {}", result);
         return ApiUtils.success(result);
     }
 

@@ -1,5 +1,6 @@
 package com.tagstory.core.utils.lock;
 
+import com.tagstory.core.domain.like.service.Like;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -14,34 +15,41 @@ import java.util.concurrent.TimeUnit;
 public class LockManager {
     private final RedissonClient redissonClient;
 
-    /*
+    /**
      * 키값으로 락을 건다.
+     * @param name
      */
-    public void lock(String key) {
-        log.info("락 진입: {}", key);
-        RLock lock = redissonClient.getLock(key);
-        boolean available = false;
+    public void lock(String name) {
+        RLock lock = redissonClient.getLock(name);
         try {
-            available = lock.tryLock(10, 3, TimeUnit.SECONDS);
-            log.info("lock.isLocked(): {}, lock.getName(): {}", lock.isLocked(), lock.getName());
+            boolean available = lock.tryLock(2, 3, TimeUnit.SECONDS);
             if (!available) {
-                log.warn("redisson getLock timeout");
-                throw new IllegalArgumentException();
+                throw new RuntimeException("Try Lock Failed");
             }
         } catch(InterruptedException e) {
-            throw new RuntimeException(e);
+                log.error(e.getMessage());
         }
     }
 
     /**
      * 키 값으로 락을 푼다.
+     * @param name
      */
-    public void unlock(String key) {
-        RLock lock = redissonClient.getLock(key);
-        boolean available = lock.isLocked();
-        if (available) {
+    public void unlock(String name) {
+        RLock lock = redissonClient.getLock(name);
+        boolean isLocked = lock.isLocked();
+        if (isLocked) {
             lock.unlock();
         }
-        log.info("락 해제");
+    }
+
+    /**
+     * 락 획득 여부를 확인한다.
+     * @param name
+     * @return
+     */
+    public boolean isLocked(String name) {
+        final RLock lock = redissonClient.getLock(name);
+        return lock.isLocked();
     }
 }
