@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Builder
@@ -49,13 +50,13 @@ public class Comment {
                 .status(this.getStatus())
                 .boardEntity(this.getBoard().toEntity());
 
-        if (Objects.nonNull(this.getParent())) {
-            commentEntityBuilder.parent(this.getParent().toEntity());
-        }
+        Optional.ofNullable(this.getParent())
+                .ifPresent(parent -> commentEntityBuilder.parent(parent.toEntity()));
 
-        if (Objects.nonNull(this.getChildren())) {
-            commentEntityBuilder.children(this.getChildren().stream().map(Comment::toEntity).toList());
-        }
+        Optional.ofNullable(this.getChildren())
+                .map(children -> children.stream().map(Comment::toEntity).toList())
+                .ifPresent(commentEntityBuilder::children);
+
         return commentEntityBuilder.build();
     }
 

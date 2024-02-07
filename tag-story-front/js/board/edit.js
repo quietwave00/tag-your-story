@@ -63,17 +63,16 @@ const renderExistedBoard = () => {
 /**
  * 수정 버튼 클릭 이벤트 함수
  */
-document.getElementById("edit-button").addEventListener('click', () => {
-    content = document.getElementById("board-input").value;
-    console.log("hashtagEditFlag: " + hashtagEditFlag);
+document.getElementById("edit-button").addEventListener('click', async () => {
+    const content = document.getElementById("board-input").value;
     const resultHashtagArray = hashtagEditFlag ? hashtagArrayFromModule : new Array();
-    BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray);
 
-    if(fileEditFlag) {
-        File.deleteAndUpdateFile();
-    }
-    
-    location.href = `${client_host}/board.html?boardId=${boardId}`;
+    await Promise.all([
+        BoardApi.updateBoardAndHashtag(boardId, content, resultHashtagArray),
+        fileEditFlag ? File.deleteAndUpdateFile() : Promise.resolve()
+    ]);
+
+    location.reload();
 });
 
 /**

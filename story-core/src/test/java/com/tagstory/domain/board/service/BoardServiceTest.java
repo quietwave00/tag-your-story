@@ -1,13 +1,14 @@
 package com.tagstory.domain.board.service;
 
 import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.BoardService;
 import com.tagstory.core.domain.board.service.dto.BoardList;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
-import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNames;
 import com.tagstory.core.domain.user.service.User;
 import com.tagstory.domain.board.fixture.BoardFixture;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,13 @@ public class BoardServiceTest {
                         .build()
         );
 
+        CreateBoardCommand command = CreateBoardCommand.builder()
+                .content("content")
+                .trackId("trackId")
+                .hashtagList(List.of("hashtag1", "hashtag2"))
+                .userId(user.getUserId())
+                .build();
+
         BoardEntity mockSavedBoard = BoardEntity.builder()
                 .boardId("1")
                 .userEntity(user.toEntity())
@@ -63,7 +71,9 @@ public class BoardServiceTest {
         when(boardHashtagRepository.findHashtagNameByBoardId(any()))
                 .thenReturn(List.of("hashtag1", "hashtag2"));
 
-        Board board = boardService.create(BoardFixture.createBoardEntityWithUserEntity(), user, boardHashtagEntityList);
+        Board board = boardService.create(BoardFixture.createBoardEntityWithUserEntity(),
+                user, boardHashtagEntityList, command
+                );
 
         // then
         assertThat(board.getBoardId()).isEqualTo("1");
@@ -109,9 +119,9 @@ public class BoardServiceTest {
                 BoardFixture.createBoard("2")
                 );
 
-        List<HashtagNameList> hashtagNameList = List.of(
-                HashtagNameList.onComplete(List.of("hashtag1-1", "hashtag1-2")),
-                HashtagNameList.onComplete(List.of("hashtag2-1", "hashtag2-2"))
+        List<HashtagNames> hashtagNameList = List.of(
+                HashtagNames.ofNameList(List.of("hashtag1-1", "hashtag1-2")),
+                HashtagNames.ofNameList(List.of("hashtag2-1", "hashtag2-2"))
                 );
 
         BoardList pagedBoardList = BoardList.builder()

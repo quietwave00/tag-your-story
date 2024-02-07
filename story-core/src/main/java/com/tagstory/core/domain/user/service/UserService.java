@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -56,7 +57,7 @@ public class UserService  {
         user.addRole(Role.ROLE_USER);
 
         UserEntity userEntity = userRepository.save(user.toEntity());
-        userRepository.saveCache(userEntity.toUser(), CacheSpec.USER);
+        saveCache(userEntity);
 
         userRepository.deletePendingUser(user, CacheSpec.PENDING_USER);
         return user;
@@ -66,6 +67,10 @@ public class UserService  {
     /*
      * 단일 메소드
      */
+    public void saveCache(UserEntity userEntity) {
+        userRepository.saveCache(userEntity.toUser(), CacheSpec.USER);
+    }
+
     public User getCacheByUserId(Long userId) {
         return Optional.ofNullable(userRepository.findCachedUserByUserId(userId, CacheSpec.USER))
                 .orElseGet(() -> userRepository.findByUserId(userId)
@@ -101,5 +106,9 @@ public class UserService  {
 
     public User saveCachedPendingUser(User user) {
         return userRepository.saveCache(user, CacheSpec.PENDING_USER);
+    }
+
+    public boolean hasCachedUserInfo(Long userId) {
+        return Objects.nonNull(userRepository.findCachedUserByUserId(userId, CacheSpec.USER));
     }
 }

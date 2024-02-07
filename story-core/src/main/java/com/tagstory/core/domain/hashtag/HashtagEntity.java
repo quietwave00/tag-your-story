@@ -13,9 +13,9 @@ import java.util.List;
 
 @Getter
 @Builder
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(
         name = "hashtag",
         indexes = {
@@ -28,9 +28,6 @@ public class HashtagEntity {
     private Long hashtagId;
 
     private String name;
-
-    @OneToMany(mappedBy = "hashtag")
-    private List<BoardHashtagEntity> boardHashtagEntityList = new ArrayList<>();
 
     /*
      * 형변환
@@ -50,12 +47,5 @@ public class HashtagEntity {
         return builder()
                 .name(name)
                 .build();
-    }
-
-    public void addBoardHashTag(BoardHashtagEntity boardHashtagEntity) {
-        this.boardHashtagEntityList.add(boardHashtagEntity);
-        if(boardHashtagEntity.getHashtag() != this) {
-            boardHashtagEntity.addHashTag(this);
-        }
     }
 }

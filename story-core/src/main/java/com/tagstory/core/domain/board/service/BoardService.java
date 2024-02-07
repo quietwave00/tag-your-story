@@ -8,7 +8,7 @@ import com.tagstory.core.domain.board.repository.BoardRepository;
 import com.tagstory.core.domain.board.service.dto.BoardList;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
 import com.tagstory.core.domain.boardhashtag.repository.BoardHashtagRepository;
-import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNames;
 import com.tagstory.core.domain.user.service.User;
 import com.tagstory.core.exception.CustomException;
 import com.tagstory.core.exception.ExceptionCode;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.util.annotation.Nullable;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -37,24 +36,23 @@ public class BoardService {
         boardEntity.addBoardHashTagList(boardHashtagEntityList);
         BoardEntity savedBoard = boardRepository.save(boardEntity);
 
-        HashtagNameList hashtagNameList = HashtagNameList.onComplete(command.getHashtagList());
-        return savedBoard.toBoard().addHashtagList(hashtagNameList);
+        return savedBoard.toBoard().addHashtagList(HashtagNames.ofNameList(command.getHashtagList()));
     }
 
-    public BoardList getBoardListByTrackId(BoardList boardListResponse, List<HashtagNameList> hashtagNameListByBoardList) {
+    public BoardList getBoardListByTrackId(BoardList boardListResponse, List<HashtagNames> hashtagNameListByBoardList) {
         List<Board> pagedBoardList = boardListResponse.getBoardList();
         List<Board> boardList = new ArrayList<>();
 
         for (int i = 0; i < pagedBoardList.size(); i++) {
             Board board = pagedBoardList.get(i);
-            HashtagNameList hashtagNameList = hashtagNameListByBoardList.get(i);
+            HashtagNames hashtagNameList = hashtagNameListByBoardList.get(i);
             boardList.add(board.addHashtagList(hashtagNameList));
         }
 
-        return BoardList.onComplete(boardList, boardListResponse.getTotalCount());
+        return BoardList.of(boardList, boardListResponse.getTotalCount());
     }
 
-    public Board getDetailBoard(String boardId, HashtagNameList hashtagNameList) {
+    public Board getDetailBoard(String boardId, HashtagNames hashtagNameList) {
         Board board = getBoardByBoardId(boardId);
         return board.addHashtagList(hashtagNameList);
     }
@@ -120,7 +118,7 @@ public class BoardService {
                 .map(BoardEntity::toBoard)
                 .toList();
 
-        return BoardList.onComplete(boardList, totalCount);
+        return BoardList.of(boardList, totalCount);
     }
 
     public BoardList getBoardListByTrackIdSortedLike(BoardStatus status, String trackId, int page) {
@@ -132,7 +130,7 @@ public class BoardService {
                 .map(BoardEntity::toBoard)
                 .toList();
 
-        return BoardList.onComplete(boardList, totalCount);
+        return BoardList.of(boardList, totalCount);
     }
 
     public List<Board> findByTrackId(String trackId, int page) {
@@ -147,9 +145,9 @@ public class BoardService {
         return boardRepository.findBoardsByHashtagId(hashtagId).stream().map(BoardEntity::toBoard).toList();
     }
 
-    public HashtagNameList getHashtagNameListByBoardId(String boardId) {
+    public HashtagNames getHashtagNameListByBoardId(String boardId) {
         List<String> hashtagName = boardHashtagRepository.findHashtagNameByBoardId(boardId);
-        return HashtagNameList.onComplete(hashtagName);
+        return HashtagNames.ofNameList(hashtagName);
     }
 
     @Nullable

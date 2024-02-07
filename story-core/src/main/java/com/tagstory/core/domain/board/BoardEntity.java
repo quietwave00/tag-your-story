@@ -12,10 +12,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Builder
 @NoArgsConstructor
@@ -26,7 +28,7 @@ import java.util.List;
 public class BoardEntity extends BaseTime {
     @Id
     @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @UuidGenerator
     private String boardId;
 
     @Column(length = 16_777_216)
@@ -46,12 +48,6 @@ public class BoardEntity extends BaseTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
-
-    @OneToMany(mappedBy = "board")
-    private List<FileEntity> fileList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
-    private List<LikeEntity> likeList = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<BoardHashtagEntity> boardHashtagEntityList = new ArrayList<>();
@@ -110,6 +106,13 @@ public class BoardEntity extends BaseTime {
                 .count(this.getCount())
                 .likeCount(this.getLikeCount())
                 .trackId(this.getTrackId())
+                .boardHashtagList(
+                        Optional.ofNullable(this.getBoardHashtagEntityList())
+                                .orElse(Collections.emptyList())
+                                .stream()
+                                .map(BoardHashtagEntity::toBoardHashtag)
+                                .toList()
+                )
                 .user(this.getUserEntity().toUser())
                 .createdAt(this.getCreatedAt())
                 .build();

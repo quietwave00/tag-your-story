@@ -9,7 +9,12 @@ import java.util.List;
 
 public interface BoardHashtagRepository extends JpaRepository<BoardHashtagEntity, Long> {
 
-    @Query("SELECT h.hashtag.name FROM BoardHashtagEntity h WHERE h.board.boardId = :boardId ORDER BY :boardId DESC")
+    @Query("""
+                SELECT h.hashtag.name
+                FROM BoardHashtagEntity h
+                WHERE h.board.boardId = :boardId
+                ORDER BY :boardId DESC
+                """)
     List<String> findHashtagNameByBoardId(@Param("boardId") String boardId);
 
     void deleteByBoard_BoardId(String boardId);

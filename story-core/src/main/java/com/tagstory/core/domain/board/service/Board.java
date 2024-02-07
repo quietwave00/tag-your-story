@@ -1,8 +1,10 @@
 package com.tagstory.core.domain.board.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tagstory.core.domain.board.BoardEntity;
 import com.tagstory.core.domain.board.BoardStatus;
-import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+import com.tagstory.core.domain.boardhashtag.service.BoardHashtag;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNames;
 import com.tagstory.core.domain.file.service.File;
 import com.tagstory.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
@@ -32,7 +34,10 @@ public class Board {
 
     private User user;
 
-    private HashtagNameList hashtagNameList;
+    private HashtagNames hashtagNameList;
+
+    @JsonIgnore
+    private List<BoardHashtag> boardHashtagList;
 
     private LocalDateTime createdAt;
 
@@ -58,7 +63,7 @@ public class Board {
     /*
      * 비즈니스 로직
      */
-    public Board addHashtagList(HashtagNameList hashtagNameList) {
+    public Board addHashtagList(HashtagNames hashtagNameList) {
         this.hashtagNameList = hashtagNameList;
         return this;
     }

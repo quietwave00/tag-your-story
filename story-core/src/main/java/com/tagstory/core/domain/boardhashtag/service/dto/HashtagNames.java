@@ -8,16 +8,16 @@ import java.util.List;
 
 @Getter
 @Builder
-public class HashtagNameList {
+public class HashtagNames {
     private List<String> nameList;
 
-    public static HashtagNameList onComplete(List<String> nameList) {
+    public static HashtagNames ofNameList(List<String> nameList) {
         return builder()
                 .nameList(nameList)
                 .build();
     }
 
-    public static HashtagNameList of(List<HashtagEntity> hashtagEntityList) {
+    public static HashtagNames ofEntityList(List<HashtagEntity> hashtagEntityList) {
         return builder()
                 .nameList(hashtagEntityList.stream().map(HashtagEntity::getName).toList())
                 .build();

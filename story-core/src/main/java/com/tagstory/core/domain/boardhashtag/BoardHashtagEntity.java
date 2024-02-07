@@ -1,6 +1,7 @@
 package com.tagstory.core.domain.boardhashtag;
 
 import com.tagstory.core.domain.board.BoardEntity;
+import com.tagstory.core.domain.boardhashtag.service.BoardHashtag;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,8 +44,14 @@ public class BoardHashtagEntity {
         this.board = board;
     }
 
-    public void addHashTag(HashtagEntity hashtag) {
-        this.hashtag = hashtag;
-        hashtag.addBoardHashTag(this);
+
+    /*
+     * 형변환
+     */
+    public BoardHashtag toBoardHashtag() {
+        return BoardHashtag.builder()
+                .boardHashtagId(this.getBoardHashtagId())
+                .hashtag(this.getHashtag().toHashtag())
+                .build();
     }
 }

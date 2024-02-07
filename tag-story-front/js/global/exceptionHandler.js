@@ -3,11 +3,12 @@
  * 
  * @param exceptionCode 
  */
-const handleException = (exceptionCode) => {
-    console.log("handleException 들아옴");
-    switch (exceptionCode) {
+const handleException = async (exceptionCode) => {
+        switch (exceptionCode) {
         case 'TOKEN_HAS_EXPIRED':
             return handleExpiredAccessToken();
+        case 'NO_PERMISSION':
+            return handleNoPermission();
         default:
             window.location.href = `${client_host}/exception.html`;
     }
@@ -45,7 +46,6 @@ const handleExpiredAccessToken = () => {
  * 새로운 RefreshToken을 설정한다.
  */
 const handleExpiredRefreshToken = () => {
-    console.log("RefreshToken executed");
     alert("로그인 인증 정보가 만료되었습니다. 다시 로그인 해주세요.");
     window.location.href = `${client_host}/login.html`;
 }
@@ -56,20 +56,15 @@ const handleExpiredRefreshToken = () => {
  * @param accessToken: 새로운 AccessToken
  */
 const setAccessToken = (accessToken) => {
-    console.log("setAccessToken Executed");
     localStorage.removeItem('Authorization');
     localStorage.setItem('Authorization', accessToken);
 }
 
 /**
- *  발급받은 RefreshToken을 설정한다.
- * 
- * @param refreshToken: 새로운 RefreshToken
+ * 인가 에러에 대한 처리를 수행한다.
  */
-const setRefreshToken = (refreshToken) => {
-    console.log("setRefreshToken Executed");
-    localStorage.removeItem('RefreshToken');
-    localStorage.setItem('RefreshToken', refreshToken);
+const handleNoPermission = () => {
+    alert("로그인 후 이용해 주세요.");
 }
 
 export default {

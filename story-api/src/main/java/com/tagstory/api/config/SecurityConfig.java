@@ -1,6 +1,7 @@
 package com.tagstory.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tagstory.api.auth.CustomExceptionDeniedHandler;
 import com.tagstory.api.filter.JwtAuthorizationFilter;
 import com.tagstory.api.oauth.OauthSuccessHandler;
 import com.tagstory.api.oauth.PrincipalOauth2UserService;
@@ -27,11 +28,15 @@ public class SecurityConfig {
     private final OauthSuccessHandler oauthSuccessHandler;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final CustomExceptionDeniedHandler customExceptionDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable);
+            .csrf(AbstractHttpConfigurer::disable)
+            .exceptionHandling((exceptionConfig) ->
+                    exceptionConfig
+                    .accessDeniedHandler(customExceptionDeniedHandler));
 
         http
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

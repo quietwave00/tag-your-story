@@ -23,8 +23,9 @@ public class Like {
      * 락을 걸 시 사용할 키 이름을 반환한다.
      */
     private static final String LOCK_NAME = "like:";
-    public static String getLockNameOfKey(Long likeId) {
-        return LOCK_NAME + likeId;
+    private static final String SEPARATOR = ":";
+    public static String getLockName(Long userId, String boardId) {
+        return LOCK_NAME + userId + SEPARATOR + boardId;
     }
 
     /*

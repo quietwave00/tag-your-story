@@ -1,5 +1,6 @@
 package com.tagstory.batch.job;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepContribution;
@@ -15,8 +16,7 @@ public class DeleteFileFromDBStep implements Tasklet {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-        log.info(">>>>> Step2 !!! <<<<<<");
+    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
         deleteFromDataBase();
         return RepeatStatus.FINISHED;
     }

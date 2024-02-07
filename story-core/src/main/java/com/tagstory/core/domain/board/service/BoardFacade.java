@@ -7,18 +7,20 @@ import com.tagstory.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagstory.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagstory.core.domain.board.service.dto.BoardList;
 import com.tagstory.core.domain.boardhashtag.BoardHashtagEntity;
+import com.tagstory.core.domain.boardhashtag.service.BoardHashtag;
 import com.tagstory.core.domain.boardhashtag.service.BoardHashtagService;
-import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNameList;
+import com.tagstory.core.domain.boardhashtag.service.dto.HashtagNames;
 import com.tagstory.core.domain.hashtag.HashtagEntity;
 import com.tagstory.core.domain.hashtag.service.HashtagService;
-import com.tagstory.core.domain.user.service.UserService;
 import com.tagstory.core.domain.user.service.User;
+import com.tagstory.core.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -40,20 +42,25 @@ public class BoardFacade {
     }
 
     public BoardList getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
-        BoardList boardListResponse = BoardOrderType.CREATED_AT.equals(orderType)
+        BoardList boardListResponse = orderType.isCreatedAt()
                 ? boardService.getBoardListByTrackIdSortedCreatedAt(BoardStatus.POST, trackId, page)
                 : boardService.getBoardListByTrackIdSortedLike(BoardStatus.POST, trackId, page);
 
         List<Board> boardList = boardListResponse.getBoardList();
-        List<HashtagNameList> hashtagNameListByBoardList = boardList.stream()
-                .map(board -> boardHashtagService.getHashtagNameByBoardId(board.getBoardId()))
-                .toList();
+        List<List<BoardHashtag>> boardHashtagList = boardList.stream().map(Board::getBoardHashtagList).toList();
 
-        return boardService.getBoardListByTrackId(boardListResponse, hashtagNameListByBoardList);
+        List<HashtagNames> hashtagNamesList = boardHashtagList.stream().map(boardHashtags -> {
+            List<String> hashtagNames = boardHashtags.stream()
+                    .map(boardHashtag -> boardHashtag.getHashtag().getName())
+                    .collect(Collectors.toList());
+            return HashtagNames.ofNameList(hashtagNames);
+        }).toList();
+
+        return boardService.getBoardListByTrackId(boardListResponse, hashtagNamesList);
     }
 
     public Board getDetailBoard(String boardId) {
-        HashtagNameList hashtagNameList = boardHashtagService.getHashtagNameByBoardId(boardId);
+        HashtagNames hashtagNameList = boardHashtagService.getHashtagNameByBoardId(boardId);
         return boardService.getDetailBoard(boardId, hashtagNameList);
     }
 
