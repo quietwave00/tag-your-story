@@ -19,7 +19,7 @@ const like = (boardId) => {
     .then((res) => res.json())
     .then(res => {
         if(res.success === true) {
-            return Promise.resolve(res.success);
+            return Promise.resolve(res.response);
         } else {
             ExceptionHandler.handleException(res.exceptionCode);
         }

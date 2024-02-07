@@ -19,18 +19,25 @@ const checkLiked = (boardId) => {
  * 좋아요 버튼 클릭 이벤트 함수
  */
 let currentLikeCount = 0;
+let debounceTime;
+
 const likeButtonArea = document.getElementById('like-button-area');
 if (likeButtonArea) {
     likeButtonArea.addEventListener('click', async () => {
-        const isLiked = likeButton.getAttribute('data-is-liked') === 'true';
-        const likeApi = isLiked ? LikeApi.cancelLike : LikeApi.like;
-        const result = await likeApi(boardId);
-        console.log("result: " + result);
-        if (result) {
-            setStatus(!isLiked);
-            currentLikeCount += isLiked ? -1 : 1;
-            renderLikeCount(currentLikeCount);
-        }
+        clearTimeout(debounceTime);
+
+        debounceTime = setTimeout(async () => {
+            const isLiked = likeButton.getAttribute('data-is-liked') === 'true';
+            const likeApi = isLiked ? LikeApi.cancelLike : LikeApi.like;
+            
+            const result = await likeApi(boardId);
+            
+            if (result) {
+                setStatus(!isLiked);
+                currentLikeCount += isLiked ? -1 : 1;
+                renderLikeCount(currentLikeCount);
+            }
+        }, 200);
     });
 }
     
