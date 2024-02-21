@@ -18,7 +18,6 @@ public class CustomItemProcessor implements ItemProcessor<List<String>, List<Str
 
     @Override
     public List<String> process(List<String> item) throws Exception {
-        log.info(">>>>>>>ItemProcessor!!<<<<<<");
         deleteFromS3(item);
         return null;
     }
