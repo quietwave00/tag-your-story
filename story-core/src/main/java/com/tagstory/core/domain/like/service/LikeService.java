@@ -22,8 +22,6 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final CommonEventPublisher eventPublisher;
 
-    private final LockManager lockManager;
-
     @Transactional
     public Boolean like(Board board, User user) {
         LikeEntity like = LikeEntity.createLike(user, board);

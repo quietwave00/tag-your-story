@@ -26,7 +26,6 @@ public class LikeFacade {
     private final LikeService likeService;
     private final BoardService boardService;
     private final UserService userService;
-    private final LikeRepository likeRepository;
 
     public Boolean like(LikeBoardCommand command) {
         boardService.increaseLikeCount(command.getBoardId());

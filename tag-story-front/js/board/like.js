@@ -31,13 +31,12 @@ if (likeButtonArea) {
             const likeApi = isLiked ? LikeApi.cancelLike : LikeApi.like;
             
             const result = await likeApi(boardId);
-            
             if (result) {
                 setStatus(!isLiked);
                 currentLikeCount += isLiked ? -1 : 1;
                 renderLikeCount(currentLikeCount);
             }
-        }, 200);
+        }, 150);
     });
 }
     
