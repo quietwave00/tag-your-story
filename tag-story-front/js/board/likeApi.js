@@ -21,7 +21,7 @@ const like = (boardId) => {
         if(res.success === true) {
             return Promise.resolve(res.response);
         } else {
-            ExceptionHandler.handleException(res.exceptionCode);
+            return ExceptionHandler.handleException(res.response.exceptionCode);
         }
     });
 }

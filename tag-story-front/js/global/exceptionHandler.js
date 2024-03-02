@@ -9,6 +9,8 @@ const handleException = async (exceptionCode) => {
             return handleExpiredAccessToken();
         case 'NO_PERMISSION':
             return handleNoPermission();
+        case 'LOCKED_RESOURCE':
+            return handleLockedResource();
         default:
             window.location.href = `${client_host}/exception.html`;
     }
@@ -65,6 +67,13 @@ const setAccessToken = (accessToken) => {
  */
 const handleNoPermission = () => {
     alert("로그인 후 이용해 주세요.");
+}
+
+/**
+ * 락이 걸려 있는 자원 수정에 대한 요청을 처리한다.
+ */
+const handleLockedResource = () => {
+    return false;
 }
 
 export default {
