@@ -4,7 +4,6 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: ENC(SuYUeNmx8lThaeGum7SuCl45EFRB1fyDSWw4b/cUJrE=)
 ---
 spring:
   config.activate.on-profile: dev
@@ -12,4 +11,3 @@ spring:
     redis:
       host: ENC(Q4yxOqn+VrtO0Lf0uDkTmuWOdjU8KEl4ApTkkDH+ih0RoZKvHRgwAvnG4AOyVdo/I5H3c4R08aPJR6IFIbl0sLCo4D09yGMyveHJP2CaXQWnKb+pGhHTzQ==)
       port: 6379
-      password: ""
