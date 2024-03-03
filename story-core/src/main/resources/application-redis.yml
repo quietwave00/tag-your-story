@@ -9,5 +9,5 @@ spring:
   config.activate.on-profile: dev
   data:
     redis:
-      host: ENC(Q4yxOqn+VrtO0Lf0uDkTmuWOdjU8KEl4ApTkkDH+ih0RoZKvHRgwAvnG4AOyVdo/I5H3c4R08aPJR6IFIbl0sLCo4D09yGMyveHJP2CaXQWnKb+pGhHTzQ==)
+      host: ENC(5J5edEOeF+l9qhcH9dSp3kQpEdKFtzULP5/jdgH9NEqFSe6wrbyGyHecNS/LEbxAd9RKnOJVuF0NS5v4EAnee18a/5J/MnMm)
       port: 6379
