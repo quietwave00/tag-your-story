@@ -9,9 +9,9 @@ spring:
 spring:
   config.activate.on-profile: dev
   datasource:
-    url: ENC(j5B7tw1hYGpuceIiVNTUx/Uj0G5Jv1q4FuGclqbuU/sDRw00eIgIEs6GVhcHBGjfm7JhprZ/3Wto1wpjVHex/nRwsLtUWCqdJ7+k9Gomp8XlC2cegEXHBQ==)
+    url: ENC(xoc3kKWRyGEKcUSCYiEy/uZML0Yo805xVqNqauI+YauDFPR68Z39fVq4WaLYDRLwbGry4W+PhViG/0BMyoboVrD3i6crTVMPIpRfcdzfyypeRHQ4PIiYj9C/C/ADGTix)
     username: ENC(S1jQxMUg+K90cobJ9ELzng==)
-    password: ENC(/fMQpBA/mzEa1TdXjGVbMh7Gv5AUhhcz)
+    password: ENC(bOgw/bXmDhgVFdO5qvCwblnCmqZ67oZH9R8PttqL8tM=)
     driver-class-name: com.mysql.cj.jdbc.Driver
 ---
 spring:
