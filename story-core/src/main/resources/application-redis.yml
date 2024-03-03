@@ -10,6 +10,6 @@ spring:
   config.activate.on-profile: dev
   data:
     redis:
-      host: ENC(vnwVK/YduADW8/m+P5bbByaIUnaPuF1ke8dD8+v84NGuRG8WTbYgEDR7JULBUlugZjXtavs1eqbZlqaEyMFu3w==)
+      host: ENC(Q4yxOqn+VrtO0Lf0uDkTmuWOdjU8KEl4ApTkkDH+ih0RoZKvHRgwAvnG4AOyVdo/I5H3c4R08aPJR6IFIbl0sLCo4D09yGMyveHJP2CaXQWnKb+pGhHTzQ==)
       port: 6379
-      password: ENC(zOArmr7ZqbbnBifbW6SDft0o5M+ukwY5DEWDsz03xms=)
+      password: ""
