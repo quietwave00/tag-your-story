@@ -16,9 +16,6 @@ public class RedissonConfig {
     @Value("${spring.data.redis.port}")
     private int redisPort;
 
-    @Value("${spring.data.redis.password}")
-    private String password;
-
     private static final String REDISSON_HOST_PREFIX = "redis://";
 
     @Bean
@@ -26,7 +23,6 @@ public class RedissonConfig {
         Config config = new Config();
         SingleServerConfig singleServerConfig = config.useSingleServer();
         singleServerConfig.setAddress(REDISSON_HOST_PREFIX + redisHost + ":" + redisPort);
-        singleServerConfig.setPassword(password);
         return Redisson.create(config);
     }
 }
