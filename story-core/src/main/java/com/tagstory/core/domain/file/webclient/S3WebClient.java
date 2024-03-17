@@ -67,13 +67,15 @@ public class S3WebClient {
     }
 
     /*
-     * S3에 파일을 삭제한다.
+     * S3에 파일 삭제 요청을 한다.
      */
-    public void deleteFile(String filePath) {
-        String[] pathSegments = filePath.split("/");
-        String fileName = pathSegments[pathSegments.length - 1];
-        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-        DeleteObjectRequest request = new DeleteObjectRequest(bucketName, fileName);
-        amazonS3Client.deleteObject(request);
+    public void deleteFile(List<String> filePathList) {
+        filePathList.forEach(filePath -> {
+            String[] pathSegments = filePath.split("/");
+            String fileName = pathSegments[pathSegments.length - 1];
+            String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+            DeleteObjectRequest request = new DeleteObjectRequest(bucketName, decodedFileName);
+            amazonS3Client.deleteObject(request);
+        });
     }
 }

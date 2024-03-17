@@ -25,7 +25,6 @@ public class DeleteFileFromDBStepConfig {
     @Bean(STEP_NAME)
     @JobScope
     public Step deleteFileFromDB(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        log.info("STEP2. DeleteFileFromDB Executed");
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return new StepBuilder("deleteFileFromDB", jobRepository)
                 .tasklet(new DeleteFileFromDBStep(jdbcTemplate), transactionManager)
