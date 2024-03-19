@@ -1,6 +1,6 @@
 package com.tagstory.batch.job.step.config;
 
-import com.tagstory.batch.item.CustomItemProcessor;
+import com.tagstory.batch.item.CustomItemWriter;
 import com.tagstory.batch.job.parameter.DeleteFileJobParameter;
 import com.tagstory.batch.mapper.FileListRowMapper;
 import com.tagstory.core.domain.file.webclient.S3WebClient;
@@ -73,7 +73,7 @@ public class DeleteFileFromS3StepConfig {
     @Bean(WRITER_NAME)
     @StepScope
     public ItemWriter<List<String>> fileItemWriter() {
-        return new CustomItemProcessor(s3WebClient);
+        return new CustomItemWriter(s3WebClient);
     }
 
 
