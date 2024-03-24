@@ -44,6 +44,7 @@ public class DeleteFileFromS3StepConfig {
     @Bean(STEP_NAME)
     @JobScope
     public Step deleteFile(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+        log.info("deleteFileFromS3() Executed");
         return new StepBuilder(STEP_NAME, jobRepository)
                 .<List<String>, List<String>>chunk(jobParameter.getChunkSize(), transactionManager)
                 .reader(fileItemReader())
