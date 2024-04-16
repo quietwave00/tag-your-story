@@ -54,7 +54,7 @@ const renderRankingArea = (response) => {
     const rankingArea = document.getElementById('ranking-area');
     const titleSpan = document.createElement('span');
     titleSpan.className = "ranking-area-title";
-    titleSpan.textContent = "지금 많이 검색하는 노래";
+    titleSpan.textContent = "지금 많이 검색하는 키워드";
     rankingArea.appendChild(titleSpan);
 
     const rankingList = response.keywordList;
