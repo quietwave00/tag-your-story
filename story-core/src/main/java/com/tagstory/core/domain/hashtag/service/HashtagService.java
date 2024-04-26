@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -22,9 +21,6 @@ public class HashtagService {
 
     /**
      *  해시태그 이름 리스트로 HashtagEntity의 리스트를 생성한다.
-     *
-     * @param hashtagNameList
-     * @return List<HashtagEntity>
      */
     public List<HashtagEntity> makeHashtagList(List<String> hashtagNameList) {
         List<HashtagEntity> existingHashtagList = hashtagRepository.findAllByNameIn(hashtagNameList);
@@ -39,12 +35,16 @@ public class HashtagService {
                 .toList();
     }
 
+    /**
+     * 해시태그 이름으로 해시태그 아이디를 조회한다.
+     */
     public Long getHashtagIdByHashtagName(String hashtagName) {
         return getHashtagByName(hashtagName).getHashtagId();
     }
 
+
     /*
-     * 단일 메소드
+     * private
      */
     private Hashtag getHashtagByName(String hashtagName) {
         return hashtagRepository.findByName(hashtagName).orElseThrow(() -> new CustomException(ExceptionCode.HASHTAG_NOT_FOUND)).toHashtag();

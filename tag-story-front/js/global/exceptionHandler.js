@@ -1,19 +1,24 @@
 /**
+ * ExceptionCode에 따른 함수 정의 
+ */
+const handleEvents =  {
+    TOKEN_HAS_EXPIRED: handleExpiredAccessToken(),
+    NO_PERMISSION: handleNoPermission(),
+    LOCKED_RESOURCE: handleLockedResource(),
+}
+
+/**
  * 서버로부터 반환받은 ExceptionCode에 따라 예외를 처리해준다.
  * 
  * @param exceptionCode 
  */
 const handleException = async (exceptionCode) => {
-        switch (exceptionCode) {
-        case 'TOKEN_HAS_EXPIRED':
-            return handleExpiredAccessToken();
-        case 'NO_PERMISSION':
-            return handleNoPermission();
-        case 'LOCKED_RESOURCE':
-            return handleLockedResource();
-        default:
-            window.location.href = `${client_host}/exception.html`;
+    if(handleEvents[exceptionCode]) {
+        handleEvents[exceptionCode]();
+        return;
     }
+
+    window.location.href = `${client_host}/exception.html`;
 }
 
 /**
