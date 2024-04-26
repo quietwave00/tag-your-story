@@ -1,6 +1,5 @@
 package com.tagstory.core.domain.boardhashtag.service;
 
-import com.tagstory.core.domain.board.service.Board;
 import com.tagstory.core.domain.hashtag.service.Hashtag;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +10,7 @@ public class BoardHashtag {
 
     private Long boardHashtagId;
 
-    private Board board;
+    private String boardId;
 
     private Hashtag hashtag;
 }
