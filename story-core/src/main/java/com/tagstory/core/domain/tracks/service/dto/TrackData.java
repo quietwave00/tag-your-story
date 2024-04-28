@@ -3,12 +3,10 @@ package com.tagstory.core.domain.tracks.service.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.io.Serializable;
-
 
 @Getter
 @Builder
-public class TrackData implements Serializable {
+public class TrackData {
     private String trackId;
     private String artistName;
     private String title;
