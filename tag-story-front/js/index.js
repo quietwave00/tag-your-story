@@ -3,6 +3,7 @@ import { trackManager } from './track/trackManager.js';
 import { eventSource } from './notification/notificationManager.js'
 import { renderNotification } from './notification/notificationManager.js';
 import TrackApi from './track/trackApi.js';
+import HashtagApi from './hashtag/hashtagApi.js';
 
 
 window.onload = () => {
@@ -26,6 +27,14 @@ window.onload = () => {
     if(localStorage.getItem('Pending') != null) {
         window.location.href = `${client_host}/nickname.html`;
     }
+    
+    /**
+     * 최근 작성된 해시태그를 보여준다.
+     */
+    HashtagApi.getRecentHashtagList().then((response) => {
+        renderRecentHashtagArea(response);
+    })
+    
 
     /**
      * 검색어 랭킹을 보여준다.
@@ -47,13 +56,50 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
+/**
+ * 검색 리스트로 이동
+ */
+searchButton.addEventListener('click', () => {
+    const keyword = searchInput.value;
+    trackManager.setKeyword(keyword);
+    window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
+});
+
+/**
+ * 최근 작성된 해시태그를 보여준다.
+ */
+const renderRecentHashtagArea = (response) => {
+    const hashtagArea = document.getElementById('recent-hashtag-area');
+    const titleSpan = document.createElement('span');
+    titleSpan.className = "title";
+    titleSpan.textContent = "지금 작성된 #해시태그";
+    hashtagArea.appendChild(titleSpan);
+
+    response.forEach(item => {
+        /* 최근 해시태그 */
+        const {boardId, hashtag} = item;
+        const hashtagDiv = document.createElement('div');
+        hashtagDiv.className = 'recent-hashtag';
+        hashtagDiv.textContent = hashtag.name;
+
+        /* 최근 해시태그 이벤트 리스너 */
+        hashtagDiv.addEventListener('click', () => {
+            window.location.href = `${client_host}/board.html?boardId=${boardId}`;
+        });
+
+        hashtagArea.appendChild(hashtagDiv);
+    });
+    
+    
+}
+
 /** 
  * 랭킹 리스트 화면을 그려준다.
  */
 const renderRankingArea = (response) => {
     const rankingArea = document.getElementById('ranking-area');
     const titleSpan = document.createElement('span');
-    titleSpan.className = "ranking-area-title";
+    titleSpan.className = "title";
     titleSpan.textContent = "지금 많이 검색하는 키워드";
     rankingArea.appendChild(titleSpan);
 
@@ -92,13 +138,4 @@ const moveToSearchResult = (keyword) => {
     trackManager.setKeyword(keyword);
     window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
 }
-
-/**
- * 검색 리스트로 이동
- */
-searchButton.addEventListener('click', () => {
-    const keyword = searchInput.value;
-    trackManager.setKeyword(keyword);
-    window.location.href = `${client_host}/tracks.html?keyword=${keyword}&page=${defaultPage}`;
-});
 
