@@ -1,6 +1,5 @@
 package com.tagstory.core.utils.lock;
 
-import com.tagstory.core.domain.like.service.Like;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;

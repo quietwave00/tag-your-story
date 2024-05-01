@@ -150,9 +150,13 @@ public class BoardService {
         return HashtagNames.ofNameList(hashtagName);
     }
 
+    /*
+     * private
+     */
     @Nullable
     private Board findBoardByBoardIdAndUserId(String boardId, Long userId) {
         Optional<BoardEntity> boardEntityOptional = boardRepository.findByBoardIdAndUserEntity_UserId(boardId, userId);
         return boardEntityOptional.map(BoardEntity::toBoard).orElse(null);
     }
+
 }
