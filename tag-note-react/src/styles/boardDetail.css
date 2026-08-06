@@ -1,0 +1,156 @@
+.board-detail-page {
+  display: grid;
+  justify-items: center;
+  gap: clamp(36px, 6vw, 72px);
+  max-width: 920px;
+  margin: 0 auto 64px;
+  text-align: center;
+}
+
+.board-detail-back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.board-detail-back:hover {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+  filter: blur(0.7px);
+}
+
+.board-detail-card {
+  display: grid;
+  justify-items: center;
+  gap: 28px;
+  width: min(760px, 100%);
+}
+
+.board-detail-header {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+
+.board-detail-user-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.board-detail-user-tag {
+  min-height: 30px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.board-detail-user-tag:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+  filter: blur(1.2px);
+}
+
+.board-detail-date,
+.board-detail-author,
+.board-like-count,
+.board-detail-message {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.board-detail-date,
+.board-detail-author,
+.board-like-count,
+.board-detail-message {
+  color: var(--color-muted);
+}
+
+.board-detail-content {
+  max-width: 760px;
+  min-height: 180px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-size: clamp(24px, 4.5vw, 54px);
+  font-weight: 700;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.board-detail-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.board-detail-actions button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.board-detail-actions button:hover {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+}
+
+.board-like-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.board-like-button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.board-like-button:hover,
+.board-like-button.liked {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+}
+
+.board-detail-message {
+  margin: 0;
+}
+
+.board-detail-message.error {
+  color: var(--color-text);
+  text-decoration: line-through;
+}

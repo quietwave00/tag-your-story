@@ -1,0 +1,173 @@
+.tracks-page {
+  display: grid;
+  justify-items: center;
+  gap: clamp(28px, 5vw, 56px);
+}
+
+.tracks-header {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-width: var(--narrow-max);
+  text-align: center;
+}
+
+.tracks-kicker,
+.tracks-description,
+.tracks-message,
+.track-meta,
+.track-row-index {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.tracks-kicker,
+.tracks-description,
+.tracks-message {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.tracks-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 8vw, 86px);
+  font-weight: 760;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.tracks-description strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.track-list {
+  display: grid;
+  gap: 12px;
+  width: min(860px, 100%);
+}
+
+.track-card {
+  display: grid;
+  grid-template-columns: 36px 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.track-card:hover,
+.track-card:focus-visible {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+  filter: blur(0.5px);
+}
+
+.track-card:hover .track-image {
+  filter: grayscale(1) contrast(1.35);
+}
+
+.track-row-index {
+  color: var(--color-muted);
+}
+
+.track-card:hover .track-row-index,
+.track-card:hover .track-meta-label {
+  color: #a3a3a3;
+}
+
+.track-image {
+  width: 64px;
+  height: 64px;
+  background: #d1d1d1;
+  object-fit: cover;
+}
+
+.track-content {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.track-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3.6vw, 38px);
+  font-weight: 760;
+  line-height: 0.98;
+  text-transform: uppercase;
+}
+
+.track-meta {
+  display: grid;
+  gap: 4px;
+  color: var(--color-muted);
+}
+
+.track-meta-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.track-meta-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tracks-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination-button,
+.pagination-number {
+  display: inline-grid;
+  place-items: center;
+  min-width: 42px;
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.pagination-button:hover,
+.pagination-number:hover,
+.pagination-number.active {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+}
+
+.tracks-message.error {
+  color: var(--color-text);
+  text-decoration: line-through;
+}
+
+@media (max-width: 767px) {
+  .track-card {
+    grid-template-columns: 28px 54px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .track-image {
+    width: 54px;
+    height: 54px;
+  }
+
+  .track-title {
+    font-size: 22px;
+  }
+}

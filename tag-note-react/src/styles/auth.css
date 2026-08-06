@@ -1,0 +1,94 @@
+.auth-page {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 180px);
+}
+
+.auth-panel {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 20px;
+  width: min(760px, 100%);
+  min-height: 520px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.auth-panel.compact {
+  min-height: 360px;
+}
+
+.auth-title {
+  max-width: 720px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 8vw, 88px);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.auth-description,
+.auth-message,
+.auth-brand {
+  max-width: 620px;
+  margin: 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.auth-primary-button,
+.nickname-button {
+  min-width: 240px;
+  min-height: 48px;
+  padding: 0 16px;
+  border: var(--grid-line);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.auth-primary-button:hover,
+.nickname-button:hover {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+  filter: blur(0.7px);
+}
+
+.auth-message.placeholder {
+  visibility: hidden;
+}
+
+.nickname-input {
+  width: min(520px, 100%);
+  min-height: 64px;
+  padding: 0;
+  border: 0;
+  border-bottom: var(--grid-line);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: clamp(22px, 4vw, 42px);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.nickname-input:focus {
+  outline: 1px solid var(--color-text);
+  outline-offset: 4px;
+}
+
+@media (max-width: 767px) {
+  .auth-primary-button,
+  .nickname-button {
+    width: 100%;
+  }
+}

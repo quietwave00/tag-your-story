@@ -1,0 +1,46 @@
+.contact-page {
+  display: grid;
+  justify-items: center;
+  gap: clamp(36px, 7vw, 84px);
+  min-height: 56vh;
+  align-content: center;
+  text-align: center;
+}
+
+.contact-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 8vw, 84px);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.contact-links {
+  display: grid;
+  gap: 12px;
+  width: min(360px, 100%);
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 44px;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.contact-link:hover {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+  filter: blur(1px);
+}
+
+.contact-icon {
+  width: 16px;
+  height: 16px;
+  border: 1px solid currentColor;
+}
