@@ -1,0 +1,9 @@
+spring:
+  config.activate.on-profile: prod
+sentry:
+  dsn: https://ade3f0e0555d81d96df95c88cd9dad17@o4506244329832448.ingest.sentry.io/4506244388618240
+
+  environment: prod
+  traces-sample-rate: 0.1
+  logging:
+    minimum-event-level: warn

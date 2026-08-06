@@ -11,8 +11,8 @@ on:
     branches: [ 'develop' ]
 
 env:
-  PROJECT_NAME: ${{ github.event.repository.name }}-api
-  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}-api
+  PROJECT_NAME: tagnote-api
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/tagnote-api
 
 jobs:
   build:
@@ -27,9 +27,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt' # See 'Supported distributions' for available options
-      - name: Build with Gradle (story-api)
+      - name: Build with Gradle (tagnote-api)
         run: |
-          ./gradlew -p story-api clean build
+          ./gradlew -p tagnote-api clean build
 
       - name: DockerHub Login
         uses: docker/login-action@v2
@@ -38,7 +38,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Docker Image Build
-        run: docker build -f story-api/Dockerfile -t $DOCKER_IMAGE story-api/
+        run: docker build -f tagnote-api/Dockerfile -t $DOCKER_IMAGE tagnote-api/
 
       - name: DockerHub Push
         run: docker push $DOCKER_IMAGE

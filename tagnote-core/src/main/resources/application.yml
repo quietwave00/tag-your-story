@@ -1,0 +1,13 @@
+spring:
+  profiles:
+    include:
+      - datasource
+      - jpa
+      - redis
+      - security
+      - api
+      - sentry
+
+logging:
+  level:
+    root: info

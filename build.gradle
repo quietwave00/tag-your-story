@@ -12,11 +12,12 @@ allprojects {
 
 
 subprojects {
-	group 'com.tagstory'
+	group 'com.tagnote'
 	version '0.0.1-SNAPSHOT'
 	sourceCompatibility = '17'
 
 	apply plugin: 'java'
+	apply plugin: 'java-library'
 	apply plugin: 'org.springframework.boot'
 	apply plugin: 'io.spring.dependency-management'
 
@@ -26,25 +27,13 @@ subprojects {
 		}
 	}
 
-	/* 하위 모듈에서 공통 사용 */
 	dependencies {
-		implementation 'org.springframework.boot:spring-boot-starter-web'
-		implementation 'org.springframework.boot:spring-boot-starter-security'
-		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-		implementation 'org.redisson:redisson-spring-boot-starter:3.18.0'
-		implementation 'com.github.ulisesbocchio:jasypt-spring-boot:3.0.5'
-		implementation 'org.apache.commons:commons-lang3'
-		implementation 'com.auth0:java-jwt:4.2.1'
-		implementation 'io.sentry:sentry-spring-boot-starter:6.33.1'
-		implementation 'io.sentry:sentry-logback:6.33.1'
-
 		compileOnly 'org.projectlombok:lombok'
 
 		annotationProcessor 'org.projectlombok:lombok'
 		annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
-		testImplementation 'org.springframework.security:spring-security-test'
 
 	}
 

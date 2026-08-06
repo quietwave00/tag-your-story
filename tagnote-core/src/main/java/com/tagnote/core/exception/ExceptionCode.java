@@ -1,0 +1,34 @@
+package com.tagnote.core.exception;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@AllArgsConstructor
+public enum ExceptionCode {
+
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시물입니다."),
+    USER_TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 유저 태그입니다."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
+
+    TOKEN_HAS_EXPIRED(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
+    TOKEN_HAS_TEMPERED(HttpStatus.UNAUTHORIZED, "위변조된 토큰입니다"),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않는 토큰입니다"),
+
+    CONVERSION_EXCEPTION(HttpStatus.UNPROCESSABLE_ENTITY, "데이터 변환 중 예외가 발생했습니다."),
+
+    FILE_STORAGE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "파일 스토리지가 설정되지 않았습니다."),
+    SPOTIFY_EXCEPTION(HttpStatus.SERVICE_UNAVAILABLE, "스포티파이 라이브러리 사용 중 예외가 발생했습니다."),
+
+    LOCKED_RESOURCE(HttpStatus.LOCKED, "사용할 수 없는 자원입니다."),
+
+    NO_READ_PERMISSION(HttpStatus.FORBIDDEN, "조회 권한이 없습니다."),
+    NO_PERMISSION(HttpStatus.FORBIDDEN, "권한이 없습니다.")
+    ;
+
+    private final HttpStatus httpStatus;
+    private final String message;
+}

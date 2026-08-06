@@ -1,0 +1,40 @@
+spring:
+  config.activate.on-profile: local
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+jwt:
+  key: ${JWT_SECRET}
+  expiration: 3
+  refresh:
+    expiration: 86400
+  pending:
+    expiration: 86400
+---
+spring:
+  config.activate.on-profile: prod
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+            scope:
+              - email
+              - profile
+jwt:
+  key: ${JWT_SECRET}
+  expiration: 99999
+  refresh:
+    expiration: 86400
+  pending:
+    expiration: 86400
