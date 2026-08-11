@@ -7,7 +7,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
+@lombok.RequiredArgsConstructor
 public class CorsConfig {
+
+    private final ApiProperties apiProperties;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -15,10 +18,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-
-        config.addAllowedOrigin("https://tagnote.blog");
-
-//        config.addAllowedOriginPattern("*");
+        config.setAllowedOrigins(apiProperties.getAllowedOrigins());
 
         config.addAllowedHeader("*");
         config.addAllowedMethod("GET");
