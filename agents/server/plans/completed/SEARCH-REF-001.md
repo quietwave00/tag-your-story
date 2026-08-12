@@ -1,6 +1,6 @@
 # SEARCH-REF-001 — Search Strangler Refactoring
 
-- Status: Active plan
+- Status: Completed
 - Scope: 기존 `GET /api/tracks` 검색 유스케이스의 계층 경계 생성
 - Non-goal: 이번 계획 수립 단계에서는 production code를 수정하지 않는다.
 
@@ -377,3 +377,14 @@ Java 17과 유효한 `JAVA_HOME`이 없는 환경에서는 Gradle 검증을 완�
 - 기존 검색/상세/랭킹 endpoint, parameter, 인증 및 response contract는 변경하지 않는다.
 - Search response DTO 필드 의미와 주요 실제 오류 응답을 문서화한다.
 - 다른 Controller의 Swagger 전환과 공통 API 문서 구조 재설계는 범위에 포함하지 않는다.
+
+## Completion Record
+
+- Completed: 2026-08-12
+- 기존 `GET /api/tracks`의 endpoint, query parameter, 응답 envelope와 field 의미를 유지했다.
+- Search orchestration을 `TrackSearchService`로 이동하고 Spotify/Redis 구현을 output port 뒤로 격리했다.
+- Spotify SDK mapping을 `SpotifyTrackSearchAdapter`로 이동했으며 검색 경로에 JPA/Repository/transaction을 추가하지 않았다.
+- Track 상세 조회와 검색어 랭킹은 승인 범위대로 legacy `TrackService`에 유지했다.
+- 신규 Search 테스트, 기존 characterization tests, 전체 Gradle `check`, `scripts/verify.sh`가 통과했다.
+- Springdoc 및 `TrackApi` 명세 interface를 추가하고 로컬 Swagger UI/OpenAPI 문서 노출을 확인했다.
+- Acceptance Criteria와 scope diff 검토를 완료했으며 사용자가 최종 기능 테스트 완료를 확인했다.
