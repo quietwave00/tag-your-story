@@ -1,10 +1,12 @@
 package com.tagnote.api.domain.tracks;
 
 import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
+import com.tagnote.application.catalog.search.TrackSearchService;
+import com.tagnote.application.catalog.search.model.TrackSearchItem;
+import com.tagnote.application.catalog.search.model.TrackSearchResult;
 import com.tagnote.core.domain.tracks.service.TrackService;
 import com.tagnote.core.domain.tracks.service.dto.TrackData;
 import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
-import com.tagnote.core.domain.tracks.service.dto.response.SearchTrackList;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,13 +29,16 @@ class TrackControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private TrackSearchService trackSearchService;
+
+    @MockBean
     private TrackService trackService;
 
     @Test
     void GET_api_tracks는_keyword와_page_query를_유지한다() throws Exception {
-        when(trackService.search("rock", 0)).thenReturn(
-                SearchTrackList.onComplete(
-                        List.of(TrackData.of("track-1", "artist", "title", "album", "image")),
+        when(trackSearchService.search("rock", 0)).thenReturn(
+                TrackSearchResult.of(
+                        List.of(TrackSearchItem.of("track-1", "artist", "title", "album", "image")),
                         42
                 )
         );

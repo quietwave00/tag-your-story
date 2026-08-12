@@ -31,10 +31,10 @@ class SearchKeywordTrackerTest {
     private SearchKeywordTracker searchKeywordTracker;
 
     @Test
-    void save는_search_keyword_prefix로_incrementScore를_호출한다() {
+    void record는_search_keyword_prefix로_incrementScore를_호출한다() {
         when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
 
-        searchKeywordTracker.save("rock");
+        searchKeywordTracker.record("rock");
 
         verify(zSetOperations).incrementScore("search_keyword:", "rock", 1);
     }

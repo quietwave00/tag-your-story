@@ -1,10 +1,9 @@
-package com.tagnote.domain.tracks.service;
+package com.tagnote.infrastructure.external.spotify;
 
-import com.tagnote.core.domain.tracks.service.TrackService;
-import com.tagnote.core.domain.tracks.service.dto.TrackData;
-import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
-import com.tagnote.core.domain.tracks.util.SearchKeywordTracker;
+import com.tagnote.application.catalog.search.model.TrackSearchItem;
+import com.tagnote.application.catalog.search.model.TrackSearchResult;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
+import com.tagnote.core.domain.tracks.webclient.dto.TrackInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,55 +14,48 @@ import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TrackServiceTest {
+class SpotifyTrackSearchAdapterTest {
 
     @Mock
     private SpotifyWebClient spotifyWebClient;
 
-    @Mock
-    private SearchKeywordTracker tracker;
-
     @InjectMocks
-    private TrackService trackService;
+    private SpotifyTrackSearchAdapter adapter;
 
     @Test
-    void getDetail은_album_image가_없으면_NO_IMAGE를_쓴다() {
+    void search는_Spotify_결과의_순서와_totalCount를_application_model로_매핑한다() {
+        Track first = track("track-1", "artist-1", "title-1", "album-1", "image-1");
+        Track second = track("track-2", "artist-2", "title-2", "album-2", "image-2");
+        when(spotifyWebClient.getTrackInfoByKeyword("rock", 2))
+                .thenReturn(TrackInfo.of(new Track[]{first, second}, 25));
+
+        TrackSearchResult result = adapter.search("rock", 2);
+
+        verify(spotifyWebClient).getTrackInfoByKeyword("rock", 2);
+        assertThat(result.getItems()).extracting(TrackSearchItem::getSpotifyTrackId)
+                .containsExactly("track-1", "track-2");
+        assertThat(result.getTotalCount()).isEqualTo(25);
+        assertThat(result.getItems().get(0).getArtistName()).isEqualTo("artist-1");
+        assertThat(result.getItems().get(0).getTitle()).isEqualTo("title-1");
+        assertThat(result.getItems().get(0).getAlbumName()).isEqualTo("album-1");
+        assertThat(result.getItems().get(0).getImageUrl()).isEqualTo("image-1");
+    }
+
+    @Test
+    void search는_album_image가_없으면_NO_IMAGE를_사용한다() {
         Track noImageTrack = track("track-1", "artist-1", "title-1", "album-1");
-        when(spotifyWebClient.getDetailTrackInfo("track-1")).thenReturn(noImageTrack);
+        when(spotifyWebClient.getTrackInfoByKeyword("rock", 0))
+                .thenReturn(TrackInfo.of(new Track[]{noImageTrack}, 1));
 
-        TrackData detailResult = trackService.getDetail("track-1");
+        TrackSearchResult result = adapter.search("rock", 0);
 
-        assertThat(detailResult.getImageUrl()).isEqualTo("NO_IMAGE");
-    }
-
-    @Test
-    void getDetail은_Spotify단건결과를_TrackData로_매핑한다() {
-        Track track = track("track-1", "artist-1", "title-1", "album-1", "image-1");
-        when(spotifyWebClient.getDetailTrackInfo("track-1")).thenReturn(track);
-
-        TrackData result = trackService.getDetail("track-1");
-
-        assertThat(result.getTrackId()).isEqualTo("track-1");
-        assertThat(result.getArtistName()).isEqualTo("artist-1");
-        assertThat(result.getTitle()).isEqualTo("title-1");
-        assertThat(result.getAlbumName()).isEqualTo("album-1");
-        assertThat(result.getImageUrl()).isEqualTo("image-1");
-    }
-
-    @Test
-    void getKeywordRanking은_tracker결과를_그대로_반환한다() {
-        when(tracker.getTopSearchKeywordList()).thenReturn(List.of("rock", "pop"));
-
-        RankingList result = trackService.getKeywordRanking();
-
-        assertThat(result.getKeywordList()).containsExactly("rock", "pop");
+        assertThat(result.getItems().get(0).getImageUrl()).isEqualTo("NO_IMAGE");
     }
 
     private Track track(String trackId, String artistName, String title, String albumName, String imageUrl) {

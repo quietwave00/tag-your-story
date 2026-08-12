@@ -16,3 +16,15 @@
     - `tagnote-core/src/test/java/com/tagnote/domain/tracks/util/SearchKeywordTrackerTest.java`
   - production code 변경 없음.
   - `./gradlew test` 실행을 시도했으나 현재 실행 환경에 `JAVA_HOME`과 `java`가 없어 검증이 차단됨.
+- 2026-08-11: Search Strangler Refactoring 계획 수립 완료.
+  - `agents/server/plans/active/SEARCH-REF-001.md`에 기존 `GET /api/tracks` behavior를 유지하며 Search Application use case와 Spotify Infrastructure 경계를 만드는 최소 milestone을 정리.
+  - Track 상세/랭킹, Catalog JPA 모델, Track Import, public API 변경은 후속 milestone로 제외.
+  - production code 변경 없음.
+  - 현재 실행 환경에 `JAVA_HOME`과 `java`가 없어 `./gradlew test`, `./gradlew check` 검증은 실행할 수 없음.
+- 2026-08-11: SEARCH-REF-001 구현 및 기능 검증 완료, 문서 완료 처리는 보류.
+  - 기존 `GET /api/tracks`를 `TrackSearchService`와 provider/recorder port 경유로 전환.
+  - Spotify SDK 검색 결과 mapping을 `SpotifyTrackSearchAdapter`로 격리하고 기존 HTTP response contract 유지.
+  - 검색 경로의 legacy `TrackService.search`와 불필요한 read-only transaction 경계를 제거.
+  - 신규 Search 테스트, 기존 Track characterization tests, 전체 Gradle `check`, `scripts/verify.sh` 통과.
+  - 갱신된 API 명세 규칙에 따라 Springdoc 2.5.0과 `TrackApi` Swagger interface를 추가하고 Track 검색/상세/랭킹 contract 및 Search response schema를 문서화.
+  - Scope 밖 파일을 일괄 수정하지 않으며, 전체 diff 검증이 정리될 때까지 Plan을 `plans/active/`에 유지.

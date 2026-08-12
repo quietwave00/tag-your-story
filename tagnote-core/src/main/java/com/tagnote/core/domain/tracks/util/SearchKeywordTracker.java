@@ -1,5 +1,6 @@
 package com.tagnote.core.domain.tracks.util;
 
+import com.tagnote.application.catalog.search.port.SearchKeywordRecorder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -10,14 +11,15 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class SearchKeywordTracker {
+public class SearchKeywordTracker implements SearchKeywordRecorder {
     private final StringRedisTemplate redisTemplate;
     private static final String SEARCH_KEYWORD = "search_keyword:";
 
     /*
      * 키워드를 zset 구조로 저장한다.
      */
-    public void save(String keyword) {
+    @Override
+    public void record(String keyword) {
         redisTemplate.opsForZSet().incrementScore(SEARCH_KEYWORD, keyword, 1);
     }
 
