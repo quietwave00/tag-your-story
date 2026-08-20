@@ -1,8 +1,8 @@
 package com.tagnote.core.domain.tracks.service;
 
+import com.tagnote.application.catalog.search.port.SearchKeywordRankingReader;
 import com.tagnote.core.domain.tracks.service.dto.TrackData;
 import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
-import com.tagnote.core.domain.tracks.util.SearchKeywordTracker;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import se.michaelthelin.spotify.model_objects.specification.Track;
 public class TrackService {
 
     private final SpotifyWebClient spotifyWebClient;
-    private final SearchKeywordTracker tracker;
+    private final SearchKeywordRankingReader searchKeywordRankingReader;
 
     public TrackData getDetail(String trackId) {
         Track track = spotifyWebClient.getDetailTrackInfo(trackId);
@@ -28,7 +28,7 @@ public class TrackService {
     }
 
     public RankingList getKeywordRanking() {
-        return RankingList.onComplete(tracker.getTopSearchKeywordList());
+        return RankingList.onComplete(searchKeywordRankingReader.getTopSearchKeywordList());
     }
 
     private TrackData getTrackData(Track track) {

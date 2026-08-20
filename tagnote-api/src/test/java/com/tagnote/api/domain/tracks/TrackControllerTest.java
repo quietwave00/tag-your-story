@@ -1,6 +1,10 @@
 package com.tagnote.api.domain.tracks;
 
 import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
+import com.tagnote.application.catalog.importer.TrackImportService;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.catalog.importer.model.ImportedArtist;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.search.TrackSearchService;
 import com.tagnote.application.catalog.search.model.TrackSearchItem;
 import com.tagnote.application.catalog.search.model.TrackSearchResult;
@@ -18,6 +22,8 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,6 +39,66 @@ class TrackControllerTest {
 
     @MockBean
     private TrackService trackService;
+
+    @MockBean
+    private TrackImportService trackImportService;
+
+    @Test
+    void POST_api_tracks_import는_인증없이_전체_Artist_credit을_반환한다() throws Exception {
+        ImportedArtist trackArtist = ImportedArtist.of(3L, "track-artist", "Track Artist", 0);
+        ImportedArtist albumArtist = ImportedArtist.of(7L, "album-artist", "Album Artist", 0);
+        ImportedAlbum album = ImportedAlbum.of(
+                5L,
+                "album-1",
+                "album",
+                2024,
+                List.of(albumArtist)
+        );
+        when(trackImportService.importTrack("track-1")).thenReturn(
+                ImportedTrack.of(
+                        10L,
+                        "track-1",
+                        "title",
+                        "ISRC-1",
+                        240_000,
+                        List.of(trackArtist),
+                        album
+                )
+        );
+
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"spotifyTrackId\":\"track-1\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response.catalogTrackId").value(10))
+                .andExpect(jsonPath("$.response.spotifyTrackId").value("track-1"))
+                .andExpect(jsonPath("$.response.artists[0].spotifyArtistId").value("track-artist"))
+                .andExpect(jsonPath("$.response.artists[0].position").value(0))
+                .andExpect(jsonPath("$.response.album.albumId").value(5))
+                .andExpect(jsonPath("$.response.album.artists[0].spotifyArtistId").value("album-artist"));
+    }
+
+    @Test
+    void POST_api_tracks_import는_blank_spotifyTrackId를_거부한다() throws Exception {
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"spotifyTrackId\":\" \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.response.message").value("spotifyTrackId는 비어 있을 수 없습니다."))
+                .andExpect(jsonPath("$.response.status").value(400));
+    }
+
+    @Test
+    void POST_api_tracks_import는_요청_body_누락을_400으로_반환한다() throws Exception {
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.response.message").value("요청 본문을 읽을 수 없습니다."))
+                .andExpect(jsonPath("$.response.status").value(400));
+    }
 
     @Test
     void GET_api_tracks는_keyword와_page_query를_유지한다() throws Exception {

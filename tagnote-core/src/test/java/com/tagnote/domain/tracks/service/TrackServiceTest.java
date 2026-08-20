@@ -1,9 +1,9 @@
 package com.tagnote.domain.tracks.service;
 
+import com.tagnote.application.catalog.search.port.SearchKeywordRankingReader;
 import com.tagnote.core.domain.tracks.service.TrackService;
 import com.tagnote.core.domain.tracks.service.dto.TrackData;
 import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
-import com.tagnote.core.domain.tracks.util.SearchKeywordTracker;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ class TrackServiceTest {
     private SpotifyWebClient spotifyWebClient;
 
     @Mock
-    private SearchKeywordTracker tracker;
+    private SearchKeywordRankingReader searchKeywordRankingReader;
 
     @InjectMocks
     private TrackService trackService;
@@ -59,7 +59,7 @@ class TrackServiceTest {
 
     @Test
     void getKeywordRanking은_tracker결과를_그대로_반환한다() {
-        when(tracker.getTopSearchKeywordList()).thenReturn(List.of("rock", "pop"));
+        when(searchKeywordRankingReader.getTopSearchKeywordList()).thenReturn(List.of("rock", "pop"));
 
         RankingList result = trackService.getKeywordRanking();
 

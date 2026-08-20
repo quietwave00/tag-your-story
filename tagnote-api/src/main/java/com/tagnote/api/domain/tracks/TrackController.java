@@ -2,6 +2,10 @@ package com.tagnote.api.domain.tracks;
 
 import com.tagnote.api.domain.tracks.dto.response.RankingListResponse;
 import com.tagnote.api.domain.tracks.dto.response.SearchTracksResponse;
+import com.tagnote.api.domain.tracks.dto.request.ImportTrackRequest;
+import com.tagnote.api.domain.tracks.dto.response.CatalogTrackResponse;
+import com.tagnote.application.catalog.importer.TrackImportService;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.search.TrackSearchService;
 import com.tagnote.application.catalog.search.model.TrackSearchResult;
 import com.tagnote.core.domain.tracks.service.TrackService;
@@ -10,6 +14,7 @@ import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
 import com.tagnote.core.utils.api.ApiUtils;
 import com.tagnote.core.utils.api.ApiResult;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +24,7 @@ public class TrackController implements TrackApi {
 
     private final TrackSearchService trackSearchService;
     private final TrackService trackService;
+    private final TrackImportService trackImportService;
 
     /*
      * 트랙을 검색한다.
@@ -28,6 +34,13 @@ public class TrackController implements TrackApi {
     public ApiResult<SearchTracksResponse> search(@RequestParam("keyword") String keyword, @RequestParam("page") int page) {
         TrackSearchResult searchResult = trackSearchService.search(keyword, page);
         return ApiUtils.success(SearchTracksResponse.from(searchResult));
+    }
+
+    @PostMapping("/tracks/import")
+    @Override
+    public ApiResult<CatalogTrackResponse> importTrack(@Valid @RequestBody ImportTrackRequest request) {
+        ImportedTrack importedTrack = trackImportService.importTrack(request.getSpotifyTrackId());
+        return ApiUtils.success(CatalogTrackResponse.from(importedTrack));
     }
 
     /*

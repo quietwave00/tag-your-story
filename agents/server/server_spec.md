@@ -257,7 +257,6 @@ album
 - spotify_id
 - musicbrainz_id
 - release_year
-- artist_id
 - created_at
 - updated_at
 ```
@@ -273,12 +272,12 @@ album.musicbrainz_id
 
 ```text
 PK(album_id)
-FK(artist_id → artist.artist_id)
 UNIQUE(spotify_id)
 INDEX(musicbrainz_id)
-INDEX(artist_id)
 INDEX(title)
 ```
+
+Album Artist 전체는 `album_artist` 연결 테이블에 Spotify 표시 순서와 함께 저장한다.
 
 ### Track
 
@@ -292,7 +291,6 @@ track
 - isrc
 - duration_ms
 - album_id
-- artist_id
 - created_at
 - updated_at
 ```
@@ -309,14 +307,60 @@ track.musicbrainz_id
 ```text
 PK(track_id)
 FK(album_id → album.album_id)
-FK(artist_id → artist.artist_id)
 UNIQUE(spotify_id)
 INDEX(musicbrainz_id)
 INDEX(isrc)
 INDEX(album_id)
-INDEX(artist_id)
 INDEX(title)
 ```
+
+Track Artist 전체는 `track_artist` 연결 테이블에 Spotify 표시 순서와 함께 저장한다.
+
+### AlbumArtist
+
+```text
+album_artist
+
+- album_artist_id
+- album_id
+- artist_id
+- position
+```
+
+제약:
+
+```text
+PK(album_artist_id)
+FK(album_id → album.album_id)
+FK(artist_id → artist.artist_id)
+UNIQUE(album_id, artist_id)
+UNIQUE(album_id, position)
+INDEX(artist_id, album_id)
+```
+
+### TrackArtist
+
+```text
+track_artist
+
+- track_artist_id
+- track_id
+- artist_id
+- position
+```
+
+제약:
+
+```text
+PK(track_artist_id)
+FK(track_id → track.track_id)
+FK(artist_id → artist.artist_id)
+UNIQUE(track_id, artist_id)
+UNIQUE(track_id, position)
+INDEX(artist_id, track_id)
+```
+
+`position`은 Spotify Artist 배열의 0-based 표시 순서이며 `position=0`을 대표 Artist로 해석한다. 별도의 대표 Artist FK를 중복 저장하지 않는다. Album, Track, Artist에는 불필요한 양방향 Artist credit 컬렉션을 두지 않고 연결 Entity를 명시적 Repository query로 조회한다.
 
 ---
 

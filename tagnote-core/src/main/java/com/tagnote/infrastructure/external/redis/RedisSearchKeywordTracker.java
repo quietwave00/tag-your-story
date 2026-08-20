@@ -1,5 +1,6 @@
-package com.tagnote.core.domain.tracks.util;
+package com.tagnote.infrastructure.external.redis;
 
+import com.tagnote.application.catalog.search.port.SearchKeywordRankingReader;
 import com.tagnote.application.catalog.search.port.SearchKeywordRecorder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -11,23 +12,19 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class SearchKeywordTracker implements SearchKeywordRecorder {
-    private final StringRedisTemplate redisTemplate;
+public class RedisSearchKeywordTracker implements SearchKeywordRecorder, SearchKeywordRankingReader {
     private static final String SEARCH_KEYWORD = "search_keyword:";
 
-    /*
-     * 키워드를 zset 구조로 저장한다.
-     */
+    private final StringRedisTemplate redisTemplate;
+
     @Override
     public void record(String keyword) {
         redisTemplate.opsForZSet().incrementScore(SEARCH_KEYWORD, keyword, 1);
     }
 
-    /*
-     * 1~5위까지의 키워드 순위를 반환한다.
-     */
+    @Override
     public List<String> getTopSearchKeywordList() {
-        Set<ZSetOperations.TypedTuple<String>> typedTupleSet =  redisTemplate
+        Set<ZSetOperations.TypedTuple<String>> typedTupleSet = redisTemplate
                 .opsForZSet()
                 .reverseRangeWithScores(SEARCH_KEYWORD, 0, 4);
 

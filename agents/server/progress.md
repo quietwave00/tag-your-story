@@ -29,3 +29,16 @@
   - 갱신된 API 명세 규칙에 따라 Springdoc 2.5.0과 `TrackApi` Swagger interface를 추가하고 Track 검색/상세/랭킹 contract 및 Search response schema를 문서화.
   - Acceptance Criteria, scope diff review 및 사용자 기능 확인 완료.
   - 실행 기록을 `agents/server/plans/completed/SEARCH-REF-001.md`로 이동.
+- 2026-08-20: SEARCH-RANK-001 완료.
+  - 검색어 기록/랭킹 조회 포트를 분리하고 Redis 구현체를 Infrastructure로 이동.
+  - `TrackService`가 concrete Redis 구현체 대신 `SearchKeywordRankingReader`에 의존하도록 변경.
+  - 대상 core 테스트와 랭킹 Controller 회귀 테스트 통과.
+  - 전체 `test`, `check`, `scripts/verify.sh` 통과.
+  - 실행 기록을 `agents/server/plans/completed/SEARCH-RANK-001.md`로 이동.
+- 2026-08-20: CATALOG-001 완료.
+  - 공개 `POST /api/tracks/import`와 Swagger contract를 추가하고 validation 오류를 HTTP 400으로 정렬.
+  - Spotify Track/Album Artist 전체 credit을 provider-neutral metadata로 변환하여 내부 Artist, Album, Track 및 연결 Entity로 저장.
+  - 외부 Spotify 호출과 짧은 Catalog write transaction을 분리하고 Spotify ID unique 제약 기반 멱등성/동시성 복구 구현.
+  - 단방향 LAZY 관계, Artist credit EntityGraph 조회, Catalog PK/FK/unique/index 및 multi-artist ADR/명세 정렬 완료.
+  - 동일 Track 및 공유 Album/Artist 병렬 Import 통합 테스트를 포함한 전체 `test`, `check`, `scripts/verify.sh` 통과.
+  - 실행 기록을 `agents/server/plans/completed/CATALOG-001.md`로 이동.

@@ -313,7 +313,6 @@ album
 - spotify_id
 - musicbrainz_id
 - release_year
-- artist_id
 ```
 
 MVP 의미:
@@ -335,7 +334,6 @@ track
 - spotify_id
 - musicbrainz_id
 - album_id
-- artist_id
 ```
 
 추가 권장 컬럼:
@@ -346,6 +344,24 @@ track
 ```
 
 MusicBrainz matching 품질을 높이는 데 매우 유용하다.
+
+Album과 Track의 Artist 관계는 단일 `artist_id`가 아니라 `album_artist`, `track_artist` 연결 테이블을 유일한 source of truth로 사용한다. 각 연결 row의 `position`은 Spotify Artist 배열의 0-based 표시 순서를 보존하며 `position=0`을 대표 Artist로 해석한다.
+
+```text
+album_artist
+- album_artist_id
+- album_id
+- artist_id
+- position
+
+track_artist
+- track_artist_id
+- track_id
+- artist_id
+- position
+```
+
+두 연결 테이블은 parent/Artist 및 parent/position 조합에 unique 제약을 둔다. JPA에서는 명시적 연결 Entity와 단방향 `ManyToOne(LAZY)`를 사용하며 Album, Track, Artist에 양방향 credit 컬렉션을 두지 않는다.
 
 ---
 
@@ -2615,9 +2631,11 @@ alias 승인과 재매칭을 같은 서비스 계층에서 순차 호출하는 �
 ```mermaid
 erDiagram
 
-    ARTIST ||--o{ ALBUM : owns
-    ARTIST ||--o{ TRACK : performs
     ALBUM ||--o{ TRACK : contains
+    ALBUM ||--o{ ALBUM_ARTIST : credits
+    ARTIST ||--o{ ALBUM_ARTIST : credited
+    TRACK ||--o{ TRACK_ARTIST : credits
+    ARTIST ||--o{ TRACK_ARTIST : credited
 
     TAG ||--o{ TAG_ALIAS : has
 
@@ -2645,7 +2663,6 @@ erDiagram
         varchar spotify_id
         uuid musicbrainz_id
         int release_year
-        bigint artist_id
     }
 
     TRACK {
@@ -2655,7 +2672,20 @@ erDiagram
         uuid musicbrainz_id
         varchar isrc
         bigint album_id
+    }
+
+    ALBUM_ARTIST {
+        bigint album_artist_id
+        bigint album_id
         bigint artist_id
+        int position
+    }
+
+    TRACK_ARTIST {
+        bigint track_artist_id
+        bigint track_id
+        bigint artist_id
+        int position
     }
 
     TAG {

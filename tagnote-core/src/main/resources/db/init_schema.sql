@@ -12,6 +12,83 @@ create table users
     index idx_user_key (user_key)
 ) ENGINE = InnoDB;
 
+create table artist
+(
+    artist_id      bigint auto_increment primary key,
+    created_at     datetime(6)  not null,
+    updated_at     datetime(6)  not null,
+    name           varchar(255) not null,
+    spotify_id     varchar(255) not null,
+    musicbrainz_id varchar(255),
+
+    constraint uk_artist_spotify_id unique (spotify_id),
+    index idx_artist_musicbrainz_id (musicbrainz_id),
+    index idx_artist_name (name)
+) ENGINE = InnoDB;
+
+create table album
+(
+    album_id       bigint auto_increment primary key,
+    created_at     datetime(6)  not null,
+    updated_at     datetime(6)  not null,
+    title          varchar(255) not null,
+    spotify_id     varchar(255) not null,
+    musicbrainz_id varchar(255),
+    release_year   int,
+
+    constraint uk_album_spotify_id unique (spotify_id),
+    index idx_album_musicbrainz_id (musicbrainz_id),
+    index idx_album_title (title)
+) ENGINE = InnoDB;
+
+create table track
+(
+    track_id       bigint auto_increment primary key,
+    created_at     datetime(6)  not null,
+    updated_at     datetime(6)  not null,
+    title          varchar(255) not null,
+    spotify_id     varchar(255) not null,
+    musicbrainz_id varchar(255),
+    isrc            varchar(255),
+    duration_ms     int          not null,
+    album_id        bigint       not null,
+
+    constraint uk_track_spotify_id unique (spotify_id),
+    foreign key (album_id) references album (album_id),
+    index idx_track_musicbrainz_id (musicbrainz_id),
+    index idx_track_isrc (isrc),
+    index idx_track_album_id (album_id),
+    index idx_track_title (title)
+) ENGINE = InnoDB;
+
+create table album_artist
+(
+    album_artist_id bigint auto_increment primary key,
+    album_id        bigint not null,
+    artist_id       bigint not null,
+    position        int    not null,
+
+    constraint uk_album_artist unique (album_id, artist_id),
+    constraint uk_album_artist_position unique (album_id, position),
+    foreign key (album_id) references album (album_id),
+    foreign key (artist_id) references artist (artist_id),
+    index idx_album_artist_artist_album (artist_id, album_id)
+) ENGINE = InnoDB;
+
+create table track_artist
+(
+    track_artist_id bigint auto_increment primary key,
+    track_id        bigint not null,
+    artist_id       bigint not null,
+    position        int    not null,
+
+    constraint uk_track_artist unique (track_id, artist_id),
+    constraint uk_track_artist_position unique (track_id, position),
+    foreign key (track_id) references track (track_id),
+    foreign key (artist_id) references artist (artist_id),
+    index idx_track_artist_artist_track (artist_id, track_id)
+) ENGINE = InnoDB;
+
 create table board
 (
     board_id   varchar(255)  not null primary key,
@@ -195,7 +272,6 @@ CREATE TABLE BATCH_JOB_SEQ (
 ) ENGINE=InnoDB;
 
 INSERT INTO BATCH_JOB_SEQ (ID, UNIQUE_KEY) select * from (select 0 as ID, '0' as UNIQUE_KEY) as tmp where not exists(select * from BATCH_JOB_SEQ);
-
 
 
 

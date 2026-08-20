@@ -2,6 +2,8 @@ package com.tagnote.api.domain.tracks;
 
 import com.tagnote.api.domain.tracks.dto.response.RankingListResponse;
 import com.tagnote.api.domain.tracks.dto.response.SearchTracksResponse;
+import com.tagnote.api.domain.tracks.dto.request.ImportTrackRequest;
+import com.tagnote.api.domain.tracks.dto.response.CatalogTrackResponse;
 import com.tagnote.core.domain.tracks.service.dto.TrackData;
 import com.tagnote.core.utils.api.ApiResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,6 +58,38 @@ public interface TrackApi {
                     example = "0"
             )
             int page
+    );
+
+    @Operation(
+            summary = "Spotify Track Catalog Import",
+            description = "Spotify track id를 기준으로 Artist, Album, Track과 전체 Artist credit을 내부 Catalog에 저장하거나 기존 데이터를 재사용"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Import 또는 기존 Catalog 조회 성공. Spotify 장애 시 기존 오류 정책에 따라 HTTP 200과 success=false로 반환될 수 있음",
+                    useReturnTypeSchema = true,
+                    content = @Content(examples = @ExampleObject(
+                            name = "spotifyError",
+                            value = "{\"success\":false,\"response\":{\"exceptionCode\":\"SPOTIFY_EXCEPTION\","
+                                    + "\"message\":\"스포티파이 라이브러리 사용 중 예외가 발생했습니다.\",\"status\":503}}"
+                    ))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "요청 body 누락 또는 spotifyTrackId blank",
+                    content = @Content(examples = @ExampleObject(
+                            value = "{\"success\":false,\"response\":{\"exceptionCode\":null,"
+                                    + "\"message\":\"spotifyTrackId는 비어 있을 수 없습니다.\",\"status\":400}}"
+                    ))
+            )
+    })
+    ApiResult<CatalogTrackResponse> importTrack(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "선택한 Spotify Track",
+                    required = true
+            )
+            ImportTrackRequest request
     );
 
     @Operation(
