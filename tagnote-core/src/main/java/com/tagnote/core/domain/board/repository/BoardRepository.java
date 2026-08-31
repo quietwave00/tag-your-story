@@ -24,8 +24,21 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     int countByTrackIdAndStatus(String trackId, BoardStatus status);
 
-    @Query("SELECT b FROM BoardEntity b JOIN BoardUserTagEntity bh ON b.boardId = bh.board.boardId WHERE bh.userTag.userTagId = :userTagId")
-    List<BoardEntity> findBoardsByUserTagId(@Param("userTagId") Long userTagId);
+    @Query("""
+            SELECT DISTINCT b
+            FROM BoardUserTagEntity matched
+            JOIN matched.board b
+            JOIN FETCH b.userEntity
+            LEFT JOIN FETCH b.boardUserTagEntityList boardTag
+            LEFT JOIN FETCH boardTag.userTag
+            WHERE matched.userTag.normalizedName = :normalizedName
+              AND b.status = :status
+            ORDER BY b.createdAt DESC
+            """)
+    List<BoardEntity> findBoardsByNormalizedUserTagName(
+            @Param("normalizedName") String normalizedName,
+            @Param("status") BoardStatus status
+    );
 
     Optional<BoardEntity> findByBoardIdAndUserEntity_UserId(String BoardId, Long userId);
 

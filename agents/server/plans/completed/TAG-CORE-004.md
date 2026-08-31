@@ -282,21 +282,21 @@ Track/Album 검증
 
 ## Acceptance Criteria
 
-- [ ] 현재 Track이 참조하는 Album의 approved direct assertion만 상속한다.
-- [ ] inherited confidence가 전용 설정의 `0.85`를 적용한다.
-- [ ] inherited assertion이 원본 Album assertion ID를 보존한다.
-- [ ] Album inherited assertion을 다시 Track으로 상속하지 않는다.
-- [ ] 같은 canonical Tag에 direct Track evidence가 있으면 inherited보다 우선한다.
-- [ ] direct가 없을 때 inherited 결과가 `INHERITED_FROM_ALBUM` reason으로 생성된다.
-- [ ] 반복 실행 시 inherited assertion과 resolved row가 증가하지 않는다.
-- [ ] 변경/삭제된 Album evidence에 맞춰 stale inherited와 AUTO projection이 정리된다.
-- [ ] direct assertion과 MANUAL_FIXED/HIDDEN 결과가 보존된다.
-- [ ] inherited assertion과 projection이 하나의 짧은 transaction에서 원자적으로 반영된다.
-- [ ] JPA 관계는 단방향 LAZY이며 N+1이 없다.
-- [ ] Album 전체 fan-out, 외부 API, 사용자 API 노출이 포함되지 않는다.
-- [ ] 기존 API와 Catalog/Tag Core 이전 단계 동작이 유지된다.
-- [ ] 전체 테스트와 검증이 통과한다.
-- [ ] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
+- [x] 현재 Track이 참조하는 Album의 approved direct assertion만 상속한다.
+- [x] inherited confidence가 전용 설정의 `0.85`를 적용한다.
+- [x] inherited assertion이 원본 Album assertion ID를 보존한다.
+- [x] Album inherited assertion을 다시 Track으로 상속하지 않는다.
+- [x] 같은 canonical Tag에 direct Track evidence가 있으면 inherited보다 우선한다.
+- [x] direct가 없을 때 inherited 결과가 `INHERITED_FROM_ALBUM` reason으로 생성된다.
+- [x] 반복 실행 시 inherited assertion과 resolved row가 증가하지 않는다.
+- [x] 변경/삭제된 Album evidence에 맞춰 stale inherited와 AUTO projection이 정리된다.
+- [x] direct assertion과 MANUAL_FIXED/HIDDEN 결과가 보존된다.
+- [x] inherited assertion과 projection이 하나의 짧은 transaction에서 원자적으로 반영된다.
+- [x] JPA 관계는 단방향 LAZY이며 N+1이 없다.
+- [x] Album 전체 fan-out, 외부 API, 사용자 API 노출이 포함되지 않는다.
+- [x] 기존 API와 Catalog/Tag Core 이전 단계 동작이 유지된다.
+- [x] 전체 테스트와 검증이 통과한다.
+- [x] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
 
 ## Verification
 

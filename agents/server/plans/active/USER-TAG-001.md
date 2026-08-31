@@ -7,7 +7,7 @@
 ```text
 User A + "1월" → user_tag_id 10
 User B + "1월" → user_tag_id 20
-User A + "  1월  " 재입력 → user_tag_id 10 재사용
+User A + "1월" 재입력 → user_tag_id 10 재사용
 ```
 
 ```text

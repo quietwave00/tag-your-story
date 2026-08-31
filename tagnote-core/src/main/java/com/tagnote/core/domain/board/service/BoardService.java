@@ -2,14 +2,12 @@ package com.tagnote.core.domain.board.service;
 
 import com.tagnote.core.domain.board.BoardEntity;
 import com.tagnote.core.domain.board.BoardStatus;
-import com.tagnote.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagnote.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagnote.core.domain.board.repository.BoardRepository;
 import com.tagnote.core.domain.board.service.dto.BoardList;
 import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
 import com.tagnote.core.domain.boardusertag.repository.BoardUserTagRepository;
 import com.tagnote.core.domain.boardusertag.service.dto.UserTagNames;
-import com.tagnote.core.domain.user.service.User;
 import com.tagnote.core.exception.CustomException;
 import com.tagnote.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +29,13 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardUserTagRepository boardUserTagRepository;
 
-    public Board create(BoardEntity boardEntity, User user, List<BoardUserTagEntity> boardUserTagEntityList, CreateBoardCommand command) {
-        boardEntity.addUser(user.toEntity());
+    public Board create(BoardEntity boardEntity, List<BoardUserTagEntity> boardUserTagEntityList) {
         boardEntity.addBoardUserTagList(boardUserTagEntityList);
         BoardEntity savedBoard = boardRepository.save(boardEntity);
 
-        return savedBoard.toBoard().addUserTagList(UserTagNames.ofNameList(command.getUserTagList()));
+        return savedBoard.toBoard().addUserTagList(UserTagNames.ofEntityList(
+                boardUserTagEntityList.stream().map(BoardUserTagEntity::getUserTag).toList()
+        ));
     }
 
     public BoardList getBoardListByTrackId(BoardList boardListResponse, List<UserTagNames> userTagNameListByBoardList) {
@@ -141,8 +140,15 @@ public class BoardService {
                 .orElse(Collections.emptyList());
     }
 
-    public List<Board> getBoardListByUserTagId(Long userTagId) {
-        return boardRepository.findBoardsByUserTagId(userTagId).stream().map(BoardEntity::toBoard).toList();
+    public List<Board> getBoardListByNormalizedUserTagName(String normalizedName) {
+        return boardRepository.findBoardsByNormalizedUserTagName(normalizedName, BoardStatus.POST)
+                .stream()
+                .map(boardEntity -> boardEntity.toBoard().addUserTagList(UserTagNames.ofEntityList(
+                        boardEntity.getBoardUserTagEntityList().stream()
+                                .map(BoardUserTagEntity::getUserTag)
+                                .toList()
+                )))
+                .toList();
     }
 
     public UserTagNames getUserTagNameListByBoardId(String boardId) {

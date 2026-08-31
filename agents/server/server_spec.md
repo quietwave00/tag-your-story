@@ -1442,6 +1442,35 @@ Partial Result
 
 을 제공한다.
 
+### Evidence Confidence 정책 결정 시점
+
+`confidence`의 결합 방식과 노출 기준을 구현하는 것과, 외부 Provider 응답에 최초 `confidence`를 부여하는 것은 별개의 결정이다.
+
+구현 순서상 정책 확정 시점은 다음과 같다.
+
+```text
+Tag Core
+→ max(confidence), minimum score, inheritance 계산 구조 구현
+→ First Vertical Slice
+   - Fake External Tag에 테스트용 고정 confidence 사용 가능
+   - production Provider 정책으로 간주하지 않음
+→ [Policy Gate / Human Review]
+   - MusicBrainz/Discogs evidence별 기본 confidence 확정
+   - Entity Matching confidence와 Tag Evidence confidence의 결합 여부 확정
+   - Provider vote/count 반영 여부 확정
+→ External Enrichment 구현 착수
+```
+
+따라서 MusicBrainz/Discogs HTTP Adapter와 응답 매핑을 구현하기 전에 다음 항목이 Plan 또는 필요 시 ADR로 승인되어야 한다.
+
+- Provider별 evidence 종류와 기본 confidence
+- Entity Matching 통과 기준
+- Entity Matching confidence를 Tag Evidence confidence에 곱할지 여부
+- 외부 vote/count/popularity 반영 여부와 정규화 방식
+- 누락되거나 신뢰할 수 없는 evidence의 제외 정책
+
+정책 확정 전에는 실제 Provider 값을 임의로 하드코딩하지 않는다. First Vertical Slice의 Fake 값은 Observation → Assertion → Resolver → Track Detail 연결을 검증하기 위한 fixture로만 사용한다.
+
 ---
 
 ## 25. Cache

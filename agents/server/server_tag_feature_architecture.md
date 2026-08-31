@@ -1007,6 +1007,8 @@ ResolvedTagRepository
 
 초기에는 지나치게 복잡한 수학식을 사용하지 않는다.
 
+여기서 정의하는 `max(confidence)`, minimum score, Album 상속 가중치는 **이미 생성된 Assertion을 결합하는 Resolver 정책**이다. MusicBrainz/Discogs 응답으로부터 Assertion의 최초 confidence를 산정하는 Provider mapping 정책은 별도로 확정해야 한다.
+
 우선순위:
 
 ```text
@@ -2784,6 +2786,24 @@ Alias approve/reject
 ---
 
 ## Phase 3 — External Enrichment
+
+착수 전 Policy Gate:
+
+```text
+First Vertical Slice의 Fake External Tag
+→ 테스트 fixture confidence로 종단 간 연결 검증
+→ Human Review로 Evidence Confidence 정책 승인
+→ MusicBrainz/Discogs Adapter 구현
+```
+
+External Enrichment 구현 전에 다음을 결정한다.
+
+- MusicBrainz genre/tag 및 Discogs genre/style별 기본 confidence
+- Entity Matching confidence와 Tag Evidence confidence의 분리 또는 결합 방식
+- Provider vote/count를 사용할지 여부와 정규화 방식
+- evidence 누락/저품질 응답의 제외 기준
+
+Fake External Tag의 고정 confidence는 production 정책이 아니며, 이 결정을 대신하지 않는다. 정책이 승인되기 전에는 Provider Adapter에 임의의 숫자를 하드코딩하지 않는다.
 
 구현:
 

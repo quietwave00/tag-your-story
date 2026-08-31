@@ -1,0 +1,4 @@
+tag:
+  resolution:
+    album-to-track-inheritance-weight: 0.85
+    minimum-score: 0.50

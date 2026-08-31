@@ -292,22 +292,22 @@ Subject 검증
 
 ## Acceptance Criteria
 
-- [ ] Resolver는 외부 API와 Repository를 직접 호출하지 않는다.
-- [ ] approved direct assertions만 계산 입력이 된다.
-- [ ] 동일 canonical Tag는 max confidence로 계산된다.
-- [ ] minimum score가 전용 설정 파일에서 적용된다.
-- [ ] MERGED Tag는 최종 ACTIVE canonical Tag로 저장된다.
-- [ ] invalid/cyclic canonical chain이 잘못된 projection을 commit하지 않는다.
-- [ ] 동일 입력 반복 실행에 row 중복과 score drift가 없다.
-- [ ] 기존 AUTO의 insert/update/delete diff가 정확하다.
-- [ ] MANUAL_FIXED/HIDDEN이 자동 재계산에서 보존된다.
-- [ ] resolved FK/unique/index가 schema와 JPA에 일치한다.
-- [ ] Resolver 조회에서 N+1이 없다.
-- [ ] 외부 HTTP가 transaction 안에 없다.
-- [ ] Album inheritance와 API 노출은 포함되지 않는다.
-- [ ] 기존 API와 Catalog/Taxonomy/Enrichment 동작이 유지된다.
-- [ ] 전체 테스트와 검증이 통과한다.
-- [ ] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
+- [x] Resolver는 외부 API와 Repository를 직접 호출하지 않는다.
+- [x] approved direct assertions만 계산 입력이 된다.
+- [x] 동일 canonical Tag는 max confidence로 계산된다.
+- [x] minimum score가 전용 설정 파일에서 적용된다.
+- [x] MERGED Tag는 최종 ACTIVE canonical Tag로 저장된다.
+- [x] invalid/cyclic canonical chain이 잘못된 projection을 commit하지 않는다.
+- [x] 동일 입력 반복 실행에 row 중복과 score drift가 없다.
+- [x] 기존 AUTO의 insert/update/delete diff가 정확하다.
+- [x] MANUAL_FIXED/HIDDEN이 자동 재계산에서 보존된다.
+- [x] resolved FK/unique/index가 schema와 JPA에 일치한다.
+- [x] Resolver 조회에서 N+1이 없다.
+- [x] 외부 HTTP가 transaction 안에 없다.
+- [x] Album inheritance와 API 노출은 포함되지 않는다.
+- [x] 기존 API와 Catalog/Taxonomy/Enrichment 동작이 유지된다.
+- [x] 전체 테스트와 검증이 통과한다.
+- [x] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
 
 ## Verification
 

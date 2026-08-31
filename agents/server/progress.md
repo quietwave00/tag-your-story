@@ -48,3 +48,37 @@
   - 기존 공개 태그명 Board 조회는 단일 ID 선택 대신 normalized name에 해당하는 모든 사용자별 UserTag를 조회하도록 계획.
   - 기존 공유 데이터 migration, composite unique/FK, 동시성, N+1 및 API 회귀 검증을 `plans/active/USER-TAG-001.md`에 명시.
   - production code 변경 없음.
+- 2026-08-31: TAG-CORE-001 완료.
+  - 기존 `UserTag`와 분리된 System Tag taxonomy의 `Tag`, `TagAlias` 모델 및 DB 제약을 구현.
+  - merge/alias 상태 불변식, Unicode 기반 이름 정규화, approved alias exact matching과 unmatched/ambiguous 결과를 구현.
+  - Catalog 내부 PK 기반 `SubjectRef(TRACK | ALBUM)`와 Tag를 fetch join하는 bulk alias 조회를 추가하고 단일 쿼리로 N+1 부재를 검증.
+  - 대상 테스트, 전체 `test`, `check`, `scripts/verify.sh`와 TAG-CORE-001 범위 diff 검사를 통과.
+  - 전역 `git diff --check`는 이번 범위 밖의 기존 CRLF 작업 트리 변경 때문에 실패했으며, 해당 사용자 변경은 수정하지 않음.
+  - 실행 기록을 `agents/server/plans/completed/TAG-CORE-001.md`로 이동.
+- 2026-08-31: TAG-CORE-002 완료.
+  - MusicBrainz/Discogs provider-neutral raw tag를 유실 없이 저장하는 `ExternalTagObservation`과 내부 taxonomy 근거인 `TagAssertion` 모델을 구현.
+  - approved alias exact unique match만 MATCHED 및 자동 APPROVED assertion으로 승격하고 unmatched/ambiguous 값은 NEW로 보존.
+  - Catalog 내부 PK 기반 Subject 단건 검증, observation/alias/assertion bulk 조회, DB composite unique 기반 멱등성과 rollback 후 1회 재시도를 구현.
+  - 단방향 LAZY 관계, FK/unique/index, 입력 크기에 비례하지 않는 재처리 SELECT 및 동시 처리 중복 방지를 검증.
+  - 대상 테스트와 WSL OpenJDK 17 전체 `test`, `check`, `scripts/verify.sh`, TAG-CORE-002 범위 diff 검사를 통과.
+  - 전역 `git diff --check`는 이번 범위 밖의 기존 CRLF 작업 트리 변경 때문에 실패했으며, 해당 사용자 변경은 수정하지 않음.
+  - 실행 기록을 `agents/server/plans/completed/TAG-CORE-002.md`로 이동.
+- 2026-08-31: TAG-CORE-002 persistence conflict translation 후속 개선 완료.
+  - DB unique constraint 이름 해석을 Application orchestration에서 Infrastructure translator로 이동.
+  - Observation/Assertion duplicate 의미 예외만 제한적으로 재시도하고 retry warn 로그에 Subject와 conflict type을 기록.
+  - 테스트 코드 갱신 후 사용자 실행 테스트 통과를 확인하고 Plan을 `plans/completed/TAG-CORE-002.md`로 이동.
+- 2026-08-31: TAG-CORE-003 완료.
+  - approved direct assertion을 ACTIVE canonical Tag로 결정하고 동일 Tag의 `max(confidence)` 및 설정 기반 minimum score를 적용하는 Resolver를 구현.
+  - `SubjectTagResolved` projection의 AUTO insert/update/obsolete delete와 `MANUAL_FIXED`/`HIDDEN` 보존을 구현.
+  - canonical merge cycle 실패 정책, 단방향 LAZY 관계, bulk 조회, DB FK/unique/index 및 unique 충돌 rollback 후 1회 재시도를 구현.
+  - Track/Album direct resolution, 멱등성, N+1 부재, 수동 상태 보존 및 동시 실행 테스트를 포함한 전체 테스트와 검증 통과를 사용자 실행 결과로 확인.
+  - MusicBrainz/Discogs HTTP 수집과 Album → Track inheritance는 후속 마일스톤 범위로 유지.
+  - 실행 기록을 `agents/server/plans/completed/TAG-CORE-003.md`로 이동.
+- 2026-08-31: TAG-CORE-004 완료.
+  - Album approved direct assertion을 현재 Track의 inherited assertion으로 전파하고 `inherited_from_assertion_id` lineage를 보존.
+  - Album → Track 상속 confidence에 `album-to-track-inheritance-weight=0.85`를 적용하고, stale inherited assertion diff insert/update/delete를 구현.
+  - Track resolution에서 direct assertion과 inherited assertion을 함께 Resolver 입력으로 구성하되 같은 canonical Tag의 direct evidence를 inherited보다 우선하도록 구현.
+  - inherited-only 결과는 `INHERITED_FROM_ALBUM` reason으로 `SubjectTagResolved`에 저장하고, AUTO-managed projection cleanup에 포함.
+  - inherited assertion self-FK cascade delete, 단방향 LAZY 관계, fetch join 기반 고정 쿼리 및 unique 충돌 rollback 후 1회 재시도 경계를 유지.
+  - 대상 테스트와 전체 검증 통과를 사용자 실행 결과로 확인.
+  - 실행 기록을 `agents/server/plans/completed/TAG-CORE-004.md`로 이동.

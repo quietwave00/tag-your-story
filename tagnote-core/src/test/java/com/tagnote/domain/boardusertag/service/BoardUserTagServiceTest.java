@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,5 +45,18 @@ public class BoardUserTagServiceTest {
             assertThat(resultList.get(0).getUserTag().getName()).isEqualTo("userTag1");
             assertThat(resultList.size()).isEqualTo(2);
         });
+    }
+
+    @Test
+    void Board_writer와_UserTag_owner가_다르면_거부한다() {
+        UserTagEntity otherUsersTag = UserTagEntity.builder()
+                .owner(com.tagnote.core.domain.user.UserEntity.builder().userId(2L).build())
+                .name("tag")
+                .normalizedName("tag")
+                .build();
+
+        assertThatThrownBy(() -> boardUserTagService.makeBoardUserTagList(
+                BoardFixture.createBoardEntityWithUserEntity(), List.of(otherUsersTag)
+        )).isInstanceOf(IllegalArgumentException.class);
     }
 }

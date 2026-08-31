@@ -304,23 +304,32 @@ Subject 검증
 
 ## Acceptance Criteria
 
-- [ ] raw tag가 match 여부와 관계없이 Observation에 저장된다.
-- [ ] MATCHED/NEW 상태와 matched Tag 불변식이 보호된다.
-- [ ] approved alias unique match만 Assertion으로 이어진다.
-- [ ] unmatched/ambiguous 값은 NEW로 보존된다.
-- [ ] NEW가 다른 matched 결과의 성공을 막지 않는다.
-- [ ] Assertion에 subject, tag, source, evidence type, confidence를 추적할 수 있다.
-- [ ] Observation과 Assertion unique/FK/index가 schema와 JPA에 일치한다.
-- [ ] 같은 입력 반복 및 동시 처리에도 중복 row가 없다.
-- [ ] Subject 검증에 별도 반복 `existsById()`가 없다.
-- [ ] 외부 HTTP 호출이 write transaction 안에 없다.
-- [ ] 입력 크기에 비례하는 반복 SELECT와 N+1이 없다.
-- [ ] Resolver/Resolved/inheritance/API/provider client가 포함되지 않는다.
-- [ ] 기존 API와 Catalog 동작이 유지된다.
-- [ ] 전체 테스트와 검증이 통과한다.
-- [ ] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
+- [x] raw tag가 match 여부와 관계없이 Observation에 저장된다.
+- [x] MATCHED/NEW 상태와 matched Tag 불변식이 보호된다.
+- [x] approved alias unique match만 Assertion으로 이어진다.
+- [x] unmatched/ambiguous 값은 NEW로 보존된다.
+- [x] NEW가 다른 matched 결과의 성공을 막지 않는다.
+- [x] Assertion에 subject, tag, source, evidence type, confidence를 추적할 수 있다.
+- [x] Observation과 Assertion unique/FK/index가 schema와 JPA에 일치한다.
+- [x] 같은 입력 반복 및 동시 처리에도 중복 row가 없다.
+- [x] Subject 검증에 별도 반복 `existsById()`가 없다.
+- [x] 외부 HTTP 호출이 write transaction 안에 없다.
+- [x] 입력 크기에 비례하는 반복 SELECT와 N+1이 없다.
+- [x] Resolver/Resolved/inheritance/API/provider client가 포함되지 않는다.
+- [x] 기존 API와 Catalog 동작이 유지된다.
+- [x] 전체 테스트와 검증이 통과한다.
+- [x] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
 
 ## Verification
+
+완료 검증 결과:
+
+- PASS: Domain/Application/JPA/동시성 대상 테스트
+- PASS: WSL OpenJDK 17 `./gradlew test`
+- PASS: WSL OpenJDK 17 `./gradlew check`
+- PASS: `./scripts/verify.sh`
+- PASS: TAG-CORE-002 범위 diff 및 공백 검사
+- 참고: 전역 `git diff --check`는 이번 범위 밖 기존 CRLF 작업 트리 변경 때문에 실패하며 해당 사용자 변경은 수정하지 않음
 
 ```bash
 ./gradlew :tagnote-core:test --tests '*ExternalTagObservationEntityTest'
@@ -335,3 +344,26 @@ git diff --check
 ```
 
 추가로 schema/JPA 대조, SQL query 수, transaction proxy 경계, 기존 API diff 부재를 검토한다.
+
+## Follow-up — Persistence Conflict Translation
+
+동시성 복구의 물리 DB 제약조건 지식을 Application orchestration에서 제거한다.
+
+- [x] Observation/Assertion duplicate 의미 예외 추가
+- [x] Application port와 Infrastructure translator로 DB 제약조건 이름 해석 격리
+- [x] write transaction 전체 범위의 무결성 예외를 의미 예외로 번역
+- [x] Processing service가 duplicate 의미 예외만 재시도
+- [x] retry warn 로그에 Subject와 conflict type 기록
+- [x] 알 수 없는 FK/NOT NULL 등 무결성 오류는 원래 예외로 유지
+- [x] translator 및 orchestration 테스트 갱신
+- [x] 사용자 테스트 검증 완료
+
+사용자 검증 명령:
+
+```bash
+./gradlew :tagnote-core:test --tests '*ObservationProcessingServiceTest'
+./gradlew :tagnote-core:test --tests '*HibernateEnrichmentConflictTranslatorTest'
+./gradlew :tagnote-core:test --tests '*ObservationProcessingConcurrencyTest'
+./gradlew test
+./gradlew check
+```

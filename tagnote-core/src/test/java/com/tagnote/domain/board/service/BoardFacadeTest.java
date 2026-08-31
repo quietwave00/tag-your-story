@@ -1,6 +1,5 @@
 package com.tagnote.domain.board.service;
 
-import com.tagnote.core.domain.board.BoardEntity;
 import com.tagnote.core.domain.board.BoardOrderType;
 import com.tagnote.core.domain.board.BoardStatus;
 import com.tagnote.core.domain.board.dto.command.CreateBoardCommand;
@@ -8,19 +7,18 @@ import com.tagnote.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagnote.core.domain.board.service.Board;
 import com.tagnote.core.domain.board.service.BoardFacade;
 import com.tagnote.core.domain.board.service.BoardService;
+import com.tagnote.core.domain.board.service.BoardWriteService;
 import com.tagnote.core.domain.board.service.dto.BoardList;
-import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
 import com.tagnote.core.domain.boardusertag.service.BoardUserTag;
 import com.tagnote.core.domain.boardusertag.service.BoardUserTagService;
 import com.tagnote.core.domain.boardusertag.service.dto.UserTagNames;
-import com.tagnote.core.domain.usertag.UserTagEntity;
+import com.tagnote.core.domain.usertag.name.NormalizedUserTagName;
 import com.tagnote.core.domain.usertag.service.UserTag;
 import com.tagnote.core.domain.usertag.service.UserTagService;
 import com.tagnote.core.domain.user.service.User;
-import com.tagnote.core.domain.user.service.UserService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,7 +30,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,43 +42,50 @@ class BoardFacadeTest {
     private BoardService boardService;
 
     @Mock
-    private UserService userService;
-
-    @Mock
     private UserTagService userTagService;
 
     @Mock
     private BoardUserTagService boardUserTagService;
 
+    @Mock
+    private BoardWriteService boardWriteService;
+
     @InjectMocks
     private BoardFacade boardFacade;
 
     @Test
-    void create는_user_userTag_joinEntity를_조합한_뒤_boardService에_위임한다() {
+    void create는_write_transaction에_위임한다() {
         CreateBoardCommand command = CreateBoardCommand.builder()
                 .content("content")
                 .trackId("track-1")
                 .userTagList(List.of("tag-1"))
                 .userId(1L)
                 .build();
-        User user = User.builder().userId(1L).nickname("nickname").build();
-        List<UserTagEntity> userTagEntityList = List.of(UserTagEntity.builder().userTagId(1L).name("tag-1").build());
-        List<BoardUserTagEntity> boardUserTagEntityList = List.of(BoardUserTagEntity.builder().boardUserTagId(1L).build());
         Board savedBoard = board("board-1");
 
-        when(userService.getCacheByUserId(1L)).thenReturn(user);
-        when(userTagService.makeUserTagList(command.getUserTagList())).thenReturn(userTagEntityList);
-        when(boardUserTagService.makeBoardUserTagList(any(BoardEntity.class), same(userTagEntityList))).thenReturn(boardUserTagEntityList);
-        when(boardService.create(any(BoardEntity.class), same(user), same(boardUserTagEntityList), same(command))).thenReturn(savedBoard);
+        when(boardWriteService.create(command)).thenReturn(savedBoard);
 
         Board result = boardFacade.create(command);
 
         assertThat(result).isSameAs(savedBoard);
-        InOrder inOrder = inOrder(userService, userTagService, boardUserTagService, boardService);
-        inOrder.verify(userService).getCacheByUserId(1L);
-        inOrder.verify(userTagService).makeUserTagList(command.getUserTagList());
-        inOrder.verify(boardUserTagService).makeBoardUserTagList(any(BoardEntity.class), same(userTagEntityList));
-        inOrder.verify(boardService).create(any(BoardEntity.class), same(user), same(boardUserTagEntityList), same(command));
+        verify(boardWriteService).create(command);
+    }
+
+    @Test
+    void create는_첫_data_integrity_충돌_후_새_transaction으로_한번_재시도한다() {
+        CreateBoardCommand command = CreateBoardCommand.builder()
+                .content("content")
+                .trackId("track-1")
+                .userTagList(List.of("tag-1"))
+                .userId(1L)
+                .build();
+        Board savedBoard = board("board-1");
+        when(boardWriteService.create(command))
+                .thenThrow(new DataIntegrityViolationException("concurrent user tag"))
+                .thenReturn(savedBoard);
+
+        assertThat(boardFacade.create(command)).isSameAs(savedBoard);
+        verify(boardWriteService, times(2)).create(command);
     }
 
     @Test
@@ -143,25 +147,14 @@ class BoardFacadeTest {
                 .content("updated")
                 .userTagList(List.of("tag-1"))
                 .build();
-        BoardEntity boardEntity = BoardEntity.create("content", "track-1");
-        List<UserTagEntity> userTagEntityList = List.of(UserTagEntity.builder().userTagId(1L).name("tag-1").build());
-        List<BoardUserTagEntity> boardUserTagEntityList = List.of(BoardUserTagEntity.builder().boardUserTagId(1L).build());
         Board updated = board("board-1");
 
-        when(boardService.getBoardEntityByBoardId("board-1")).thenReturn(boardEntity);
-        when(userTagService.makeUserTagList(command.getUserTagList())).thenReturn(userTagEntityList);
-        when(boardUserTagService.makeBoardUserTagList(boardEntity, userTagEntityList)).thenReturn(boardUserTagEntityList);
-        when(boardService.updateBoardWithUserTag(command, boardEntity, boardUserTagEntityList)).thenReturn(updated);
+        when(boardWriteService.updateBoardAndUserTag(command)).thenReturn(updated);
 
         Board result = boardFacade.updateBoardAndUserTag(command);
 
         assertThat(result).isSameAs(updated);
-        InOrder inOrder = inOrder(boardService, boardUserTagService, userTagService);
-        inOrder.verify(boardService).getBoardEntityByBoardId("board-1");
-        inOrder.verify(boardUserTagService).deleteUserTag("board-1");
-        inOrder.verify(userTagService).makeUserTagList(command.getUserTagList());
-        inOrder.verify(boardUserTagService).makeBoardUserTagList(boardEntity, userTagEntityList);
-        verify(boardService).updateBoardWithUserTag(command, boardEntity, boardUserTagEntityList);
+        verify(boardWriteService).updateBoardAndUserTag(command);
     }
 
     @Test
@@ -171,18 +164,14 @@ class BoardFacadeTest {
                 .content("updated")
                 .userTagList(List.of())
                 .build();
-        BoardEntity boardEntity = BoardEntity.create("content", "track-1");
         Board updated = board("board-1");
 
-        when(boardService.getBoardEntityByBoardId("board-1")).thenReturn(boardEntity);
-        when(boardService.updateBoard(command, boardEntity)).thenReturn(updated);
+        when(boardWriteService.updateBoardAndUserTag(command)).thenReturn(updated);
 
         Board result = boardFacade.updateBoardAndUserTag(command);
 
         assertThat(result).isSameAs(updated);
-        verify(boardUserTagService, never()).deleteUserTag(any());
-        verify(userTagService, never()).makeUserTagList(any());
-        verify(boardService).updateBoard(command, boardEntity);
+        verify(boardWriteService).updateBoardAndUserTag(command);
     }
 
     @Test
@@ -192,17 +181,17 @@ class BoardFacadeTest {
         UserTagNames firstTags = UserTagNames.ofNameList(List.of("tag-1"));
         UserTagNames secondTags = UserTagNames.ofNameList(List.of("tag-2"));
 
-        when(userTagService.getUserTagIdByUserTagName("genre")).thenReturn(3L);
-        when(boardService.getBoardListByUserTagId(3L)).thenReturn(List.of(first, second));
-        when(boardUserTagService.getUserTagNameByBoardId("board-1")).thenReturn(firstTags);
-        when(boardUserTagService.getUserTagNameByBoardId("board-2")).thenReturn(secondTags);
+        when(userTagService.normalize("genre")).thenReturn(new NormalizedUserTagName("genre"));
+        first.addUserTagList(firstTags);
+        second.addUserTagList(secondTags);
+        when(boardService.getBoardListByNormalizedUserTagName("genre")).thenReturn(List.of(first, second));
 
         List<Board> result = boardFacade.getBoardListByUserTagName("genre");
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getUserTagNameList().getNameList()).containsExactly("tag-1");
         assertThat(result.get(1).getUserTagNameList().getNameList()).containsExactly("tag-2");
-        verify(boardUserTagService, times(2)).getUserTagNameByBoardId(any());
+        verify(boardService).getBoardListByNormalizedUserTagName("genre");
     }
 
     private Board board(String boardId) {

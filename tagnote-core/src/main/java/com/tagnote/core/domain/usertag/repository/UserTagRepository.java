@@ -4,11 +4,8 @@ import com.tagnote.core.domain.usertag.UserTagEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserTagRepository extends JpaRepository<UserTagEntity, Long> {
 
-    Optional<UserTagEntity> findByName(String userTagStr);
-
-    List<UserTagEntity> findAllByNameIn(List<String> userTagNameList);
+    List<UserTagEntity> findAllByOwner_UserIdAndNormalizedNameIn(Long ownerUserId, List<String> normalizedNames);
 }

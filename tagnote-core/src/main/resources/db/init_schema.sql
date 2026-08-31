@@ -89,6 +89,95 @@ create table track_artist
     index idx_track_artist_artist_track (artist_id, track_id)
 ) ENGINE = InnoDB;
 
+create table tag
+(
+    tag_id             bigint auto_increment primary key,
+    created_at         datetime(6)  not null,
+    updated_at         datetime(6)  not null,
+    name               varchar(255) not null,
+    slug               varchar(255) not null,
+    type               varchar(255) not null,
+    status             varchar(255) not null,
+    merged_into_tag_id bigint,
+    description        varchar(255),
+
+    constraint uk_tag_slug unique (slug),
+    foreign key (merged_into_tag_id) references tag (tag_id),
+    index idx_tag_type_status (type, status),
+    index idx_tag_name (name)
+) ENGINE = InnoDB;
+
+create table tag_alias
+(
+    alias_id         bigint auto_increment primary key,
+    tag_id           bigint       not null,
+    alias            varchar(255) not null,
+    normalized_alias varchar(255) not null,
+    source           varchar(255) not null,
+    status           varchar(255) not null,
+
+    constraint uk_tag_alias_tag_normalized unique (tag_id, normalized_alias),
+    foreign key (tag_id) references tag (tag_id),
+    index idx_tag_alias_normalized_status (normalized_alias, status)
+) ENGINE = InnoDB;
+
+create table external_tag_observation
+(
+    observation_id bigint auto_increment primary key,
+    subject_type   varchar(255) not null,
+    subject_id     bigint       not null,
+    source         varchar(255) not null,
+    raw_name       varchar(255) not null,
+    normalized_name varchar(255) not null,
+    external_ref   varchar(255) not null,
+    status         varchar(255) not null,
+    matched_tag_id bigint,
+    observed_at    datetime(6)  not null,
+
+    constraint uk_external_tag_observation_identity unique
+        (subject_type, subject_id, source, normalized_name, external_ref),
+    foreign key (matched_tag_id) references tag (tag_id),
+    index idx_external_tag_observation_subject (subject_type, subject_id),
+    index idx_external_tag_observation_status_name (status, normalized_name)
+) ENGINE = InnoDB;
+
+create table tag_assertion
+(
+    assertion_id                bigint auto_increment primary key,
+    subject_type               varchar(255) not null,
+    subject_id                 bigint       not null,
+    tag_id                     bigint       not null,
+    source                     varchar(255) not null,
+    evidence_type              varchar(255) not null,
+    confidence                 double       not null,
+    status                     varchar(255) not null,
+    inherited_from_assertion_id bigint,
+    created_at                 datetime(6)  not null,
+
+    constraint uk_tag_assertion_identity unique
+        (subject_type, subject_id, tag_id, source, evidence_type),
+    foreign key (tag_id) references tag (tag_id),
+    foreign key (inherited_from_assertion_id) references tag_assertion (assertion_id) on delete cascade,
+    index idx_tag_assertion_subject_status (subject_type, subject_id, status),
+    index idx_tag_assertion_tag (tag_id)
+) ENGINE = InnoDB;
+
+create table subject_tag_resolved
+(
+    resolved_id       bigint auto_increment primary key,
+    subject_type      varchar(255) not null,
+    subject_id        bigint       not null,
+    tag_id            bigint       not null,
+    score             double       not null,
+    status            varchar(255) not null,
+    resolution_reason varchar(255) not null,
+    last_resolved_at  datetime(6)  not null,
+
+    constraint uk_subject_tag_resolved_identity unique (subject_type, subject_id, tag_id),
+    foreign key (tag_id) references tag (tag_id),
+    index idx_subject_tag_resolved_subject_score (subject_type, subject_id, score)
+) ENGINE = InnoDB;
+
 create table board
 (
     board_id   varchar(255)  not null primary key,
@@ -121,10 +210,16 @@ create table comments
 
 create table user_tag
 (
-    user_tag_id bigint auto_increment primary key,
-    name       varchar(255) not null,
+    user_tag_id    bigint auto_increment primary key,
+    user_id        bigint       not null,
+    name           varchar(255) not null,
+    normalized_name varchar(255) not null,
+    created_at     datetime(6)  not null,
+    updated_at     datetime(6)  not null,
 
-    index idx_user_tag_name (name)
+    constraint uk_user_tag_owner_normalized_name unique (user_id, normalized_name),
+    foreign key (user_id) references users (user_id),
+    index idx_user_tag_normalized_owner (normalized_name, user_id)
 ) ENGINE = InnoDB;
 
 create table board_user_tag
@@ -132,9 +227,13 @@ create table board_user_tag
     board_user_tag_id bigint auto_increment primary key,
     board_id         varchar(255) not null,
     user_tag_id       bigint       not null,
+    created_at        datetime(6)   not null,
+    updated_at        datetime(6)   not null,
 
+    constraint uk_board_user_tag_board_tag unique (board_id, user_tag_id),
     foreign key (user_tag_id) references user_tag (user_tag_id),
-    foreign key (board_id) references board (board_id)
+    foreign key (board_id) references board (board_id),
+    index idx_board_user_tag_tag_board (user_tag_id, board_id)
 ) ENGINE = InnoDB;
 
 create table files
@@ -272,10 +371,3 @@ CREATE TABLE BATCH_JOB_SEQ (
 ) ENGINE=InnoDB;
 
 INSERT INTO BATCH_JOB_SEQ (ID, UNIQUE_KEY) select * from (select 0 as ID, '0' as UNIQUE_KEY) as tmp where not exists(select * from BATCH_JOB_SEQ);
-
-
-
-
-
-
-
