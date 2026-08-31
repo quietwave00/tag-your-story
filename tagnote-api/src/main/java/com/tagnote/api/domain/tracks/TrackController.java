@@ -4,10 +4,10 @@ import com.tagnote.api.domain.tracks.dto.response.RankingListResponse;
 import com.tagnote.api.domain.tracks.dto.response.SearchTracksResponse;
 import com.tagnote.api.domain.tracks.dto.request.ImportTrackRequest;
 import com.tagnote.api.domain.tracks.dto.response.CatalogTrackResponse;
-import com.tagnote.application.catalog.importer.TrackImportService;
-import com.tagnote.application.catalog.importer.model.ImportedTrack;
+import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.search.TrackSearchService;
 import com.tagnote.application.catalog.search.model.TrackSearchResult;
+import com.tagnote.application.catalog.selection.TrackSelectionService;
 import com.tagnote.core.domain.tracks.service.TrackService;
 import com.tagnote.core.domain.tracks.service.dto.TrackData;
 import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
@@ -24,7 +24,7 @@ public class TrackController implements TrackApi {
 
     private final TrackSearchService trackSearchService;
     private final TrackService trackService;
-    private final TrackImportService trackImportService;
+    private final TrackSelectionService trackSelectionService;
 
     /*
      * 트랙을 검색한다.
@@ -39,8 +39,8 @@ public class TrackController implements TrackApi {
     @PostMapping("/tracks/import")
     @Override
     public ApiResult<CatalogTrackResponse> importTrack(@Valid @RequestBody ImportTrackRequest request) {
-        ImportedTrack importedTrack = trackImportService.importTrack(request.getSpotifyTrackId());
-        return ApiUtils.success(CatalogTrackResponse.from(importedTrack));
+        TrackDetail trackDetail = trackSelectionService.select(request.getSpotifyTrackId());
+        return ApiUtils.success(CatalogTrackResponse.from(trackDetail));
     }
 
     /*

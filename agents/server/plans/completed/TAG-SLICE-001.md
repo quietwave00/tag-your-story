@@ -1,6 +1,6 @@
 # TAG-SLICE-001 — Track Selection to Resolved Tag Detail
 
-- Status: Active (Human Review approved)
+- Status: Completed (2026-08-31, user verification passed)
 - Scope: Spotify Track 선택부터 Fake External Tag 기반 resolved system tag 상세 응답까지의 첫 수직 슬라이스
 - Non-goal: 실제 MusicBrainz/Discogs 연동, provider confidence 정책, enrichment status, legacy Track Detail 전환
 
@@ -394,24 +394,24 @@ Observation/Assertion이 commit된 뒤 Resolver가 실패할 수 있으나 기�
 
 ## Acceptance Criteria
 
-- [ ] Spotify Track 선택으로 기존 Catalog import/upsert가 실행된다.
-- [ ] 기존 Track은 Spotify ID 기준으로 재사용되며 중복 저장되지 않는다.
-- [ ] Artist/Album/Track 관계와 전체 Artist credit이 ADR-001대로 유지된다.
-- [ ] Fake External Tag와 confidence는 테스트 fixture에만 존재한다.
-- [ ] external provider 호출 중 DB write transaction이 열려 있지 않다.
-- [ ] raw tag가 Observation에 보존된다.
-- [ ] approved alias exact match만 Assertion으로 이어진다.
-- [ ] 미매칭 raw tag는 NEW로 남고 matched 결과를 막지 않는다.
-- [ ] Resolver가 기존 정책과 minimum score를 그대로 사용한다.
-- [ ] 최종 응답은 Assertion이 아닌 `subject_tag_resolved`를 조회한다.
-- [ ] import 응답에 `systemTags(tagId, name, score)`가 추가된다.
-- [ ] HIDDEN tag는 노출되지 않고 MANUAL_FIXED는 보존된다.
-- [ ] 반복 및 동시 선택에도 Catalog/Observation/Assertion/Resolved가 중복되지 않는다.
-- [ ] JPA 관계는 단방향 LAZY를 유지하고 N+1이 없다.
-- [ ] 기존 Search/Detail/Ranking/Board/UserTag API가 유지된다.
-- [ ] 실제 MusicBrainz/Discogs, confidence 정책, status/scheduler가 포함되지 않는다.
-- [ ] 대상 테스트와 전체 사용자 검증이 통과한다.
-- [ ] diff review 후 `progress.md`를 갱신하고 Plan을 completed로 이동한다.
+- [x] Spotify Track 선택으로 기존 Catalog import/upsert가 실행된다.
+- [x] 기존 Track은 Spotify ID 기준으로 재사용되며 중복 저장되지 않는다.
+- [x] Artist/Album/Track 관계와 전체 Artist credit이 ADR-001대로 유지된다.
+- [x] Fake External Tag와 confidence는 테스트 fixture에만 존재한다.
+- [x] external provider 호출 중 DB write transaction이 열려 있지 않다.
+- [x] raw tag가 Observation에 보존된다.
+- [x] approved alias exact match만 Assertion으로 이어진다.
+- [x] 미매칭 raw tag는 NEW로 남고 matched 결과를 막지 않는다.
+- [x] Resolver가 기존 정책과 minimum score를 그대로 사용한다.
+- [x] 최종 응답은 Assertion이 아닌 `subject_tag_resolved`를 조회한다.
+- [x] import 응답에 `systemTags(tagId, name, score)`가 추가된다.
+- [x] HIDDEN tag는 노출되지 않고 MANUAL_FIXED는 보존된다.
+- [x] 반복 및 동시 선택에도 Catalog/Observation/Assertion/Resolved가 중복되지 않는다.
+- [x] JPA 관계는 단방향 LAZY를 유지하고 N+1이 없다.
+- [x] 기존 Search/Detail/Ranking/Board/UserTag API가 유지된다.
+- [x] 실제 MusicBrainz/Discogs, confidence 정책, status/scheduler가 포함되지 않는다.
+- [x] 대상 테스트와 전체 사용자 검증이 통과한다.
+- [x] diff review 후 `progress.md`를 갱신하고 Plan을 completed로 이동한다.
 
 ## Verification
 
@@ -449,3 +449,10 @@ git diff -- agents/server tagnote-core tagnote-api
 - resolved 조회 정렬과 HIDDEN 필터
 - 반복/동시 실행 멱등성
 - active `USER-TAG-001`과 변경 파일 충돌 부재
+
+## Completion
+
+- 2026-08-31: 사용자가 대상 테스트와 전체 검증의 통과를 확인했다.
+- Spotify Track 선택부터 resolved System Tag 상세 응답까지의 기능 전체 흐름을 연결했다.
+- 실제 MusicBrainz/Discogs 연동, provider confidence 정책 및 enrichment status는 후속 마일스톤으로 유지한다.
+- 대상 범위 diff review와 정적 whitespace 검사를 완료했다.

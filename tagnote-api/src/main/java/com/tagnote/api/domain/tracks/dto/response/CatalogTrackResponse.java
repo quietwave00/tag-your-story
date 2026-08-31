@@ -1,5 +1,6 @@
 package com.tagnote.api.domain.tracks.dto.response;
 
+import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -32,7 +33,11 @@ public class CatalogTrackResponse {
 
     private CatalogAlbumResponse album;
 
-    public static CatalogTrackResponse from(ImportedTrack track) {
+    @Schema(description = "Resolver가 계산한 System Tag 목록. score 내림차순, 동일 score에서는 tagId 오름차순")
+    private List<SystemTagResponse> systemTags;
+
+    public static CatalogTrackResponse from(TrackDetail detail) {
+        ImportedTrack track = detail.track();
         return CatalogTrackResponse.builder()
                 .catalogTrackId(track.getCatalogTrackId())
                 .spotifyTrackId(track.getSpotifyTrackId())
@@ -41,6 +46,7 @@ public class CatalogTrackResponse {
                 .durationMs(track.getDurationMs())
                 .artists(track.getArtists().stream().map(CatalogArtistResponse::from).toList())
                 .album(CatalogAlbumResponse.from(track.getAlbum()))
+                .systemTags(detail.systemTags().stream().map(SystemTagResponse::from).toList())
                 .build();
     }
 }

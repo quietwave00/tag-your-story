@@ -82,3 +82,9 @@
   - inherited assertion self-FK cascade delete, 단방향 LAZY 관계, fetch join 기반 고정 쿼리 및 unique 충돌 rollback 후 1회 재시도 경계를 유지.
   - 대상 테스트와 전체 검증 통과를 사용자 실행 결과로 확인.
   - 실행 기록을 `agents/server/plans/completed/TAG-CORE-004.md`로 이동.
+- 2026-08-31: TAG-SLICE-001 완료.
+  - `POST /api/tracks/import`를 Track 선택 Application 흐름에 연결하여 Catalog import/재사용, provider-neutral external tag 수집, Observation/Assertion, Album 상속, Resolver 및 resolved 상세 조회를 조율.
+  - Fake External Tag와 고정 confidence는 통합 테스트 fixture에만 유지하고 production provider 목록이 비어 있는 구조를 구현.
+  - import 응답에 `systemTags(tagId, name, score)`를 가산적으로 추가하고 Swagger contract, HIDDEN 제외, MANUAL_FIXED 노출 및 결정적 정렬을 반영.
+  - 반복 선택 시 기존 resolved projection을 재사용하고, 동시 최초 선택에서도 Catalog/Observation/Assertion/Resolved row가 하나로 수렴하도록 검증.
+  - 사용자 실행 대상 테스트와 전체 검증 통과를 확인하고 실행 기록을 `agents/server/plans/completed/TAG-SLICE-001.md`로 이동.

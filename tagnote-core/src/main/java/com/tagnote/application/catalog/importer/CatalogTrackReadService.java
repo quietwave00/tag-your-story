@@ -35,6 +35,14 @@ public class CatalogTrackReadService {
                 .orElseThrow(() -> new IllegalStateException("Imported track was not found: " + spotifyTrackId));
     }
 
+    public ImportedTrack getByCatalogId(long catalogTrackId) {
+        TrackEntity track = trackRepository.findByIdWithAlbum(catalogTrackId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Catalog track was not found: " + catalogTrackId
+                ));
+        return toImportedTrack(track);
+    }
+
     private ImportedTrack toImportedTrack(TrackEntity track) {
         AlbumEntity album = track.getAlbum();
         List<ImportedArtist> trackArtists = trackArtistRepository

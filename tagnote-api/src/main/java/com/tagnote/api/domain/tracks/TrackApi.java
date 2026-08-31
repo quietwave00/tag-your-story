@@ -62,12 +62,15 @@ public interface TrackApi {
 
     @Operation(
             summary = "Spotify Track Catalog Import",
-            description = "Spotify track id를 기준으로 Artist, Album, Track과 전체 Artist credit을 내부 Catalog에 저장하거나 기존 데이터를 재사용"
+            description = "Spotify track id를 기준으로 Artist, Album, Track과 전체 Artist credit을 내부 Catalog에 "
+                    + "저장하거나 기존 데이터를 재사용하고, 계산된 System Tag를 함께 조회"
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Import 또는 기존 Catalog 조회 성공. Spotify 장애 시 기존 오류 정책에 따라 HTTP 200과 success=false로 반환될 수 있음",
+                    description = "Import 또는 기존 Catalog 조회 성공. systemTags는 HIDDEN을 제외한 resolved System Tag이며 "
+                            + "score 내림차순, 동일 score에서는 tagId 오름차순. Spotify 장애 시 기존 오류 정책에 따라 "
+                            + "HTTP 200과 success=false로 반환될 수 있음",
                     useReturnTypeSchema = true,
                     content = @Content(examples = @ExampleObject(
                             name = "spotifyError",

@@ -1,13 +1,15 @@
 package com.tagnote.api.domain.tracks;
 
 import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
-import com.tagnote.application.catalog.importer.TrackImportService;
+import com.tagnote.application.catalog.detail.model.SystemTagDetail;
+import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedArtist;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.search.TrackSearchService;
 import com.tagnote.application.catalog.search.model.TrackSearchItem;
 import com.tagnote.application.catalog.search.model.TrackSearchResult;
+import com.tagnote.application.catalog.selection.TrackSelectionService;
 import com.tagnote.core.domain.tracks.service.TrackService;
 import com.tagnote.core.domain.tracks.service.dto.TrackData;
 import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
@@ -41,7 +43,7 @@ class TrackControllerTest {
     private TrackService trackService;
 
     @MockBean
-    private TrackImportService trackImportService;
+    private TrackSelectionService trackSelectionService;
 
     @Test
     void POST_api_tracks_import는_인증없이_전체_Artist_credit을_반환한다() throws Exception {
@@ -54,8 +56,8 @@ class TrackControllerTest {
                 2024,
                 List.of(albumArtist)
         );
-        when(trackImportService.importTrack("track-1")).thenReturn(
-                ImportedTrack.of(
+        when(trackSelectionService.select("track-1")).thenReturn(
+                new TrackDetail(ImportedTrack.of(
                         10L,
                         "track-1",
                         "title",
@@ -63,7 +65,7 @@ class TrackControllerTest {
                         240_000,
                         List.of(trackArtist),
                         album
-                )
+                ), List.of(new SystemTagDetail(11L, "Ambient", 0.9)))
         );
 
         mockMvc.perform(post("/api/tracks/import")
@@ -76,7 +78,10 @@ class TrackControllerTest {
                 .andExpect(jsonPath("$.response.artists[0].spotifyArtistId").value("track-artist"))
                 .andExpect(jsonPath("$.response.artists[0].position").value(0))
                 .andExpect(jsonPath("$.response.album.albumId").value(5))
-                .andExpect(jsonPath("$.response.album.artists[0].spotifyArtistId").value("album-artist"));
+                .andExpect(jsonPath("$.response.album.artists[0].spotifyArtistId").value("album-artist"))
+                .andExpect(jsonPath("$.response.systemTags[0].tagId").value(11))
+                .andExpect(jsonPath("$.response.systemTags[0].name").value("Ambient"))
+                .andExpect(jsonPath("$.response.systemTags[0].score").value(0.9));
     }
 
     @Test

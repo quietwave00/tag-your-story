@@ -208,6 +208,47 @@ class SubjectTagResolvedJpaRepositoryTest {
     }
 
     @Test
+    void detail_조회는_HIDDEN을_제외하고_score와_tagId로_정렬해_한_query로_Tag를_적재한다() {
+        TagEntity first = activeTag("detail-first");
+        TagEntity second = activeTag("detail-second");
+        TagEntity lower = activeTag("detail-lower");
+        TagEntity hidden = activeTag("detail-hidden");
+        resolvedRepository.saveAllAndFlush(List.of(
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(track), second, 0.9, ResolvedStatus.MANUAL_FIXED,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                ),
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(track), lower, 0.7, ResolvedStatus.MANUAL_FIXED,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                ),
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(track), first, 0.9, ResolvedStatus.MANUAL_FIXED,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                ),
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(track), hidden, 1.0, ResolvedStatus.HIDDEN,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                )
+        ));
+        entityManager.clear();
+        Statistics statistics = entityManager.getEntityManagerFactory()
+                .unwrap(SessionFactory.class)
+                .getStatistics();
+        statistics.clear();
+
+        var visible = resolvedRepository.findVisibleBySubjectWithTag(
+                SubjectType.TRACK, track.getTrackId(), ResolvedStatus.HIDDEN
+        );
+        visible.forEach(row -> assertThat(row.getTag().getName()).isNotBlank());
+
+        assertThat(visible)
+                .extracting(row -> row.getTag().getTagId())
+                .containsExactly(first.getTagId(), second.getTagId(), lower.getTagId());
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1L);
+    }
+
+    @Test
     void MERGED는_최종_ACTIVE로_저장하고_cycle이면_기존_projection도_변경하지_않는다() {
         TagEntity canonical = activeTag("canonical");
         TagEntity merged = activeTag("merged");
