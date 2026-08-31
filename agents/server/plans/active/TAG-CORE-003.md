@@ -95,7 +95,7 @@ SubjectTagResolved
 - Track detail API와 Swagger의 resolved tag 노출
 - `subject_enrichment_status`, Scheduler/Batch
 - 캐시, Kafka, 분산 락
-- 기존 Catalog/Search/Board/UserTag contract
+- 기존 Catalog/Search/Board/UserTag contract (`USER-TAG-001`과 별도 milestone)
 
 ## 변경/생성 파일
 

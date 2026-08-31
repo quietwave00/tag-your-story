@@ -94,7 +94,7 @@ Track SubjectTagResolved
 - Artist/Label profile inheritance
 - 캐시, Kafka, 분산 락
 - Catalog Artist credit 구조와 ADR-001
-- 기존 Spotify ID upsert 및 Search/Board/UserTag contract
+- 기존 Spotify ID upsert 및 Search/Board/UserTag contract (`USER-TAG-001`과 별도 milestone)
 
 ## 변경/생성 파일
 

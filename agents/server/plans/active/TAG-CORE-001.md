@@ -115,7 +115,7 @@ Catalog Album Entity → SubjectRef.album(albumId)
 - 기존 `Artist`, `Album`, `Track`, Artist credit Entity
 - Track 상세 API의 System Tag 노출
 - Board의 문자열 Spotify `trackId`와 Board→Catalog FK 전환
-- 기존 `UserTag`, `BoardUserTag`
+- 기존 `UserTag`, `BoardUserTag` (`USER-TAG-001`의 사용자 소유 identity 전환과 별도 milestone)
 - `current_state.md` baseline 재작성
 - Resolver 전용 `application-tag.yml`; Resolver 구현 마일스톤에서 생성한다.
 

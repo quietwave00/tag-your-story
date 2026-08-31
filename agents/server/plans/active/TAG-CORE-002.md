@@ -93,7 +93,7 @@ TagAssertion(APPROVED)
 - Scheduler/Batch와 `subject_enrichment_status`
 - `TagParent`, `TagAssociation`, merge canonical chain 계산
 - Track 상세 API의 System Tag 노출
-- 기존 Search/Track/Catalog/Board/UserTag 코드와 contract
+- 기존 Search/Track/Catalog/Board/UserTag 코드와 contract (`USER-TAG-001`과 별도 milestone)
 - Resolver 전용 `application-tag.yml`
 
 ## 변경/생성 파일

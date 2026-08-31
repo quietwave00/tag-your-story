@@ -438,16 +438,29 @@ board.like_count
 user_tag
 
 - user_tag_id
+- user_id
 - name
+- normalized_name
 - created_at
+- updated_at
 ```
 
 제약:
 
 ```text
 PK(user_tag_id)
-INDEX(name)
+FK(user_id → users.user_id)
+UNIQUE(user_id, normalized_name)
+INDEX(normalized_name, user_id)
 ```
+
+`UserTag`는 전역 공유 taxonomy가 아니라 사용자별 개인 태그 사전이다.
+
+- 같은 사용자가 같은 normalized name을 반복 사용하면 기존 `user_tag_id`를 재사용한다.
+- 서로 다른 사용자가 같은 normalized name을 사용하면 서로 다른 `user_tag_id`를 생성한다.
+- 원본 `name`은 표시용으로 보존하고 중복 판정과 검색에는 `normalized_name`을 사용한다.
+- Board에 연결되는 UserTag의 owner는 Board 작성자와 같아야 한다.
+- System Tag의 `tag`, `tag_alias`, `subject_tag_resolved`와 Entity, Repository, Service, 테이블을 공유하지 않는다.
 
 ### BoardUserTag
 
@@ -785,7 +798,7 @@ Track 확보
 ↓
 content 작성
 ↓
-UserTag normalize / find-or-create
+UserTag normalize / 작성자 user_id + normalized_name 기준 find-or-create
 ↓
 Board 저장
 ↓
@@ -939,7 +952,7 @@ commit
 ```text
 Board insert
 +
-UserTag find-or-create
+작성자 기준 UserTag find-or-create
 +
 BoardUserTag insert
 ```
@@ -973,8 +986,11 @@ UNIQUE(track.spotify_id)
 ### UserTag
 
 ```text
-UNIQUE(user_tag.normalized_name)
+UNIQUE(user_tag.user_id, user_tag.normalized_name)
+UNIQUE(board_user_tag.board_id, board_user_tag.user_tag_id)
 ```
+
+전역 `UNIQUE(user_tag.normalized_name)`를 사용하지 않는다. 같은 normalized name이라도 owner가 다르면 서로 다른 UserTag row가 정상 데이터다.
 
 ### Like
 
@@ -1273,6 +1289,20 @@ DELETE /api/boards/{boardId}/likes
 ```http
 GET /api/user-tags/search?q={keyword}
 ```
+
+- 인증 사용자의 개인 UserTag만 검색한다.
+- `(현재 user_id, normalized_name)` 범위에서 조회하며 다른 사용자의 UserTag ID를 반환하지 않는다.
+
+### UserTag 기준 공개 Board 조회
+
+```http
+GET /api/boards/user-tags?userTagName={name}
+```
+
+- 인증은 필요하지 않다.
+- `userTagName`을 normalize한 뒤 같은 `normalized_name`을 가진 모든 사용자의 UserTag를 대상으로 조회한다.
+- 단일 `user_tag_id`를 임의로 선택하지 않는다.
+- `POST` 상태 Board만 중복 없이 반환한다.
 
 ### 사용자 프로필
 
@@ -1584,7 +1614,7 @@ Track / Album
 7. Assertion은 근거이고 Resolved는 사용자 노출용 read model이다.
 8. Board는 하나의 Track을 참조한다.
 9. Board의 System Tag는 Track의 resolved tag를 통해 조회한다.
-10. BoardUserTag는 Board와 UserTag의 N:M 관계다.
+10. BoardUserTag는 Board와 작성자 소유 UserTag의 N:M 관계이며, UserTag identity는 `(user_id, normalized_name)` 단위다.
 11. User가 Board 목록 FK를 소유하지 않는다.
 12. Like 관계가 source of truth이고 `board.like_count`는 조회용 counter다.
 13. Notification은 `target_type + target_id`로 대상의 의미를 명시한다.

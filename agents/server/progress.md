@@ -42,3 +42,9 @@
   - 단방향 LAZY 관계, Artist credit EntityGraph 조회, Catalog PK/FK/unique/index 및 multi-artist ADR/명세 정렬 완료.
   - 동일 Track 및 공유 Album/Artist 병렬 Import 통합 테스트를 포함한 전체 `test`, `check`, `scripts/verify.sh` 통과.
   - 실행 기록을 `agents/server/plans/completed/CATALOG-001.md`로 이동.
+- 2026-08-31: USER-TAG-001 요구사항 및 구현 계획 정렬.
+  - 개인 커스텀 UserTag를 전역 공유 ID가 아닌 `(user_id, normalized_name)` 사용자 소유 identity로 정의.
+  - 같은 이름이라도 사용자별로 다른 UserTag ID를 생성하고, 같은 사용자 내부에서만 기존 ID를 재사용하도록 ADR-002와 Server Spec 정렬.
+  - 기존 공개 태그명 Board 조회는 단일 ID 선택 대신 normalized name에 해당하는 모든 사용자별 UserTag를 조회하도록 계획.
+  - 기존 공유 데이터 migration, composite unique/FK, 동시성, N+1 및 API 회귀 검증을 `plans/active/USER-TAG-001.md`에 명시.
+  - production code 변경 없음.

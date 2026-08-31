@@ -66,6 +66,17 @@ plans/active/
 plans/completed/
 = 완료된 마일스톤의 실행 기록
 ```
+
+## ADR 사용 규칙
+
+서버 Plan 작성, 구현, 리팩토링, 리뷰를 시작할 때:
+
+1. `agents/server/decisions/ADR-*.md` 목록을 확인한다.
+2. 변경 대상 도메인과 관련된 ADR을 구현 전에 전부 읽는다.
+3. ADR과 명세 또는 active plan이 충돌하면 임의로 선택하지 말고 보고한다.
+4. ADR을 뒤집거나 범위를 변경해야 하면 새로운 ADR을 작성한다.
+5. ADR은 현재 진행 상태가 아니므로 구현 여부는 `progress.md`와 실제 코드를 함께 확인한다.
+
 ## API 명세 / Swagger
 
 프론트엔드에 노출되는 API는 Swagger(OpenAPI) 명세를 유지한다.
