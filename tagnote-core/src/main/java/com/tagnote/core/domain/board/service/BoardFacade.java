@@ -8,13 +8,11 @@ import com.tagnote.core.domain.board.service.dto.BoardList;
 import com.tagnote.core.domain.boardusertag.service.BoardUserTag;
 import com.tagnote.core.domain.boardusertag.service.BoardUserTagService;
 import com.tagnote.core.domain.boardusertag.service.dto.UserTagNames;
-import com.tagnote.core.domain.usertag.service.UserTagService;
 import com.tagnote.core.exception.CustomException;
 import com.tagnote.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,16 +23,11 @@ import java.util.stream.Collectors;
 public class BoardFacade {
 
     private final BoardService boardService;
-    private final UserTagService userTagService;
     private final BoardUserTagService boardUserTagService;
     private final BoardWriteService boardWriteService;
 
     public Board create(CreateBoardCommand command) {
-        try {
-            return boardWriteService.create(command);
-        } catch (DataIntegrityViolationException firstConflict) {
-            return boardWriteService.create(command);
-        }
+        return boardWriteService.create(command);
     }
 
     public BoardList getBoardListByTrackId(String trackId, BoardOrderType orderType, int page) {
@@ -65,8 +58,7 @@ public class BoardFacade {
     }
 
     public List<Board> getBoardListByUserTagName(String userTagName) {
-        String normalizedName = userTagService.normalize(userTagName).value();
-        List<Board> boards = boardService.getBoardListByNormalizedUserTagName(normalizedName);
+        List<Board> boards = boardService.getBoardListByUserTagName(userTagName);
         if (boards.isEmpty()) {
             throw new CustomException(ExceptionCode.USER_TAG_NOT_FOUND);
         }
@@ -78,11 +70,7 @@ public class BoardFacade {
     }
 
     public Board updateBoardAndUserTag(UpdateBoardCommand command) {
-        try {
-            return boardWriteService.updateBoardAndUserTag(command);
-        } catch (DataIntegrityViolationException firstConflict) {
-            return boardWriteService.updateBoardAndUserTag(command);
-        }
+        return boardWriteService.updateBoardAndUserTag(command);
     }
 
     public void delete(String boardId) {

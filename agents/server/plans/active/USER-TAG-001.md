@@ -1,8 +1,8 @@
-# USER-TAG-001 — User-Owned Custom Tag Identity
+# USER-TAG-001 — User-Owned Exact-Name Playlist Tag Identity
 
 ## Goal
 
-게시글 작성자가 입력하는 개인 커스텀 `UserTag`를 사용자별 identity로 분리하고, 기존 태그명 기반 게시글 조회가 사용자별로 분리된 모든 태그 ID를 안전하게 포함하도록 전환한다.
+게시글 작성자가 입력한 이름을 그대로 보존하는 개인 플레이리스트형 `UserTag`를 사용자별 identity로 분리하고, 기존 태그명 기반 게시글 조회가 사용자별로 분리된 모든 태그 ID와 연결 Track을 안전하게 포함하도록 전환한다.
 
 ```text
 User A + "1월" → user_tag_id 10
@@ -12,7 +12,7 @@ User A + "1월" 재입력 → user_tag_id 10 재사용
 
 ```text
 공개 게시글 태그 조회 "1월"
-→ normalized_name = "1월"인 UserTag 전체
+→ name = "1월"인 UserTag 전체
 → user_tag_id 10, 20에 연결된 POST Board 전체
 ```
 
@@ -25,9 +25,9 @@ System Tag taxonomy와 Resolver는 공용 canonical identity를 유지한다. �
 - 현재 태그명 기반 Board 조회는 `findByName`으로 단일 ID를 선택한 뒤 그 ID의 Board만 조회한다.
 - 실제 schema에는 `user_tag.name` index만 있어 동일 이름 row가 복수 생성될 수 있지만, 소유자가 없으므로 개인 identity로 해석할 수 없다.
 - 현재 `findByName`은 결과를 `Optional` 하나로 기대하므로 동일 이름 row가 복수 존재하면 조회 개수 오류 위험이 있다.
-- 문서의 `INDEX(name)`과 `UNIQUE(user_tag.normalized_name)`가 서로 충돌하며, 전역 unique는 사용자별 identity 요구사항과 맞지 않는다.
+- 전역 `UNIQUE(user_tag.name)`는 사용자별 identity 요구사항과 맞지 않는다.
 - `board_user_tag`의 `(board_id, user_tag_id)` unique와 역방향 조회 index는 명세에만 있고 실제 schema/JPA에는 없다.
-- ADR-002에 따라 UserTag identity는 `(user_id, normalized_name)`으로 확정한다.
+- ADR-003에 따라 UserTag identity는 입력값을 변형하지 않는 `(user_id, name)`으로 확정한다.
 
 ## Target State
 
@@ -35,13 +35,14 @@ System Tag taxonomy와 Resolver는 공용 canonical identity를 유지한다. �
 
 ```text
 User
-  └─ UserTag(owner, name, normalizedName)
+  └─ UserTag(owner, name)
        └─ BoardUserTag ── Board
 ```
 
 - UserTag는 반드시 한 명의 User가 소유한다.
-- 같은 사용자의 같은 normalized name은 하나의 UserTag만 존재한다.
-- 다른 사용자의 같은 normalized name은 별도 UserTag와 별도 PK를 가진다.
+- 같은 사용자의 정확히 같은 name은 하나의 UserTag만 존재한다.
+- 다른 사용자의 같은 name은 별도 UserTag와 별도 PK를 가진다.
+- 대소문자, Unicode 표현 또는 공백이 다른 name은 서로 다른 UserTag다.
 - BoardUserTag에 연결되는 UserTag owner와 Board writer는 같아야 한다.
 - Board와 UserTag에는 불필요한 역방향 컬렉션을 추가하지 않는다.
 - UserTag를 Board 연결에서 제거해도 개인 태그 identity는 즉시 삭제하지 않는다.
@@ -50,10 +51,10 @@ User
 
 ```text
 개인 identity 조회
-(owner user id, normalized name) → unique UserTag
+(owner user id, exact name) → unique UserTag
 
 공개 Board 조회
-normalized name → 모든 owner의 UserTag → distinct POST Board
+exact name → 모든 owner의 UserTag → distinct POST Board → 각 Board의 Track
 ```
 
 기존 공개 contract를 유지한다.
@@ -64,8 +65,8 @@ Authentication: 불필요
 ```
 
 - Request/Response DTO와 `ApiResult<List<BoardResponse>>` 구조는 변경하지 않는다.
-- 입력 이름을 UserTag normalization한 뒤 조회한다.
-- 같은 normalized name을 가진 모든 사용자별 UserTag ID의 게시글을 포함한다.
+- 입력 이름을 변형하지 않고 exact match로 조회한다.
+- 정확히 같은 name을 가진 모든 사용자별 UserTag ID의 게시글을 포함한다.
 - 같은 Board가 중복 반환되지 않도록 `distinct`를 보장한다.
 - `BoardStatus.POST`만 반환한다.
 - 결과가 없으면 기존과 같이 `USER_TAG_NOT_FOUND`를 반환하여 이번 identity 전환에서 API 오류 동작을 변경하지 않는다.
@@ -77,32 +78,26 @@ Authentication: 불필요
 ### In Scope
 
 - `UserTagEntity`의 단방향 LAZY owner 관계
-- UserTag 원본 `name`과 `normalizedName` 분리
-- 개인 태그용 `NormalizedUserTagName` Value Object와 `UserTagNameNormalizer`
-- `(user_id, normalized_name)` owner-scoped find-or-create
-- 동일 요청 안의 normalized name 중복 제거
-- DB composite unique 기반 동시 생성 방어와 제한적 복구
+- 입력값을 그대로 보존하는 UserTag `name`
+- `(user_id, name)` exact-match owner-scoped find-or-create
+- 동일 요청 안의 완전히 같은 name 중복 제거
+- DB composite unique 기반 중복 방어; unique 충돌 자동 재시도 없음
 - Board 생성 시 인증 User를 UserTag owner로 전달
 - Board 수정 시 기존 Board 작성자를 기준으로 UserTag owner 결정
 - 다른 사용자의 UserTag를 Board에 연결하지 못하게 하는 불변식/검증
-- 기존 태그명 기반 공개 Board 조회를 normalized name join query로 변경
+- 기존 태그명 기반 공개 Board 조회를 exact name join query로 변경
 - `board_user_tag` unique/index 및 JPA mapping 정렬
 - 기존 전역 공유 UserTag 데이터의 owner별 분리 migration 절차 문서화
 - Domain/Application/JPA/API characterization 및 integration test
 - 관련 Server Spec과 ADR 정렬
 
-### Normalization Policy
+### Exact Name Policy
 
-- trim
-- lowercase with `Locale.ROOT`
-- Unicode NFKC normalization
-- 연속 공백 축약
-- 의미 있는 punctuation 보존
-- normalization 결과가 blank면 거부
-- 원본 `name`은 화면 표시를 위해 보존
-- 중복 판정과 검색에는 `normalized_name`만 사용
-
-System Tag의 `NormalizedTagName`, `TagNameNormalizer`를 직접 재사용하지 않는다. 현재 규칙이 같더라도 System taxonomy alias 정책과 개인 태그 정책이 독립적으로 변경될 수 있도록 별도 Value Object/정규화 경계를 둔다.
+- trim, lowercase, Unicode normalization, 공백 축약을 적용하지 않는다.
+- null 또는 blank name은 거부한다.
+- 유효한 `name`은 사용자가 입력한 문자열 그대로 저장한다.
+- 중복 판정과 검색 모두 exact `name`을 사용한다.
+- System Tag normalization 및 alias 정책과 공유하지 않는다.
 
 ## Do Not Touch
 
@@ -127,7 +122,7 @@ System Tag의 `NormalizedTagName`, `TagNameNormalizer`를 직접 재사용하지
 - `agents/server/server_spec.md`
   - UserTag owner identity, schema, 조회 semantics 정렬
 - `tagnote-core/src/main/resources/db/init_schema.sql`
-  - `user_tag.user_id`, `normalized_name`, FK/unique/index 추가
+  - `user_tag.user_id`, exact `name` FK/unique/index 추가
   - `board_user_tag` unique/index 추가
 - `tagnote-core/src/main/java/com/tagnote/core/domain/usertag/UserTagEntity.java`
 - `tagnote-core/src/main/java/com/tagnote/core/domain/usertag/repository/UserTagRepository.java`
@@ -137,6 +132,7 @@ System Tag의 `NormalizedTagName`, `TagNameNormalizer`를 직접 재사용하지
 - `tagnote-core/src/main/java/com/tagnote/core/domain/boardusertag/repository/BoardUserTagRepository.java`
 - `tagnote-core/src/main/java/com/tagnote/core/domain/boardusertag/service/BoardUserTagService.java`
 - `tagnote-core/src/main/java/com/tagnote/core/domain/board/service/BoardFacade.java`
+- `tagnote-core/src/main/java/com/tagnote/core/domain/board/service/BoardWriteService.java`
 - Board tag-name lookup repository/service
 - 영향받는 기존 Board/UserTag tests
 - `agents/server/progress.md`
@@ -146,8 +142,8 @@ System Tag의 `NormalizedTagName`, `TagNameNormalizer`를 직접 재사용하지
 
 ### 생성 파일
 
-- 개인 태그 normalization Value Object/Service와 unit test
-- owner-scoped UserTag JPA integration/concurrency test
+- exact-name UserTag Service unit test
+- owner-scoped UserTag JPA integration test
 - UserTag data migration runbook 또는 운영 DDL 문서
 
 새로운 공개 endpoint를 추가하지 않으므로 Swagger contract의 endpoint/DTO는 변경하지 않는다. 기존 Board API용 Swagger interface가 도입되는 경우 해당 interface에 실제 태그명 조회 contract를 문서화하고 Controller에는 Swagger annotation을 두지 않는다.
@@ -159,8 +155,8 @@ System Tag의 `NormalizedTagName`, `TagNameNormalizer`를 직접 재사용하지
 ```text
 인증 userId
 → User 조회
-→ raw UserTag names normalize + request 내부 distinct
-→ (userId, normalized names) bulk 조회
+→ raw UserTag names 그대로 request 내부 exact distinct
+→ (userId, names) bulk 조회
 → 없는 UserTag만 생성
 → Board writer 설정
 → owner가 writer와 같은 UserTag만 BoardUserTag 생성
@@ -186,14 +182,14 @@ Board 조회
 ### Public lookup by tag name
 
 ```text
-raw query name normalize
+raw query name을 그대로 사용
 → BoardUserTag join UserTag
-→ user_tag.normalized_name exact match
+→ user_tag.name exact match
 → BoardStatus.POST
 → distinct Board 목록
 ```
 
-`normalized_name`으로 단일 UserTag ID를 먼저 선택하지 않는다.
+`name`으로 단일 UserTag ID를 먼저 선택하지 않는다.
 
 ## DB/JPA Design
 
@@ -203,16 +199,17 @@ raw query name normalize
 |---|---|
 | `user_tag_id` | bigint identity PK |
 | `user_id` | owner User FK, not null |
-| `name` | 원본 display name, not null |
-| `normalized_name` | 중복 판정/검색용 이름, not null |
+| `name` | 입력값을 그대로 보존하는 exact identity/display name, not null |
 | `created_at`, `updated_at` | audit timestamp |
 
 ```text
 PK(user_tag_id)
 FK(user_id → users.user_id)
-UNIQUE(user_id, normalized_name)
-INDEX(normalized_name, user_id)
+UNIQUE(user_id, name)
+INDEX(name, user_id)
 ```
+
+운영 DB의 `name`은 case-sensitive binary collation으로 비교한다.
 
 JPA 관계:
 
@@ -243,9 +240,9 @@ INDEX(user_tag_id, board_id)
 Migration은 다음 순서를 보장해야 한다.
 
 ```text
-1. 기존 user_tag.name을 normalization
+1. 기존 user_tag.name을 변형하지 않고 보존
 2. board_user_tag → board.user_id를 기준으로
-   distinct (user_id, normalized_name) UserTag row 생성
+   distinct (user_id, name) UserTag row 생성
 3. 각 board_user_tag를 해당 Board writer 소유 UserTag로 재연결
 4. 중복 (board_id, user_tag_id) 제거
 5. owner가 없는 orphan UserTag 처리 내역 기록 후 제거 또는 격리
@@ -254,15 +251,14 @@ Migration은 다음 순서를 보장해야 한다.
 ```
 
 - migration 전후 `board_user_tag`가 표현하는 Board별 태그 이름 집합이 같아야 한다.
-- display name 충돌 시 같은 사용자의 최초 사용 값을 보존하는 것을 기본으로 하되, 실제 데이터 확인 후 migration 문서에서 확정한다.
 - 운영이 `ddl-auto=validate`이므로 `init_schema.sql` 변경만으로 기존 DB가 migration된다고 간주하지 않는다.
 
 ## Transaction and Concurrency
 
 - Board create/update Application transaction 안에서 owner-scoped UserTag와 BoardUserTag를 저장한다.
-- `(user_id, normalized_name)` unique가 동시 생성의 최종 방어선이다.
-- 같은 사용자가 같은 태그를 동시에 처음 생성해 unique 충돌이 발생하면 rollback된 별도 transaction 뒤 기존 row를 제한적으로 재조회한다.
-- 서로 다른 사용자의 같은 normalized name은 충돌하지 않아야 한다.
+- `(user_id, name)` unique가 exact-name 중복의 최종 방어선이다.
+- unique 충돌이 발생한 Board 생성/수정 요청을 자동 재시도하지 않는다.
+- 서로 다른 사용자의 같은 name은 충돌하지 않아야 한다.
 - `(board_id, user_tag_id)` unique로 요청 중복과 동시 연결 중복을 방어한다.
 - 불필요한 `existsById()` 또는 이름별 반복 SELECT를 추가하지 않는다.
 
@@ -277,23 +273,23 @@ Migration은 다음 순서를 보장해야 한다.
 ### Domain/Application
 
 - 다른 사용자의 동일 `"1월"`은 다른 UserTag ID 생성
-- 같은 사용자의 `"1월"`, `" １월 "` 등 normalization 동등 입력은 같은 ID 재사용
-- 같은 요청의 중복 이름은 하나의 BoardUserTag만 생성
+- 같은 사용자의 정확히 같은 `"1월"`은 같은 ID 재사용
+- `"1월"`, `"１월"`, `" 1월 "`처럼 입력값이 다르면 별도 ID 생성
+- 같은 요청의 완전히 같은 중복 이름만 하나의 BoardUserTag로 생성
 - UserTag owner와 Board writer 불일치 거부
 - Board 수정도 원 작성자 소유 UserTag를 사용
-- 의미 있는 punctuation 보존
+- 모든 유효 입력값을 그대로 보존
 - blank tag 거부
 
 ### JPA/Concurrency
 
-- `(user_id, normalized_name)` unique 실제 동작
-- 다른 user의 같은 normalized name 저장 성공
+- `(user_id, name)` unique 실제 동작
+- 같은 owner의 case/Unicode/공백이 다른 name 저장 성공
+- 다른 user의 같은 name 저장 성공
 - UserTag owner FK 실제 동작
 - `(board_id, user_tag_id)` unique 실제 동작
 - owner-scoped bulk query 한 번으로 기존 태그 조회
-- 같은 user의 동시 최초 생성에서 최종 row 한 건
-- 다른 user의 동시 동일 이름 생성에서 user별 row 한 건씩
-- 공개 normalized name 조회가 여러 owner의 Board를 모두 반환
+- 공개 exact name 조회가 여러 owner의 Board를 모두 반환
 - 공개 조회가 `POST`만 반환하고 Board를 중복 반환하지 않음
 - 조회에서 Board/UserTag N+1이 발생하지 않음
 
@@ -301,23 +297,25 @@ Migration은 다음 순서를 보장해야 한다.
 
 - migration 전후 Board별 display tag name 집합 동일
 - owner mismatch 0건
-- `(user_id, normalized_name)` 중복 0건
+- `(user_id, name)` 중복 0건
 - `(board_id, user_tag_id)` 중복 0건
 - FK orphan 0건
 
 ## Acceptance Criteria
 
 - [ ] `UserTag`가 owner User FK를 가진다.
-- [ ] 같은 사용자의 같은 normalized name은 같은 UserTag ID를 재사용한다.
-- [ ] 다른 사용자의 같은 normalized name은 다른 UserTag ID를 가진다.
-- [ ] 전역 `UNIQUE(normalized_name)`를 사용하지 않는다.
-- [ ] DB가 `UNIQUE(user_id, normalized_name)`으로 중복을 최종 방어한다.
+- [ ] 같은 사용자의 정확히 같은 name은 같은 UserTag ID를 재사용한다.
+- [ ] 다른 사용자의 같은 name은 다른 UserTag ID를 가진다.
+- [ ] case/Unicode/공백이 다른 name을 서버가 병합하지 않는다.
+- [ ] 전역 `UNIQUE(name)`를 사용하지 않는다.
+- [ ] DB가 `UNIQUE(user_id, name)`으로 exact-name 중복을 최종 방어한다.
 - [ ] UserTag owner와 Board writer가 항상 일치한다.
 - [ ] BoardUserTag 중복이 DB unique로 방지된다.
 - [ ] 공개 태그명 조회가 같은 이름을 가진 모든 사용자의 POST Board를 반환한다.
 - [ ] 공개 조회가 단일 UserTag ID를 임의 선택하지 않는다.
 - [ ] 기존 Board tag endpoint와 response contract가 유지된다.
-- [ ] 태그 생성과 조회가 normalization 정책을 공유한다.
+- [ ] 태그 생성과 조회가 입력 name을 변형하지 않고 exact match한다.
+- [ ] UserTag unique 충돌을 이유로 Board write를 자동 재시도하지 않는다.
 - [ ] 이름별 반복 SELECT와 N+1이 없다.
 - [ ] 기존 전역 공유 데이터의 owner별 migration 절차와 검증이 존재한다.
 - [ ] System Tag 모델과 identity 정책을 변경하지 않는다.
@@ -331,6 +329,7 @@ Migration은 다음 순서를 보장해야 한다.
 ```bash
 ./gradlew :tagnote-core:test --tests '*UserTag*'
 ./gradlew :tagnote-core:test --tests '*BoardFacade*'
+./gradlew :tagnote-core:test --tests '*BoardWrite*'
 ./gradlew :tagnote-api:test --tests '*BoardControllerTest'
 ./gradlew test
 ./gradlew check
@@ -343,7 +342,7 @@ git diff --check
 - Entity annotation과 `init_schema.sql`의 FK/unique/index 대조
 - Server Spec의 UserTag schema와 동시성 제약이 같은 owner-scoped 정책인지 확인
 - Board 생성/수정에서 인증 User 또는 Board writer가 owner 기준으로 전달되는지 확인
-- global name-only UserTag lookup이 production code에 남아 있지 않은지 확인
-- 공개 조회가 단일 ID 선택 없이 normalized name join을 사용하는지 확인
+- Board 생성/수정용 owner 없는 name-only UserTag lookup이 production code에 남아 있지 않은지 확인
+- 공개 조회가 단일 ID 선택 없이 exact name join을 사용하는지 확인
 - System Tag production file이 diff에 포함되지 않았는지 확인
 - migration 전후 데이터 보존 검증 확인

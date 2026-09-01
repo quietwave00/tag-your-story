@@ -48,6 +48,12 @@
   - 기존 공개 태그명 Board 조회는 단일 ID 선택 대신 normalized name에 해당하는 모든 사용자별 UserTag를 조회하도록 계획.
   - 기존 공유 데이터 migration, composite unique/FK, 동시성, N+1 및 API 회귀 검증을 `plans/active/USER-TAG-001.md`에 명시.
   - production code 변경 없음.
+- 2026-09-01: USER-TAG-001 exact-name 플레이리스트 정책으로 변경, 검증 대기.
+  - ADR-003으로 ADR-002의 normalization identity를 대체하고 UserTag를 `(user_id, name)` exact-name identity로 재정의.
+  - 사용자 입력 이름을 변형 없이 보존하고 같은 이름으로 작성된 여러 Track의 Board를 플레이리스트형으로 조회하도록 명세와 active plan 수정.
+  - UserTag normalization 컬럼·타입·서비스와 unique 충돌 자동 재시도를 제거하고 exact name bulk find-or-create 및 공개 조회로 전환.
+  - owner/name unique, binary collation, BoardUserTag owner 불변식, migration runbook과 관련 테스트를 갱신.
+  - 사용자 실행 테스트와 전체 검증 결과 확인 전이므로 Plan은 active 상태 유지.
 - 2026-08-31: TAG-CORE-001 완료.
   - 기존 `UserTag`와 분리된 System Tag taxonomy의 `Tag`, `TagAlias` 모델 및 DB 제약을 구현.
   - merge/alias 상태 불변식, Unicode 기반 이름 정규화, approved alias exact matching과 unmatched/ambiguous 결과를 구현.

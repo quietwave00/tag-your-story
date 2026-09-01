@@ -52,7 +52,6 @@ public class BoardUserTagServiceTest {
         UserTagEntity otherUsersTag = UserTagEntity.builder()
                 .owner(com.tagnote.core.domain.user.UserEntity.builder().userId(2L).build())
                 .name("tag")
-                .normalizedName("tag")
                 .build();
 
         assertThatThrownBy(() -> boardUserTagService.makeBoardUserTagList(

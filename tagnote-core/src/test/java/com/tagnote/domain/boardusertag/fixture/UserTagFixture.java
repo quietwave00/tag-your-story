@@ -9,7 +9,6 @@ public class UserTagFixture {
                 .userTagId(userTagId)
                 .owner(UserEntity.builder().userId(1L).build())
                 .name(name)
-                .normalizedName(name.toLowerCase())
                 .build();
     }
 }

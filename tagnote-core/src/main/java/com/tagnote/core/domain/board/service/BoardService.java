@@ -140,8 +140,8 @@ public class BoardService {
                 .orElse(Collections.emptyList());
     }
 
-    public List<Board> getBoardListByNormalizedUserTagName(String normalizedName) {
-        return boardRepository.findBoardsByNormalizedUserTagName(normalizedName, BoardStatus.POST)
+    public List<Board> getBoardListByUserTagName(String name) {
+        return boardRepository.findBoardsByUserTagName(name, BoardStatus.POST)
                 .stream()
                 .map(boardEntity -> boardEntity.toBoard().addUserTagList(UserTagNames.ofEntityList(
                         boardEntity.getBoardUserTagEntityList().stream()

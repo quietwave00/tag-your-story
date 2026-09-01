@@ -18,11 +18,11 @@ import jakarta.persistence.*;
 @Table(
         name = "user_tag",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_user_tag_owner_normalized_name",
-                columnNames = {"user_id", "normalized_name"}
+                name = "uk_user_tag_owner_name",
+                columnNames = {"user_id", "name"}
         ),
         indexes = {
-                @Index(name = "idx_user_tag_normalized_owner", columnList = "normalized_name,user_id")
+                @Index(name = "idx_user_tag_name_owner", columnList = "name,user_id")
         }
 )
 public class UserTagEntity extends BaseTime {
@@ -37,9 +37,6 @@ public class UserTagEntity extends BaseTime {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "normalized_name", nullable = false)
-    private String normalizedName;
-
     /*
      * 형변환
      */
@@ -48,7 +45,6 @@ public class UserTagEntity extends BaseTime {
                 .userTagId(this.getUserTagId())
                 .ownerUserId(this.getOwner().getUserId())
                 .name(this.getName())
-                .normalizedName(this.getNormalizedName())
                 .build();
     }
 
@@ -56,11 +52,10 @@ public class UserTagEntity extends BaseTime {
     /*
      * 비즈니스 로직
      */
-    public static UserTagEntity create(UserEntity owner, String name, String normalizedName) {
+    public static UserTagEntity create(UserEntity owner, String name) {
         return builder()
                 .owner(owner)
                 .name(name)
-                .normalizedName(normalizedName)
                 .build();
     }
 }

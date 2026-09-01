@@ -13,8 +13,6 @@ public class UserTag {
 
     private String name;
 
-    private String normalizedName;
-
     /*
      * 형변환
      */
@@ -23,7 +21,6 @@ public class UserTag {
                 .userTagId(this.getUserTagId())
                 .owner(com.tagnote.core.domain.user.UserEntity.builder().userId(this.getOwnerUserId()).build())
                 .name(this.getName())
-                .normalizedName(this.getNormalizedName())
                 .build();
     }
 }

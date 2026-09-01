@@ -31,12 +31,12 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
             JOIN FETCH b.userEntity
             LEFT JOIN FETCH b.boardUserTagEntityList boardTag
             LEFT JOIN FETCH boardTag.userTag
-            WHERE matched.userTag.normalizedName = :normalizedName
+            WHERE matched.userTag.name = :name
               AND b.status = :status
             ORDER BY b.createdAt DESC
             """)
-    List<BoardEntity> findBoardsByNormalizedUserTagName(
-            @Param("normalizedName") String normalizedName,
+    List<BoardEntity> findBoardsByUserTagName(
+            @Param("name") String name,
             @Param("status") BoardStatus status
     );
 

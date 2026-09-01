@@ -12,11 +12,8 @@ import com.tagnote.core.domain.board.service.dto.BoardList;
 import com.tagnote.core.domain.boardusertag.service.BoardUserTag;
 import com.tagnote.core.domain.boardusertag.service.BoardUserTagService;
 import com.tagnote.core.domain.boardusertag.service.dto.UserTagNames;
-import com.tagnote.core.domain.usertag.name.NormalizedUserTagName;
 import com.tagnote.core.domain.usertag.service.UserTag;
-import com.tagnote.core.domain.usertag.service.UserTagService;
 import com.tagnote.core.domain.user.service.User;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +28,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,9 +36,6 @@ class BoardFacadeTest {
 
     @Mock
     private BoardService boardService;
-
-    @Mock
-    private UserTagService userTagService;
 
     @Mock
     private BoardUserTagService boardUserTagService;
@@ -69,23 +62,6 @@ class BoardFacadeTest {
 
         assertThat(result).isSameAs(savedBoard);
         verify(boardWriteService).create(command);
-    }
-
-    @Test
-    void create는_첫_data_integrity_충돌_후_새_transaction으로_한번_재시도한다() {
-        CreateBoardCommand command = CreateBoardCommand.builder()
-                .content("content")
-                .trackId("track-1")
-                .userTagList(List.of("tag-1"))
-                .userId(1L)
-                .build();
-        Board savedBoard = board("board-1");
-        when(boardWriteService.create(command))
-                .thenThrow(new DataIntegrityViolationException("concurrent user tag"))
-                .thenReturn(savedBoard);
-
-        assertThat(boardFacade.create(command)).isSameAs(savedBoard);
-        verify(boardWriteService, times(2)).create(command);
     }
 
     @Test
@@ -181,17 +157,16 @@ class BoardFacadeTest {
         UserTagNames firstTags = UserTagNames.ofNameList(List.of("tag-1"));
         UserTagNames secondTags = UserTagNames.ofNameList(List.of("tag-2"));
 
-        when(userTagService.normalize("genre")).thenReturn(new NormalizedUserTagName("genre"));
         first.addUserTagList(firstTags);
         second.addUserTagList(secondTags);
-        when(boardService.getBoardListByNormalizedUserTagName("genre")).thenReturn(List.of(first, second));
+        when(boardService.getBoardListByUserTagName("genre")).thenReturn(List.of(first, second));
 
         List<Board> result = boardFacade.getBoardListByUserTagName("genre");
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getUserTagNameList().getNameList()).containsExactly("tag-1");
         assertThat(result.get(1).getUserTagNameList().getNameList()).containsExactly("tag-2");
-        verify(boardService).getBoardListByNormalizedUserTagName("genre");
+        verify(boardService).getBoardListByUserTagName("genre");
     }
 
     private Board board(String boardId) {

@@ -58,8 +58,8 @@ public class BoardServiceTest {
                 .userEntity(savedUserEntity)
                 .build();
         List<BoardUserTagEntity> boardUserTagEntityList = List.of(
-                BoardUserTagEntity.of(mockSavedBoard, UserTagEntity.create(savedUserEntity, "userTag1", "usertag1")),
-                BoardUserTagEntity.of(mockSavedBoard, UserTagEntity.create(savedUserEntity, "userTag2", "usertag2"))
+                BoardUserTagEntity.of(mockSavedBoard, UserTagEntity.create(savedUserEntity, "userTag1")),
+                BoardUserTagEntity.of(mockSavedBoard, UserTagEntity.create(savedUserEntity, "userTag2"))
         );
         mockSavedBoard.addBoardUserTagList(boardUserTagEntityList);
 

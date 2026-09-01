@@ -18,10 +18,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.never;
@@ -51,7 +53,7 @@ class BoardWriteServiceTest {
         CreateBoardCommand command = CreateBoardCommand.builder()
                 .content("content")
                 .trackId("track-1")
-                .userTagList(List.of("Jazz"))
+                .userTagList(List.of("1월"))
                 .userId(1L)
                 .build();
         User user = User.builder().userId(1L).build();
@@ -60,7 +62,7 @@ class BoardWriteServiceTest {
         when(userTagService.makeUserTagList(any(UserEntity.class), same(command.getUserTagList())))
                 .thenAnswer(invocation -> {
                     UserEntity owner = invocation.getArgument(0);
-                    return List.of(UserTagEntity.create(owner, "Jazz", "jazz"));
+                    return List.of(UserTagEntity.create(owner, "1월"));
                 });
         when(boardUserTagService.makeBoardUserTagList(any(BoardEntity.class), any()))
                 .thenAnswer(invocation -> {
@@ -78,16 +80,35 @@ class BoardWriteServiceTest {
     }
 
     @Test
+    void create는_UserTag_unique_충돌을_자동_재시도하지_않는다() {
+        CreateBoardCommand command = CreateBoardCommand.builder()
+                .content("content")
+                .trackId("track-1")
+                .userTagList(List.of("1월"))
+                .userId(1L)
+                .build();
+        User user = User.builder().userId(1L).build();
+        DataIntegrityViolationException failure = new DataIntegrityViolationException("duplicate tag");
+        when(userService.getCacheByUserId(1L)).thenReturn(user);
+        when(userTagService.makeUserTagList(any(UserEntity.class), same(command.getUserTagList())))
+                .thenThrow(failure);
+
+        assertThatThrownBy(() -> boardWriteService.create(command)).isSameAs(failure);
+        verify(userTagService).makeUserTagList(any(UserEntity.class), same(command.getUserTagList()));
+        verify(boardService, never()).create(any(), any());
+    }
+
+    @Test
     void update는_Board의_원작성자를_UserTag_owner로_사용한다() {
         UpdateBoardCommand command = UpdateBoardCommand.builder()
                 .boardId("board-1")
                 .content("updated")
-                .userTagList(List.of("Jazz"))
+                .userTagList(List.of("1월"))
                 .build();
         UserEntity writer = UserEntity.builder().userId(7L).build();
         BoardEntity board = BoardEntity.create("content", "track-1");
         board.addUser(writer);
-        List<UserTagEntity> tags = List.of(UserTagEntity.create(writer, "Jazz", "jazz"));
+        List<UserTagEntity> tags = List.of(UserTagEntity.create(writer, "1월"));
         List<BoardUserTagEntity> joins = List.of(BoardUserTagEntity.of(board, tags.get(0)));
         Board expected = Board.builder().boardId("board-1").build();
         when(boardService.getBoardEntityByBoardId("board-1")).thenReturn(board);

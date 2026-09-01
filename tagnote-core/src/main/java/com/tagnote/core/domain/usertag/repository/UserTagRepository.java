@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface UserTagRepository extends JpaRepository<UserTagEntity, Long> {
 
-    List<UserTagEntity> findAllByOwner_UserIdAndNormalizedNameIn(Long ownerUserId, List<String> normalizedNames);
+    List<UserTagEntity> findAllByOwner_UserIdAndNameIn(Long ownerUserId, List<String> names);
 }

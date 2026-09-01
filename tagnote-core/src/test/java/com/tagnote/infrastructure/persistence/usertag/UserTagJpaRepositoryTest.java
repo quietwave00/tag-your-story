@@ -50,23 +50,36 @@ class UserTagJpaRepositoryTest {
     private TestEntityManager entityManager;
 
     @Test
-    void 같은_owner의_normalized_name_unique가_중복을_거부한다() {
+    void 같은_owner의_정확히_같은_name_unique가_중복을_거부한다() {
         UserEntity owner = persistUser("owner-1");
-        userTagRepository.saveAndFlush(UserTagEntity.create(owner, "Jazz", "jazz"));
+        userTagRepository.saveAndFlush(UserTagEntity.create(owner, "Jazz"));
 
         assertThatThrownBy(() -> userTagRepository.saveAndFlush(
-                UserTagEntity.create(owner, "  ＪＡＺＺ  ", "jazz")
+                UserTagEntity.create(owner, "Jazz")
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
-    void 다른_owner는_같은_normalized_name을_각자_저장한다() {
+    void 같은_owner도_입력값이_다른_name은_별도로_저장한다() {
+        UserEntity owner = persistUser("variant-owner");
+
+        userTagRepository.saveAllAndFlush(List.of(
+                UserTagEntity.create(owner, "Jazz"),
+                UserTagEntity.create(owner, "jazz"),
+                UserTagEntity.create(owner, "  Jazz  ")
+        ));
+
+        assertThat(userTagRepository.count()).isEqualTo(3L);
+    }
+
+    @Test
+    void 다른_owner는_정확히_같은_name을_각자_저장한다() {
         UserEntity firstOwner = persistUser("owner-1");
         UserEntity secondOwner = persistUser("owner-2");
 
         userTagRepository.saveAllAndFlush(List.of(
-                UserTagEntity.create(firstOwner, "Jazz", "jazz"),
-                UserTagEntity.create(secondOwner, "JAZZ", "jazz")
+                UserTagEntity.create(firstOwner, "Jazz"),
+                UserTagEntity.create(secondOwner, "Jazz")
         ));
 
         assertThat(userTagRepository.count()).isEqualTo(2L);
@@ -76,9 +89,9 @@ class UserTagJpaRepositoryTest {
     void 존재하지_않는_owner_FK를_거부한다() {
         assertThatThrownBy(() -> entityManager.getEntityManager().createNativeQuery("""
                 insert into user_tag
-                    (user_id, name, normalized_name, created_at, updated_at)
+                    (user_id, name, created_at, updated_at)
                 values
-                    (999999, 'Jazz', 'jazz', current_timestamp, current_timestamp)
+                    (999999, 'Jazz', current_timestamp, current_timestamp)
                 """).executeUpdate())
                 .isInstanceOf(PersistenceException.class);
     }
@@ -86,7 +99,7 @@ class UserTagJpaRepositoryTest {
     @Test
     void 같은_Board와_UserTag_연결_unique가_중복을_거부한다() {
         UserEntity owner = persistUser("owner-1");
-        UserTagEntity tag = userTagRepository.saveAndFlush(UserTagEntity.create(owner, "Jazz", "jazz"));
+        UserTagEntity tag = userTagRepository.saveAndFlush(UserTagEntity.create(owner, "Jazz"));
         BoardEntity board = persistBoard(owner, "board-content", false);
         boardUserTagRepository.saveAndFlush(BoardUserTagEntity.of(board, tag));
 
@@ -95,16 +108,18 @@ class UserTagJpaRepositoryTest {
     }
 
     @Test
-    void 공개조회는_모든_owner의_POST_Board를_distinct로_태그와_함께_조회한다() {
+    void 공개조회는_exact_name이_같은_모든_owner의_POST_Board를_distinct로_조회한다() {
         UserEntity firstOwner = persistUser("owner-1");
         UserEntity secondOwner = persistUser("owner-2");
-        UserTagEntity firstJazz = userTagRepository.save(UserTagEntity.create(firstOwner, "Jazz", "jazz"));
-        UserTagEntity firstFavorite = userTagRepository.save(UserTagEntity.create(firstOwner, "Favorite", "favorite"));
-        UserTagEntity secondJazz = userTagRepository.save(UserTagEntity.create(secondOwner, "JAZZ", "jazz"));
+        UserTagEntity firstJazz = userTagRepository.save(UserTagEntity.create(firstOwner, "Jazz"));
+        UserTagEntity firstFavorite = userTagRepository.save(UserTagEntity.create(firstOwner, "Favorite"));
+        UserTagEntity secondJazz = userTagRepository.save(UserTagEntity.create(secondOwner, "Jazz"));
+        UserTagEntity differentCase = userTagRepository.save(UserTagEntity.create(secondOwner, "JAZZ"));
         userTagRepository.flush();
 
         persistBoardWithTags(firstOwner, false, firstJazz, firstFavorite);
         persistBoardWithTags(secondOwner, false, secondJazz);
+        persistBoardWithTags(secondOwner, false, differentCase);
         persistBoardWithTags(firstOwner, true, firstJazz);
         entityManager.flush();
         entityManager.clear();
@@ -114,7 +129,7 @@ class UserTagJpaRepositoryTest {
                 .getStatistics();
         statistics.clear();
 
-        List<BoardEntity> boards = boardRepository.findBoardsByNormalizedUserTagName("jazz", BoardStatus.POST);
+        List<BoardEntity> boards = boardRepository.findBoardsByUserTagName("Jazz", BoardStatus.POST);
         boards.forEach(board -> {
             board.getUserEntity().getNickname();
             board.getBoardUserTagEntityList().forEach(join -> join.getUserTag().getName());

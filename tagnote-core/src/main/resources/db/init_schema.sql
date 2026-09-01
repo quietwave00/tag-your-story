@@ -212,14 +212,13 @@ create table user_tag
 (
     user_tag_id    bigint auto_increment primary key,
     user_id        bigint       not null,
-    name           varchar(255) not null,
-    normalized_name varchar(255) not null,
+    name           varchar(255) character set utf8mb4 collate utf8mb4_bin not null,
     created_at     datetime(6)  not null,
     updated_at     datetime(6)  not null,
 
-    constraint uk_user_tag_owner_normalized_name unique (user_id, normalized_name),
+    constraint uk_user_tag_owner_name unique (user_id, name),
     foreign key (user_id) references users (user_id),
-    index idx_user_tag_normalized_owner (normalized_name, user_id)
+    index idx_user_tag_name_owner (name, user_id)
 ) ENGINE = InnoDB;
 
 create table board_user_tag
