@@ -20,7 +20,7 @@ TagNote는 헤비 리스너를 위한 음악 정보/커뮤니티 서비스다.
 
 - Spotify 기반 음악 검색
 - Track / Album / Artist 내부 카탈로그 구축
-- MusicBrainz / Discogs 기반 외부 태그 수집
+- MusicBrainz / Discogs / Last.fm 기반 외부 태그 수집
 - System Tag 계산 및 조회
 - 게시글 작성 / 조회 / 수정 / 삭제
 - User Tag 작성 및 게시글 연결
@@ -118,6 +118,7 @@ TagResolutionService
 - Spotify Client
 - MusicBrainz Client
 - Discogs Client
+- Last.fm Client
 - Scheduler / Batch
 - Cache
 - 외부 응답 DTO / Mapper
@@ -715,9 +716,9 @@ Tag Evidence
 ### 13.4 External Tag 수집
 
 ```text
-MusicBrainz / Discogs
+MusicBrainz / Discogs / Last.fm
 ↓
-raw genre/style
+raw genre/style/community tag
 ↓
 external_tag_observation
 ```
@@ -931,7 +932,7 @@ commit
 4. Track/Album/Artist가 없으면 저장
    → 짧은 Transaction
 
-5. Spotify + MusicBrainz + Discogs 병렬 호출
+5. Spotify metadata 확보 후 MusicBrainz + Discogs + Last.fm 병렬 호출
    → Transaction 없음
 
 6. 성공 결과 취합
@@ -1425,7 +1426,7 @@ Notification
 
 Spotify metadata를 얻지 못하면 신규 Track Import는 실패할 수 있다.
 
-### MusicBrainz / Discogs
+### MusicBrainz / Discogs / Last.fm
 
 Enrichment provider.
 
@@ -1458,13 +1459,13 @@ Tag Core
    - Fake External Tag에 테스트용 고정 confidence 사용 가능
    - production Provider 정책으로 간주하지 않음
 → [Policy Gate / Human Review]
-   - MusicBrainz/Discogs evidence별 기본 confidence 확정
+   - MusicBrainz/Discogs/Last.fm evidence별 기본 confidence 확정
    - Entity Matching confidence와 Tag Evidence confidence의 결합 여부 확정
    - Provider vote/count 반영 여부 확정
 → External Enrichment 구현 착수
 ```
 
-따라서 MusicBrainz/Discogs HTTP Adapter와 응답 매핑을 구현하기 전에 다음 항목이 Plan 또는 필요 시 ADR로 승인되어야 한다.
+따라서 MusicBrainz/Discogs/Last.fm HTTP Adapter와 응답 매핑을 구현하기 전에 다음 항목이 Plan 또는 필요 시 ADR로 승인되어야 한다.
 
 - Provider별 evidence 종류와 기본 confidence
 - Entity Matching 통과 기준
@@ -1641,15 +1642,16 @@ Track / Album
 2. Artist / Album / Track을 별도 Catalog Entity로 관리한다.
 3. MusicBrainz는 Identity / Relationship / Tag Evidence 역할을 한다.
 4. Discogs는 Album Genre / Style evidence를 보강한다.
-5. 외부 raw tag는 Observation에 보존한다.
-6. System Tag와 User Tag를 분리한다.
-7. Assertion은 근거이고 Resolved는 사용자 노출용 read model이다.
-8. Board는 하나의 Track을 참조한다.
-9. Board의 System Tag는 Track의 resolved tag를 통해 조회한다.
-10. BoardUserTag는 Board와 작성자 소유 UserTag의 N:M 관계이며, UserTag identity는 입력값을 보존하는 `(user_id, name)` 단위다.
-11. User가 Board 목록 FK를 소유하지 않는다.
-12. Like 관계가 source of truth이고 `board.like_count`는 조회용 counter다.
-13. Notification은 `target_type + target_id`로 대상의 의미를 명시한다.
-14. 외부 Provider 실패는 가능한 범위에서 partial success로 처리한다.
-15. DB unique / FK / index를 데이터 정합성의 최종 방어선으로 사용한다.
-16. MVP에서는 읽기 쉬운 Layered Architecture를 유지하고 과도한 인프라 추상화를 피한다.
+5. Last.fm은 Track / Album Community Tag evidence를 보강하며 provider count를 confidence에 직접 반영하지 않는다.
+6. 외부 raw tag는 Observation에 보존한다.
+7. System Tag와 User Tag를 분리한다.
+8. Assertion은 근거이고 Resolved는 사용자 노출용 read model이다.
+9. Board는 하나의 Track을 참조한다.
+10. Board의 System Tag는 Track의 resolved tag를 통해 조회한다.
+11. BoardUserTag는 Board와 작성자 소유 UserTag의 N:M 관계이며, UserTag identity는 입력값을 보존하는 `(user_id, name)` 단위다.
+12. User가 Board 목록 FK를 소유하지 않는다.
+13. Like 관계가 source of truth이고 `board.like_count`는 조회용 counter다.
+14. Notification은 `target_type + target_id`로 대상의 의미를 명시한다.
+15. 외부 Provider 실패는 가능한 범위에서 partial success로 처리한다.
+16. DB unique / FK / index를 데이터 정합성의 최종 방어선으로 사용한다.
+17. MVP에서는 읽기 쉬운 Layered Architecture를 유지하고 과도한 인프라 추상화를 피한다.

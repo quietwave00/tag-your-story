@@ -1,7 +1,7 @@
 # TagNote Backend Domain & Data Design (v2 — 실무 적정 규모 조정판)
 ## DDD 기반 음악 태그 수집·정규화·해석·노출 백엔드 구현 명세
 
-> 목적: Spotify를 단일 사용자 진입점으로 사용하면서 MusicBrainz/Discogs 등의 외부 음악 메타데이터를 수집하고, 내부 태그 taxonomy와 매칭한 뒤, 근거 기반 resolver를 통해 최종 태그를 제공하는 Spring Boot 백엔드의 구현 기준을 정의한다.
+> 목적: Spotify를 단일 사용자 진입점으로 사용하면서 MusicBrainz/Discogs/Last.fm 등의 외부 음악 메타데이터를 수집하고, 내부 태그 taxonomy와 매칭한 뒤, 근거 기반 resolver를 통해 최종 태그를 제공하는 Spring Boot 백엔드의 구현 기준을 정의한다.
 >
 > **v2 변경 배경**: 이 프로젝트는 3년차 서버 개발자의 포트폴리오이며, 목표는 현업에서 실제로 쓰는 수준의 복잡도를 스터디 목적으로 재현하는 것이다. "이론적으로 가능한 확장"까지 전부 반영하기보다, Observation → Assertion → Resolution → Projection으로 이어지는 **태그 관리 파이프라인 자체**를 가장 잘 보여줄 수 있는 만큼만 구현한다. DB 스키마는 v1과 동일하게 유지하고, 실행/운영 레이어의 과도한 설계만 정리했다.
 
@@ -197,7 +197,37 @@ MVP에서는 Discogs의 Track 단위 태그 해석을 하지 않는다.
 
 ---
 
-## 3.4 AllMusic
+## 3.4 Last.fm
+
+역할:
+
+- Track / Album 단위 Community Top Tag evidence 보강
+- MusicBrainz genre와 Discogs genre/style의 coverage를 보완하는 독립 provider
+
+Last.fm tag는 genre, style, mood, 개인 분류가 섞인 비정형 값이다. 따라서 provider 응답을 `EXPLICIT_GENRE`나 `EXPLICIT_STYLE`로 추측하지 않고 `COMMUNITY_TAG` evidence로 기록한다.
+
+```text
+Last.fm track.getTopTags / album.getTopTags
+  │
+  ├─ minimum count gate
+  ├─ maximum tag count 제한
+  └─ raw community tag 보존
+       │
+       ▼
+TRACK / ALBUM external_tag_observation
+       │
+       ▼
+approved alias exact unique match
+       │
+       ▼
+COMMUNITY_TAG assertion
+```
+
+count는 저품질 tag 제외 gate로만 사용한다. count를 confidence에 곱하거나 provider agreement bonus로 사용하지 않는다.
+
+---
+
+## 3.5 AllMusic
 
 현재 MVP 범위에서는 제외한다.
 
@@ -206,6 +236,7 @@ MVP source:
 ```text
 MUSICBRAINZ
 DISCOGS
+LASTFM
 ADMIN
 ```
 
@@ -632,6 +663,7 @@ MVP에서는 LABEL, ARTIST를 제외한다.
 ExternalTagSource
 - MUSICBRAINZ
 - DISCOGS
+- LASTFM
 ```
 
 ```text
@@ -757,6 +789,7 @@ Enum:
 AssertionSource
 - MUSICBRAINZ
 - DISCOGS
+- LASTFM
 - ADMIN
 ```
 
@@ -764,6 +797,7 @@ AssertionSource
 EvidenceType
 - EXPLICIT_GENRE
 - EXPLICIT_STYLE
+- COMMUNITY_TAG
 ```
 
 2차 확장:
@@ -1007,12 +1041,12 @@ ResolvedTagRepository
 
 초기에는 지나치게 복잡한 수학식을 사용하지 않는다.
 
-여기서 정의하는 `max(confidence)`, minimum score, Album 상속 가중치는 **이미 생성된 Assertion을 결합하는 Resolver 정책**이다. MusicBrainz/Discogs 응답으로부터 Assertion의 최초 confidence를 산정하는 Provider mapping 정책은 별도로 확정해야 한다.
+여기서 정의하는 `max(confidence)`, minimum score, Album 상속 가중치는 **이미 생성된 Assertion을 결합하는 Resolver 정책**이다. MusicBrainz/Discogs/Last.fm 응답으로부터 Assertion의 최초 confidence를 산정하는 Provider mapping 정책은 별도로 확정해야 한다.
 
 우선순위:
 
 ```text
-TRACK EXPLICIT
+TRACK DIRECT (EXPLICIT / COMMUNITY)
 >
 ADMIN
 >
@@ -1024,7 +1058,7 @@ ALBUM INHERITED
 ### 직접 Track evidence
 
 ```text
-Track explicit assertion
+Track direct assertion
 → confidence 그대로 사용
 ```
 
@@ -1143,11 +1177,11 @@ TagNote는 태그가 핵심 가치이므로 최초 조회에서도 가능한 풍
 Resolved    Spotify metadata 저장
 즉시 반환        │
                  ▼
-       외부 provider 병렬 수집
-          /               \
- MusicBrainz             Discogs
-          \               /
-           ▼             ▼
+          외부 provider 병렬 수집
+       /             |             \
+MusicBrainz       Discogs         Last.fm
+       \             |             /
+                    ▼
        Observation 저장
               │
               ▼
@@ -1209,14 +1243,15 @@ Resolved    Spotify metadata 저장
 ```text
 MusicBrainz HTTP
 Discogs HTTP
+Last.fm HTTP
 ```
 
 따라서 Spotify metadata를 확보한 후 가능한 provider는 병렬 호출한다.
 
 ```text
-                    ┌─ MusicBrainz
-Spotify Metadata ───┤
-                    └─ Discogs
+                    ├─ MusicBrainz
+Spotify Metadata ───┼─ Discogs
+                    └─ Last.fm
 ```
 
 구현은 `CompletableFuture.allOf`로 확정한다.
@@ -1228,7 +1263,10 @@ CompletableFuture<List<ExternalTagData>> mbFuture =
 CompletableFuture<List<ExternalTagData>> discogsFuture =
     CompletableFuture.supplyAsync(() -> discogsClient.getAlbumTags(albumInfo), executor);
 
-CompletableFuture.allOf(mbFuture, discogsFuture).join();
+CompletableFuture<List<ExternalTagData>> lastFmFuture =
+    CompletableFuture.supplyAsync(() -> lastFmClient.getTopTags(trackInfo, albumInfo), executor);
+
+CompletableFuture.allOf(mbFuture, discogsFuture, lastFmFuture).join();
 ```
 
 Virtual Thread, WebClient reactive 체인, 별도 TaskExecutor 튜닝 같은 대안은 이 프로젝트 규모에서 다룰 이유가 없다. `CompletableFuture` + 고정 크기 `ExecutorService` 하나로 충분하며, 이유를 설명할 수 있는 가장 단순한 선택이 곧 현업에서도 통용되는 기본값이다.
@@ -1244,12 +1282,13 @@ Virtual Thread, WebClient reactive 체인, 별도 TaskExecutor 튜닝 같은 대
 ```text
 MusicBrainz = SUCCESS
 Discogs     = TIMEOUT
+Last.fm     = SUCCESS
 ```
 
 처리:
 
 ```text
-MusicBrainz observation 저장
+MusicBrainz/Last.fm observation 저장
 → assertion
 → resolver
 → 사용자 응답
@@ -1312,7 +1351,7 @@ MVP 권장 목표:
 → 100~300ms 수준 목표
 
 처음 보는 Track
-→ MusicBrainz + Discogs 병렬
+→ MusicBrainz + Discogs + Last.fm 병렬
 → 약 1~2초 수준 목표
 ```
 
@@ -1356,6 +1395,7 @@ Domain Layer       Infrastructure Layer
 TagMatcher         SpotifyClient
 TagResolver        MusicBrainzClient
                    DiscogsClient
+                   LastFmClient
 ```
 
 외부 API 구현 예:
@@ -1364,6 +1404,7 @@ TagResolver        MusicBrainzClient
 infrastructure.external.spotify.SpotifyClient
 infrastructure.external.musicbrainz.MusicBrainzClient
 infrastructure.external.discogs.DiscogsClient
+infrastructure.external.lastfm.LastFmClient
 ```
 
 예:
@@ -1396,6 +1437,19 @@ public class DiscogsClient {
         Integer releaseYear
     ) {
         // Discogs API 호출
+    }
+}
+```
+
+```java
+@Component
+public class LastFmClient {
+
+    public LastFmTopTagsResponse getTrackTopTags(
+        String artistName,
+        String trackTitle
+    ) {
+        // Last.fm API 호출
     }
 }
 ```
@@ -1593,7 +1647,7 @@ Request:
 
 6. Track find-or-create
 
-7. MusicBrainz / Discogs 병렬 수집
+7. MusicBrainz / Discogs / Last.fm 병렬 수집
 
 8. 외부 응답을 observation으로 저장
 
@@ -1627,6 +1681,8 @@ MusicBrainz HTTP
   ↓
 Discogs HTTP
   ↓
+Last.fm HTTP
+  ↓
 DB save
 ```
 
@@ -1636,7 +1692,7 @@ DB save
 
 ```text
 [외부 호출 단계]
-Spotify / MusicBrainz / Discogs
+Spotify / MusicBrainz / Discogs / Last.fm
         ↓
 
 [DB Transaction]
@@ -2061,8 +2117,10 @@ com.tagnote
 │  │  │  └─ SpotifyClient
 │  │  ├─ musicbrainz
 │  │  │  └─ MusicBrainzClient
-│  │  └─ discogs
-│  │     └─ DiscogsClient
+│  │  ├─ discogs
+│  │  │  └─ DiscogsClient
+│  │  └─ lastfm
+│  │     └─ LastFmClient
 │  └─ scheduler
 │
 └─ shared
@@ -2119,6 +2177,7 @@ TrackImportService
       ├─ SpotifyClient
       ├─ MusicBrainzClient
       ├─ DiscogsClient
+      ├─ LastFmClient
       │
       ├─ MusicEntityMatchingService
       ├─ TagMatchingService
@@ -2190,6 +2249,7 @@ RestClient
 JPA query
 Spotify API
 Discogs API
+Last.fm API
 ```
 
 ### Infrastructure Layer
@@ -2391,7 +2451,7 @@ resolve(subject):
 
 3. 동일 tag 그룹화
 
-4. direct explicit evidence 계산
+4. direct evidence 계산
 
 5. inherited evidence 계산
 
@@ -2424,6 +2484,7 @@ tag:
   enrichment:
     musicbrainz-timeout-ms: 1500
     discogs-timeout-ms: 1500
+    lastfm-timeout-ms: 1500
     total-first-load-budget-ms: 2000
 ```
 
@@ -2558,6 +2619,7 @@ sequenceDiagram
     participant S as Spotify
     participant MB as MusicBrainz
     participant D as Discogs
+    participant L as Last.fm
     participant M as TagMatcher
     participant R as TagResolver
 
@@ -2579,6 +2641,9 @@ sequenceDiagram
         and
             API->>D: Album matching + genre/style
             D-->>API: Discogs data
+        and
+            API->>L: Track/Album top tags
+            L-->>API: Last.fm community tags
         end
 
         API->>DB: ExternalTagObservation 저장
@@ -2793,12 +2858,12 @@ Alias approve/reject
 First Vertical Slice의 Fake External Tag
 → 테스트 fixture confidence로 종단 간 연결 검증
 → Human Review로 Evidence Confidence 정책 승인
-→ MusicBrainz/Discogs Adapter 구현
+→ MusicBrainz/Discogs/Last.fm Adapter 구현
 ```
 
 External Enrichment 구현 전에 다음을 결정한다.
 
-- MusicBrainz genre/tag 및 Discogs genre/style별 기본 confidence
+- MusicBrainz genre, Discogs genre/style 및 Last.fm community tag별 기본 confidence
 - Entity Matching confidence와 Tag Evidence confidence의 분리 또는 결합 방식
 - Provider vote/count를 사용할지 여부와 정규화 방식
 - evidence 누락/저품질 응답의 제외 기준
@@ -2811,6 +2876,7 @@ Fake External Tag의 고정 confidence는 production 정책이 아니며, 이 �
 MusicBrainz matching
 MusicBrainz tag provider
 Discogs album provider
+Last.fm track/album community tag provider
 ExternalTagObservation
 ```
 
@@ -2881,7 +2947,7 @@ Scheduler fallback
 이 프로젝트에서 실제로 버그가 나면 안 되는 부분이다.
 
 ```text
-Resolver 우선순위 (TRACK EXPLICIT > ADMIN > ALBUM INHERITED)
+Resolver 우선순위 (TRACK DIRECT > ADMIN > ALBUM INHERITED)
 Album → Track 상속 가중치 (0.85 계산)
 동일 tag 다중 assertion의 max(confidence) 정책
 MERGED tag canonical 변환
@@ -2912,7 +2978,7 @@ Concurrent duplicate import (unique constraint 충돌 재조회)
 ## 3순위 — Infrastructure (필요할 때만)
 
 ```text
-MusicBrainz / Discogs 응답 매핑
+MusicBrainz / Discogs / Last.fm 응답 매핑
 JPA unique constraint 위반 시나리오
 ```
 
@@ -3014,11 +3080,11 @@ taxonomy 탐색과 연관 그래프 탐색이 섞인다.
           Artist / Album / Track
                      │
                      ▼
-          External Enrichment
-          /                 \
- MusicBrainz               Discogs
-          \                 /
-           ▼               ▼
+              External Enrichment
+          /           |           \
+ MusicBrainz       Discogs       Last.fm
+          \           |           /
+                       ▼
        ExternalTagObservation
              RAW LAYER
                 │
@@ -3125,7 +3191,7 @@ MVP를 "완주"했다고 판단할 수 있는 최소 조건:
 1. Spotify에서 Track 검색/선택 가능
 2. Track/Album/Artist 내부 저장
 3. Spotify metadata로 MusicBrainz Recording 식별
-4. MusicBrainz/Discogs tag data 수집
+4. MusicBrainz/Discogs/Last.fm tag data 수집
 5. 외부 raw tag가 Observation으로 모두 보존
 6. approved alias 기준 exact match
 7. matched observation에서 assertion 생성

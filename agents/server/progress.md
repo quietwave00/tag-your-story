@@ -96,3 +96,8 @@
   - import 응답에 `systemTags(tagId, name, score)`를 가산적으로 추가하고 Swagger contract, HIDDEN 제외, MANUAL_FIXED 노출 및 결정적 정렬을 반영.
   - 반복 선택 시 기존 resolved projection을 재사용하고, 동시 최초 선택에서도 Catalog/Observation/Assertion/Resolved row가 하나로 수렴하도록 검증.
   - 사용자 실행 대상 테스트와 전체 검증 통과를 확인하고 실행 기록을 `agents/server/plans/completed/TAG-SLICE-001.md`로 이동.
+- 2026-09-01: ENRICHMENT-001 provider 범위 정렬.
+  - MusicBrainz/Discogs에 Last.fm Track/Album community top tag provider를 추가하도록 Server Spec, System Tag 아키텍처와 active plan을 갱신.
+  - ADR-004로 `LASTFM` source, `COMMUNITY_TAG` evidence, count gate-only 정책과 기존 Resolver `max(confidence)` 유지 결정을 기록.
+  - Last.fm API key, exact entity validation, deterministic external reference, executor 크기 3, fixture/partial-success 테스트 범위를 Plan에 반영.
+  - production code 변경 및 구현 검증 없음. ENRICHMENT-001은 Human Review 대기 상태 유지.
