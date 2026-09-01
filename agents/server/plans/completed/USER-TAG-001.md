@@ -303,26 +303,26 @@ Migration은 다음 순서를 보장해야 한다.
 
 ## Acceptance Criteria
 
-- [ ] `UserTag`가 owner User FK를 가진다.
-- [ ] 같은 사용자의 정확히 같은 name은 같은 UserTag ID를 재사용한다.
-- [ ] 다른 사용자의 같은 name은 다른 UserTag ID를 가진다.
-- [ ] case/Unicode/공백이 다른 name을 서버가 병합하지 않는다.
-- [ ] 전역 `UNIQUE(name)`를 사용하지 않는다.
-- [ ] DB가 `UNIQUE(user_id, name)`으로 exact-name 중복을 최종 방어한다.
-- [ ] UserTag owner와 Board writer가 항상 일치한다.
-- [ ] BoardUserTag 중복이 DB unique로 방지된다.
-- [ ] 공개 태그명 조회가 같은 이름을 가진 모든 사용자의 POST Board를 반환한다.
-- [ ] 공개 조회가 단일 UserTag ID를 임의 선택하지 않는다.
-- [ ] 기존 Board tag endpoint와 response contract가 유지된다.
-- [ ] 태그 생성과 조회가 입력 name을 변형하지 않고 exact match한다.
-- [ ] UserTag unique 충돌을 이유로 Board write를 자동 재시도하지 않는다.
-- [ ] 이름별 반복 SELECT와 N+1이 없다.
-- [ ] 기존 전역 공유 데이터의 owner별 migration 절차와 검증이 존재한다.
-- [ ] System Tag 모델과 identity 정책을 변경하지 않는다.
-- [ ] 개인 태그 관리 API와 관련 없는 리팩토링을 선행하지 않는다.
-- [ ] 전체 테스트와 검증 명령이 통과한다.
-- [ ] 관련 없는 사용자 변경을 포함하지 않는다.
-- [ ] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
+- [x] `UserTag`가 owner User FK를 가진다.
+- [x] 같은 사용자의 정확히 같은 name은 같은 UserTag ID를 재사용한다.
+- [x] 다른 사용자의 같은 name은 다른 UserTag ID를 가진다.
+- [x] case/Unicode/공백이 다른 name을 서버가 병합하지 않는다.
+- [x] 전역 `UNIQUE(name)`를 사용하지 않는다.
+- [x] DB가 `UNIQUE(user_id, name)`으로 exact-name 중복을 최종 방어한다.
+- [x] UserTag owner와 Board writer가 항상 일치한다.
+- [x] BoardUserTag 중복이 DB unique로 방지된다.
+- [x] 공개 태그명 조회가 같은 이름을 가진 모든 사용자의 POST Board를 반환한다.
+- [x] 공개 조회가 단일 UserTag ID를 임의 선택하지 않는다.
+- [x] 기존 Board tag endpoint와 response contract가 유지된다.
+- [x] 태그 생성과 조회가 입력 name을 변형하지 않고 exact match한다.
+- [x] UserTag unique 충돌을 이유로 Board write를 자동 재시도하지 않는다.
+- [x] 이름별 반복 SELECT와 N+1이 없다.
+- [x] 기존 전역 공유 데이터의 owner별 migration 절차와 검증이 존재한다.
+- [x] System Tag 모델과 identity 정책을 변경하지 않는다.
+- [x] 개인 태그 관리 API와 관련 없는 리팩토링을 선행하지 않는다.
+- [x] 전체 테스트와 검증 명령이 통과한다.
+- [x] 관련 없는 사용자 변경을 포함하지 않는다.
+- [x] 완료 시 progress 갱신과 Plan 이동이 함께 이루어진다.
 
 ## Verification
 
@@ -346,3 +346,11 @@ git diff --check
 - 공개 조회가 단일 ID 선택 없이 exact name join을 사용하는지 확인
 - System Tag production file이 diff에 포함되지 않았는지 확인
 - migration 전후 데이터 보존 검증 확인
+
+## Completion Record
+
+- 2026-09-01 사용자 실행 결과로 요청된 테스트와 전체 검증 명령 통과를 확인했다.
+- exact-name owner identity, 공개 조회, DB/JPA 제약, owner 불변식, N+1 및 기존 API contract를 관련 테스트로 검증했다.
+- UserTag normalization과 Board write 자동 재시도가 production code에 남아 있지 않음을 정적 검토했다.
+- 관련 범위 `git diff --check`를 통과했다.
+- 기존 데이터 전환 절차와 검증 query는 `agents/server/migrations/USER-TAG-001.md`에 기록했다.
