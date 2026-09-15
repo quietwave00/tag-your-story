@@ -2,13 +2,16 @@ package com.tagnote.application.catalog.selection;
 
 import com.tagnote.application.catalog.detail.TrackDetailReadService;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
+import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.TrackImportService;
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
+import com.tagnote.application.enrichment.ExternalEnrichmentCollector;
 import com.tagnote.application.enrichment.ObservationProcessingService;
+import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
+import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
-import com.tagnote.application.enrichment.port.ExternalTagProvider;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.enrichment.observation.ExternalTagSource;
@@ -32,7 +35,8 @@ import static org.mockito.Mockito.when;
 class TrackSelectionServiceTest {
 
     @Mock private TrackImportService trackImportService;
-    @Mock private ExternalTagProvider externalTagProvider;
+    @Mock private ExternalEnrichmentCollector externalEnrichmentCollector;
+    @Mock private CatalogExternalIdentityWriteService catalogExternalIdentityWriteService;
     @Mock private ObservationProcessingService observationProcessingService;
     @Mock private TagResolutionService tagResolutionService;
     @Mock private TrackDetailReadService trackDetailReadService;
@@ -43,7 +47,8 @@ class TrackSelectionServiceTest {
     void setUp() {
         service = new TrackSelectionService(
                 trackImportService,
-                List.of(externalTagProvider),
+                externalEnrichmentCollector,
+                catalogExternalIdentityWriteService,
                 observationProcessingService,
                 tagResolutionService,
                 trackDetailReadService
@@ -60,7 +65,9 @@ class TrackSelectionServiceTest {
 
         assertThat(service.select("track-1")).isSameAs(detail);
 
-        verify(externalTagProvider, never()).collect(imported);
+        verify(externalEnrichmentCollector, never()).collect(imported);
+        verify(catalogExternalIdentityWriteService, never())
+                .attach(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
         verify(observationProcessingService, never())
                 .process(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList());
         verify(tagResolutionService, never()).resolve(org.mockito.ArgumentMatchers.any());
@@ -73,8 +80,12 @@ class TrackSelectionServiceTest {
         ExternalTagInput trackInput = input("Track Genre", "recording:track-1");
         TrackDetail detail = new TrackDetail(imported, List.of());
         when(trackImportService.importTrack("track-1")).thenReturn(imported);
-        when(externalTagProvider.collect(imported)).thenReturn(
-                new CollectedExternalTags(List.of(albumInput), List.of(trackInput))
+        when(externalEnrichmentCollector.collect(imported)).thenReturn(
+                new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(albumInput), List.of(trackInput)),
+                        CatalogExternalIdentityMatch.none(),
+                        List.of()
+                )
         );
         when(trackDetailReadService.getByCatalogTrackId(10L)).thenReturn(detail);
 
@@ -82,13 +93,15 @@ class TrackSelectionServiceTest {
 
         InOrder order = inOrder(
                 trackImportService,
-                externalTagProvider,
+                externalEnrichmentCollector,
+                catalogExternalIdentityWriteService,
                 observationProcessingService,
                 tagResolutionService,
                 trackDetailReadService
         );
         order.verify(trackImportService).importTrack("track-1");
-        order.verify(externalTagProvider).collect(imported);
+        order.verify(externalEnrichmentCollector).collect(imported);
+        order.verify(catalogExternalIdentityWriteService).attach(10L, CatalogExternalIdentityMatch.none());
         order.verify(observationProcessingService).process(SubjectRef.album(20L), List.of(albumInput));
         order.verify(tagResolutionService).resolve(SubjectRef.album(20L));
         order.verify(observationProcessingService).process(SubjectRef.track(10L), List.of(trackInput));
@@ -102,12 +115,14 @@ class TrackSelectionServiceTest {
         TrackDetail detail = new TrackDetail(imported, List.of());
         service = new TrackSelectionService(
                 trackImportService,
-                List.of(),
+                externalEnrichmentCollector,
+                catalogExternalIdentityWriteService,
                 observationProcessingService,
                 tagResolutionService,
                 trackDetailReadService
         );
         when(trackImportService.importTrack("track-1")).thenReturn(imported);
+        when(externalEnrichmentCollector.collect(imported)).thenReturn(ExternalEnrichmentCollection.empty());
         when(trackDetailReadService.getByCatalogTrackId(10L)).thenReturn(detail);
 
         assertThat(service.select("track-1")).isSameAs(detail);
@@ -131,11 +146,12 @@ class TrackSelectionServiceTest {
         return ImportedTrack.of(
                 10L,
                 "track-1",
+                null,
                 "Track",
                 "ISRC",
                 180_000,
                 List.of(),
-                ImportedAlbum.of(20L, "album-1", "Album", 2026, List.of())
+                ImportedAlbum.of(20L, "album-1", null, "Album", 2026, List.of())
         );
     }
 }

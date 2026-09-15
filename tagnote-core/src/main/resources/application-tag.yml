@@ -2,3 +2,37 @@ tag:
   resolution:
     album-to-track-inheritance-weight: 0.85
     minimum-score: 0.50
+  enrichment:
+    executor-size: 3
+    total-first-load-budget-ms: 12000
+    musicbrainz:
+      enabled: ${MUSICBRAINZ_ENABLED:false}
+      base-url: https://musicbrainz.org/ws/2
+      connect-timeout-ms: 2000
+      read-timeout-ms: 5000
+      minimum-request-interval-ms: 1100
+      completion-safety-margin-ms: 250
+      user-agent: ${MUSICBRAINZ_USER_AGENT:}
+    discogs:
+      enabled: ${DISCOGS_ENABLED:false}
+      base-url: https://api.discogs.com
+      connect-timeout-ms: 500
+      read-timeout-ms: 2500
+      user-agent: ${DISCOGS_USER_AGENT:}
+      token: ${DISCOGS_TOKEN:}
+    lastfm:
+      enabled: ${LASTFM_ENABLED:false}
+      base-url: https://ws.audioscrobbler.com/2.0
+      connect-timeout-ms: 500
+      read-timeout-ms: 2500
+      api-key: ${LASTFM_API_KEY:}
+      maximum-tags-per-subject: 5
+    matching:
+      duration-tolerance-ms: 3000
+    evidence-confidence:
+      musicbrainz-recording-genre: 0.90
+      musicbrainz-release-group-genre: 0.75
+      discogs-genre: 0.70
+      discogs-style: 0.85
+      lastfm-track-community-tag: 0.65
+      lastfm-album-community-tag: 0.60

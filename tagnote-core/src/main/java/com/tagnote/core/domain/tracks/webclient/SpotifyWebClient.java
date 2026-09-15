@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.tagnote.core.common.CommonRedisTemplate;
 import com.tagnote.core.common.CacheSpec;
 import com.tagnote.core.domain.tracks.webclient.dto.TrackInfo;
+import com.tagnote.core.domain.tracks.webclient.dto.SpotifyCatalogSearchInfo;
 import com.tagnote.core.exception.CustomException;
 import com.tagnote.core.exception.ExceptionCode;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +15,13 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
+import se.michaelthelin.spotify.requests.data.search.SearchItemRequest;
 import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
+import se.michaelthelin.spotify.model_objects.special.SearchResult;
 import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 
 import java.io.IOException;
@@ -89,6 +94,31 @@ public class SpotifyWebClient {
             Paging<Track> searchResult = searchTrackRequest.execute();
             Track[] tracks = searchResult.getItems();
             return TrackInfo.of(tracks, searchResult.getTotal());
+        } catch (IOException | ParseException | SpotifyWebApiException e) {
+            log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
+        }
+    }
+
+    public SpotifyCatalogSearchInfo searchCatalog(String keyword, int page) {
+        try {
+            SpotifyApi spotifyApi = getSpotifyApi();
+            SearchItemRequest request = spotifyApi.searchItem(keyword, "track,album,artist")
+                    .limit(10)
+                    .offset(page * 10)
+                    .build();
+            SearchResult result = request.execute();
+            Paging<Track> tracks = result.getTracks();
+            Paging<AlbumSimplified> albums = result.getAlbums();
+            Paging<Artist> artists = result.getArtists();
+            return SpotifyCatalogSearchInfo.of(
+                    tracks.getItems(),
+                    albums.getItems(),
+                    artists.getItems(),
+                    tracks.getTotal(),
+                    albums.getTotal(),
+                    artists.getTotal()
+            );
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());
             throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);

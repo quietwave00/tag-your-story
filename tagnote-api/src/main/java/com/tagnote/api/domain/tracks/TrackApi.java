@@ -63,7 +63,9 @@ public interface TrackApi {
     @Operation(
             summary = "Spotify Track Catalog Import",
             description = "Spotify track id를 기준으로 Artist, Album, Track과 전체 Artist credit을 내부 Catalog에 "
-                    + "저장하거나 기존 데이터를 재사용하고, 계산된 System Tag를 함께 조회"
+                    + "저장하거나 기존 데이터를 재사용하고, MusicBrainz/Discogs/Last.fm enrichment에서 성공한 "
+                    + "부분 결과로 계산된 System Tag를 함께 조회. 일부 또는 전체 enrichment provider 실패는 "
+                    + "Catalog import 성공을 실패로 변경하지 않음"
     )
     @ApiResponses({
             @ApiResponse(

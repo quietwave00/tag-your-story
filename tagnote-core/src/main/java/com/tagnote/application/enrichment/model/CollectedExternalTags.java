@@ -17,6 +17,14 @@ public record CollectedExternalTags(
         return new CollectedExternalTags(List.of(), List.of());
     }
 
+    public CollectedExternalTags merge(CollectedExternalTags other) {
+        Objects.requireNonNull(other, "Collected tags to merge must not be null");
+        return new CollectedExternalTags(
+                java.util.stream.Stream.concat(albumInputs.stream(), other.albumInputs.stream()).toList(),
+                java.util.stream.Stream.concat(trackInputs.stream(), other.trackInputs.stream()).toList()
+        );
+    }
+
     private static List<ExternalTagInput> validateAndCopy(
             List<ExternalTagInput> inputs,
             String fieldName

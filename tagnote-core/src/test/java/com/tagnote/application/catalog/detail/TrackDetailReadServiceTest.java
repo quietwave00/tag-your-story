@@ -40,8 +40,8 @@ class TrackDetailReadServiceTest {
     @Test
     void visible_resolved_projection을_system_tag_detail로_변환한다() {
         ImportedTrack imported = ImportedTrack.of(
-                10L, "track-1", "Track", "ISRC", 180_000, List.of(),
-                ImportedAlbum.of(20L, "album-1", "Album", 2026, List.of())
+                10L, "track-1", null, "Track", "ISRC", 180_000, List.of(),
+                ImportedAlbum.of(20L, "album-1", null, "Album", 2026, List.of())
         );
         TagEntity tag = mock(TagEntity.class);
         SubjectTagResolvedEntity resolved = mock(SubjectTagResolvedEntity.class);

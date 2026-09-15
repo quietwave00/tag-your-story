@@ -4,15 +4,18 @@ import com.tagnote.application.catalog.detail.TrackDetailReadService;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.CatalogTrackReadService;
 import com.tagnote.application.catalog.importer.CatalogWriteService;
+import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.TrackImportService;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvider;
+import com.tagnote.application.enrichment.ExternalEnrichmentCollector;
 import com.tagnote.application.enrichment.ObservationProcessingService;
 import com.tagnote.application.enrichment.ObservationWriteService;
+import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
+import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
-import com.tagnote.application.enrichment.port.ExternalTagProvider;
 import com.tagnote.application.resolution.TagInheritanceService;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.application.resolution.TagResolutionWriteService;
@@ -75,6 +78,7 @@ import static org.mockito.Mockito.when;
         TrackDetailReadService.class,
         TrackImportService.class,
         CatalogWriteService.class,
+        CatalogExternalIdentityWriteService.class,
         CatalogTrackReadService.class,
         ObservationProcessingService.class,
         ObservationWriteService.class,
@@ -113,7 +117,7 @@ class FirstVerticalSliceIntegrationTest {
     @Autowired private ArtistJpaRepository artistRepository;
 
     @MockBean private SpotifyTrackMetadataProvider spotifyProvider;
-    @MockBean private ExternalTagProvider externalTagProvider;
+    @MockBean private ExternalEnrichmentCollector externalEnrichmentCollector;
 
     @AfterEach
     void cleanUp() {
@@ -133,9 +137,9 @@ class FirstVerticalSliceIntegrationTest {
     void spotify_선택부터_matched_resolved_detail까지_연결하고_반복_선택은_재사용한다() {
         TagEntity tag = approvedAlias("Ambient");
         when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
-        when(externalTagProvider.collect(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> {
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> {
             assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-            return fakeTags();
+            return fakeEnrichment();
         });
 
         TrackDetail first = selectionService.select("track-1");
@@ -155,8 +159,14 @@ class FirstVerticalSliceIntegrationTest {
         assertThat(trackRepository.count()).isEqualTo(1);
         assertThat(albumRepository.count()).isEqualTo(1);
         assertThat(artistRepository.count()).isEqualTo(2);
+        assertThat(trackRepository.findAll()).singleElement()
+                .extracting(track -> track.getMusicbrainzId())
+                .isEqualTo("recording-1");
+        assertThat(albumRepository.findAll()).singleElement()
+                .extracting(album -> album.getMusicbrainzId())
+                .isEqualTo("release-group-1");
         verify(spotifyProvider).getTrack("track-1");
-        verify(externalTagProvider).collect(org.mockito.ArgumentMatchers.any());
+        verify(externalEnrichmentCollector).collect(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -168,10 +178,10 @@ class FirstVerticalSliceIntegrationTest {
             awaitBoth(spotifyCalls);
             return metadata();
         });
-        when(externalTagProvider.collect(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> {
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> {
             assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
             awaitBoth(externalCalls);
-            return fakeTags();
+            return fakeEnrichment();
         });
 
         List<TrackDetail> results = runConcurrently(
@@ -184,8 +194,14 @@ class FirstVerticalSliceIntegrationTest {
         assertThat(observationRepository.count()).isEqualTo(2);
         assertThat(assertionRepository.count()).isEqualTo(1);
         assertThat(resolvedRepository.count()).isEqualTo(1);
+        assertThat(trackRepository.findAll()).singleElement()
+                .extracting(track -> track.getMusicbrainzId())
+                .isEqualTo("recording-1");
+        assertThat(albumRepository.findAll()).singleElement()
+                .extracting(album -> album.getMusicbrainzId())
+                .isEqualTo("release-group-1");
         verify(spotifyProvider, times(2)).getTrack("track-1");
-        verify(externalTagProvider, times(2)).collect(org.mockito.ArgumentMatchers.any());
+        verify(externalEnrichmentCollector, times(2)).collect(org.mockito.ArgumentMatchers.any());
     }
 
     private TagEntity approvedAlias(String name) {
@@ -233,6 +249,14 @@ class FirstVerticalSliceIntegrationTest {
                         0.8
                 )
         ));
+    }
+
+    private ExternalEnrichmentCollection fakeEnrichment() {
+        return new ExternalEnrichmentCollection(
+                fakeTags(),
+                new CatalogExternalIdentityMatch("recording-1", "release-group-1"),
+                List.of()
+        );
     }
 
     private List<TrackDetail> runConcurrently(

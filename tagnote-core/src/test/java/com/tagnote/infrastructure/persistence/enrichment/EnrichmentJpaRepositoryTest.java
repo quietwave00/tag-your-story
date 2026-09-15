@@ -182,6 +182,30 @@ class EnrichmentJpaRepositoryTest {
     }
 
     @Test
+    void LastFm_community_tag_source와_evidence_type을_string_enum으로_보존한다() {
+        approveAlias("ambient");
+
+        processingService.process(SubjectType.TRACK, track.getTrackId(), List.of(
+                new ExternalTagInput(
+                        ExternalTagSource.LASTFM,
+                        "Ambient",
+                        "lastfm:track:fixture",
+                        EvidenceType.COMMUNITY_TAG,
+                        0.65
+                )
+        ));
+
+        assertThat(observationRepository.findAll()).singleElement()
+                .extracting(observation -> observation.getSource())
+                .isEqualTo(ExternalTagSource.LASTFM);
+        assertThat(assertionRepository.findAll()).singleElement().satisfies(assertion -> {
+            assertThat(assertion.getSource().name()).isEqualTo("LASTFM");
+            assertThat(assertion.getEvidenceType()).isEqualTo(EvidenceType.COMMUNITY_TAG);
+            assertThat(assertion.getConfidence()).isEqualTo(0.65);
+        });
+    }
+
+    @Test
     void bulk_재처리_query수는_입력_크기에_비례하지_않는다() {
         List<ExternalTagInput> inputs = new ArrayList<>();
         for (int index = 1; index <= 10; index++) {

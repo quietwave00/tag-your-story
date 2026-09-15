@@ -11,6 +11,7 @@ public class ImportedTrack {
 
     private final Long catalogTrackId;
     private final String spotifyTrackId;
+    private final String musicBrainzRecordingId;
     private final String title;
     private final String isrc;
     private final Integer durationMs;
@@ -20,6 +21,7 @@ public class ImportedTrack {
     public static ImportedTrack of(
             Long catalogTrackId,
             String spotifyTrackId,
+            String musicBrainzRecordingId,
             String title,
             String isrc,
             Integer durationMs,
@@ -29,6 +31,7 @@ public class ImportedTrack {
         return ImportedTrack.builder()
                 .catalogTrackId(catalogTrackId)
                 .spotifyTrackId(spotifyTrackId)
+                .musicBrainzRecordingId(musicBrainzRecordingId)
                 .title(title)
                 .isrc(isrc)
                 .durationMs(durationMs)

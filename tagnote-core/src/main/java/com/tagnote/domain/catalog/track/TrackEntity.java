@@ -71,4 +71,23 @@ public class TrackEntity extends BaseTime {
     ) {
         return new TrackEntity(title, spotifyId, isrc, durationMs, album);
     }
+
+    public void attachMusicBrainzRecordingId(String acceptedId) {
+        requireText(acceptedId, "MusicBrainz Recording ID");
+        if (musicbrainzId == null) {
+            musicbrainzId = acceptedId;
+            return;
+        }
+        if (!musicbrainzId.equals(acceptedId)) {
+            throw new IllegalStateException(
+                    "Track MusicBrainz identity conflict: existing=" + musicbrainzId + ", accepted=" + acceptedId
+            );
+        }
+    }
+
+    private void requireText(String value, String name) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(name + " must not be blank");
+        }
+    }
 }

@@ -52,6 +52,7 @@ class TrackControllerTest {
         ImportedAlbum album = ImportedAlbum.of(
                 5L,
                 "album-1",
+                null,
                 "album",
                 2024,
                 List.of(albumArtist)
@@ -60,6 +61,7 @@ class TrackControllerTest {
                 new TrackDetail(ImportedTrack.of(
                         10L,
                         "track-1",
+                        null,
                         "title",
                         "ISRC-1",
                         240_000,

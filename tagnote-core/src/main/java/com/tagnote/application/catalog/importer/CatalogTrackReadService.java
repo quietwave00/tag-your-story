@@ -59,6 +59,7 @@ public class CatalogTrackReadService {
         ImportedAlbum importedAlbum = ImportedAlbum.of(
                 album.getAlbumId(),
                 album.getSpotifyId(),
+                album.getMusicbrainzId(),
                 album.getTitle(),
                 album.getReleaseYear(),
                 albumArtists
@@ -66,6 +67,7 @@ public class CatalogTrackReadService {
         return ImportedTrack.of(
                 track.getTrackId(),
                 track.getSpotifyId(),
+                track.getMusicbrainzId(),
                 track.getTitle(),
                 track.getIsrc(),
                 track.getDurationMs(),

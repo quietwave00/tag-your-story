@@ -3,25 +3,24 @@ package com.tagnote.application.catalog.selection;
 import com.tagnote.application.catalog.detail.TrackDetailReadService;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.TrackImportService;
+import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
+import com.tagnote.application.enrichment.ExternalEnrichmentCollector;
 import com.tagnote.application.enrichment.ObservationProcessingService;
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
-import com.tagnote.application.enrichment.model.ExternalTagInput;
-import com.tagnote.application.enrichment.port.ExternalTagProvider;
+import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.domain.enrichment.subject.SubjectRef;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TrackSelectionService {
 
     private final TrackImportService trackImportService;
-    private final List<ExternalTagProvider> externalTagProviders;
+    private final ExternalEnrichmentCollector externalEnrichmentCollector;
+    private final CatalogExternalIdentityWriteService catalogExternalIdentityWriteService;
     private final ObservationProcessingService observationProcessingService;
     private final TagResolutionService tagResolutionService;
     private final TrackDetailReadService trackDetailReadService;
@@ -33,7 +32,9 @@ public class TrackSelectionService {
             return trackDetailReadService.getByCatalogTrackId(catalogTrackId);
         }
 
-        CollectedExternalTags collected = collect(importedTrack);
+        ExternalEnrichmentCollection enrichment = externalEnrichmentCollector.collect(importedTrack);
+        catalogExternalIdentityWriteService.attach(catalogTrackId, enrichment.identityMatch());
+        CollectedExternalTags collected = enrichment.tags();
         long albumId = importedTrack.getAlbum().getAlbumId();
         if (!collected.albumInputs().isEmpty()) {
             observationProcessingService.process(
@@ -49,16 +50,5 @@ public class TrackSelectionService {
         tagResolutionService.resolve(SubjectRef.track(catalogTrackId));
 
         return trackDetailReadService.getByCatalogTrackId(catalogTrackId);
-    }
-
-    private CollectedExternalTags collect(ImportedTrack track) {
-        List<ExternalTagInput> albumInputs = new ArrayList<>();
-        List<ExternalTagInput> trackInputs = new ArrayList<>();
-        for (ExternalTagProvider provider : externalTagProviders) {
-            CollectedExternalTags collected = provider.collect(track);
-            albumInputs.addAll(collected.albumInputs());
-            trackInputs.addAll(collected.trackInputs());
-        }
-        return new CollectedExternalTags(albumInputs, trackInputs);
     }
 }

@@ -1,7 +1,9 @@
 package com.tagnote.infrastructure.persistence.catalog;
 
 import com.tagnote.application.catalog.importer.CatalogTrackReadService;
+import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.CatalogWriteService;
+import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
@@ -19,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ContextConfiguration(classes = CatalogJpaTestConfiguration.class)
-@Import({CatalogWriteService.class, CatalogTrackReadService.class})
+@Import({CatalogWriteService.class, CatalogTrackReadService.class, CatalogExternalIdentityWriteService.class})
 @ActiveProfiles("local")
 @TestPropertySource(properties = {
         "spring.sql.init.mode=never",
@@ -32,6 +34,9 @@ class CatalogJpaRepositoryTest {
 
     @Autowired
     private CatalogTrackReadService catalogTrackReadService;
+
+    @Autowired
+    private CatalogExternalIdentityWriteService externalIdentityWriteService;
 
     @Autowired
     private ArtistJpaRepository artistRepository;
@@ -80,6 +85,24 @@ class CatalogJpaRepositoryTest {
         assertThat(trackRepository.count()).isEqualTo(2);
         assertThat(albumArtistRepository.count()).isEqualTo(1);
         assertThat(trackArtistRepository.count()).isEqualTo(4);
+    }
+
+    @Test
+    void accepted_MusicBrainz_ID를_Track과_Album에_멱등하게_저장한다() {
+        catalogWriteService.upsert(metadata("track-1"));
+        ImportedTrack imported = catalogTrackReadService.getBySpotifyId("track-1");
+        CatalogExternalIdentityMatch match = new CatalogExternalIdentityMatch("recording-1", "release-group-1");
+
+        externalIdentityWriteService.attach(
+                imported.getCatalogTrackId(),
+                new CatalogExternalIdentityMatch("recording-1", null)
+        );
+        externalIdentityWriteService.attach(imported.getCatalogTrackId(), match);
+        externalIdentityWriteService.attach(imported.getCatalogTrackId(), match);
+
+        ImportedTrack reloaded = catalogTrackReadService.getBySpotifyId("track-1");
+        assertThat(reloaded.getMusicBrainzRecordingId()).isEqualTo("recording-1");
+        assertThat(reloaded.getAlbum().getMusicBrainzReleaseGroupId()).isEqualTo("release-group-1");
     }
 
     private SpotifyTrackMetadata metadata(String trackId) {

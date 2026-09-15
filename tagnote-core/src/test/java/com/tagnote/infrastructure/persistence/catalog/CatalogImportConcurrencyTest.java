@@ -1,12 +1,14 @@
 package com.tagnote.infrastructure.persistence.catalog;
 
 import com.tagnote.application.catalog.importer.CatalogTrackReadService;
+import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.CatalogWriteService;
 import com.tagnote.application.catalog.importer.TrackImportService;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvider;
+import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,12 @@ import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @ContextConfiguration(classes = CatalogJpaTestConfiguration.class)
-@Import({TrackImportService.class, CatalogWriteService.class, CatalogTrackReadService.class})
+@Import({
+        TrackImportService.class,
+        CatalogWriteService.class,
+        CatalogTrackReadService.class,
+        CatalogExternalIdentityWriteService.class
+})
 @ActiveProfiles("local")
 @TestPropertySource(properties = {
         "spring.sql.init.mode=never",
@@ -44,6 +51,9 @@ class CatalogImportConcurrencyTest {
 
     @Autowired
     private TrackImportService trackImportService;
+
+    @Autowired
+    private CatalogExternalIdentityWriteService externalIdentityWriteService;
 
     @Autowired
     private ArtistJpaRepository artistRepository;
@@ -120,6 +130,36 @@ class CatalogImportConcurrencyTest {
         assertThat(trackRepository.count()).isEqualTo(2);
         assertThat(albumArtistRepository.count()).isEqualTo(1);
         assertThat(trackArtistRepository.count()).isEqualTo(4);
+    }
+
+    @Test
+    void 같은_Album의_서로_다른_Track이_동시에_Mbid를_연결해도_동일_identity로_수렴한다() throws Exception {
+        when(spotifyTrackMetadataProvider.getTrack(anyString())).thenAnswer(invocation -> {
+            String trackId = invocation.getArgument(0);
+            return metadata(trackId, "shared-album");
+        });
+        ImportedTrack first = trackImportService.importTrack("track-1");
+        ImportedTrack second = trackImportService.importTrack("track-2");
+
+        runConcurrently(
+                () -> attachIdentity(first, "recording-1"),
+                () -> attachIdentity(second, "recording-2")
+        );
+
+        assertThat(albumRepository.findBySpotifyId("shared-album")).hasValueSatisfying(album ->
+                assertThat(album.getMusicbrainzId()).isEqualTo("release-group-1")
+        );
+        assertThat(trackRepository.findAll())
+                .extracting(track -> track.getMusicbrainzId())
+                .containsExactlyInAnyOrder("recording-1", "recording-2");
+    }
+
+    private ImportedTrack attachIdentity(ImportedTrack track, String recordingId) {
+        externalIdentityWriteService.attach(
+                track.getCatalogTrackId(),
+                new CatalogExternalIdentityMatch(recordingId, "release-group-1")
+        );
+        return track;
     }
 
     private List<ImportedTrack> runConcurrently(
