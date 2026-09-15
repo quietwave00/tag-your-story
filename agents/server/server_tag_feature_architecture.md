@@ -57,7 +57,11 @@ Resolved    = 그래서 최종적으로 무엇을 보여줄 것인가
 Spotify 검색
   │
   ▼
-Spotify Track 선택
+Track / Album / Artist 후보
+  │
+  ├─ Track 선택 → 태그 계산 대상
+  ├─ Album 선택 → 태그 계산 대상
+  └─ Artist 선택 → 태그 계산 없음
   │
   ▼
 TagNote Backend
@@ -209,8 +213,8 @@ Last.fm tag는 genre, style, mood, 개인 분류가 섞인 비정형 값이다. 
 ```text
 Last.fm track.getTopTags / album.getTopTags
   │
-  ├─ minimum count gate
-  ├─ maximum tag count 제한
+  ├─ provider 응답 순서 유지
+  ├─ subject별 상위 5개 제한
   └─ raw community tag 보존
        │
        ▼
@@ -223,7 +227,11 @@ approved alias exact unique match
 COMMUNITY_TAG assertion
 ```
 
-count는 저품질 tag 제외 gate로만 사용한다. count를 confidence에 곱하거나 provider agreement bonus로 사용하지 않는다.
+Last.fm `count`는 산정식과 절대적 품질 기준이 공개되지 않았으므로 eligibility gate, confidence, Resolver score에 사용하지 않는다. 빈 이름과 정규화 기준 중복을 제외한 응답 상위 5개만 수집하며 5개 미만이면 반환된 유효 tag만 수집한다.
+
+Last.fm Track 조회는 MusicBrainz Recording MBID에 의존하지 않고 Spotify catalog의 대표 Artist명과 Track title을 사용한다. `autocorrect=0`을 유지하고 응답 Artist/Track identity의 normalized exact match를 통과한 경우에만 evidence를 채택한다.
+
+원문 Track identity가 exact match이지만 top tag가 비어 있는 edition title은 approved trailing edition qualifier를 제거한 canonical title로 한 번만 fallback한다. 이 qualifier 규칙은 Discogs와 공유하며 Live/Remix/Acoustic 등 녹음의 의미가 달라지는 표시는 제거하지 않는다.
 
 ---
 
@@ -1589,19 +1597,22 @@ MVP에서 반드시 필요한 것은 아니지만 장기적으로 권장한다.
 
 # 34. Application Layer Service 구조
 
-## 34.1 TrackSearchService
+## 34.1 CatalogSearchService
 
 책임:
 
 - 사용자 검색 요청
-- Spotify 검색 API 호출
-- 검색 후보 반환
+- Spotify Track / Album / Artist 통합 검색 API 호출
+- 현재 page 후보의 유사도 통합 정렬
+- subject type과 Spotify ID가 명시된 검색 후보 반환
 
 ```text
-GET /api/search/tracks?q=...
+GET /api/catalog/search?keyword=...&page=...
 ```
 
 이 단계에서는 내부 엔티티를 만들지 않아도 된다.
+
+Spotify 요청은 type별 최대 10개와 `offset=page*10`을 사용한다. 정렬은 현재 page에 포함된 최대 30개 후보만 대상으로 하며 Spotify 전체 결과에 대한 전역 순위는 아니다. 기존 Track 전용 `GET /api/tracks`는 하위 호환을 위해 유지한다.
 
 ---
 
@@ -3188,7 +3199,7 @@ Redis mandatory dependency
 
 MVP를 "완주"했다고 판단할 수 있는 최소 조건:
 
-1. Spotify에서 Track 검색/선택 가능
+1. Spotify에서 Track/Album/Artist 통합 검색 및 Track/Album 선택 가능 (Artist는 태그 계산 없음)
 2. Track/Album/Artist 내부 저장
 3. Spotify metadata로 MusicBrainz Recording 식별
 4. MusicBrainz/Discogs/Last.fm tag data 수집

@@ -651,19 +651,25 @@ graph recommendation
 
 ## 13. 주요 플로우
 
-### 13.1 Track 검색
+### 13.1 Catalog 검색
 
 ```text
 User
 ↓
-GET /api/tracks/search?q=
+GET /api/catalog/search?keyword=&page=
 ↓
-Spotify API
+Spotify Search API (Track + Album + Artist)
 ↓
-검색 결과 반환
+현재 page 후보 통합 유사도 정렬
+↓
+subjectType과 Spotify ID가 포함된 검색 결과 반환
 ```
 
 검색 결과 표시 단계에서는 내부 DB 저장이 필수가 아니다.
+
+각 subject type에서 최대 10개씩 같은 page를 조회하므로 응답 후보는 최대 30개다. 정렬은 현재 page 후보 안에서 이름 exact match, prefix match, 이름 유사도, artist 유사도, Spotify 원본 순서를 사용한다. `totalCount`는 세 subject type total의 합이다.
+
+기존 `GET /api/tracks?keyword=&page=` Track 전용 검색은 하위 호환을 위해 유지한다.
 
 ### 13.2 Track 선택 / Import
 
@@ -1079,6 +1085,8 @@ FAILED
 
 `NOT_FOUND`는 빈번한 자동 재시도 대상에서 제외한다.
 
+최초 enrichment 요청 내 MusicBrainz 필수 단계의 첫 `TIMEOUT` 또는 HTTP `503`은 전체 deadline과 요청 간격을 준수하며 공유 슬롯으로 1회만 즉시 재시도한다. optional Release Group 조회와 그 밖의 HTTP 실패는 해당 요청 내에서 재시도하지 않는다.
+
 ### Notification 정리
 
 추후:
@@ -1121,25 +1129,31 @@ EXTERNAL_PROVIDER_NOT_FOUND
 
 ## 21. API 초안
 
-### Track 검색
+### Catalog 통합 검색
 
 ```http
-GET /api/tracks/search?q={keyword}
+GET /api/catalog/search?keyword={keyword}&page={page}
 ```
 
 Response:
 
 ```json
-[
-  {
-    "spotifyTrackId": "spotify-id",
-    "title": "Track",
-    "artistName": "Artist",
-    "albumTitle": "Album",
-    "imageUrl": "..."
-  }
-]
+{
+  "items": [
+    {
+      "subjectType": "TRACK",
+      "spotifyId": "spotify-id",
+      "title": "Track",
+      "artistName": "Artist",
+      "albumName": "Album",
+      "imageUrl": "..."
+    }
+  ],
+  "totalCount": 42
+}
 ```
+
+`subjectType`은 `TRACK`, `ALBUM`, `ARTIST` 중 하나다. Album 결과는 `albumName`, Artist 결과는 `artistName`과 `albumName`이 null이다. 검색 GET은 내부 Catalog 저장이나 enrichment를 실행하지 않는다.
 
 ### Track Import
 
@@ -1394,7 +1408,7 @@ System notification
 가능:
 
 ```text
-Track 검색
+Catalog Track / Album / Artist 검색
 Track 상세 조회
 Board 목록 / 상세 조회
 ```
@@ -1642,7 +1656,7 @@ Track / Album
 2. Artist / Album / Track을 별도 Catalog Entity로 관리한다.
 3. MusicBrainz는 Identity / Relationship / Tag Evidence 역할을 한다.
 4. Discogs는 Album Genre / Style evidence를 보강한다.
-5. Last.fm은 Track / Album Community Tag evidence를 보강하며 provider count를 confidence에 직접 반영하지 않는다.
+5. Last.fm은 MusicBrainz MBID에 의존하지 않고 Spotify catalog의 대표 Artist/title로 Track / Album Community Tag evidence를 보강한다. exact edition Track의 tag가 비어 있으면 approved canonical title로 1회 fallback하며, provider count를 수집 gate나 confidence에 반영하지 않고 subject별 응답 상위 5개만 수집한다.
 6. 외부 raw tag는 Observation에 보존한다.
 7. System Tag와 User Tag를 분리한다.
 8. Assertion은 근거이고 Resolved는 사용자 노출용 read model이다.
