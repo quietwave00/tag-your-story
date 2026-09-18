@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -40,7 +41,12 @@ import java.util.Objects;
 public class SubjectTagResolvedEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "subjectTagResolvedSequenceGenerator")
+    @SequenceGenerator(
+            name = "subjectTagResolvedSequenceGenerator",
+            sequenceName = "subject_tag_resolved_seq",
+            allocationSize = 50
+    )
     private Long resolvedId;
 
     @Enumerated(EnumType.STRING)

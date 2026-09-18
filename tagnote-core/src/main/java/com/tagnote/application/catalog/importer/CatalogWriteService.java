@@ -1,5 +1,9 @@
 package com.tagnote.application.catalog.importer;
 
+import com.tagnote.application.catalog.importer.model.CatalogUpsertResult;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.catalog.importer.model.ImportedArtist;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.domain.catalog.album.AlbumArtistEntity;
@@ -35,16 +39,18 @@ public class CatalogWriteService {
     private final TrackArtistJpaRepository trackArtistRepository;
 
     @Transactional
-    public void upsert(SpotifyTrackMetadata metadata) {
+    public CatalogUpsertResult upsert(SpotifyTrackMetadata metadata) {
         if (trackRepository.findBySpotifyId(metadata.getSpotifyTrackId()).isPresent()) {
-            return;
+            return CatalogUpsertResult.existing();
         }
 
-        Map<String, SpotifyArtistMetadata> artistMetadataBySpotifyId = allArtists(metadata);
+        AlbumEntity album = albumRepository.findBySpotifyId(metadata.getSpotifyAlbumId()).orElse(null);
+        boolean createAlbum = album == null;
+        Map<String, SpotifyArtistMetadata> artistMetadataBySpotifyId = requiredArtists(metadata, createAlbum);
         Map<String, ArtistEntity> artistsBySpotifyId = findOrCreateArtists(artistMetadataBySpotifyId);
 
-        AlbumEntity album = albumRepository.findBySpotifyId(metadata.getSpotifyAlbumId()).orElse(null);
-        if (album == null) {
+        List<ImportedArtist> albumArtists;
+        if (createAlbum) {
             album = albumRepository.saveAndFlush(AlbumEntity.create(
                     metadata.getAlbumTitle(),
                     metadata.getSpotifyAlbumId(),
@@ -58,6 +64,13 @@ public class CatalogWriteService {
                             artist.getPosition()
                     ))
                     .toList());
+            albumArtists = toImportedArtists(metadata.getAlbumArtists(), artistsBySpotifyId);
+        } else {
+            albumArtists = albumArtistRepository
+                    .findAllByAlbumAlbumIdOrderByPositionAsc(album.getAlbumId())
+                    .stream()
+                    .map(credit -> toImportedArtist(credit.getArtist(), credit.getPosition()))
+                    .toList();
         }
 
         TrackEntity track = trackRepository.saveAndFlush(TrackEntity.create(
@@ -75,10 +88,36 @@ public class CatalogWriteService {
                 ))
                 .toList());
         trackArtistRepository.flush();
+
+        ImportedAlbum importedAlbum = ImportedAlbum.of(
+                album.getAlbumId(),
+                album.getSpotifyId(),
+                album.getMusicbrainzId(),
+                album.getTitle(),
+                album.getReleaseYear(),
+                albumArtists
+        );
+        ImportedTrack importedTrack = ImportedTrack.of(
+                track.getTrackId(),
+                track.getSpotifyId(),
+                track.getMusicbrainzId(),
+                track.getTitle(),
+                track.getIsrc(),
+                track.getDurationMs(),
+                toImportedArtists(metadata.getTrackArtists(), artistsBySpotifyId),
+                importedAlbum
+        );
+        return CatalogUpsertResult.created(importedTrack);
     }
 
-    private Map<String, SpotifyArtistMetadata> allArtists(SpotifyTrackMetadata metadata) {
-        return Stream.concat(metadata.getTrackArtists().stream(), metadata.getAlbumArtists().stream())
+    private Map<String, SpotifyArtistMetadata> requiredArtists(
+            SpotifyTrackMetadata metadata,
+            boolean createAlbum
+    ) {
+        Stream<SpotifyArtistMetadata> albumArtists = createAlbum
+                ? metadata.getAlbumArtists().stream()
+                : Stream.empty();
+        return Stream.concat(metadata.getTrackArtists().stream(), albumArtists)
                 .collect(Collectors.toMap(
                         SpotifyArtistMetadata::getSpotifyArtistId,
                         Function.identity(),
@@ -104,5 +143,21 @@ public class CatalogWriteService {
                 artist -> artistsBySpotifyId.put(artist.getSpotifyId(), artist)
         );
         return artistsBySpotifyId;
+    }
+
+    private List<ImportedArtist> toImportedArtists(
+            List<SpotifyArtistMetadata> credits,
+            Map<String, ArtistEntity> artistsBySpotifyId
+    ) {
+        return credits.stream()
+                .map(credit -> toImportedArtist(
+                        artistsBySpotifyId.get(credit.getSpotifyArtistId()),
+                        credit.getPosition()
+                ))
+                .toList();
+    }
+
+    private ImportedArtist toImportedArtist(ArtistEntity artist, int position) {
+        return ImportedArtist.of(artist.getArtistId(), artist.getSpotifyId(), artist.getName(), position);
     }
 }

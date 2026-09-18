@@ -206,6 +206,32 @@ class EnrichmentJpaRepositoryTest {
     }
 
     @Test
+    void 서른한개_Observation의_subject_source_external_ref_lineage를_유실없이_보존한다() {
+        List<ExternalTagInput> inputs = new ArrayList<>();
+        for (int index = 1; index <= 31; index++) {
+            inputs.add(input(
+                    ExternalTagSource.MUSICBRAINZ,
+                    "Unmatched " + index,
+                    "recording:lineage:" + index
+            ));
+        }
+
+        ObservationProcessingResult result = processingService.process(
+                SubjectType.TRACK,
+                track.getTrackId(),
+                inputs
+        );
+
+        assertThat(result.createdObservationCount()).isEqualTo(31);
+        assertThat(observationRepository.findAll()).hasSize(31).allSatisfy(observation -> {
+            assertThat(observation.getSubjectType()).isEqualTo(SubjectType.TRACK);
+            assertThat(observation.getSubjectId()).isEqualTo(track.getTrackId());
+            assertThat(observation.getSource()).isEqualTo(ExternalTagSource.MUSICBRAINZ);
+            assertThat(observation.getExternalRef()).startsWith("recording:lineage:");
+        });
+    }
+
+    @Test
     void bulk_재처리_query수는_입력_크기에_비례하지_않는다() {
         List<ExternalTagInput> inputs = new ArrayList<>();
         for (int index = 1; index <= 10; index++) {
@@ -235,16 +261,20 @@ class EnrichmentJpaRepositoryTest {
 
         assertThatThrownBy(() -> entityManager.createNativeQuery("""
                 insert into external_tag_observation
-                    (subject_type, subject_id, source, raw_name, normalized_name, external_ref, status, observed_at)
-                values ('TRACK', :subjectId, 'MUSICBRAINZ', 'Ambient', 'ambient', 'recording:1', 'NEW', current_timestamp)
+                    (observation_id, subject_type, subject_id, source, raw_name, normalized_name,
+                     external_ref, status, observed_at)
+                values (next value for external_tag_observation_seq, 'TRACK', :subjectId,
+                        'MUSICBRAINZ', 'Ambient', 'ambient', 'recording:1', 'NEW', current_timestamp)
                 """).setParameter("subjectId", track.getTrackId()).executeUpdate())
                 .isInstanceOf(PersistenceException.class);
 
         entityManager.clear();
         assertThatThrownBy(() -> entityManager.createNativeQuery("""
                 insert into tag_assertion
-                    (subject_type, subject_id, tag_id, source, evidence_type, confidence, status, created_at)
-                values ('TRACK', :subjectId, 999999, 'DISCOGS', 'EXPLICIT_STYLE', 0.8, 'APPROVED', current_timestamp)
+                    (assertion_id, subject_type, subject_id, tag_id, source, evidence_type,
+                     confidence, status, created_at)
+                values (next value for tag_assertion_seq, 'TRACK', :subjectId, 999999,
+                        'DISCOGS', 'EXPLICIT_STYLE', 0.8, 'APPROVED', current_timestamp)
                 """).setParameter("subjectId", track.getTrackId()).executeUpdate())
                 .isInstanceOf(PersistenceException.class);
 

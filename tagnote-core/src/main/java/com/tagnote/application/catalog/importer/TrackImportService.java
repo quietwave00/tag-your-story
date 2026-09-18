@@ -1,5 +1,6 @@
 package com.tagnote.application.catalog.importer;
 
+import com.tagnote.application.catalog.importer.model.CatalogUpsertResult;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvider;
@@ -23,7 +24,7 @@ public class TrackImportService {
 
         SpotifyTrackMetadata metadata = spotifyTrackMetadataProvider.getTrack(spotifyTrackId);
         try {
-            catalogWriteService.upsert(metadata);
+            return importOrReadCanonical(metadata);
         } catch (DataIntegrityViolationException firstConflict) {
             ImportedTrack concurrentlyImported = catalogTrackReadService
                     .findBySpotifyId(spotifyTrackId)
@@ -31,8 +32,15 @@ public class TrackImportService {
             if (concurrentlyImported != null) {
                 return concurrentlyImported;
             }
-            catalogWriteService.upsert(metadata);
+            return importOrReadCanonical(metadata);
         }
-        return catalogTrackReadService.getBySpotifyId(spotifyTrackId);
+    }
+
+    private ImportedTrack importOrReadCanonical(SpotifyTrackMetadata metadata) {
+        CatalogUpsertResult result = catalogWriteService.upsert(metadata);
+        if (result.created()) {
+            return result.importedTrack();
+        }
+        return catalogTrackReadService.getBySpotifyId(metadata.getSpotifyTrackId());
     }
 }

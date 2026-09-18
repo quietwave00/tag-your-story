@@ -57,3 +57,12 @@ Codex는 저장소 정책에 따라 Gradle과 `verify.sh`를 실행하지 않는
 ./gradlew check
 ./scripts/verify.sh
 ```
+
+## Completion Record — 2026-09-18
+
+- Spotify Track/Album/Artist 통합 검색 API, provider-neutral port/모델, Spotify adapter,
+  결정적 로컬 ranking, 분리된 Swagger interface 및 Controller/API 테스트를 구현했다.
+- 기존 `GET /api/tracks` 계약은 유지했고, Catalog search 경로가 Catalog 저장이나
+  enrichment를 수행하지 않도록 분리했다.
+- 사용자가 대상 테스트와 전체 `test`, `check`, `scripts/verify.sh` 통과를 확인했다.
+- Acceptance Criteria 및 범위 diff를 정적 검토했으며, 관련 Plan을 completed로 이동한다.

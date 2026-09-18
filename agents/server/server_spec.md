@@ -629,6 +629,12 @@ tag_assertion
 subject_tag_resolved
 ```
 
+External enrichment의 다건 쓰기 테이블인 `external_tag_observation`, `tag_assertion`,
+`subject_tag_resolved`는 각각 독립 database sequence를 사용한다. JPA
+`allocationSize=50`, DB sequence `INCREMENT BY 50`, Hibernate JDBC batch size 50을
+같이 유지하며 ID gap에는 비즈니스 의미를 부여하지 않는다. Catalog 및 그 밖의 기존
+Entity의 ID 생성 전략은 이 정책의 대상이 아니다.
+
 선택:
 
 ```text
@@ -688,6 +694,11 @@ spotify_id로 내부 Track 조회
 → Track upsert
 → 외부 enrichment
 ```
+
+정상적인 신규 Track 생성은 저장된 ID와 Catalog metadata로 구성한 in-memory snapshot을
+반환해 생성 직후 Track/TrackArtist/AlbumArtist 재조회를 생략한다. 기존 Track 또는
+unique 충돌 경로는 DB canonical state를 재조회하며, 기존 Album을 재사용하는 신규
+Track의 Album artist credit도 기존 DB 값을 사용한다.
 
 Track import 완료 후 Board 작성 가능.
 

@@ -12,4 +12,5 @@ dependencies {
 
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+    testImplementation 'net.ttddyy:datasource-proxy:1.11.0'
 }

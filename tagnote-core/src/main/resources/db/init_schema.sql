@@ -121,9 +121,11 @@ create table tag_alias
     index idx_tag_alias_normalized_status (normalized_alias, status)
 ) ENGINE = InnoDB;
 
+create sequence external_tag_observation_seq start with 1 increment by 50;
+
 create table external_tag_observation
 (
-    observation_id bigint auto_increment primary key,
+    observation_id bigint primary key,
     subject_type   varchar(255) not null,
     subject_id     bigint       not null,
     source         varchar(255) not null,
@@ -141,9 +143,11 @@ create table external_tag_observation
     index idx_external_tag_observation_status_name (status, normalized_name)
 ) ENGINE = InnoDB;
 
+create sequence tag_assertion_seq start with 1 increment by 50;
+
 create table tag_assertion
 (
-    assertion_id                bigint auto_increment primary key,
+    assertion_id                bigint primary key,
     subject_type               varchar(255) not null,
     subject_id                 bigint       not null,
     tag_id                     bigint       not null,
@@ -162,9 +166,11 @@ create table tag_assertion
     index idx_tag_assertion_tag (tag_id)
 ) ENGINE = InnoDB;
 
+create sequence subject_tag_resolved_seq start with 1 increment by 50;
+
 create table subject_tag_resolved
 (
-    resolved_id       bigint auto_increment primary key,
+    resolved_id       bigint primary key,
     subject_type      varchar(255) not null,
     subject_id        bigint       not null,
     tag_id            bigint       not null,

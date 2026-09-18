@@ -1,6 +1,10 @@
 spring:
   jpa:
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
 ---
 spring:
   config.activate.on-profile: local

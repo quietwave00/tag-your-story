@@ -3,6 +3,7 @@ package com.tagnote.infrastructure.persistence.catalog;
 import com.tagnote.application.catalog.importer.CatalogTrackReadService;
 import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.CatalogWriteService;
+import com.tagnote.application.catalog.importer.model.CatalogUpsertResult;
 import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
@@ -57,8 +58,18 @@ class CatalogJpaRepositoryTest {
     void 전체_Artist_credit을_순서대로_저장하고_같은_metadata는_멱등하다() {
         SpotifyTrackMetadata metadata = metadata("track-1");
 
-        catalogWriteService.upsert(metadata);
-        catalogWriteService.upsert(metadata);
+        CatalogUpsertResult created = catalogWriteService.upsert(metadata);
+        CatalogUpsertResult existing = catalogWriteService.upsert(metadata);
+
+        assertThat(created.created()).isTrue();
+        assertThat(created.importedTrack().getCatalogTrackId()).isNotNull();
+        assertThat(created.importedTrack().getArtists())
+                .extracting(artist -> artist.getSpotifyArtistId() + ":" + artist.getPosition())
+                .containsExactly("artist-a:0", "artist-b:1");
+        assertThat(created.importedTrack().getAlbum().getArtists())
+                .extracting(artist -> artist.getSpotifyArtistId() + ":" + artist.getPosition())
+                .containsExactly("album-artist:0");
+        assertThat(existing).isEqualTo(CatalogUpsertResult.existing());
 
         assertThat(artistRepository.count()).isEqualTo(3);
         assertThat(albumRepository.count()).isEqualTo(1);
@@ -78,13 +89,19 @@ class CatalogJpaRepositoryTest {
     @Test
     void 서로_다른_Track이_같은_Album과_Artist를_재사용한다() {
         catalogWriteService.upsert(metadata("track-1"));
-        catalogWriteService.upsert(metadata("track-2"));
+        CatalogUpsertResult second = catalogWriteService.upsert(metadataWithAlbumArtist(
+                "track-2",
+                SpotifyArtistMetadata.of("ignored-new-album-artist", "Not Canonical", 0)
+        ));
 
         assertThat(artistRepository.count()).isEqualTo(3);
         assertThat(albumRepository.count()).isEqualTo(1);
         assertThat(trackRepository.count()).isEqualTo(2);
         assertThat(albumArtistRepository.count()).isEqualTo(1);
         assertThat(trackArtistRepository.count()).isEqualTo(4);
+        assertThat(second.importedTrack().getAlbum().getArtists())
+                .extracting(artist -> artist.getSpotifyArtistId() + ":" + artist.getPosition())
+                .containsExactly("album-artist:0");
     }
 
     @Test
@@ -106,6 +123,16 @@ class CatalogJpaRepositoryTest {
     }
 
     private SpotifyTrackMetadata metadata(String trackId) {
+        return metadataWithAlbumArtist(
+                trackId,
+                SpotifyArtistMetadata.of("album-artist", "Album Artist", 0)
+        );
+    }
+
+    private SpotifyTrackMetadata metadataWithAlbumArtist(
+            String trackId,
+            SpotifyArtistMetadata albumArtist
+    ) {
         return SpotifyTrackMetadata.of(
                 trackId,
                 "title",
@@ -118,7 +145,7 @@ class CatalogJpaRepositoryTest {
                 "album-1",
                 "album",
                 2024,
-                List.of(SpotifyArtistMetadata.of("album-artist", "Album Artist", 0))
+                List.of(albumArtist)
         );
     }
 }

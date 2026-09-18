@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -42,7 +43,12 @@ import java.util.Objects;
 public class TagAssertionEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tagAssertionSequenceGenerator")
+    @SequenceGenerator(
+            name = "tagAssertionSequenceGenerator",
+            sequenceName = "tag_assertion_seq",
+            allocationSize = 50
+    )
     private Long assertionId;
 
     @Enumerated(EnumType.STRING)

@@ -139,10 +139,10 @@ class SubjectTagResolvedJpaRepositoryTest {
         );
         entityManager.createNativeQuery("""
                 insert into tag_assertion
-                    (subject_type, subject_id, tag_id, source, evidence_type, confidence, status,
+                    (assertion_id, subject_type, subject_id, tag_id, source, evidence_type, confidence, status,
                      inherited_from_assertion_id, created_at)
-                values ('TRACK', :subjectId, :tagId, 'MUSICBRAINZ', 'EXPLICIT_GENRE', 0.85,
-                        'APPROVED', :parentId, current_timestamp)
+                values (next value for tag_assertion_seq, 'TRACK', :subjectId, :tagId,
+                        'MUSICBRAINZ', 'EXPLICIT_GENRE', 0.85, 'APPROVED', :parentId, current_timestamp)
                 """)
                 .setParameter("subjectId", track.getTrackId())
                 .setParameter("tagId", tag.getTagId())
@@ -315,8 +315,10 @@ class SubjectTagResolvedJpaRepositoryTest {
         assertThat(resolvedRepository.count()).isEqualTo(2);
         assertThatThrownBy(() -> entityManager.createNativeQuery("""
                 insert into subject_tag_resolved
-                    (subject_type, subject_id, tag_id, score, status, resolution_reason, last_resolved_at)
-                values ('TRACK', :subjectId, :tagId, 0.5, 'ACTIVE', 'AUTO', current_timestamp)
+                    (resolved_id, subject_type, subject_id, tag_id, score, status,
+                     resolution_reason, last_resolved_at)
+                values (next value for subject_tag_resolved_seq, 'TRACK', :subjectId,
+                        :tagId, 0.5, 'ACTIVE', 'AUTO', current_timestamp)
                 """).setParameter("subjectId", track.getTrackId())
                 .setParameter("tagId", tag.getTagId())
                 .executeUpdate()).isInstanceOf(PersistenceException.class);
@@ -326,8 +328,10 @@ class SubjectTagResolvedJpaRepositoryTest {
     void resolved_tag_FK를_DB가_보호한다() {
         assertThatThrownBy(() -> entityManager.createNativeQuery("""
                 insert into subject_tag_resolved
-                    (subject_type, subject_id, tag_id, score, status, resolution_reason, last_resolved_at)
-                values ('TRACK', :subjectId, 999999, 0.5, 'ACTIVE', 'AUTO', current_timestamp)
+                    (resolved_id, subject_type, subject_id, tag_id, score, status,
+                     resolution_reason, last_resolved_at)
+                values (next value for subject_tag_resolved_seq, 'TRACK', :subjectId,
+                        999999, 0.5, 'ACTIVE', 'AUTO', current_timestamp)
                 """).setParameter("subjectId", track.getTrackId())
                 .executeUpdate()).isInstanceOf(PersistenceException.class);
     }

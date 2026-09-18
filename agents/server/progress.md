@@ -1,5 +1,28 @@
 # Progress
 
+- 2026-09-18: CATALOG-SEARCH-001 완료.
+  - Spotify Track/Album/Artist 통합 검색, provider-neutral adapter, 결정적 ranking,
+    분리된 Swagger API 및 회귀 테스트를 완료했다.
+  - 사용자 실행 대상 테스트와 전체 `test`, `check`, `scripts/verify.sh` 통과를 확인했고,
+    실행 기록을 `plans/completed/CATALOG-SEARCH-001.md`로 이동했다.
+
+- 2026-09-18: ENRICHMENT-001 완료.
+  - MusicBrainz/Discogs/Last.fm 외부 enrichment, exact matching, provider-local partial
+    success, 병렬 collector 및 Catalog external identity write를 기존 tag pipeline에 연결했다.
+  - 사용자 실행 대상 테스트와 전체 `test`, `check`, `scripts/verify.sh` 통과를 확인했고,
+    실행 기록을 `plans/completed/ENRICHMENT-001.md`로 이동했다.
+
+- 2026-09-18: ENRICHMENT-PERF-001 완료.
+  - enrichment write sequence/JDBC batching, H2 schema, Oracle migration runbook 및 Catalog
+    생성 snapshot 최적화를 완료했다.
+  - 사용자 실행 대상 테스트와 전체 `test`, `check`, `scripts/verify.sh` 통과 및 Oracle
+    migration review를 확인했고, 실행 기록을 `plans/completed/ENRICHMENT-PERF-001.md`로 이동했다.
+
+- 2026-09-18: CATALOG-IMPORT-002 Human Review 승인.
+  - 최초 Catalog read fast path는 유지하고, Spotify metadata 이후 write service의 Track 재조회는 제거하는 optimistic create 마일스톤을 승인.
+  - `uk_track_spotify_id`, `uk_album_spotify_id`, `uk_artist_spotify_id`의 알려진 duplicate만 복구 대상으로 제한하고, Track canonical read 또는 부모 충돌 후 1회 create 재시도를 적용하기로 결정.
+  - ADR-009와 `plans/active/CATALOG-IMPORT-002.md`를 추가했으며 production code와 자동 검증은 미실행.
+
 - 2026-08-11: `board`, `search`, `user`, `spotify`, `track` 현재 구현 baseline 분석 완료.
   - `agents/server/current_state.md`에 package 구조, 호출 흐름, Entity 관계, public API, spec 충돌, 보호 동작, characterization test 제안 정리.
   - production code 변경 없음.
@@ -101,3 +124,9 @@
   - ADR-004로 `LASTFM` source, `COMMUNITY_TAG` evidence, count gate-only 정책과 기존 Resolver `max(confidence)` 유지 결정을 기록.
   - Last.fm API key, exact entity validation, deterministic external reference, executor 크기 3, fixture/partial-success 테스트 범위를 Plan에 반영.
   - production code 변경 및 구현 검증 없음. ENRICHMENT-001은 Human Review 대기 상태 유지.
+- 2026-09-15: ENRICHMENT-PERF-001 Human Review 승인.
+  - ExternalTagObservation/TagAssertion/SubjectTagResolved의 `IDENTITY` PK를 allocation 50 sequence로 전환하고 JDBC batch size 50을 적용하는 범위를 승인.
+  - Oracle/H2 sequence `INCREMENT BY 50` 일치, 기존 ID 이상의 안전한 시작 block, identity column migration preflight를 필수 수용 기준으로 확정.
+  - 대상 Entity에 `@Version`이 없어 `batch_versioned_data`는 추가하지 않고, 현재 flush 구조에서 `order_inserts/order_updates`도 측정 근거 없이 활성화하지 않도록 결정.
+  - Album/Track Observation transaction 통합은 risk 대비 추가 효과가 작아 보류하고, 신규 Catalog 생성 snapshot 반환으로 직후 재조회를 제거하는 범위를 포함.
+  - ADR-008과 `plans/active/ENRICHMENT-PERF-001.md`를 추가했으며 구현과 자동 검증은 미실행.

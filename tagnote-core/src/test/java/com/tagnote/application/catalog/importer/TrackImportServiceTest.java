@@ -2,6 +2,7 @@ package com.tagnote.application.catalog.importer;
 
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
+import com.tagnote.application.catalog.importer.model.CatalogUpsertResult;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvider;
 import org.junit.jupiter.api.Test;
@@ -50,12 +51,12 @@ class TrackImportServiceTest {
     }
 
     @Test
-    void 최초_Import는_Spotify_조회_후_write하고_저장_결과를_읽는다() {
+    void 최초_Import는_write가_반환한_생성_snapshot을_재조회_없이_사용한다() {
         SpotifyTrackMetadata metadata = metadata();
         ImportedTrack imported = importedTrack();
         when(catalogTrackReadService.findBySpotifyId("track-1")).thenReturn(Optional.empty());
         when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
-        when(catalogTrackReadService.getBySpotifyId("track-1")).thenReturn(imported);
+        when(catalogWriteService.upsert(metadata)).thenReturn(CatalogUpsertResult.created(imported));
 
         ImportedTrack result = trackImportService.importTrack("track-1");
 
@@ -63,7 +64,21 @@ class TrackImportServiceTest {
         InOrder order = inOrder(spotifyTrackMetadataProvider, catalogWriteService, catalogTrackReadService);
         order.verify(spotifyTrackMetadataProvider).getTrack("track-1");
         order.verify(catalogWriteService).upsert(metadata);
-        order.verify(catalogTrackReadService).getBySpotifyId("track-1");
+        verify(catalogTrackReadService, never()).getBySpotifyId("track-1");
+    }
+
+    @Test
+    void write가_기존_Track을_발견하면_DB_canonical_state를_읽는다() {
+        SpotifyTrackMetadata metadata = metadata();
+        ImportedTrack imported = importedTrack();
+        when(catalogTrackReadService.findBySpotifyId("track-1")).thenReturn(Optional.empty());
+        when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
+        when(catalogWriteService.upsert(metadata)).thenReturn(CatalogUpsertResult.existing());
+        when(catalogTrackReadService.getBySpotifyId("track-1")).thenReturn(imported);
+
+        assertThat(trackImportService.importTrack("track-1")).isSameAs(imported);
+
+        verify(catalogTrackReadService).getBySpotifyId("track-1");
     }
 
     @Test
@@ -90,12 +105,12 @@ class TrackImportServiceTest {
                 .thenReturn(Optional.empty(), Optional.empty());
         when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
         org.mockito.Mockito.doThrow(new DataIntegrityViolationException("artist duplicate"))
-                .doNothing()
+                .doReturn(CatalogUpsertResult.created(imported))
                 .when(catalogWriteService).upsert(metadata);
-        when(catalogTrackReadService.getBySpotifyId("track-1")).thenReturn(imported);
 
         assertThat(trackImportService.importTrack("track-1")).isSameAs(imported);
         verify(catalogWriteService, org.mockito.Mockito.times(2)).upsert(metadata);
+        verify(catalogTrackReadService, never()).getBySpotifyId("track-1");
     }
 
     @Test

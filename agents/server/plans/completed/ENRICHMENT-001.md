@@ -740,3 +740,12 @@ git diff -- <승인된-구현-파일들>
 ```
 
 검증 시 실제 외부 API 호출이나 실제 token을 요구하지 않는다. HTTP fixture/stub으로 mapping, timeout, partial failure와 병렬성을 재현한다. 사용자 테스트 결과, Acceptance Criteria 및 diff review가 모두 확인되기 전에는 `progress.md` 갱신이나 completed 이동을 하지 않는다.
+
+## Completion Record — 2026-09-18
+
+- MusicBrainz, Discogs, Last.fm provider와 보수적 entity matching, provider-local 실패 처리,
+  병렬 collector 및 외부 identity write 경계를 구현했다.
+- `LASTFM`/`COMMUNITY_TAG`를 포함한 raw evidence, partial-success, Album 상속 및
+  외부 HTTP transaction 분리 정책을 기존 pipeline에 연결했다.
+- 사용자가 대상 테스트와 전체 `test`, `check`, `scripts/verify.sh` 통과를 확인했다.
+- Acceptance Criteria 및 범위 diff를 정적 검토했으며, 관련 Plan을 completed로 이동한다.

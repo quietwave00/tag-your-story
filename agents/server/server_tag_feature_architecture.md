@@ -642,6 +642,11 @@ TagAssertion
 
 # 10. ExternalTagObservation
 
+`observation_id`는 `external_tag_observation_seq`를 사용하며 JPA
+`allocationSize=50`과 physical sequence `INCREMENT BY 50`을 일치시킨다. 이 전략은
+동일 transaction의 다건 INSERT를 Hibernate JDBC batch로 전달하기 위한 것이며 ID의
+연속성을 보장하지 않는다.
+
 ```text
 external_tag_observation
 
@@ -775,6 +780,10 @@ Observation이 있으면:
 ---
 
 # 13. TagAssertion
+
+`assertion_id`는 독립 `tag_assertion_seq`를 사용하고 JPA `allocationSize=50`, DB
+`INCREMENT BY 50`을 유지한다. Observation과 Assertion의 unique/FK 및 멱등성 규칙은
+sequence 전환과 무관하게 유지한다.
 
 ```text
 tag_assertion
@@ -1013,6 +1022,10 @@ index(subject_type, subject_id, score)
 ---
 
 # 19. Resolved는 Aggregate가 아니라 Projection
+
+`resolved_id`는 독립 `subject_tag_resolved_seq`를 사용하고 JPA
+`allocationSize=50`, DB `INCREMENT BY 50`을 유지한다. Resolver의 결과 의미와
+`(subject_type, subject_id, tag_id)` unique identity는 변경하지 않는다.
 
 `subject_tag_resolved`는 source of truth가 아니다.
 
