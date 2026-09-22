@@ -13,7 +13,7 @@ External enrichment의 다건 쓰기 테이블에 JDBC batching을 적용할 수
 - 세 대상 Entity에 `@Version`이 없고 Hibernate 5.0 이후 `hibernate.jdbc.batch_versioned_data`의 기본값이 `true`이므로 이 설정을 명시적으로 추가하지 않는다.
 - provider source별로 쓰기를 나누지 않고 기존 Album/Track subject별 입력 병합을 유지한다.
 - Album/Track Observation을 하나의 transaction으로 통합하는 변경은 unique 충돌 재시도와 rollback 범위에 비해 현재 규모의 추가 이득이 작으므로 보류한다.
-- 정상적인 신규 Catalog 생성 경로에서 `CatalogWriteService.upsert()`가 생성 snapshot을 반환하여 직후 Track/TrackArtist/AlbumArtist 재조회를 제거한다. 기존 row 및 동시 충돌 경로는 기존 read service를 유지한다.
+- 정상적인 신규 Catalog 생성 경로에서 `CatalogWriteService.create()`가 생성 snapshot을 반환하여 직후 Track/TrackArtist/AlbumArtist 재조회를 제거한다. 기존 row 및 동시 충돌 경로는 기존 read service를 유지한다.
 
 ## Reason
 

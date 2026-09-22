@@ -11,6 +11,7 @@ import com.tagnote.infrastructure.persistence.enrichment.TagAssertionJpaReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,20 +28,34 @@ public class TagInheritanceService {
     private final TagAssertionJpaRepository assertionRepository;
     private final TagResolutionProperties properties;
 
-    public void synchronizeAlbumInheritance(
+    public List<TagAssertionEntity> synchronizeAlbumInheritance(
             TrackEntity track,
             List<TagAssertionEntity> trackDirectAssertions
     ) {
         Objects.requireNonNull(track, "Track must not be null");
+        return synchronizeAlbumInheritance(
+                track.getTrackId(),
+                track.getAlbum().getAlbumId(),
+                trackDirectAssertions
+        );
+    }
+
+    public List<TagAssertionEntity> synchronizeAlbumInheritance(
+            long trackId,
+            long albumId,
+            List<TagAssertionEntity> trackDirectAssertions
+    ) {
+        if (trackId <= 0 || albumId <= 0) {
+            throw new IllegalArgumentException("Track and Album IDs must be positive");
+        }
         Objects.requireNonNull(trackDirectAssertions, "Track direct assertions must not be null");
 
-        SubjectRef trackSubject = SubjectRef.track(track);
-        long albumId = track.getAlbum().getAlbumId();
+        SubjectRef trackSubject = SubjectRef.track(trackId);
         List<TagAssertionEntity> albumAssertions = assertionRepository.findApprovedDirectBySubject(
                 SubjectType.ALBUM, albumId
         );
         List<TagAssertionEntity> existingInherited = assertionRepository.findInheritedBySubject(
-                SubjectType.TRACK, track.getTrackId()
+                SubjectType.TRACK, trackId
         );
 
         Set<InheritedAssertionKey> directKeys = trackDirectAssertions.stream()
@@ -70,19 +85,24 @@ public class TagInheritanceService {
         }
 
         double weight = properties.getAlbumToTrackInheritanceWeight();
+        List<TagAssertionEntity> synchronizedAssertions = new ArrayList<>();
         expectedByKey.forEach((key, parentAssertion) -> {
             double inheritedConfidence = clamp(parentAssertion.getConfidence() * weight);
             TagAssertionEntity existing = existingByKey.get(key);
             if (existing == null) {
-                assertionRepository.save(TagAssertionEntity.createInheritedApproved(
+                TagAssertionEntity created = TagAssertionEntity.createInheritedApproved(
                         trackSubject, parentAssertion, inheritedConfidence
-                ));
+                );
+                assertionRepository.save(created);
+                synchronizedAssertions.add(created);
                 return;
             }
             if (needsUpdate(existing, parentAssertion, inheritedConfidence)) {
                 existing.updateInherited(parentAssertion, inheritedConfidence);
             }
+            synchronizedAssertions.add(existing);
         });
+        return List.copyOf(synchronizedAssertions);
     }
 
     private boolean needsUpdate(

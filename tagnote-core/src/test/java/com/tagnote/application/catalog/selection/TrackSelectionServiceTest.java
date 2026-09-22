@@ -15,7 +15,6 @@ import com.tagnote.application.enrichment.model.ExternalTagInput;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.enrichment.observation.ExternalTagSource;
-import com.tagnote.domain.enrichment.subject.SubjectRef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
@@ -60,8 +60,7 @@ class TrackSelectionServiceTest {
         ImportedTrack imported = importedTrack();
         TrackDetail detail = new TrackDetail(imported, List.of());
         when(trackImportService.importTrack("track-1")).thenReturn(imported);
-        when(trackDetailReadService.hasResolvedProjection(10L)).thenReturn(true);
-        when(trackDetailReadService.getByCatalogTrackId(10L)).thenReturn(detail);
+        when(trackDetailReadService.findResolved(imported)).thenReturn(Optional.of(detail));
 
         assertThat(service.select("track-1")).isSameAs(detail);
 
@@ -69,17 +68,20 @@ class TrackSelectionServiceTest {
         verify(catalogExternalIdentityWriteService, never())
                 .attach(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
         verify(observationProcessingService, never())
-                .process(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList());
-        verify(tagResolutionService, never()).resolve(org.mockito.ArgumentMatchers.any());
+                .processPersistedTrack(
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList()
+                );
+        verify(tagResolutionService, never()).resolvePersistedTrack(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
-    void album_evidence를_먼저_처리하고_track을_resolve한_뒤_projection을_재조회한다() {
+    void album_evidence를_먼저_처리하고_track_resolve_결과로_detail을_조립한다() {
         ImportedTrack imported = importedTrack();
         ExternalTagInput albumInput = input("Album Genre", "release:album-1");
         ExternalTagInput trackInput = input("Track Genre", "recording:track-1");
         TrackDetail detail = new TrackDetail(imported, List.of());
         when(trackImportService.importTrack("track-1")).thenReturn(imported);
+        when(trackDetailReadService.findResolved(imported)).thenReturn(Optional.empty());
         when(externalEnrichmentCollector.collect(imported)).thenReturn(
                 new ExternalEnrichmentCollection(
                         new CollectedExternalTags(List.of(albumInput), List.of(trackInput)),
@@ -87,7 +89,8 @@ class TrackSelectionServiceTest {
                         List.of()
                 )
         );
-        when(trackDetailReadService.getByCatalogTrackId(10L)).thenReturn(detail);
+        when(tagResolutionService.resolvePersistedTrack(imported)).thenReturn(List.of());
+        when(trackDetailReadService.fromResolved(imported, List.of())).thenReturn(detail);
 
         assertThat(service.select("track-1")).isSameAs(detail);
 
@@ -102,11 +105,11 @@ class TrackSelectionServiceTest {
         order.verify(trackImportService).importTrack("track-1");
         order.verify(externalEnrichmentCollector).collect(imported);
         order.verify(catalogExternalIdentityWriteService).attach(10L, CatalogExternalIdentityMatch.none());
-        order.verify(observationProcessingService).process(SubjectRef.album(20L), List.of(albumInput));
-        order.verify(tagResolutionService).resolve(SubjectRef.album(20L));
-        order.verify(observationProcessingService).process(SubjectRef.track(10L), List.of(trackInput));
-        order.verify(tagResolutionService).resolve(SubjectRef.track(10L));
-        order.verify(trackDetailReadService).getByCatalogTrackId(10L);
+        order.verify(observationProcessingService).processPersistedAlbum(imported, List.of(albumInput));
+        order.verify(tagResolutionService).resolvePersistedAlbum(imported);
+        order.verify(observationProcessingService).processPersistedTrack(imported, List.of(trackInput));
+        order.verify(tagResolutionService).resolvePersistedTrack(imported);
+        order.verify(trackDetailReadService).fromResolved(imported, List.of());
     }
 
     @Test
@@ -122,14 +125,18 @@ class TrackSelectionServiceTest {
                 trackDetailReadService
         );
         when(trackImportService.importTrack("track-1")).thenReturn(imported);
+        when(trackDetailReadService.findResolved(imported)).thenReturn(Optional.empty());
         when(externalEnrichmentCollector.collect(imported)).thenReturn(ExternalEnrichmentCollection.empty());
-        when(trackDetailReadService.getByCatalogTrackId(10L)).thenReturn(detail);
+        when(tagResolutionService.resolvePersistedTrack(imported)).thenReturn(List.of());
+        when(trackDetailReadService.fromResolved(imported, List.of())).thenReturn(detail);
 
         assertThat(service.select("track-1")).isSameAs(detail);
 
         verify(observationProcessingService, never())
-                .process(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList());
-        verify(tagResolutionService).resolve(SubjectRef.track(10L));
+                .processPersistedTrack(
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList()
+                );
+        verify(tagResolutionService).resolvePersistedTrack(imported);
     }
 
     private ExternalTagInput input(String name, String ref) {

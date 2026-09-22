@@ -4,6 +4,8 @@ import com.tagnote.application.enrichment.ObservationProcessingService;
 import com.tagnote.application.enrichment.ObservationWriteService;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
 import com.tagnote.application.enrichment.model.ObservationProcessingResult;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.domain.catalog.album.AlbumEntity;
 import com.tagnote.domain.catalog.track.TrackEntity;
 import com.tagnote.domain.enrichment.assertion.AssertionStatus;
@@ -249,6 +251,41 @@ class EnrichmentJpaRepositoryTest {
         processingService.process(SubjectType.TRACK, track.getTrackId(), inputs);
 
         assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(4L);
+    }
+
+    @Test
+    void import에서_검증된_subject는_Track_존재_재조회를_생략한다() {
+        ImportedTrack imported = ImportedTrack.of(
+                track.getTrackId(), "track-1", null, "Track", "ISRC-1", 180_000, List.of(),
+                ImportedAlbum.of(
+                        track.getAlbum().getAlbumId(), "album-1", null, "Album", 2024, List.of()
+                )
+        );
+        entityManager.clear();
+        Statistics statistics = entityManager.getEntityManagerFactory()
+                .unwrap(SessionFactory.class)
+                .getStatistics();
+
+        statistics.clear();
+        processingService.process(SubjectType.TRACK, imported.getCatalogTrackId(), List.of());
+        long genericQueryCount = statistics.getPrepareStatementCount();
+
+        statistics.clear();
+        processingService.processPersistedTrack(imported, List.of());
+        long persistedTrackQueryCount = statistics.getPrepareStatementCount();
+
+        entityManager.clear();
+        statistics.clear();
+        processingService.process(SubjectType.ALBUM, imported.getAlbum().getAlbumId(), List.of());
+        long genericAlbumQueryCount = statistics.getPrepareStatementCount();
+
+        statistics.clear();
+        processingService.processPersistedAlbum(imported, List.of());
+
+        assertThat(genericQueryCount).isEqualTo(1L);
+        assertThat(persistedTrackQueryCount).isZero();
+        assertThat(genericAlbumQueryCount).isEqualTo(1L);
+        assertThat(statistics.getPrepareStatementCount()).isZero();
     }
 
     @Test

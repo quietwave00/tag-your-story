@@ -33,4 +33,18 @@ public class ImportedAlbum {
                 .artists(List.copyOf(artists))
                 .build();
     }
+
+    public ImportedAlbum withMusicBrainzReleaseGroupId(String releaseGroupId) {
+        if (releaseGroupId == null || releaseGroupId.equals(musicBrainzReleaseGroupId)) {
+            return this;
+        }
+        return ImportedAlbum.of(
+                albumId,
+                spotifyAlbumId,
+                releaseGroupId,
+                title,
+                releaseYear,
+                artists
+        );
+    }
 }

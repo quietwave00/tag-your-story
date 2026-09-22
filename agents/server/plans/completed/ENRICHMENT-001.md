@@ -433,7 +433,7 @@ UNIQUE subject_tag_resolved(
 경계는 다음과 같다.
 
 1. Spotify metadata HTTP: transaction 없음
-2. Catalog 최초 저장: 기존 `CatalogWriteService.upsert()`의 짧은 transaction
+2. Catalog 최초 저장: 기존 `CatalogWriteService.create()`의 짧은 transaction
 3. MusicBrainz/Discogs/Last.fm HTTP 및 entity matching: transaction 없음
 4. accepted MusicBrainz ID 연결: `CatalogExternalIdentityWriteService`의 별도 짧은 transaction
 5. Observation + Alias Matching + Assertion: 기존 `ObservationWriteService` transaction

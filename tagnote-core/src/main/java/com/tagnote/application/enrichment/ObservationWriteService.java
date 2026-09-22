@@ -57,8 +57,26 @@ public class ObservationWriteService {
             long subjectId,
             List<ExternalTagInput> inputs
     ) {
+        return process(subjectType, subjectId, inputs, true);
+    }
+
+    @Transactional
+    public ObservationProcessingResult processPersisted(
+            SubjectType subjectType,
+            long subjectId,
+            List<ExternalTagInput> inputs
+    ) {
+        return process(subjectType, subjectId, inputs, false);
+    }
+
+    private ObservationProcessingResult process(
+            SubjectType subjectType,
+            long subjectId,
+            List<ExternalTagInput> inputs,
+            boolean validateSubject
+    ) {
         try {
-            return processWithinTransaction(subjectType, subjectId, inputs);
+            return processWithinTransaction(subjectType, subjectId, inputs, validateSubject);
         } catch (DataIntegrityViolationException failure) {
             throw conflictTranslator.translate(failure);
         }
@@ -67,9 +85,12 @@ public class ObservationWriteService {
     private ObservationProcessingResult processWithinTransaction(
             SubjectType subjectType,
             long subjectId,
-            List<ExternalTagInput> inputs
+            List<ExternalTagInput> inputs,
+            boolean validateSubject
     ) {
-        SubjectRef subject = requireSubject(subjectType, subjectId);
+        SubjectRef subject = validateSubject
+                ? requireSubject(subjectType, subjectId)
+                : new SubjectRef(subjectType, subjectId);
         if (inputs.isEmpty()) {
             return ObservationProcessingResult.empty();
         }

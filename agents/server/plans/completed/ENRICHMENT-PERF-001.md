@@ -99,16 +99,12 @@ source별 `saveAll()` 분할은 동일 SQL batch를 더 잘게 나누므로 금�
 
 ### 5. Catalog creation snapshot
 
-`CatalogWriteService.upsert()`는 새 Track을 생성한 정상 경로에서 저장된 Entity ID와 Catalog metadata로 만든 결과를 반환한다.
+`CatalogWriteService.create()`는 새 Track을 생성한 정상 경로에서 저장된 Entity ID와 Catalog metadata로 만든 결과를 반환한다.
 
 예상 모델:
 
 ```java
-public record CatalogUpsertResult(
-        boolean created,
-        ImportedTrack importedTrack
-) {
-}
+`ImportedTrack`을 직접 반환한다. 기존 Track 및 충돌 recovery는 후속 Catalog read가 담당한다.
 ```
 
 동작:
@@ -176,7 +172,7 @@ Production:
 - `domain/resolution/SubjectTagResolvedEntity.java`
 - `application/catalog/importer/CatalogWriteService.java`
 - `application/catalog/importer/TrackImportService.java`
-- `application/catalog/importer/model/CatalogUpsertResult.java` (name finalized during implementation)
+- `application/catalog/importer/model/ImportedTrack.java`
 - `resources/application-jpa.yml`
 - `resources/db/init_schema.sql`
 
@@ -279,7 +275,7 @@ PowerShell target tests와 전체 검증 명령은 구현 중 확정한 test cla
   `batch_versioned_data`는 추가하지 않았다.
 - JDBC DataSource probe 기반으로 51건 INSERT가 50/1 batch로 분할되는 테스트와 기존
   MAX ID 이후 안전한 첫 block, sequence increment, 31건 Observation lineage 테스트를 추가했다.
-- 신규 Catalog 생성은 `CatalogUpsertResult`의 in-memory `ImportedTrack` snapshot을
+- 신규 Catalog 생성은 `ImportedTrack` in-memory snapshot을
   반환하고 `TrackImportService`가 정상 생성 직후 canonical reread를 생략하도록 변경했다.
 - 기존 Track, write 중 기존 row 발견, unique conflict 경로는 DB canonical read를 유지했다.
 - 기존 Album 재사용 시 Album artist credit을 fetch join query로 읽고, Spotify 응답의

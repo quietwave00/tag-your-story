@@ -3,7 +3,6 @@ package com.tagnote.infrastructure.persistence.catalog;
 import com.tagnote.application.catalog.importer.CatalogTrackReadService;
 import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.CatalogWriteService;
-import com.tagnote.application.catalog.importer.model.CatalogUpsertResult;
 import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
@@ -22,7 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ContextConfiguration(classes = CatalogJpaTestConfiguration.class)
-@Import({CatalogWriteService.class, CatalogTrackReadService.class, CatalogExternalIdentityWriteService.class})
+@Import({
+        CatalogWriteService.class,
+        CatalogTrackReadService.class,
+        CatalogExternalIdentityWriteService.class,
+        HibernateCatalogConflictTranslator.class
+})
 @ActiveProfiles("local")
 @TestPropertySource(properties = {
         "spring.sql.init.mode=never",
@@ -55,21 +59,18 @@ class CatalogJpaRepositoryTest {
     private TrackArtistJpaRepository trackArtistRepository;
 
     @Test
-    void 전체_Artist_credit을_순서대로_저장하고_같은_metadata는_멱등하다() {
+    void 전체_Artist_credit을_순서대로_저장한다() {
         SpotifyTrackMetadata metadata = metadata("track-1");
 
-        CatalogUpsertResult created = catalogWriteService.upsert(metadata);
-        CatalogUpsertResult existing = catalogWriteService.upsert(metadata);
+        ImportedTrack created = catalogWriteService.create(metadata);
 
-        assertThat(created.created()).isTrue();
-        assertThat(created.importedTrack().getCatalogTrackId()).isNotNull();
-        assertThat(created.importedTrack().getArtists())
+        assertThat(created.getCatalogTrackId()).isNotNull();
+        assertThat(created.getArtists())
                 .extracting(artist -> artist.getSpotifyArtistId() + ":" + artist.getPosition())
                 .containsExactly("artist-a:0", "artist-b:1");
-        assertThat(created.importedTrack().getAlbum().getArtists())
+        assertThat(created.getAlbum().getArtists())
                 .extracting(artist -> artist.getSpotifyArtistId() + ":" + artist.getPosition())
                 .containsExactly("album-artist:0");
-        assertThat(existing).isEqualTo(CatalogUpsertResult.existing());
 
         assertThat(artistRepository.count()).isEqualTo(3);
         assertThat(albumRepository.count()).isEqualTo(1);
@@ -88,8 +89,8 @@ class CatalogJpaRepositoryTest {
 
     @Test
     void 서로_다른_Track이_같은_Album과_Artist를_재사용한다() {
-        catalogWriteService.upsert(metadata("track-1"));
-        CatalogUpsertResult second = catalogWriteService.upsert(metadataWithAlbumArtist(
+        catalogWriteService.create(metadata("track-1"));
+        ImportedTrack second = catalogWriteService.create(metadataWithAlbumArtist(
                 "track-2",
                 SpotifyArtistMetadata.of("ignored-new-album-artist", "Not Canonical", 0)
         ));
@@ -99,14 +100,14 @@ class CatalogJpaRepositoryTest {
         assertThat(trackRepository.count()).isEqualTo(2);
         assertThat(albumArtistRepository.count()).isEqualTo(1);
         assertThat(trackArtistRepository.count()).isEqualTo(4);
-        assertThat(second.importedTrack().getAlbum().getArtists())
+        assertThat(second.getAlbum().getArtists())
                 .extracting(artist -> artist.getSpotifyArtistId() + ":" + artist.getPosition())
                 .containsExactly("album-artist:0");
     }
 
     @Test
     void accepted_MusicBrainz_ID를_Track과_Album에_멱등하게_저장한다() {
-        catalogWriteService.upsert(metadata("track-1"));
+        catalogWriteService.create(metadata("track-1"));
         ImportedTrack imported = catalogTrackReadService.getBySpotifyId("track-1");
         CatalogExternalIdentityMatch match = new CatalogExternalIdentityMatch("recording-1", "release-group-1");
 

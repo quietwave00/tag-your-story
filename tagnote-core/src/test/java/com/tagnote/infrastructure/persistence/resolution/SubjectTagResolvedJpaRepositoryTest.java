@@ -4,6 +4,8 @@ import com.tagnote.application.resolution.TagInheritanceService;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.application.resolution.TagResolutionWriteService;
 import com.tagnote.application.resolution.config.TagResolutionProperties;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.domain.catalog.album.AlbumEntity;
 import com.tagnote.domain.catalog.track.TrackEntity;
 import com.tagnote.domain.enrichment.assertion.AssertionSource;
@@ -246,6 +248,42 @@ class SubjectTagResolvedJpaRepositoryTest {
                 .extracting(row -> row.getTag().getTagId())
                 .containsExactly(first.getTagId(), second.getTagId(), lower.getTagId());
         assertThat(statistics.getPrepareStatementCount()).isEqualTo(1L);
+    }
+
+    @Test
+    void import에서_검증된_Track_context는_Track과_Album_subject_재조회를_생략한다() {
+        ImportedTrack imported = ImportedTrack.of(
+                track.getTrackId(), "resolution-track", null, "Track", "ISRC-R", 180_000, List.of(),
+                ImportedAlbum.of(
+                        track.getAlbum().getAlbumId(), "resolution-album", null,
+                        "Album", 2026, List.of()
+                )
+        );
+        entityManager.clear();
+        Statistics statistics = entityManager.getEntityManagerFactory()
+                .unwrap(SessionFactory.class)
+                .getStatistics();
+
+        statistics.clear();
+        resolutionService.resolve(SubjectRef.track(imported.getCatalogTrackId()));
+        long genericQueryCount = statistics.getPrepareStatementCount();
+
+        entityManager.clear();
+        statistics.clear();
+        resolutionService.resolvePersistedTrack(imported);
+        long persistedTrackQueryCount = statistics.getPrepareStatementCount();
+
+        entityManager.clear();
+        statistics.clear();
+        resolutionService.resolve(SubjectRef.album(imported.getAlbum().getAlbumId()));
+        long genericAlbumQueryCount = statistics.getPrepareStatementCount();
+
+        entityManager.clear();
+        statistics.clear();
+        resolutionService.resolvePersistedAlbum(imported);
+
+        assertThat(persistedTrackQueryCount).isEqualTo(genericQueryCount - 1L);
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(genericAlbumQueryCount - 1L);
     }
 
     @Test

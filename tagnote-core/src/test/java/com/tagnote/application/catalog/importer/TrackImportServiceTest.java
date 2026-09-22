@@ -2,7 +2,8 @@ package com.tagnote.application.catalog.importer;
 
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
-import com.tagnote.application.catalog.importer.model.CatalogUpsertResult;
+import com.tagnote.application.catalog.importer.exception.CatalogDuplicateException;
+import com.tagnote.application.catalog.importer.exception.CatalogDuplicateTarget;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvider;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,6 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +47,7 @@ class TrackImportServiceTest {
 
         assertThat(result).isSameAs(existing);
         verify(spotifyTrackMetadataProvider, never()).getTrack("track-1");
-        verify(catalogWriteService, never()).upsert(org.mockito.ArgumentMatchers.any());
+        verify(catalogWriteService, never()).create(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -56,40 +56,40 @@ class TrackImportServiceTest {
         ImportedTrack imported = importedTrack();
         when(catalogTrackReadService.findBySpotifyId("track-1")).thenReturn(Optional.empty());
         when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
-        when(catalogWriteService.upsert(metadata)).thenReturn(CatalogUpsertResult.created(imported));
+        when(catalogWriteService.create(metadata)).thenReturn(imported);
 
         ImportedTrack result = trackImportService.importTrack("track-1");
 
         assertThat(result).isSameAs(imported);
         InOrder order = inOrder(spotifyTrackMetadataProvider, catalogWriteService, catalogTrackReadService);
         order.verify(spotifyTrackMetadataProvider).getTrack("track-1");
-        order.verify(catalogWriteService).upsert(metadata);
+        order.verify(catalogWriteService).create(metadata);
         verify(catalogTrackReadService, never()).getBySpotifyId("track-1");
     }
 
     @Test
-    void write가_기존_Track을_발견하면_DB_canonical_state를_읽는다() {
+    void Track_unique_충돌_후_DB_canonical_state를_읽는다() {
         SpotifyTrackMetadata metadata = metadata();
         ImportedTrack imported = importedTrack();
-        when(catalogTrackReadService.findBySpotifyId("track-1")).thenReturn(Optional.empty());
+        when(catalogTrackReadService.findBySpotifyId("track-1"))
+                .thenReturn(Optional.empty(), Optional.of(imported));
         when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
-        when(catalogWriteService.upsert(metadata)).thenReturn(CatalogUpsertResult.existing());
-        when(catalogTrackReadService.getBySpotifyId("track-1")).thenReturn(imported);
-
+        org.mockito.Mockito.doThrow(duplicate(CatalogDuplicateTarget.TRACK))
+                .when(catalogWriteService).create(metadata);
         assertThat(trackImportService.importTrack("track-1")).isSameAs(imported);
 
-        verify(catalogTrackReadService).getBySpotifyId("track-1");
+        verify(catalogTrackReadService, never()).getBySpotifyId("track-1");
     }
 
     @Test
-    void unique_충돌_후_Track이_보이면_기존_결과를_반환한다() {
+    void Artist_unique_충돌_후_Track이_보이면_기존_결과를_반환한다() {
         SpotifyTrackMetadata metadata = metadata();
         ImportedTrack concurrent = importedTrack();
         when(catalogTrackReadService.findBySpotifyId("track-1"))
                 .thenReturn(Optional.empty(), Optional.of(concurrent));
         when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
-        org.mockito.Mockito.doThrow(new DataIntegrityViolationException("duplicate"))
-                .when(catalogWriteService).upsert(metadata);
+        org.mockito.Mockito.doThrow(duplicate(CatalogDuplicateTarget.ARTIST))
+                .when(catalogWriteService).create(metadata);
 
         ImportedTrack result = trackImportService.importTrack("track-1");
 
@@ -104,12 +104,12 @@ class TrackImportServiceTest {
         when(catalogTrackReadService.findBySpotifyId("track-1"))
                 .thenReturn(Optional.empty(), Optional.empty());
         when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
-        org.mockito.Mockito.doThrow(new DataIntegrityViolationException("artist duplicate"))
-                .doReturn(CatalogUpsertResult.created(imported))
-                .when(catalogWriteService).upsert(metadata);
+        org.mockito.Mockito.doThrow(duplicate(CatalogDuplicateTarget.ARTIST))
+                .doReturn(imported)
+                .when(catalogWriteService).create(metadata);
 
         assertThat(trackImportService.importTrack("track-1")).isSameAs(imported);
-        verify(catalogWriteService, org.mockito.Mockito.times(2)).upsert(metadata);
+        verify(catalogWriteService, org.mockito.Mockito.times(2)).create(metadata);
         verify(catalogTrackReadService, never()).getBySpotifyId("track-1");
     }
 
@@ -119,12 +119,29 @@ class TrackImportServiceTest {
         when(catalogTrackReadService.findBySpotifyId("track-1"))
                 .thenReturn(Optional.empty(), Optional.empty());
         when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
-        org.mockito.Mockito.doThrow(new DataIntegrityViolationException("duplicate"))
-                .when(catalogWriteService).upsert(metadata);
+        CatalogDuplicateException failure = duplicate(CatalogDuplicateTarget.ALBUM);
+        org.mockito.Mockito.doThrow(failure).when(catalogWriteService).create(metadata);
 
         assertThatThrownBy(() -> trackImportService.importTrack("track-1"))
-                .isInstanceOf(DataIntegrityViolationException.class);
-        verify(catalogWriteService, org.mockito.Mockito.times(2)).upsert(metadata);
+                .isSameAs(failure);
+        verify(catalogWriteService, org.mockito.Mockito.times(2)).create(metadata);
+    }
+
+    @Test
+    void non_duplicate_integrity_failure는_recovery없이_전파한다() {
+        SpotifyTrackMetadata metadata = metadata();
+        RuntimeException failure = new org.springframework.dao.DataIntegrityViolationException("not null");
+        when(catalogTrackReadService.findBySpotifyId("track-1")).thenReturn(Optional.empty());
+        when(spotifyTrackMetadataProvider.getTrack("track-1")).thenReturn(metadata);
+        org.mockito.Mockito.doThrow(failure).when(catalogWriteService).create(metadata);
+
+        assertThatThrownBy(() -> trackImportService.importTrack("track-1")).isSameAs(failure);
+        verify(catalogWriteService).create(metadata);
+        verify(catalogTrackReadService, never()).getBySpotifyId("track-1");
+    }
+
+    private CatalogDuplicateException duplicate(CatalogDuplicateTarget target) {
+        return new CatalogDuplicateException(target, new RuntimeException("duplicate"));
     }
 
     private SpotifyTrackMetadata metadata() {

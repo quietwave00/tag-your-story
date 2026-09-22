@@ -39,7 +39,8 @@ import static org.mockito.Mockito.when;
         TrackImportService.class,
         CatalogWriteService.class,
         CatalogTrackReadService.class,
-        CatalogExternalIdentityWriteService.class
+        CatalogExternalIdentityWriteService.class,
+        HibernateCatalogConflictTranslator.class
 })
 @ActiveProfiles("local")
 @TestPropertySource(properties = {
@@ -91,6 +92,30 @@ class CatalogImportConcurrencyTest {
         });
 
         List<ImportedTrack> results = runConcurrently(
+                () -> trackImportService.importTrack("track-1"),
+                () -> trackImportService.importTrack("track-1")
+        );
+
+        assertThat(results)
+                .extracting(ImportedTrack::getCatalogTrackId)
+                .containsOnly(results.get(0).getCatalogTrackId());
+        assertThat(artistRepository.count()).isEqualTo(3);
+        assertThat(albumRepository.count()).isEqualTo(1);
+        assertThat(trackRepository.count()).isEqualTo(1);
+        assertThat(albumArtistRepository.count()).isEqualTo(1);
+        assertThat(trackArtistRepository.count()).isEqualTo(2);
+    }
+
+    @Test
+    void 같은_Track을_세_요청이_동시에_최초_Import해도_하나의_Catalog로_수렴한다() throws Exception {
+        CountDownLatch providerCalls = new CountDownLatch(3);
+        when(spotifyTrackMetadataProvider.getTrack("track-1")).thenAnswer(invocation -> {
+            awaitBothRequests(providerCalls);
+            return metadata("track-1", "album-1");
+        });
+
+        List<ImportedTrack> results = runThreeConcurrently(
+                () -> trackImportService.importTrack("track-1"),
                 () -> trackImportService.importTrack("track-1"),
                 () -> trackImportService.importTrack("track-1")
         );
@@ -180,6 +205,38 @@ class CatalogImportConcurrencyTest {
 
             start.countDown();
             return List.of(first.get(10, TimeUnit.SECONDS), second.get(10, TimeUnit.SECONDS));
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private List<ImportedTrack> runThreeConcurrently(
+            Callable<ImportedTrack> firstImport,
+            Callable<ImportedTrack> secondImport,
+            Callable<ImportedTrack> thirdImport
+    ) throws Exception {
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            Future<ImportedTrack> first = executor.submit(() -> {
+                awaitStart(start);
+                return firstImport.call();
+            });
+            Future<ImportedTrack> second = executor.submit(() -> {
+                awaitStart(start);
+                return secondImport.call();
+            });
+            Future<ImportedTrack> third = executor.submit(() -> {
+                awaitStart(start);
+                return thirdImport.call();
+            });
+
+            start.countDown();
+            return List.of(
+                    first.get(10, TimeUnit.SECONDS),
+                    second.get(10, TimeUnit.SECONDS),
+                    third.get(10, TimeUnit.SECONDS)
+            );
         } finally {
             executor.shutdownNow();
         }

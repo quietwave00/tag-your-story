@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -51,14 +52,33 @@ public class TagResolutionWriteService {
     @Transactional
     public List<ResolvedTagResult> resolve(SubjectRef subject) {
         try {
-            return resolveWithinTransaction(subject);
+            return resolveWithinTransaction(requireSubject(subject));
         } catch (DataIntegrityViolationException failure) {
             throw conflictTranslator.translate(failure);
         }
     }
 
-    private List<ResolvedTagResult> resolveWithinTransaction(SubjectRef subject) {
-        List<TagAssertionEntity> assertions = loadAssertionsForResolution(subject);
+    @Transactional
+    public List<ResolvedTagResult> resolvePersistedAlbum(long albumId) {
+        try {
+            return resolveWithinTransaction(ResolutionSubject.album(albumId));
+        } catch (DataIntegrityViolationException failure) {
+            throw conflictTranslator.translate(failure);
+        }
+    }
+
+    @Transactional
+    public List<ResolvedTagResult> resolvePersistedTrack(long trackId, long albumId) {
+        try {
+            return resolveWithinTransaction(ResolutionSubject.track(trackId, albumId));
+        } catch (DataIntegrityViolationException failure) {
+            throw conflictTranslator.translate(failure);
+        }
+    }
+
+    private List<ResolvedTagResult> resolveWithinTransaction(ResolutionSubject context) {
+        SubjectRef subject = context.subject();
+        List<TagAssertionEntity> assertions = loadAssertionsForResolution(context);
         List<TagEntity> taxonomyEntities = tagRepository.findAllWithMergeTarget();
         Map<Long, TagEntity> tagsById = taxonomyEntities.stream()
                 .collect(Collectors.toMap(TagEntity::getTagId, Function.identity()));
@@ -144,23 +164,50 @@ public class TagResolutionWriteService {
         return current;
     }
 
-    private List<TagAssertionEntity> loadAssertionsForResolution(SubjectRef subject) {
+    private List<TagAssertionEntity> loadAssertionsForResolution(ResolutionSubject context) {
+        SubjectRef subject = context.subject();
+        if (subject.type() == SubjectType.TRACK) {
+            List<TagAssertionEntity> directAssertions = assertionRepository.findApprovedDirectBySubject(
+                    SubjectType.TRACK, subject.subjectId()
+            );
+            List<TagAssertionEntity> inheritedAssertions = inheritanceService.synchronizeAlbumInheritance(
+                    subject.subjectId(), context.albumId(), directAssertions
+            );
+            return Stream.concat(
+                    directAssertions.stream(), inheritedAssertions.stream()
+            ).toList();
+        }
+        return assertionRepository.findApprovedDirectBySubject(SubjectType.ALBUM, subject.subjectId());
+    }
+
+    private ResolutionSubject requireSubject(SubjectRef subject) {
         if (subject.type() == SubjectType.TRACK) {
             TrackEntity track = trackRepository.findByIdWithAlbum(subject.subjectId())
                     .orElseThrow(() -> new IllegalArgumentException(
                             "TRACK subject does not exist: " + subject.subjectId()
                     ));
-            List<TagAssertionEntity> directAssertions = assertionRepository.findApprovedDirectBySubject(
-                    SubjectType.TRACK, subject.subjectId()
-            );
-            inheritanceService.synchronizeAlbumInheritance(track, directAssertions);
-            return assertionRepository.findApprovedBySubject(SubjectType.TRACK, subject.subjectId());
+            return ResolutionSubject.track(subject.subjectId(), track.getAlbum().getAlbumId());
         }
-
         if (!albumRepository.existsById(subject.subjectId())) {
             throw new IllegalArgumentException("ALBUM subject does not exist: " + subject.subjectId());
         }
-        return assertionRepository.findApprovedDirectBySubject(SubjectType.ALBUM, subject.subjectId());
+        return ResolutionSubject.album(subject.subjectId());
+    }
+
+    private record ResolutionSubject(SubjectRef subject, long albumId) {
+        private ResolutionSubject {
+            if (subject.type() == SubjectType.TRACK && albumId <= 0) {
+                throw new IllegalArgumentException("Track resolution requires a positive Album ID");
+            }
+        }
+
+        private static ResolutionSubject track(long trackId, long albumId) {
+            return new ResolutionSubject(SubjectRef.track(trackId), albumId);
+        }
+
+        private static ResolutionSubject album(long albumId) {
+            return new ResolutionSubject(SubjectRef.album(albumId), albumId);
+        }
     }
 
     private DirectTagEvidence toEvidence(TagAssertionEntity assertion) {

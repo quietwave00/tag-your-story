@@ -1,11 +1,11 @@
 package com.tagnote.application.catalog.importer;
 
-import com.tagnote.application.catalog.importer.model.CatalogUpsertResult;
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedArtist;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
+import com.tagnote.application.catalog.importer.port.CatalogConflictTranslator;
 import com.tagnote.domain.catalog.album.AlbumArtistEntity;
 import com.tagnote.domain.catalog.album.AlbumEntity;
 import com.tagnote.domain.catalog.artist.ArtistEntity;
@@ -18,6 +18,7 @@ import com.tagnote.infrastructure.persistence.catalog.TrackArtistJpaRepository;
 import com.tagnote.infrastructure.persistence.catalog.TrackJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
@@ -37,13 +38,18 @@ public class CatalogWriteService {
     private final TrackJpaRepository trackRepository;
     private final AlbumArtistJpaRepository albumArtistRepository;
     private final TrackArtistJpaRepository trackArtistRepository;
+    private final CatalogConflictTranslator conflictTranslator;
 
     @Transactional
-    public CatalogUpsertResult upsert(SpotifyTrackMetadata metadata) {
-        if (trackRepository.findBySpotifyId(metadata.getSpotifyTrackId()).isPresent()) {
-            return CatalogUpsertResult.existing();
+    public ImportedTrack create(SpotifyTrackMetadata metadata) {
+        try {
+            return createWithinTransaction(metadata);
+        } catch (DataIntegrityViolationException failure) {
+            throw conflictTranslator.translate(failure);
         }
+    }
 
+    private ImportedTrack createWithinTransaction(SpotifyTrackMetadata metadata) {
         AlbumEntity album = albumRepository.findBySpotifyId(metadata.getSpotifyAlbumId()).orElse(null);
         boolean createAlbum = album == null;
         Map<String, SpotifyArtistMetadata> artistMetadataBySpotifyId = requiredArtists(metadata, createAlbum);
@@ -107,7 +113,7 @@ public class CatalogWriteService {
                 toImportedArtists(metadata.getTrackArtists(), artistsBySpotifyId),
                 importedAlbum
         );
-        return CatalogUpsertResult.created(importedTrack);
+        return importedTrack;
     }
 
     private Map<String, SpotifyArtistMetadata> requiredArtists(

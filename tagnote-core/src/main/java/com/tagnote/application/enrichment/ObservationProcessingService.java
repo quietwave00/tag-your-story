@@ -1,5 +1,6 @@
 package com.tagnote.application.enrichment;
 
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
 import com.tagnote.application.enrichment.model.ObservationProcessingResult;
 import com.tagnote.application.enrichment.exception.AssertionDuplicateException;
@@ -48,6 +49,51 @@ public class ObservationProcessingService {
     public ObservationProcessingResult process(SubjectRef subject, List<ExternalTagInput> inputs) {
         SubjectRef requiredSubject = Objects.requireNonNull(subject, "Subject must not be null");
         return process(requiredSubject.type(), requiredSubject.subjectId(), inputs);
+    }
+
+    public ObservationProcessingResult processPersistedAlbum(
+            ImportedTrack track,
+            List<ExternalTagInput> inputs
+    ) {
+        ImportedTrack requiredTrack = Objects.requireNonNull(track, "Imported track must not be null");
+        return processPersisted(
+                SubjectRef.album(requiredTrack.getAlbum().getAlbumId()),
+                inputs
+        );
+    }
+
+    public ObservationProcessingResult processPersistedTrack(
+            ImportedTrack track,
+            List<ExternalTagInput> inputs
+    ) {
+        ImportedTrack requiredTrack = Objects.requireNonNull(track, "Imported track must not be null");
+        return processPersisted(
+                SubjectRef.track(requiredTrack.getCatalogTrackId()),
+                inputs
+        );
+    }
+
+    private ObservationProcessingResult processPersisted(
+            SubjectRef subject,
+            List<ExternalTagInput> inputs
+    ) {
+        List<ExternalTagInput> stableInputs = validateAndCopy(inputs);
+        try {
+            return observationWriteService.processPersisted(
+                    subject.type(), subject.subjectId(), stableInputs
+            );
+        } catch (ObservationDuplicateException | AssertionDuplicateException firstConflict) {
+            log.warn(
+                    "Retrying persisted observation processing after duplicate conflict: "
+                            + "subjectType={}, subjectId={}, conflictType={}",
+                    subject.type(),
+                    subject.subjectId(),
+                    firstConflict.getClass().getSimpleName()
+            );
+            return observationWriteService.processPersisted(
+                    subject.type(), subject.subjectId(), stableInputs
+            );
+        }
     }
 
     private List<ExternalTagInput> validateAndCopy(List<ExternalTagInput> inputs) {

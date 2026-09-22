@@ -1,5 +1,7 @@
 package com.tagnote.application.resolution;
 
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.resolution.exception.ResolvedTagDuplicateException;
 import com.tagnote.application.resolution.model.ResolvedTagResult;
 import com.tagnote.domain.enrichment.subject.SubjectRef;
@@ -54,5 +56,22 @@ class TagResolutionServiceTest {
 
         assertThatThrownBy(() -> service.resolve(subject)).isInstanceOf(IllegalStateException.class);
         verify(writeService).resolve(subject);
+    }
+
+    @Test
+    void import에서_검증된_Track과_Album_ID로_subject_재조회없는_write를_호출한다() {
+        ImportedTrack track = ImportedTrack.of(
+                10L, "track-1", null, "Track", "ISRC", 1000, List.of(),
+                ImportedAlbum.of(20L, "album-1", null, "Album", 2026, List.of())
+        );
+        List<ResolvedTagResult> expected = List.of();
+        when(writeService.resolvePersistedAlbum(20L)).thenReturn(expected);
+        when(writeService.resolvePersistedTrack(10L, 20L)).thenReturn(expected);
+
+        assertThat(service.resolvePersistedAlbum(track)).isSameAs(expected);
+        assertThat(service.resolvePersistedTrack(track)).isSameAs(expected);
+
+        verify(writeService).resolvePersistedAlbum(20L);
+        verify(writeService).resolvePersistedTrack(10L, 20L);
     }
 }

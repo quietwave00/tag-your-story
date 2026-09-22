@@ -39,4 +39,23 @@ public class ImportedTrack {
                 .album(album)
                 .build();
     }
+
+    public ImportedTrack withMusicBrainzIdentity(String recordingId, String releaseGroupId) {
+        String updatedRecordingId = recordingId == null ? musicBrainzRecordingId : recordingId;
+        ImportedAlbum updatedAlbum = album.withMusicBrainzReleaseGroupId(releaseGroupId);
+        if (java.util.Objects.equals(updatedRecordingId, musicBrainzRecordingId)
+                && updatedAlbum == album) {
+            return this;
+        }
+        return ImportedTrack.of(
+                catalogTrackId,
+                spotifyTrackId,
+                updatedRecordingId,
+                title,
+                isrc,
+                durationMs,
+                artists,
+                updatedAlbum
+        );
+    }
 }

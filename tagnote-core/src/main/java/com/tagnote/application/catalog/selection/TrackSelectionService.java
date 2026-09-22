@@ -10,9 +10,11 @@ import com.tagnote.application.enrichment.ObservationProcessingService;
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
 import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.resolution.TagResolutionService;
-import com.tagnote.domain.enrichment.subject.SubjectRef;
+import com.tagnote.application.resolution.model.ResolvedTagResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,27 +30,27 @@ public class TrackSelectionService {
     public TrackDetail select(String spotifyTrackId) {
         ImportedTrack importedTrack = trackImportService.importTrack(spotifyTrackId);
         long catalogTrackId = importedTrack.getCatalogTrackId();
-        if (trackDetailReadService.hasResolvedProjection(catalogTrackId)) {
-            return trackDetailReadService.getByCatalogTrackId(catalogTrackId);
+        TrackDetail resolvedDetail = trackDetailReadService.findResolved(importedTrack).orElse(null);
+        if (resolvedDetail != null) {
+            return resolvedDetail;
         }
 
         ExternalEnrichmentCollection enrichment = externalEnrichmentCollector.collect(importedTrack);
         catalogExternalIdentityWriteService.attach(catalogTrackId, enrichment.identityMatch());
+        ImportedTrack enrichedTrack = importedTrack.withMusicBrainzIdentity(
+                enrichment.identityMatch().musicBrainzRecordingId(),
+                enrichment.identityMatch().musicBrainzReleaseGroupId()
+        );
         CollectedExternalTags collected = enrichment.tags();
-        long albumId = importedTrack.getAlbum().getAlbumId();
         if (!collected.albumInputs().isEmpty()) {
-            observationProcessingService.process(
-                    SubjectRef.album(albumId), collected.albumInputs()
-            );
-            tagResolutionService.resolve(SubjectRef.album(albumId));
+            observationProcessingService.processPersistedAlbum(enrichedTrack, collected.albumInputs());
+            tagResolutionService.resolvePersistedAlbum(enrichedTrack);
         }
         if (!collected.trackInputs().isEmpty()) {
-            observationProcessingService.process(
-                    SubjectRef.track(catalogTrackId), collected.trackInputs()
-            );
+            observationProcessingService.processPersistedTrack(enrichedTrack, collected.trackInputs());
         }
-        tagResolutionService.resolve(SubjectRef.track(catalogTrackId));
+        List<ResolvedTagResult> resolved = tagResolutionService.resolvePersistedTrack(enrichedTrack);
 
-        return trackDetailReadService.getByCatalogTrackId(catalogTrackId);
+        return trackDetailReadService.fromResolved(enrichedTrack, resolved);
     }
 }

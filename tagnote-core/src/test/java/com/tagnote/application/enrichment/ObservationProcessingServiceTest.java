@@ -2,6 +2,8 @@ package com.tagnote.application.enrichment;
 
 import com.tagnote.application.enrichment.exception.AssertionDuplicateException;
 import com.tagnote.application.enrichment.exception.ObservationDuplicateException;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
 import com.tagnote.application.enrichment.model.ObservationProcessingResult;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
@@ -84,6 +86,24 @@ class ObservationProcessingServiceTest {
                 1L,
                 Arrays.asList(input(), null)
         )).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void import에서_검증된_Track과_Album은_subject_재조회없는_write를_호출한다() {
+        ImportedTrack track = ImportedTrack.of(
+                10L, "track-1", null, "Track", "ISRC", 1000, List.of(),
+                ImportedAlbum.of(20L, "album-1", null, "Album", 2026, List.of())
+        );
+        List<ExternalTagInput> inputs = List.of(input());
+        ObservationProcessingResult expected = ObservationProcessingResult.empty();
+        when(writeService.processPersisted(SubjectType.ALBUM, 20L, inputs)).thenReturn(expected);
+        when(writeService.processPersisted(SubjectType.TRACK, 10L, inputs)).thenReturn(expected);
+
+        assertThat(processingService.processPersistedAlbum(track, inputs)).isSameAs(expected);
+        assertThat(processingService.processPersistedTrack(track, inputs)).isSameAs(expected);
+
+        verify(writeService).processPersisted(SubjectType.ALBUM, 20L, inputs);
+        verify(writeService).processPersisted(SubjectType.TRACK, 10L, inputs);
     }
 
     private ExternalTagInput input() {
