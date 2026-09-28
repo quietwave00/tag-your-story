@@ -106,21 +106,20 @@ class CatalogJpaRepositoryTest {
     }
 
     @Test
-    void accepted_MusicBrainz_ID를_Track과_Album에_멱등하게_저장한다() {
+    void accepted_MusicBrainz_Recording_ID를_Track에_멱등하게_저장한다() {
         catalogWriteService.create(metadata("track-1"));
         ImportedTrack imported = catalogTrackReadService.getBySpotifyId("track-1");
-        CatalogExternalIdentityMatch match = new CatalogExternalIdentityMatch("recording-1", "release-group-1");
+        CatalogExternalIdentityMatch match = new CatalogExternalIdentityMatch("recording-1");
 
         externalIdentityWriteService.attach(
                 imported.getCatalogTrackId(),
-                new CatalogExternalIdentityMatch("recording-1", null)
+                new CatalogExternalIdentityMatch("recording-1")
         );
         externalIdentityWriteService.attach(imported.getCatalogTrackId(), match);
         externalIdentityWriteService.attach(imported.getCatalogTrackId(), match);
 
         ImportedTrack reloaded = catalogTrackReadService.getBySpotifyId("track-1");
         assertThat(reloaded.getMusicBrainzRecordingId()).isEqualTo("recording-1");
-        assertThat(reloaded.getAlbum().getMusicBrainzReleaseGroupId()).isEqualTo("release-group-1");
     }
 
     private SpotifyTrackMetadata metadata(String trackId) {

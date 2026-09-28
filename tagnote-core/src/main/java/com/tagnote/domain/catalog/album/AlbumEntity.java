@@ -19,7 +19,6 @@ import lombok.NoArgsConstructor;
         name = "album",
         uniqueConstraints = @UniqueConstraint(name = "uk_album_spotify_id", columnNames = "spotify_id"),
         indexes = {
-                @Index(name = "idx_album_musicbrainz_id", columnList = "musicbrainz_id"),
                 @Index(name = "idx_album_title", columnList = "title")
         }
 )
@@ -36,9 +35,6 @@ public class AlbumEntity extends BaseTime {
     @Column(name = "spotify_id", nullable = false)
     private String spotifyId;
 
-    @Column(name = "musicbrainz_id")
-    private String musicbrainzId;
-
     @Column(name = "release_year")
     private Integer releaseYear;
 
@@ -50,24 +46,5 @@ public class AlbumEntity extends BaseTime {
 
     public static AlbumEntity create(String title, String spotifyId, Integer releaseYear) {
         return new AlbumEntity(title, spotifyId, releaseYear);
-    }
-
-    public void attachMusicBrainzReleaseGroupId(String acceptedId) {
-        requireText(acceptedId, "MusicBrainz Release Group ID");
-        if (musicbrainzId == null) {
-            musicbrainzId = acceptedId;
-            return;
-        }
-        if (!musicbrainzId.equals(acceptedId)) {
-            throw new IllegalStateException(
-                    "Album MusicBrainz identity conflict: existing=" + musicbrainzId + ", accepted=" + acceptedId
-            );
-        }
-    }
-
-    private void requireText(String value, String name) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(name + " must not be blank");
-        }
     }
 }

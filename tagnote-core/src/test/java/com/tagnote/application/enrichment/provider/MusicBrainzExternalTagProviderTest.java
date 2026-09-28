@@ -7,6 +7,7 @@ import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
 import com.tagnote.application.enrichment.exception.ExternalProviderException;
 import com.tagnote.application.enrichment.matching.MusicBrainzEntityMatchingService;
 import com.tagnote.application.enrichment.matching.MusicEntityNameNormalizer;
+import com.tagnote.application.enrichment.matching.MusicEditionTitleNormalizer;
 import com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.Genre;
 import com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.RecordingCandidate;
 import com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.RecordingDetails;
@@ -31,7 +32,97 @@ import static org.mockito.Mockito.when;
 class MusicBrainzExternalTagProviderTest {
 
     @Test
-    void 저장된_Mbid는_search없이_재사용하고_positive_genre만_매핑한다() {
+    void remastered_album은_canonical_title을_첫_요청에_사용한다() {
+        MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
+        ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
+        MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
+        MusicBrainzExternalTagProvider provider = new MusicBrainzExternalTagProvider(
+                client, new MusicBrainzEntityMatchingService(normalizer, properties),
+                normalizer, new MusicEditionTitleNormalizer(normalizer), properties);
+        ImportedAlbum album = ImportedAlbum.of(2L, "spotify-album", "Nevermind (Remastered)", 1991,
+                List.of(ImportedArtist.of(1L, "spotify-artist", "Nirvana", 0)));
+        ReleaseGroupCandidate group = new ReleaseGroupCandidate("rg-nevermind", "Nevermind", 1991,
+                List.of("Nirvana"));
+        when(client.searchReleaseGroups("Nevermind", List.of("Nirvana")))
+                .thenReturn(List.of(group));
+        when(client.getReleaseGroup("rg-nevermind"))
+                .thenReturn(new ReleaseGroupDetails("rg-nevermind", List.of(new Genre("Grunge", 2))));
+
+        var result = provider.collectAlbum(album, deadline());
+
+        verify(client).searchReleaseGroups("Nevermind", List.of("Nirvana"));
+        verify(client, never()).searchReleaseGroups("Nevermind (Remastered)", List.of("Nirvana"));
+        assertThat(result.tags().albumInputs()).singleElement()
+                .extracting(input -> input.rawName()).isEqualTo("Grunge");
+    }
+
+    @Test
+    void canonical_title에_일치_후보가_없으면_원문_title로_한번_재검색한다() {
+        MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
+        ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
+        MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
+        MusicBrainzExternalTagProvider provider = new MusicBrainzExternalTagProvider(
+                client, new MusicBrainzEntityMatchingService(normalizer, properties),
+                normalizer, new MusicEditionTitleNormalizer(normalizer), properties);
+        ImportedAlbum album = ImportedAlbum.of(2L, "spotify-album", "Nevermind (Remastered)", 2011,
+                List.of(ImportedArtist.of(1L, "spotify-artist", "Nirvana", 0)));
+        when(client.searchReleaseGroups("Nevermind (Remastered)", List.of("Nirvana")))
+                .thenReturn(List.of(new ReleaseGroupCandidate("rg-remaster",
+                        "Nevermind (Remastered)", 2011, List.of("Nirvana"))));
+        when(client.getReleaseGroup("rg-remaster"))
+                .thenReturn(new ReleaseGroupDetails("rg-remaster", List.of(new Genre("Rock", 1))));
+
+        var result = provider.collectAlbum(album, deadline());
+
+        verify(client).searchReleaseGroups("Nevermind", List.of("Nirvana"));
+        verify(client).searchReleaseGroups("Nevermind (Remastered)", List.of("Nirvana"));
+        assertThat(result.tags().albumInputs()).singleElement()
+                .extracting(input -> input.rawName()).isEqualTo("Rock");
+    }
+
+    @Test
+    void canonical_title이_맞아도_release_group_연도가_다르면_확정하지_않는다() {
+        MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
+        ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
+        MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
+        MusicBrainzExternalTagProvider provider = new MusicBrainzExternalTagProvider(
+                client, new MusicBrainzEntityMatchingService(normalizer, properties),
+                normalizer, new MusicEditionTitleNormalizer(normalizer), properties);
+        ImportedAlbum album = ImportedAlbum.of(2L, "spotify-album", "Nevermind (Remastered)", 2011,
+                List.of(ImportedArtist.of(1L, "spotify-artist", "Nirvana", 0)));
+        when(client.searchReleaseGroups("Nevermind", List.of("Nirvana")))
+                .thenReturn(List.of(new ReleaseGroupCandidate("rg-nevermind", "Nevermind", 1991,
+                        List.of("Nirvana"))));
+
+        assertThatThrownBy(() -> provider.collectAlbum(album, deadline()))
+                .isInstanceOf(ExternalProviderException.class)
+                .hasMessageContaining("matchedCount=0");
+        verify(client, never()).getReleaseGroup("rg-nevermind");
+    }
+
+    @Test
+    void canonical_title에_복수_group이_맞으면_원문_fallback을_실행하지_않는다() {
+        MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
+        ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
+        MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
+        MusicBrainzExternalTagProvider provider = new MusicBrainzExternalTagProvider(
+                client, new MusicBrainzEntityMatchingService(normalizer, properties),
+                normalizer, new MusicEditionTitleNormalizer(normalizer), properties);
+        ImportedAlbum album = ImportedAlbum.of(2L, "spotify-album", "Nevermind (Remastered)", 2011,
+                List.of(ImportedArtist.of(1L, "spotify-artist", "Nirvana", 0)));
+        when(client.searchReleaseGroups("Nevermind", List.of("Nirvana")))
+                .thenReturn(List.of(
+                        new ReleaseGroupCandidate("first", "Nevermind", 2011, List.of("Nirvana")),
+                        new ReleaseGroupCandidate("second", "Nevermind", 2011, List.of("Nirvana"))));
+
+        assertThatThrownBy(() -> provider.collectAlbum(album, deadline()))
+                .isInstanceOf(ExternalProviderException.class)
+                .hasMessageContaining("matchedCount=2");
+        verify(client, never()).searchReleaseGroups("Nevermind (Remastered)", List.of("Nirvana"));
+    }
+
+    @Test
+    void 저장된_Recording_Mbid는_search없이_재사용하고_Album_장르도_매핑한다() {
         MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
         ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
         MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
@@ -39,13 +130,18 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track("recording-1", "release-group-1");
+        ImportedTrack track = track("recording-1");
         when(client.getRecording("recording-1")).thenReturn(new RecordingDetails(
                 "recording-1",
                 List.of(new Genre("Ambient", 2), new Genre("Ignored", 0)),
                 List.of()
+        ));
+        when(client.getRecordingReleaseGroups("recording-1")).thenReturn(new RecordingDetails(
+                "recording-1", List.of(),
+                List.of(new ReleaseGroupCandidate("release-group-1", "Album", 2026, List.of("Artist")))
         ));
         when(client.getReleaseGroup("release-group-1")).thenReturn(new ReleaseGroupDetails(
                 "release-group-1", List.of(new Genre("Electronic", 1))
@@ -58,7 +154,6 @@ class MusicBrainzExternalTagProviderTest {
                 org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyList()
         );
         assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("recording-1");
-        assertThat(result.identityMatch().musicBrainzReleaseGroupId()).isEqualTo("release-group-1");
         assertThat(result.tags().trackInputs()).singleElement().satisfies(input -> {
             assertThat(input.rawName()).isEqualTo("Ambient");
             assertThat(input.evidenceType()).isEqualTo(EvidenceType.EXPLICIT_GENRE);
@@ -68,6 +163,7 @@ class MusicBrainzExternalTagProviderTest {
         assertThat(result.tags().albumInputs()).singleElement().satisfies(input -> {
             assertThat(input.rawName()).isEqualTo("Electronic");
             assertThat(input.confidence()).isEqualTo(0.75);
+            assertThat(input.externalRef()).isEqualTo("musicbrainz:release-group:release-group-1");
         });
     }
 
@@ -80,11 +176,16 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track("recording-1", "release-group-1");
+        ImportedTrack track = track("recording-1");
         when(client.getRecording("recording-1")).thenReturn(new RecordingDetails(
                 "recording-1", List.of(new Genre("Ambient", 2)), List.of()
+        ));
+        when(client.getRecordingReleaseGroups("recording-1")).thenReturn(new RecordingDetails(
+                "recording-1", List.of(),
+                List.of(new ReleaseGroupCandidate("release-group-1", "Album", 2026, List.of("Artist")))
         ));
         when(client.getReleaseGroup("release-group-1")).thenThrow(new ExternalProviderException(
                 ProviderEnrichmentStatus.TIMEOUT, "fixture timeout"
@@ -98,7 +199,6 @@ class MusicBrainzExternalTagProviderTest {
                 .isEqualTo("Ambient");
         assertThat(result.tags().albumInputs()).isEmpty();
         assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("recording-1");
-        assertThat(result.identityMatch().musicBrainzReleaseGroupId()).isEqualTo("release-group-1");
     }
 
     @Test
@@ -110,9 +210,10 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track(null, null);
+        ImportedTrack track = track(null);
         RecordingCandidate candidate = new RecordingCandidate(
                 "recording-original", "Original Title", 240_000, List.of("Artist")
         );
@@ -138,13 +239,50 @@ class MusicBrainzExternalTagProviderTest {
         );
         verify(client).getRecording("recording-original");
         assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("recording-original");
-        assertThat(result.identityMatch().musicBrainzReleaseGroupId()).isEqualTo("release-group-1");
         assertThat(result.tags().trackInputs()).singleElement()
                 .extracting(input -> input.rawName())
                 .isEqualTo("Rock");
         assertThat(result.tags().albumInputs()).singleElement()
                 .extracting(input -> input.rawName())
                 .isEqualTo("Classic Rock");
+    }
+
+    @Test
+    void 복수_Isrc_후보는_duration이_가장_가까운_단일후보를_fallback없이_채택한다() {
+        MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
+        ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
+        MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
+        MusicBrainzExternalTagProvider provider = new MusicBrainzExternalTagProvider(
+                client,
+                new MusicBrainzEntityMatchingService(normalizer, properties),
+                normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
+                properties
+        );
+        ImportedTrack track = track(null, "Creep", "GBAYE9200070", 235_640);
+        RecordingCandidate closest = new RecordingCandidate(
+                "70595637-9310-45f2-a266-58f8de4874a7", "Creep", 236_666, List.of("Artist")
+        );
+        when(client.searchByIsrc("GBAYE9200070")).thenReturn(List.of(
+                closest,
+                new RecordingCandidate(
+                        "1f9f17c7-6085-4d52-9bd0-13a94cc449bc", "Creep", 237_680, List.of("Artist")
+                )
+        ));
+        when(client.getRecording(closest.id())).thenReturn(new RecordingDetails(
+                closest.id(), List.of(new Genre("Alternative Rock", 1)), List.of()
+        ));
+        when(client.getRecordingReleaseGroups(closest.id())).thenReturn(new RecordingDetails(
+                closest.id(), List.of(), List.of()
+        ));
+
+        var result = provider.collect(track, deadline());
+
+        verify(client, never()).searchByTitleAndArtists(
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyList()
+        );
+        verify(client).getRecording(closest.id());
+        assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo(closest.id());
     }
 
     @Test
@@ -156,9 +294,10 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track(null, null);
+        ImportedTrack track = track(null);
         RecordingCandidate candidate = new RecordingCandidate(
                 "recording-2", "Track", 180_000, List.of("Artist")
         );
@@ -176,7 +315,6 @@ class MusicBrainzExternalTagProviderTest {
         verify(client).searchByIsrc("USABC1234567");
         verify(client).searchByTitleAndArtists("Track", List.of("Artist"));
         assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("recording-2");
-        assertThat(result.identityMatch().musicBrainzReleaseGroupId()).isNull();
     }
 
     @Test
@@ -188,9 +326,10 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track(null, null);
+        ImportedTrack track = track(null);
         RecordingCandidate candidate = new RecordingCandidate(
                 "recording-original", "Original Title", 240_000, List.of("Artist")
         );
@@ -222,9 +361,10 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track(null, null);
+        ImportedTrack track = track(null);
         RecordingCandidate candidate = new RecordingCandidate(
                 "recording-original", "Original Title", 240_000, List.of("Artist")
         );
@@ -258,6 +398,7 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
         ExternalProviderException unavailable = ExternalProviderException.retryable(
@@ -266,7 +407,7 @@ class MusicBrainzExternalTagProviderTest {
         );
         when(client.searchByIsrc("USABC1234567")).thenThrow(unavailable);
 
-        assertThatThrownBy(() -> provider.collect(track(null, null), deadline()))
+        assertThatThrownBy(() -> provider.collect(track(null), deadline()))
                 .isSameAs(unavailable);
         verify(client, times(2)).searchByIsrc("USABC1234567");
     }
@@ -280,9 +421,10 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track("recording-1", "release-group-1");
+        ImportedTrack track = track("recording-1");
         when(client.getRecording("recording-1")).thenReturn(new RecordingDetails(
                 "recording-1", List.of(new Genre("Ambient", 2)), List.of()
         ));
@@ -290,13 +432,13 @@ class MusicBrainzExternalTagProviderTest {
         var result = provider.collect(track, EnrichmentDeadline.expired());
 
         verify(client, never()).getReleaseGroup("release-group-1");
+        verify(client, never()).getRecordingReleaseGroups("recording-1");
         assertThat(result.status()).isEqualTo(ProviderEnrichmentStatus.SUCCESS);
         assertThat(result.tags().trackInputs()).singleElement()
                 .extracting(input -> input.rawName())
                 .isEqualTo("Ambient");
         assertThat(result.tags().albumInputs()).isEmpty();
         assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("recording-1");
-        assertThat(result.identityMatch().musicBrainzReleaseGroupId()).isEqualTo("release-group-1");
     }
 
     @Test
@@ -308,9 +450,10 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track(null, null);
+        ImportedTrack track = track(null);
         when(client.searchByIsrc("USABC1234567")).thenReturn(List.of());
         RecordingCandidate candidate = new RecordingCandidate(
                 "recording-2", "Track", 180_000, List.of("Artist")
@@ -344,9 +487,10 @@ class MusicBrainzExternalTagProviderTest {
                 client,
                 new MusicBrainzEntityMatchingService(normalizer, properties),
                 normalizer,
+                new MusicEditionTitleNormalizer(normalizer),
                 properties
         );
-        ImportedTrack track = track("recording-1", null);
+        ImportedTrack track = track("recording-1");
         when(client.getRecording("recording-1")).thenReturn(new RecordingDetails(
                 "recording-1", List.of(new Genre("Ambient", 2)), List.of()
         ));
@@ -362,22 +506,24 @@ class MusicBrainzExternalTagProviderTest {
                 .isEqualTo("Ambient");
         assertThat(result.tags().albumInputs()).isEmpty();
         assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("recording-1");
-        assertThat(result.identityMatch().musicBrainzReleaseGroupId()).isNull();
     }
 
-    private ImportedTrack track(String recordingId, String releaseGroupId) {
+    private ImportedTrack track(String recordingId) {
+        return track(recordingId, "Track", "US-ABC-12-34567", 180_000);
+    }
+
+    private ImportedTrack track(String recordingId, String title, String isrc, int durationMs) {
         return ImportedTrack.of(
                 1L,
                 "spotify-track",
                 recordingId,
-                "Track",
-                "US-ABC-12-34567",
-                180_000,
+                title,
+                isrc,
+                durationMs,
                 List.of(ImportedArtist.of(1L, "artist", "Artist", 0)),
                 ImportedAlbum.of(
                         2L,
                         "spotify-album",
-                        releaseGroupId,
                         "Album",
                         2026,
                         List.of(ImportedArtist.of(1L, "artist", "Artist", 0))

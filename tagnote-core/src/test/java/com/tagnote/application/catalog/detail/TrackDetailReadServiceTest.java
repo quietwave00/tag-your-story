@@ -79,7 +79,7 @@ class TrackDetailReadServiceTest {
     private ImportedTrack importedTrack() {
         return ImportedTrack.of(
                 10L, "track-1", null, "Track", "ISRC", 180_000, List.of(),
-                ImportedAlbum.of(20L, "album-1", null, "Album", 2026, List.of())
+                ImportedAlbum.of(20L, "album-1", "Album", 2026, List.of())
         );
     }
 }

@@ -2,6 +2,7 @@ package com.tagnote.api.domain.tracks.dto.response;
 
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
+import com.tagnote.application.catalog.detail.model.TagDisplayStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +37,12 @@ public class CatalogTrackResponse {
     @Schema(description = "Resolver가 계산한 System Tag 목록. score 내림차순, 동일 score에서는 tagId 오름차순")
     private List<SystemTagResponse> systemTags;
 
+    @Schema(description = "확정 System Tag가 없을 때만 제공하는 검증 전 원본 태그, 최대 5개")
+    private List<PreviewTagResponse> previewTags;
+
+    @Schema(description = "태그 표시 상태: CONFIRMED, PREVIEW 또는 EMPTY")
+    private TagDisplayStatus tagDisplayStatus;
+
     public static CatalogTrackResponse from(TrackDetail detail) {
         ImportedTrack track = detail.track();
         return CatalogTrackResponse.builder()
@@ -47,6 +54,8 @@ public class CatalogTrackResponse {
                 .artists(track.getArtists().stream().map(CatalogArtistResponse::from).toList())
                 .album(CatalogAlbumResponse.from(track.getAlbum()))
                 .systemTags(detail.systemTags().stream().map(SystemTagResponse::from).toList())
+                .previewTags(detail.previewTags().stream().map(PreviewTagResponse::from).toList())
+                .tagDisplayStatus(detail.tagDisplayStatus())
                 .build();
     }
 }

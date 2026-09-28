@@ -38,6 +38,7 @@ public class TrackController implements TrackApi {
 
     @PostMapping("/tracks/import")
     @Override
+    @Deprecated(since = "2026-09", forRemoval = false)
     public ApiResult<CatalogTrackResponse> importTrack(@Valid @RequestBody ImportTrackRequest request) {
         TrackDetail trackDetail = trackSelectionService.select(request.getSpotifyTrackId());
         return ApiUtils.success(CatalogTrackResponse.from(trackDetail));

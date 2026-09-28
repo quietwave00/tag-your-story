@@ -2,12 +2,12 @@
 
 ## Status
 
-- State: Implementation complete — user verification pending
+- State: Closed at user request on 2026-09-28; query baseline acceptance review remains unverified
 - Original scope approved: 2026-09-18
 - End-to-end replan requested: 2026-09-18
 - End-to-end replan approved: 2026-09-18
 - Scope: Track 선택부터 Catalog, enrichment persistence, resolution, inheritance, detail 응답까지 전체 import query reduction과 constraint-specific duplicate recovery
-- Related decisions: `ADR-001-catalog-multi-artist-credits.md`, `ADR-008-enrichment-sequence-jdbc-batching.md`, `ADR-009-catalog-optimistic-create-conflict-recovery.md`
+- Related decisions: `ADR-001-catalog-multi-artist-credits.md`, `ADR-008-enrichment-sequence-jdbc-batching.md`, `ADR-009-catalog-optimistic-create-conflict-recovery.md`, `ADR-011-album-musicbrainz-id-removal.md`
 
 ## Goal
 
@@ -116,7 +116,7 @@ Album/Track observation 및 resolution transaction은 현재처럼 분리한다.
 - Artist/Album duplicate 후 Track absent일 때만 create 1회 재시도
 - Catalog unit/JPA/concurrency/selection integration 테스트 갱신
 - resolved Track selection의 projection existence check와 visible projection read를 1회 query로 통합
-- Catalog external identity attach에서 Track+Album lock query와 별도 Album lock/read가 중복인지 H2/Oracle lock semantics 및 concurrency test로 검증하고, 두 DB에서 동일하게 보장될 때만 1회 query로 축소
+- ADR-011에 따라 Album MBID attach 및 Album lock/read를 제거하고 Track Recording MBID attach만 유지
 - `TrackSelectionService`가 전달하는 persisted `ImportedTrack` context를 사용해 Observation Album/Track subject existence query를 생략하되 generic processing entry point의 validation은 유지
 - Track resolution에 이미 알고 있는 Track/Album ID context를 전달해 subject Track/Album 재조회 제거
 - `TagInheritanceService`가 동기화된 inherited assertion을 반환하고 direct assertion과 합쳐 final resolution에 사용해 Track approved assertion 재조회 제거
@@ -161,10 +161,9 @@ SQL logger의 statement 줄 수는 JDBC batch의 실제 DB 왕복 횟수와 같�
    - row가 없으면 `Optional.empty()`를 반환해 현재처럼 enrichment로 진행한다. HIDDEN-only projection도 “이미 resolve됨”으로 취급해야 하므로 visible row가 아닌 전체 resolved row의 존재로 판단한다.
    - resolved Track selection은 기존 두 resolved query를 한 번으로 줄이고, first-load Track은 기존 projection check 한 번을 유지한다.
 
-2. **External identity attach lock/read 검증**
-   - 현재 `findByIdWithAlbumForUpdate()`는 Album을 join fetch한 뒤, release group ID가 있으면 `findByIdForUpdate()`로 Album을 다시 읽고 lock한다.
-   - H2와 운영 Oracle에서 첫 `FOR UPDATE`가 Track과 join된 Album 모두를 lock하는지 SQL/동시성 test와 Oracle review로 확인한다.
-   - 두 DB에서 Album row lock과 lost-update 방지가 보장될 때에만 두 번째 Album query를 제거하고 join-fetched managed Album을 갱신한다. 보장되지 않으면 이 query는 유지하며 성능 개선으로 주장하지 않는다.
+2. **External identity attach lock/read**
+   - ADR-011에 따라 Album MBID attach가 없어져 Album lock/read가 불필요해졌다. Track Recording MBID attach는 Track row만 lock한다.
+   - 같은 Track을 동시에 attach할 때 기존 Recording MBID conflict 및 멱등성은 유지한다.
 
 3. **Catalog import와 detail read의 유지 근거**
    - 정상 신규 import의 최초 Track fast-path, Album lookup, Artist bulk lookup은 각각 다른 identity 판단을 위한 최소 read다. write 내부 Track reread는 제거한다.
@@ -201,7 +200,7 @@ SQL logger의 statement 줄 수는 JDBC batch의 실제 DB 왕복 횟수와 같�
 
 3. **최종 detail snapshot 조립**
    - `TagResolutionService.resolve(TRACK)`가 반환한 `ResolvedTagResult`는 flush가 끝난 현재 projection이다.
-   - identity attach가 채택한 Recording/Release Group ID는 immutable `ImportedTrack`/`ImportedAlbum` snapshot에도 copy-on-write 방식으로 반영해 DB canonical identity와 같은 값을 유지한다.
+   - identity attach가 채택한 Recording ID는 immutable `ImportedTrack` snapshot에 copy-on-write 방식으로 반영해 DB canonical identity와 같은 값을 유지한다.
    - `TrackSelectionService`는 HIDDEN을 제외하고 기존 score/tagId 순서를 유지해 `SystemTagDetail`로 변환하고, 갱신된 `ImportedTrack` snapshot과 합쳐 `TrackDetail`을 반환한다.
    - 따라서 first-load 성공 경로의 visible resolved, Track+Album, TrackArtist, AlbumArtist 최종 reread 4개를 제거한다.
    - 이미 resolved된 fast path는 DB canonical state가 필요하므로 resolved row 1회와 Catalog detail 3회 조회를 유지한다.
@@ -263,7 +262,7 @@ Enrichment/Resolution의 constraint-name translation pattern을 따른다. Hiber
 
 - `agents/server/decisions/ADR-009-catalog-optimistic-create-conflict-recovery.md`
 - `agents/server/decisions/ADR-008-enrichment-sequence-jdbc-batching.md`
-- `agents/server/plans/active/CATALOG-IMPORT-002.md`
+- `agents/server/plans/completed/CATALOG-IMPORT-002.md`
 - `agents/server/plans/completed/ENRICHMENT-PERF-001.md`
 - `agents/server/plans/completed/ENRICHMENT-001.md`
 - 완료 시 `agents/server/progress.md`
@@ -277,7 +276,7 @@ Enrichment/Resolution의 constraint-name translation pattern을 따른다. Hiber
 5. 기존/동시 import JPA tests를 새 create semantics로 갱신한다.
 6. 3개 동일 Track 동시 import 및 shared Artist/Album을 가진 서로 다른 Track 동시 import를 추가한다.
 7. `TrackDetailReadService.findIfResolved(...)`로 resolved projection existence/read를 통합하고 HIDDEN-only 및 first-load fallback 회귀를 검증한다.
-8. Catalog external identity attach의 H2/Oracle lock scope와 concurrency를 검증한다. Album lock이 첫 query로 보장되는 경우에만 두 번째 Album read를 제거한다.
+8. ADR-011 이후 Track Recording MBID attach의 멱등성과 동시성을 검증한다.
 9. persisted `ImportedTrack` context를 받는 selection 전용 Observation 처리 경로를 추가하고 subject existence query 2개를 제거한다. generic entry point validation 회귀를 함께 검증한다.
 10. selection 전용 resolution context로 Album existence와 Track+Album subject query를 제거한다.
 11. `TagInheritanceService`가 synchronized inherited assertions를 반환하게 하고 Track final assertion reread를 제거한다. stale/update/direct-over-inherited/concurrency 회귀를 검증한다.
@@ -295,12 +294,12 @@ Enrichment/Resolution의 constraint-name translation pattern을 따른다. Hiber
 - [ ] Catalog import 계측은 최초 fast path와 write 내부 query를 구분하며, `create()` 진입 후 Track Spotify ID existence SELECT가 없음을 검증한다.
 - [ ] resolved Track selection은 projection existence/read를 한 번만 실행하고 HIDDEN-only projection도 enrichment를 재실행하지 않는다.
 - [ ] first-load Track은 resolved projection query 한 번 뒤 기존 enrichment flow로 진행한다.
-- [ ] external identity attach는 H2/Oracle에서 Album lock 보장을 증명한 경우에만 두 번째 Album read를 제거하며, 증명하지 못하면 기존 두-query lock/read를 유지한다.
+- [ ] external identity attach는 Track Recording MBID만 lock/write하며 Album lock/read를 실행하지 않는다.
 - [ ] selection의 persisted subject 처리에서는 Album/Track existence query가 없고, generic Observation 처리에서는 subject validation이 유지된다.
 - [ ] Album resolve의 subject existence query와 Track resolve의 Track+Album subject query가 selection context에서 제거된다.
 - [ ] Track direct assertion과 synchronized inherited assertions를 재사용해 final approved assertion reread가 없다.
 - [ ] first-load 성공 response는 기존 `ImportedTrack`과 final resolved 결과로 조립하며 resolved/Track/credit 최종 4-query reread가 없다.
-- [ ] in-memory response snapshot은 identity attach에서 채택한 Recording/Release Group ID까지 반영해 기존 canonical reread 응답과 내부적으로 동일하다.
+- [ ] in-memory response snapshot은 identity attach에서 채택한 Recording ID까지 반영해 기존 canonical reread 응답과 내부적으로 동일하다.
 - [ ] existing resolved Track은 DB canonical Catalog/credit/resolved state를 반환하고 HIDDEN-only projection도 enrichment를 재실행하지 않는다.
 - [ ] Catalog, enrichment persistence, resolution, detail의 query/round-trip baseline을 phase별로 기록한다. Observation/Assertion/Resolved INSERT batch는 JDBC `executeBatch()` 기준으로 검증한다.
 - [ ] 사용자 제공 baseline과 동일한 31 Observation first-load에서 DB execution은 목표 약 27회(±1회)이며, 실제 계측 차이가 있으면 SQL 분류와 이유를 Plan에 기록하고 Human Review한다.
@@ -342,3 +341,5 @@ WSL/Git Bash:
 ## Completion
 
 구현과 테스트 코드 작성 후 사용자가 검증 명령 결과를 전달하고, Acceptance Criteria와 diff review가 통과한 경우에만 이 Plan을 `agents/server/plans/completed/`로 이동하고 `progress.md`에 완료 상태를 기록한다.
+
+2026-09-28 사용자 요청에 따라 문서 상태를 completed로 변경했다. 2026-09-22 전체 검증 성공 이력은 있으나, 31 Observation first-load의 약 27회 DB execution 목표와 phase별 baseline은 확인되지 않았다. 미확인 Acceptance Criteria를 통과한 것으로 표시하지 않는다.

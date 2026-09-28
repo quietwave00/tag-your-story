@@ -62,7 +62,7 @@ class TagResolutionServiceTest {
     void import에서_검증된_Track과_Album_ID로_subject_재조회없는_write를_호출한다() {
         ImportedTrack track = ImportedTrack.of(
                 10L, "track-1", null, "Track", "ISRC", 1000, List.of(),
-                ImportedAlbum.of(20L, "album-1", null, "Album", 2026, List.of())
+                ImportedAlbum.of(20L, "album-1", "Album", 2026, List.of())
         );
         List<ResolvedTagResult> expected = List.of();
         when(writeService.resolvePersistedAlbum(20L)).thenReturn(expected);

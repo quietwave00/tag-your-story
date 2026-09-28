@@ -59,7 +59,6 @@ public class CatalogTrackReadService {
         ImportedAlbum importedAlbum = ImportedAlbum.of(
                 album.getAlbumId(),
                 album.getSpotifyId(),
-                album.getMusicbrainzId(),
                 album.getTitle(),
                 album.getReleaseYear(),
                 albumArtists

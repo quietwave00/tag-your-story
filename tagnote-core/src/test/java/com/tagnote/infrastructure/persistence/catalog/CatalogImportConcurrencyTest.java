@@ -158,7 +158,7 @@ class CatalogImportConcurrencyTest {
     }
 
     @Test
-    void 같은_Album의_서로_다른_Track이_동시에_Mbid를_연결해도_동일_identity로_수렴한다() throws Exception {
+    void 같은_Album의_서로_다른_Track이_동시에_Recording_Mbid를_연결한다() throws Exception {
         when(spotifyTrackMetadataProvider.getTrack(anyString())).thenAnswer(invocation -> {
             String trackId = invocation.getArgument(0);
             return metadata(trackId, "shared-album");
@@ -171,9 +171,6 @@ class CatalogImportConcurrencyTest {
                 () -> attachIdentity(second, "recording-2")
         );
 
-        assertThat(albumRepository.findBySpotifyId("shared-album")).hasValueSatisfying(album ->
-                assertThat(album.getMusicbrainzId()).isEqualTo("release-group-1")
-        );
         assertThat(trackRepository.findAll())
                 .extracting(track -> track.getMusicbrainzId())
                 .containsExactlyInAnyOrder("recording-1", "recording-2");
@@ -182,7 +179,7 @@ class CatalogImportConcurrencyTest {
     private ImportedTrack attachIdentity(ImportedTrack track, String recordingId) {
         externalIdentityWriteService.attach(
                 track.getCatalogTrackId(),
-                new CatalogExternalIdentityMatch(recordingId, "release-group-1")
+                new CatalogExternalIdentityMatch(recordingId)
         );
         return track;
     }

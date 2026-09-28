@@ -1,6 +1,7 @@
 package com.tagnote.domain.enrichment.observation;
 
 import com.tagnote.domain.enrichment.subject.SubjectRef;
+import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.enrichment.subject.SubjectType;
 import com.tagnote.domain.taxonomy.matching.NormalizedTagName;
 import com.tagnote.domain.taxonomy.tag.TagEntity;
@@ -73,6 +74,13 @@ public class ExternalTagObservationEntity {
     private String externalRef;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "evidence_type")
+    private EvidenceType evidenceType;
+
+    @Column(name = "confidence")
+    private Double confidence;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ObservationStatus status;
 
@@ -128,6 +136,18 @@ public class ExternalTagObservationEntity {
         requireNew("match");
         this.matchedTag = Objects.requireNonNull(tag, "Matched tag must not be null");
         this.status = ObservationStatus.MATCHED;
+    }
+
+    public void recordEvidence(EvidenceType evidenceType, double confidence) {
+        Objects.requireNonNull(evidenceType, "Evidence type must not be null");
+        if (!Double.isFinite(confidence) || confidence < 0 || confidence > 1) {
+            throw new IllegalArgumentException("Confidence must be between 0 and 1");
+        }
+        if (this.evidenceType != null && this.evidenceType != evidenceType) {
+            throw new IllegalStateException("Observation evidence type cannot change");
+        }
+        this.evidenceType = evidenceType;
+        if (this.confidence == null) this.confidence = confidence;
     }
 
     public void ignore() {

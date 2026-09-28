@@ -1,7 +1,9 @@
 package com.tagnote.infrastructure.external.discogs;
 
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
+import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumSearchQuery;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.EntityType;
+import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.SearchField;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,12 +30,14 @@ class DiscogsClientTest {
         DiscogsClient client = new DiscogsClient(builder.build(), properties);
 
         server.expect(requestTo(containsString("type=master")))
+                .andExpect(requestTo(containsString("release_title=Album")))
                 .andExpect(requestTo(not(containsString("year="))))
                 .andExpect(header(HttpHeaders.AUTHORIZATION, "Discogs token=fixture-token"))
                 .andRespond(withSuccess("""
                         {"results":[{"id":10,"type":"master","title":"Artist - Album","year":2026}]}
                         """, MediaType.APPLICATION_JSON));
         server.expect(requestTo(containsString("type=release")))
+                .andExpect(requestTo(containsString("track=Track")))
                 .andRespond(withSuccess("{\"results\":[]}", MediaType.APPLICATION_JSON));
         server.expect(requestTo(containsString("/masters/10")))
                 .andRespond(withSuccess("""
@@ -41,8 +45,14 @@ class DiscogsClientTest {
                          "genres":["Electronic"],"styles":["Ambient"],"ignored":true}
                         """, MediaType.APPLICATION_JSON));
 
-        var masterCandidates = client.searchAlbums("Album", List.of("Artist"), EntityType.MASTER);
-        var releaseCandidates = client.searchAlbums("Album", List.of("Artist"), EntityType.RELEASE);
+        var masterCandidates = client.searchAlbums(
+                new AlbumSearchQuery(SearchField.RELEASE_TITLE, "Album", List.of("Artist")),
+                EntityType.MASTER
+        );
+        var releaseCandidates = client.searchAlbums(
+                new AlbumSearchQuery(SearchField.TRACK, "Track", List.of("Artist")),
+                EntityType.RELEASE
+        );
         var details = client.getAlbum(EntityType.MASTER, 10L);
 
         assertThat(masterCandidates).singleElement().satisfies(candidate -> {

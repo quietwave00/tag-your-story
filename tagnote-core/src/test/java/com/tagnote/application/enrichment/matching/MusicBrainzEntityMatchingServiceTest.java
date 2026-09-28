@@ -44,6 +44,31 @@ class MusicBrainzEntityMatchingServiceTest {
     }
 
     @Test
+    void 복수_Isrc_후보가_모두_일치하면_duration이_가장_가까운_단일후보를_채택한다() {
+        ImportedTrack creep = track("Creep", 235_640);
+        RecordingCandidate closest = new RecordingCandidate(
+                "70595637-9310-45f2-a266-58f8de4874a7", "Creep", 236_666, List.of("Artist")
+        );
+
+        assertThat(service.matchRecordingByIsrc(creep, List.of(
+                closest,
+                new RecordingCandidate(
+                        "1f9f17c7-6085-4d52-9bd0-13a94cc449bc", "Creep", 237_680, List.of("Artist")
+                )
+        ))).contains(closest);
+    }
+
+    @Test
+    void 복수_Isrc_후보의_최소_duration_차이가_동률이면_거부한다() {
+        ImportedTrack track = track("Track Name", 180_000);
+
+        assertThat(service.matchRecordingByIsrc(track, List.of(
+                new RecordingCandidate("shorter", "Track Name", 179_000, List.of("Artist")),
+                new RecordingCandidate("longer", "Track Name", 181_000, List.of("Artist"))
+        ))).isEmpty();
+    }
+
+    @Test
     void duration_3000ms는_포함하고_초과하거나_동률이면_거부한다() {
         RecordingCandidate boundary = new RecordingCandidate(
                 "boundary", "Track Name", 183_000, List.of("Artist")
@@ -72,18 +97,21 @@ class MusicBrainzEntityMatchingServiceTest {
     }
 
     private ImportedTrack track() {
+        return track("Track Name", 180_000);
+    }
+
+    private ImportedTrack track(String title, int durationMs) {
         return ImportedTrack.of(
                 1L,
                 "spotify-track",
                 null,
-                "Track Name",
+                title,
                 "ISRC",
-                180_000,
+                durationMs,
                 List.of(ImportedArtist.of(1L, "artist", "Artist", 0)),
                 ImportedAlbum.of(
                         2L,
                         "spotify-album",
-                        null,
                         "Album",
                         2026,
                         List.of(ImportedArtist.of(2L, "album-artist", "Album Artist", 0))

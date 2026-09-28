@@ -62,7 +62,6 @@ class DiscogsAlbumMatchingServiceTest {
         ImportedAlbum queenAlbum = ImportedAlbum.of(
                 2L,
                 "spotify-album",
-                null,
                 "A Night At The Opera (2011 Remaster)",
                 1975,
                 List.of(ImportedArtist.of(1L, "queen", "Queen", 0))
@@ -93,7 +92,6 @@ class DiscogsAlbumMatchingServiceTest {
         ImportedAlbum deluxeAlbum = ImportedAlbum.of(
                 2L,
                 "spotify-album",
-                null,
                 "Album (Deluxe Edition)",
                 2026,
                 List.of(ImportedArtist.of(1L, "artist", "Artist", 0))
@@ -113,7 +111,6 @@ class DiscogsAlbumMatchingServiceTest {
         return ImportedAlbum.of(
                 1L,
                 "spotify-album",
-                null,
                 "Album",
                 2026,
                 List.of(

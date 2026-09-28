@@ -47,7 +47,7 @@ class ExternalEnrichmentCollectorTest {
                     source,
                     new CollectedExternalTags(List.of(), List.of(input(source))),
                     source == ExternalTagSource.MUSICBRAINZ
-                            ? new CatalogExternalIdentityMatch("recording-id", "release-group-id")
+                            ? new CatalogExternalIdentityMatch("recording-id")
                             : CatalogExternalIdentityMatch.none()
             );
         };
@@ -67,7 +67,7 @@ class ExternalEnrichmentCollectorTest {
                         ExternalTagSource.LASTFM
                 );
         assertThat(collected.identityMatch())
-                .isEqualTo(new CatalogExternalIdentityMatch("recording-id", "release-group-id"));
+                .isEqualTo(new CatalogExternalIdentityMatch("recording-id"));
     }
 
     @Test
@@ -155,7 +155,7 @@ class ExternalEnrichmentCollectorTest {
     private ImportedTrack importedTrack() {
         return ImportedTrack.of(
                 1L, "spotify-track", null, "Track", "ISRC", 180_000, List.of(),
-                ImportedAlbum.of(2L, "spotify-album", null, "Album", 2026, List.of())
+                ImportedAlbum.of(2L, "spotify-album", "Album", 2026, List.of())
         );
     }
 

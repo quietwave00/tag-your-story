@@ -255,7 +255,7 @@ class SubjectTagResolvedJpaRepositoryTest {
         ImportedTrack imported = ImportedTrack.of(
                 track.getTrackId(), "resolution-track", null, "Track", "ISRC-R", 180_000, List.of(),
                 ImportedAlbum.of(
-                        track.getAlbum().getAlbumId(), "resolution-album", null,
+                        track.getAlbum().getAlbumId(), "resolution-album",
                         "Album", 2026, List.of()
                 )
         );

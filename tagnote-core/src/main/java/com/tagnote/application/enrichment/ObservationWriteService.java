@@ -66,7 +66,15 @@ public class ObservationWriteService {
             long subjectId,
             List<ExternalTagInput> inputs
     ) {
-        return process(subjectType, subjectId, inputs, false);
+        return process(subjectType, subjectId, inputs, false, null);
+    }
+
+    @Transactional
+    public ObservationProcessingResult processPersisted(
+            SubjectType subjectType, long subjectId, List<ExternalTagInput> inputs,
+            Map<String, TagMatchResult> preparedMatches
+    ) {
+        return process(subjectType, subjectId, inputs, false, preparedMatches);
     }
 
     private ObservationProcessingResult process(
@@ -75,8 +83,15 @@ public class ObservationWriteService {
             List<ExternalTagInput> inputs,
             boolean validateSubject
     ) {
+        return process(subjectType, subjectId, inputs, validateSubject, null);
+    }
+
+    private ObservationProcessingResult process(
+            SubjectType subjectType, long subjectId, List<ExternalTagInput> inputs,
+            boolean validateSubject, Map<String, TagMatchResult> preparedMatches
+    ) {
         try {
-            return processWithinTransaction(subjectType, subjectId, inputs, validateSubject);
+            return processWithinTransaction(subjectType, subjectId, inputs, validateSubject, preparedMatches);
         } catch (DataIntegrityViolationException failure) {
             throw conflictTranslator.translate(failure);
         }
@@ -86,7 +101,8 @@ public class ObservationWriteService {
             SubjectType subjectType,
             long subjectId,
             List<ExternalTagInput> inputs,
-            boolean validateSubject
+            boolean validateSubject,
+            Map<String, TagMatchResult> preparedMatches
     ) {
         SubjectRef subject = validateSubject
                 ? requireSubject(subjectType, subjectId)
@@ -121,15 +137,26 @@ public class ObservationWriteService {
                         input.normalizedName(),
                         input.input().externalRef()
                 );
+                created.recordEvidence(input.input().evidenceType(), input.input().confidence());
                 observations.put(key, created);
                 createdObservations.add(created);
+            } else {
+                observations.get(key).recordEvidence(input.input().evidenceType(), input.input().confidence());
             }
         });
         if (!createdObservations.isEmpty()) {
             observationRepository.saveAll(createdObservations);
         }
 
-        matchNewObservations(observations.values());
+        if (preparedMatches == null) {
+            matchNewObservations(observations.values());
+        } else {
+            observations.values().stream()
+                    .filter(observation -> observation.getStatus() == ObservationStatus.NEW)
+                    .forEach(observation -> preparedMatches.getOrDefault(
+                            observation.getNormalizedName(), TagMatchResult.unmatched())
+                            .getMatchedTag().ifPresent(observation::match));
+        }
         observationRepository.flush();
 
         Map<AssertionKey, AssertionCandidate> assertionCandidates = buildAssertionCandidates(
@@ -169,7 +196,14 @@ public class ObservationWriteService {
                 matchedCount,
                 newCount,
                 createdAssertions.size(),
-                existingAssertions.size()
+                existingAssertions.size(),
+                uniqueObservationInputs.keySet().stream()
+                        .map(observations::get)
+                        .filter(observation -> observation.getStatus() == ObservationStatus.NEW)
+                        .map(observation -> new ObservationProcessingResult.NewObservation(
+                                observation.getRawName(), observation.getNormalizedName(),
+                                observation.getSource()))
+                        .toList()
         );
     }
 
@@ -204,7 +238,7 @@ public class ObservationWriteService {
         Set<String> refs = inputs.stream()
                 .map(input -> input.input().externalRef())
                 .collect(Collectors.toSet());
-        return observationRepository.findExistingForInputs(
+        Map<ObservationKey, ExternalTagObservationEntity> found = observationRepository.findExistingForInputs(
                         subject.type(), subject.subjectId(), sources, names, refs
                 ).stream()
                 .filter(observation -> inputKeys.contains(ObservationKey.from(observation)))
@@ -212,6 +246,12 @@ public class ObservationWriteService {
                         observation -> ObservationKey.from(observation),
                         Function.identity()
                 ));
+        Map<ObservationKey, ExternalTagObservationEntity> ordered = new LinkedHashMap<>();
+        for (PreparedInput input : inputs) {
+            ObservationKey key = input.observationKey(subject);
+            if (found.containsKey(key)) ordered.put(key, found.get(key));
+        }
+        return ordered;
     }
 
     private void matchNewObservations(Collection<ExternalTagObservationEntity> observations) {
@@ -252,12 +292,12 @@ public class ObservationWriteService {
             }
             TagEntity tag = observation.getMatchedTag();
             AssertionSource source = AssertionSource.valueOf(input.input().source().name());
-            AssertionKey key = new AssertionKey(tag.getTagId(), source, input.input().evidenceType());
+            AssertionKey key = new AssertionKey(tag.getTagId(), source, observation.getEvidenceType());
             candidates.putIfAbsent(key, new AssertionCandidate(
                     tag,
                     source,
-                    input.input().evidenceType(),
-                    input.input().confidence()
+                    observation.getEvidenceType(),
+                    observation.getConfidence()
             ));
         }
         return candidates;

@@ -16,15 +16,9 @@ class CatalogExternalIdentityTest {
 
         track.attachMusicBrainzRecordingId("recording-1");
         track.attachMusicBrainzRecordingId("recording-1");
-        album.attachMusicBrainzReleaseGroupId("release-group-1");
-        album.attachMusicBrainzReleaseGroupId("release-group-1");
 
         assertThat(track.getMusicbrainzId()).isEqualTo("recording-1");
-        assertThat(album.getMusicbrainzId()).isEqualTo("release-group-1");
         assertThatThrownBy(() -> track.attachMusicBrainzRecordingId("recording-2"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("identity conflict");
-        assertThatThrownBy(() -> album.attachMusicBrainzReleaseGroupId("release-group-2"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("identity conflict");
     }

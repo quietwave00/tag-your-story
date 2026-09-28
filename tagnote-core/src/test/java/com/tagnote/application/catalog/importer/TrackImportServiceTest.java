@@ -154,7 +154,7 @@ class TrackImportServiceTest {
     private ImportedTrack importedTrack() {
         return ImportedTrack.of(
                 1L, "track-1", null, "title", "ISRC", 1000, List.of(),
-                ImportedAlbum.of(2L, "album-1", null, "album", 2024, List.of())
+                ImportedAlbum.of(2L, "album-1", "album", 2024, List.of())
         );
     }
 }

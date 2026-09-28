@@ -119,7 +119,14 @@ class EnrichmentJpaRepositoryTest {
                 inputs
         );
 
-        assertThat(result).isEqualTo(new ObservationProcessingResult(10, 0, 7, 3, 7, 0));
+        assertThat(result).isEqualTo(new ObservationProcessingResult(10, 0, 7, 3, 7, 0,
+                List.of(
+                        new ObservationProcessingResult.NewObservation(
+                                "Unknown A", "unknown a", ExternalTagSource.MUSICBRAINZ),
+                        new ObservationProcessingResult.NewObservation(
+                                "Unknown B", "unknown b", ExternalTagSource.MUSICBRAINZ),
+                        new ObservationProcessingResult.NewObservation(
+                                "Ambiguous", "ambiguous", ExternalTagSource.MUSICBRAINZ))));
         assertThat(observationRepository.count()).isEqualTo(10);
         assertThat(observationRepository.findAll())
                 .filteredOn(observation -> observation.getStatus() == ObservationStatus.NEW)
@@ -258,7 +265,7 @@ class EnrichmentJpaRepositoryTest {
         ImportedTrack imported = ImportedTrack.of(
                 track.getTrackId(), "track-1", null, "Track", "ISRC-1", 180_000, List.of(),
                 ImportedAlbum.of(
-                        track.getAlbum().getAlbumId(), "album-1", null, "Album", 2024, List.of()
+                        track.getAlbum().getAlbumId(), "album-1", "Album", 2024, List.of()
                 )
         );
         entityManager.clear();

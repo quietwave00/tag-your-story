@@ -1,6 +1,7 @@
 package com.tagnote.application.catalog.selection;
 
 import com.tagnote.application.catalog.detail.TrackDetailReadService;
+import com.tagnote.application.catalog.detail.TagPreviewService;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.CatalogTrackReadService;
 import com.tagnote.application.catalog.importer.CatalogWriteService;
@@ -12,10 +13,15 @@ import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvide
 import com.tagnote.application.enrichment.ExternalEnrichmentCollector;
 import com.tagnote.application.enrichment.ObservationProcessingService;
 import com.tagnote.application.enrichment.ObservationWriteService;
+import com.tagnote.application.enrichment.TagBootstrapService;
+import com.tagnote.application.enrichment.TagBootstrapWriteService;
+import com.tagnote.application.enrichment.TrackTagCompletionService;
 import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
 import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
+import com.tagnote.application.enrichment.model.ProviderEnrichmentResult;
+import com.tagnote.application.enrichment.model.ProviderEnrichmentStatus;
 import com.tagnote.application.resolution.TagInheritanceService;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.application.resolution.TagResolutionWriteService;
@@ -23,7 +29,9 @@ import com.tagnote.application.resolution.config.TagResolutionProperties;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.enrichment.observation.ExternalTagSource;
 import com.tagnote.domain.enrichment.observation.ObservationStatus;
+import com.tagnote.domain.enrichment.subject.SubjectType;
 import com.tagnote.domain.resolution.CanonicalTagService;
+import com.tagnote.domain.resolution.ResolvedStatus;
 import com.tagnote.domain.resolution.TagResolver;
 import com.tagnote.domain.taxonomy.alias.AliasSource;
 import com.tagnote.domain.taxonomy.alias.AliasStatus;
@@ -42,6 +50,7 @@ import com.tagnote.infrastructure.persistence.catalog.HibernateCatalogConflictTr
 import com.tagnote.infrastructure.persistence.enrichment.ExternalTagObservationJpaRepository;
 import com.tagnote.infrastructure.persistence.enrichment.HibernateEnrichmentConflictTranslator;
 import com.tagnote.infrastructure.persistence.enrichment.TagAssertionJpaRepository;
+import com.tagnote.infrastructure.persistence.enrichment.TrackTagCompletionJpaRepository;
 import com.tagnote.infrastructure.persistence.resolution.HibernateResolutionConflictTranslator;
 import com.tagnote.infrastructure.persistence.resolution.SubjectTagResolvedJpaRepository;
 import com.tagnote.infrastructure.persistence.taxonomy.TagAliasJpaRepository;
@@ -78,6 +87,7 @@ import static org.mockito.Mockito.when;
 @Import({
         TrackSelectionService.class,
         TrackDetailReadService.class,
+        TagPreviewService.class,
         TrackImportService.class,
         CatalogWriteService.class,
         CatalogExternalIdentityWriteService.class,
@@ -85,6 +95,9 @@ import static org.mockito.Mockito.when;
         HibernateCatalogConflictTranslator.class,
         ObservationProcessingService.class,
         ObservationWriteService.class,
+        TagBootstrapService.class,
+        TagBootstrapWriteService.class,
+        TrackTagCompletionService.class,
         HibernateEnrichmentConflictTranslator.class,
         TagResolutionService.class,
         TagResolutionWriteService.class,
@@ -113,6 +126,7 @@ class FirstVerticalSliceIntegrationTest {
     @Autowired private ExternalTagObservationJpaRepository observationRepository;
     @Autowired private TagAssertionJpaRepository assertionRepository;
     @Autowired private SubjectTagResolvedJpaRepository resolvedRepository;
+    @Autowired private TrackTagCompletionJpaRepository completionRepository;
     @Autowired private TrackArtistJpaRepository trackArtistRepository;
     @Autowired private AlbumArtistJpaRepository albumArtistRepository;
     @Autowired private TrackJpaRepository trackRepository;
@@ -125,6 +139,7 @@ class FirstVerticalSliceIntegrationTest {
 
     @AfterEach
     void cleanUp() {
+        completionRepository.deleteAllInBatch();
         resolvedRepository.deleteAllInBatch();
         assertionRepository.deleteAllInBatch();
         observationRepository.deleteAllInBatch();
@@ -135,6 +150,199 @@ class FirstVerticalSliceIntegrationTest {
         trackRepository.deleteAllInBatch();
         albumRepository.deleteAllInBatch();
         artistRepository.deleteAllInBatch();
+    }
+
+    @Test
+    void provider_일시_실패는_완료_marker로_고정하지_않는다() {
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        CollectedExternalTags.empty(), CatalogExternalIdentityMatch.none(),
+                        List.of(ProviderEnrichmentResult.withoutData(
+                                ExternalTagSource.LASTFM, ProviderEnrichmentStatus.TIMEOUT))));
+
+        selectionService.select("track-1");
+        selectionService.select("track-1");
+
+        assertThat(completionRepository.count()).isZero();
+        verify(externalEnrichmentCollector, times(2)).collect(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void 여러_provider의_동일_normalized_name은_Tag_하나와_source별_Assertion이_된다() {
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(), List.of(
+                                new ExternalTagInput(ExternalTagSource.MUSICBRAINZ,
+                                        "Dream Pop", "recording:track-1",
+                                        EvidenceType.EXPLICIT_GENRE, 0.9),
+                                new ExternalTagInput(ExternalTagSource.DISCOGS,
+                                        "dream pop", "release:album-1",
+                                        EvidenceType.EXPLICIT_STYLE, 0.8))),
+                        CatalogExternalIdentityMatch.none(), List.of()));
+
+        TrackDetail detail = selectionService.select("track-1");
+
+        assertThat(detail.systemTags()).hasSize(1);
+        assertThat(tagRepository.count()).isEqualTo(1);
+        assertThat(observationRepository.count()).isEqualTo(2);
+        assertThat(assertionRepository.count()).isEqualTo(2);
+    }
+
+    @Test
+    void Album_MusicBrainz_ID_없이도_Album_장르를_resolved_tag로_저장한다() {
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(new ExternalTagInput(
+                                ExternalTagSource.MUSICBRAINZ, "Classic Rock",
+                                "musicbrainz:release-group:release-group-1",
+                                EvidenceType.EXPLICIT_GENRE, 0.75)), List.of()),
+                        new CatalogExternalIdentityMatch("recording-1"), List.of()));
+
+        TrackDetail detail = selectionService.select("track-1");
+
+        assertThat(resolvedRepository.findVisibleBySubjectWithTag(
+                SubjectType.ALBUM, detail.track().getAlbum().getAlbumId(), ResolvedStatus.HIDDEN))
+                .singleElement()
+                .satisfies(resolved -> assertThat(resolved.getTag().getName())
+                        .isEqualTo("Classic Rock"));
+        assertThat(observationRepository.findAll()).singleElement()
+                .satisfies(observation -> {
+                    assertThat(observation.getSubjectType()).isEqualTo(SubjectType.ALBUM);
+                    assertThat(observation.getExternalRef())
+                            .isEqualTo("musicbrainz:release-group:release-group-1");
+                });
+    }
+
+    @Test
+    void active_canonical_name은_alias_없이_재사용한다() {
+        TagEntity existing = tagRepository.saveAndFlush(TagEntity.create(
+                "Dream Pop", "dream-pop-existing", TagType.GENRE, TagStatus.ACTIVE, null));
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(), List.of(new ExternalTagInput(
+                                ExternalTagSource.LASTFM, "dream pop", "lastfm:track-1",
+                                EvidenceType.COMMUNITY_TAG, 0.9))),
+                        CatalogExternalIdentityMatch.none(), List.of()));
+
+        TrackDetail detail = selectionService.select("track-1");
+
+        assertThat(detail.systemTags()).singleElement()
+                .satisfies(tag -> assertThat(tag.tagId()).isEqualTo(existing.getTagId()));
+        assertThat(tagRepository.count()).isEqualTo(1);
+        assertThat(assertionRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    void inactive_canonical_name은_자동_승격하지_않는다() {
+        tagRepository.saveAndFlush(TagEntity.create(
+                "Dream Pop", "dream-pop-candidate", TagType.GENRE, TagStatus.CANDIDATE, null));
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(), List.of(new ExternalTagInput(
+                                ExternalTagSource.MUSICBRAINZ, "dream pop", "recording:track-1",
+                                EvidenceType.EXPLICIT_GENRE, 0.9))),
+                        CatalogExternalIdentityMatch.none(), List.of()));
+
+        TrackDetail detail = selectionService.select("track-1");
+
+        assertThat(detail.systemTags()).isEmpty();
+        assertThat(detail.previewTags()).hasSize(1);
+        assertThat(tagRepository.count()).isEqualTo(1);
+        assertThat(assertionRepository.count()).isZero();
+    }
+
+    @Test
+    void ambiguous_alias는_자동_Tag_생성이나_Assertion을_하지_않는다() {
+        TagEntity first = tagRepository.saveAndFlush(TagEntity.create(
+                "UK Garage", "uk-garage", TagType.GENRE, TagStatus.ACTIVE, null));
+        TagEntity second = tagRepository.saveAndFlush(TagEntity.create(
+                "Garage Rock", "garage-rock", TagType.GENRE, TagStatus.ACTIVE, null));
+        aliasRepository.saveAllAndFlush(List.of(
+                TagAliasEntity.create(first, "Garage", normalizer.normalize("Garage"),
+                        AliasSource.ADMIN, AliasStatus.APPROVED),
+                TagAliasEntity.create(second, "Garage", normalizer.normalize("Garage"),
+                        AliasSource.ADMIN, AliasStatus.APPROVED)));
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(), List.of(new ExternalTagInput(
+                                ExternalTagSource.MUSICBRAINZ, "Garage", "recording:track-1",
+                                EvidenceType.EXPLICIT_GENRE, 0.9))),
+                        CatalogExternalIdentityMatch.none(), List.of()));
+
+        TrackDetail detail = selectionService.select("track-1");
+
+        assertThat(detail.systemTags()).isEmpty();
+        assertThat(detail.previewTags()).singleElement()
+                .satisfies(preview -> assertThat(preview.name()).isEqualTo("Garage"));
+        assertThat(tagRepository.count()).isEqualTo(2);
+        assertThat(assertionRepository.count()).isZero();
+    }
+
+    @Test
+    void 빈_taxonomy에서_명시적_장르를_즉시_생성하고_확정_응답한다() {
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(), List.of(new ExternalTagInput(
+                                ExternalTagSource.MUSICBRAINZ, "Dream Pop", "recording:track-1",
+                                EvidenceType.EXPLICIT_GENRE, 0.9))),
+                        CatalogExternalIdentityMatch.none(), List.of()));
+
+        importQueryProbe.reset();
+        TrackDetail detail = selectionService.select("track-1");
+
+        assertThat(importQueryProbe.insertCountContaining(" into tag ")).isEqualTo(1);
+        assertThat(importQueryProbe.selectCountContaining(" from tag_alias ")).isEqualTo(1);
+        assertThat(importQueryProbe.selectCountContainingBoth(" from tag ", ".normalized_name in"))
+                .isEqualTo(1);
+
+        assertThat(detail.systemTags()).singleElement().satisfies(tag ->
+                assertThat(tag.name()).isEqualTo("Dream Pop"));
+        assertThat(detail.previewTags()).isEmpty();
+        assertThat(tagRepository.findAll()).singleElement().satisfies(tag -> {
+            assertThat(tag.getNormalizedName()).isEqualTo("dream pop");
+            assertThat(tag.getType()).isEqualTo(TagType.UNCLASSIFIED);
+            assertThat(tag.getStatus()).isEqualTo(TagStatus.ACTIVE);
+        });
+        assertThat(observationRepository.findAll()).singleElement().satisfies(row -> {
+            assertThat(row.getStatus()).isEqualTo(ObservationStatus.MATCHED);
+            assertThat(row.getEvidenceType()).isEqualTo(EvidenceType.EXPLICIT_GENRE);
+            assertThat(row.getConfidence()).isEqualTo(0.9);
+        });
+        assertThat(assertionRepository.count()).isEqualTo(1);
+        assertThat(resolvedRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    void lastfm만_미매칭이면_preview를_반환하고_반복_선택은_provider를_재호출하지_않는다() {
+        when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
+        when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new ExternalEnrichmentCollection(
+                        new CollectedExternalTags(List.of(), List.of(new ExternalTagInput(
+                                ExternalTagSource.LASTFM, "Night Drive", "lastfm:track-1",
+                                EvidenceType.COMMUNITY_TAG, 0.6))),
+                        CatalogExternalIdentityMatch.none(), List.of()));
+
+        TrackDetail first = selectionService.select("track-1");
+        TrackDetail second = selectionService.select("track-1");
+
+        assertThat(first.systemTags()).isEmpty();
+        assertThat(first.previewTags()).singleElement().satisfies(preview -> {
+            assertThat(preview.name()).isEqualTo("Night Drive");
+            assertThat(preview.source()).isEqualTo(ExternalTagSource.LASTFM);
+        });
+        assertThat(second.previewTags()).isEqualTo(first.previewTags());
+        assertThat(tagRepository.count()).isZero();
+        assertThat(assertionRepository.count()).isZero();
+        assertThat(resolvedRepository.count()).isZero();
+        assertThat(completionRepository.count()).isEqualTo(1);
+        verify(externalEnrichmentCollector).collect(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -149,29 +357,25 @@ class FirstVerticalSliceIntegrationTest {
         TrackDetail first = selectionService.select("track-1");
         TrackDetail second = selectionService.select("track-1");
 
-        assertThat(first.systemTags()).singleElement().satisfies(systemTag -> {
+        assertThat(first.systemTags()).hasSize(2);
+        assertThat(first.systemTags().get(0)).satisfies(systemTag -> {
             assertThat(systemTag.tagId()).isEqualTo(tag.getTagId());
             assertThat(systemTag.name()).isEqualTo("Ambient");
             assertThat(systemTag.score()).isEqualTo(0.9);
         });
         assertThat(first.track().getMusicBrainzRecordingId()).isEqualTo("recording-1");
-        assertThat(first.track().getAlbum().getMusicBrainzReleaseGroupId())
-                .isEqualTo("release-group-1");
         assertThat(second.systemTags()).isEqualTo(first.systemTags());
         assertThat(observationRepository.findAll())
                 .extracting(observation -> observation.getStatus())
-                .containsExactlyInAnyOrder(ObservationStatus.MATCHED, ObservationStatus.NEW);
-        assertThat(assertionRepository.count()).isEqualTo(1);
-        assertThat(resolvedRepository.count()).isEqualTo(1);
+                .containsExactlyInAnyOrder(ObservationStatus.MATCHED, ObservationStatus.MATCHED);
+        assertThat(assertionRepository.count()).isEqualTo(2);
+        assertThat(resolvedRepository.count()).isEqualTo(2);
         assertThat(trackRepository.count()).isEqualTo(1);
         assertThat(albumRepository.count()).isEqualTo(1);
         assertThat(artistRepository.count()).isEqualTo(2);
         assertThat(trackRepository.findAll()).singleElement()
                 .extracting(track -> track.getMusicbrainzId())
                 .isEqualTo("recording-1");
-        assertThat(albumRepository.findAll()).singleElement()
-                .extracting(album -> album.getMusicbrainzId())
-                .isEqualTo("release-group-1");
         verify(spotifyProvider).getTrack("track-1");
         verify(externalEnrichmentCollector).collect(org.mockito.ArgumentMatchers.any());
     }
@@ -196,17 +400,14 @@ class FirstVerticalSliceIntegrationTest {
                 () -> selectionService.select("track-1")
         );
 
-        assertThat(results).allSatisfy(result -> assertThat(result.systemTags()).hasSize(1));
+        assertThat(results).allSatisfy(result -> assertThat(result.systemTags()).hasSize(2));
         assertThat(trackRepository.count()).isEqualTo(1);
         assertThat(observationRepository.count()).isEqualTo(2);
-        assertThat(assertionRepository.count()).isEqualTo(1);
-        assertThat(resolvedRepository.count()).isEqualTo(1);
+        assertThat(assertionRepository.count()).isEqualTo(2);
+        assertThat(resolvedRepository.count()).isEqualTo(2);
         assertThat(trackRepository.findAll()).singleElement()
                 .extracting(track -> track.getMusicbrainzId())
                 .isEqualTo("recording-1");
-        assertThat(albumRepository.findAll()).singleElement()
-                .extracting(album -> album.getMusicbrainzId())
-                .isEqualTo("release-group-1");
         verify(spotifyProvider, times(2)).getTrack("track-1");
         verify(externalEnrichmentCollector, times(2)).collect(org.mockito.ArgumentMatchers.any());
     }
@@ -224,11 +425,15 @@ class FirstVerticalSliceIntegrationTest {
 
         assertThat(detail.systemTags()).isEmpty();
         assertThat(observationRepository.count()).isEqualTo(31L);
+        assertThat(importQueryProbe.insertCountContaining(" into tag ")).isZero();
         assertThat(importQueryProbe.selectCountContaining(" from track_artist ")).isZero();
         assertThat(importQueryProbe.selectCountContaining(" from album_artist ")).isZero();
         assertThat(importQueryProbe.selectCountContaining(" from tag_assertion "))
                 .isLessThanOrEqualTo(4L);
-        assertThat(importExecutionCount).isLessThanOrEqualTo(32);
+        assertThat(importExecutionCount).isPositive();
+        assertThat(importQueryProbe.selectCountContaining(" from tag_alias ")).isLessThanOrEqualTo(1);
+        assertThat(importQueryProbe.selectCountContainingBoth(" from tag ", ".normalized_name in"))
+                .isLessThanOrEqualTo(1);
     }
 
     private TagEntity approvedAlias(String name) {
@@ -281,7 +486,7 @@ class FirstVerticalSliceIntegrationTest {
     private ExternalEnrichmentCollection fakeEnrichment() {
         return new ExternalEnrichmentCollection(
                 fakeTags(),
-                new CatalogExternalIdentityMatch("recording-1", "release-group-1"),
+                new CatalogExternalIdentityMatch("recording-1"),
                 List.of()
         );
     }
@@ -291,25 +496,25 @@ class FirstVerticalSliceIntegrationTest {
         List<ExternalTagInput> trackInputs = new ArrayList<>();
         for (int index = 1; index <= 12; index++) {
             albumInputs.add(new ExternalTagInput(
-                    ExternalTagSource.MUSICBRAINZ,
+                    ExternalTagSource.LASTFM,
                     "Unmatched Album Fixture " + index,
                     "release:album-1:genre:unmatched:" + index,
-                    EvidenceType.EXPLICIT_GENRE,
+                    EvidenceType.COMMUNITY_TAG,
                     0.8
             ));
         }
         for (int index = 1; index <= 19; index++) {
             trackInputs.add(new ExternalTagInput(
-                    ExternalTagSource.MUSICBRAINZ,
+                    ExternalTagSource.LASTFM,
                     "Unmatched Track Fixture " + index,
                     "recording:track-1:genre:unmatched:" + index,
-                    EvidenceType.EXPLICIT_GENRE,
+                    EvidenceType.COMMUNITY_TAG,
                     0.8
             ));
         }
         return new ExternalEnrichmentCollection(
                 new CollectedExternalTags(albumInputs, trackInputs),
-                new CatalogExternalIdentityMatch("recording-1", "release-group-1"),
+                new CatalogExternalIdentityMatch("recording-1"),
                 List.of()
         );
     }

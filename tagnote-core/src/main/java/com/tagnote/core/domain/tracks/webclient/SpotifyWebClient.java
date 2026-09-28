@@ -16,6 +16,7 @@ import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Album;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
@@ -134,6 +135,15 @@ public class SpotifyWebClient {
             GetTrackRequest request = spotifyApi.getTrack(trackId).build();
             return request.execute();
         } catch(IOException | ParseException | SpotifyWebApiException e) {
+            log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
+        }
+    }
+
+    public Album getDetailAlbumInfo(String albumId) {
+        try {
+            return getSpotifyApi().getAlbum(albumId).build().execute();
+        } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());
             throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
         }

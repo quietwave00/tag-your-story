@@ -25,11 +25,6 @@ public interface TrackJpaRepository extends JpaRepository<TrackEntity, Long> {
     Optional<TrackEntity> findByIdWithAlbum(@Param("trackId") long trackId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-            select track
-            from TrackEntity track
-            join fetch track.album
-            where track.trackId = :trackId
-            """)
-    Optional<TrackEntity> findByIdWithAlbumForUpdate(@Param("trackId") long trackId);
+    @Query("select track from TrackEntity track where track.trackId = :trackId")
+    Optional<TrackEntity> findByIdForUpdate(@Param("trackId") long trackId);
 }

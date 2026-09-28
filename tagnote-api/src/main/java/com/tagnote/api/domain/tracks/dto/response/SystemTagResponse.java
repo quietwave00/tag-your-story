@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(description = "Track에 계산된 System Tag")
+@Schema(description = "대상에 계산된 System Tag")
 public class SystemTagResponse {
 
     @Schema(description = "System Tag ID", example = "1")

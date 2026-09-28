@@ -137,6 +137,7 @@ Spotify
 Spotify Track
   │
   ├─ ISRC exact match
+  │    └─ 복수 후보는 title/artist/duration 허용 범위 안에서 유일한 최소 duration 차이 선택
   │
   └─ fallback: title + artist + duration
   ▼
@@ -151,20 +152,9 @@ MVP 기준 권장 매핑:
 ```text
 track.musicbrainz_id
 = MusicBrainz Recording MBID
-
-album.musicbrainz_id
-= MusicBrainz Release Group MBID
 ```
 
-`album.musicbrainz_id`가 Release인지 Release Group인지 모호해지지 않도록 코드와 문서에서 반드시 Release Group으로 고정한다.
-
-가능하면 컬럼 이름도 다음처럼 구체화한다.
-
-```text
-track.musicbrainz_recording_id
-album.musicbrainz_release_group_id
-artist.musicbrainz_artist_id
-```
+Album Catalog에는 Release Group MBID를 저장하지 않는다. 매칭된 Release Group의 genre는 ALBUM observation으로 남기고, 사용자에게는 visible resolved ALBUM tag를 보여준다. ADR-011을 따른다.
 
 ---
 
@@ -196,6 +186,12 @@ Album resolved tags
               ▼
         Track inherited tags
 ```
+
+Album identity 검색은 canonical `release_title`을 우선한다. 결과가 없고 trailing 괄호가
+slash로 구분된 Album 목록이면 괄호 앞 base title로 한 번 확장하며, 이후 Track title
+검색을 사용할 수 있다. 각 단계는 Artist와 Album title을 검증하고 후보가 정확히 하나일
+때만 채택한다. Discogs에는 전용 ISRC 검색 조건이 없으므로 ISRC를 identity lookup에
+사용하지 않는다.
 
 MVP에서는 Discogs의 Track 단위 태그 해석을 하지 않는다.
 
@@ -350,16 +346,10 @@ album
 - album_id
 - title
 - spotify_id
-- musicbrainz_id
 - release_year
 ```
 
-MVP 의미:
-
-```text
-album.musicbrainz_id
-= MusicBrainz Release Group MBID
-```
+Album Catalog identity는 Spotify ID다. ADR-011을 따른다.
 
 ---
 
@@ -943,6 +933,15 @@ MVP에서는 fuzzy matching을 자동 확정에 사용하지 않는다.
 ---
 
 # 17. Normalization 정책
+
+ADR-010 적용: System Tag `tag.normalized_name`은 동일한 TagNameNormalizer로 산출하고
+전역 unique를 적용한다. 초기 Track import의 MusicBrainz 명시적 genre 및 Discogs
+명시적 genre/style은 approved alias와 ACTIVE canonical name이 모두 없을 때
+ACTIVE/UNCLASSIFIED Tag를 즉시 생성한다. alias가 여러 Tag에 매칭되거나 비활성 Tag의
+canonical name과 충돌하면 생성하지 않는다. Last.fm community tag는 기존 Tag와
+매칭될 때만 Assertion이 된다. Observation은 원래 `evidence_type`과 `confidence`를
+보존하며, 기존 null metadata를 source만으로 추정하지 않는다. raw preview와 완료
+marker의 상세 정책은 ADR-010 및 TAG-BOOTSTRAP-001을 따른다.
 
 예:
 
@@ -2752,7 +2751,6 @@ erDiagram
         bigint album_id
         varchar title
         varchar spotify_id
-        uuid musicbrainz_id
         int release_year
     }
 

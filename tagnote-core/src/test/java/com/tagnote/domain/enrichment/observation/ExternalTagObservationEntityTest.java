@@ -1,6 +1,7 @@
 package com.tagnote.domain.enrichment.observation;
 
 import com.tagnote.domain.enrichment.subject.SubjectRef;
+import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.taxonomy.matching.NormalizedTagName;
 import com.tagnote.domain.taxonomy.tag.TagEntity;
 import com.tagnote.domain.taxonomy.tag.TagStatus;
@@ -47,6 +48,18 @@ class ExternalTagObservationEntityTest {
 
         assertThat(observation.getStatus()).isEqualTo(ObservationStatus.IGNORED);
         assertThat(observation.getMatchedTag()).isNull();
+    }
+
+    @Test
+    void 재수집은_원본_evidence를_보완하고_기록된_confidence를_보존한다() {
+        ExternalTagObservationEntity observation = observation("Ambient", "ambient");
+        observation.recordEvidence(EvidenceType.EXPLICIT_GENRE, 0.8);
+        observation.recordEvidence(EvidenceType.EXPLICIT_GENRE, 0.9);
+
+        assertThat(observation.getEvidenceType()).isEqualTo(EvidenceType.EXPLICIT_GENRE);
+        assertThat(observation.getConfidence()).isEqualTo(0.8);
+        assertThatThrownBy(() -> observation.recordEvidence(EvidenceType.EXPLICIT_STYLE, 0.8))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test

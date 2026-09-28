@@ -2,6 +2,7 @@ package com.tagnote.api.domain.tracks;
 
 import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
 import com.tagnote.application.catalog.detail.model.SystemTagDetail;
+import com.tagnote.application.catalog.detail.model.PreviewTagDetail;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedArtist;
@@ -13,6 +14,7 @@ import com.tagnote.application.catalog.selection.TrackSelectionService;
 import com.tagnote.core.domain.tracks.service.TrackService;
 import com.tagnote.core.domain.tracks.service.dto.TrackData;
 import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
+import com.tagnote.domain.enrichment.observation.ExternalTagSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -52,7 +54,6 @@ class TrackControllerTest {
         ImportedAlbum album = ImportedAlbum.of(
                 5L,
                 "album-1",
-                null,
                 "album",
                 2024,
                 List.of(albumArtist)
@@ -83,7 +84,29 @@ class TrackControllerTest {
                 .andExpect(jsonPath("$.response.album.artists[0].spotifyArtistId").value("album-artist"))
                 .andExpect(jsonPath("$.response.systemTags[0].tagId").value(11))
                 .andExpect(jsonPath("$.response.systemTags[0].name").value("Ambient"))
-                .andExpect(jsonPath("$.response.systemTags[0].score").value(0.9));
+                .andExpect(jsonPath("$.response.systemTags[0].score").value(0.9))
+                .andExpect(jsonPath("$.response.previewTags").isEmpty())
+                .andExpect(jsonPath("$.response.tagDisplayStatus").value("CONFIRMED"));
+    }
+
+    @Test
+    void POST_api_tracks_import_preview는_source만_표시하고_score를_노출하지_않는다() throws Exception {
+        ImportedTrack track = ImportedTrack.of(10L, "track-1", null, "title", null,
+                240_000, List.of(), ImportedAlbum.of(5L, "album-1",
+                        "album", 2024, List.of()));
+        when(trackSelectionService.select("track-1")).thenReturn(
+                new TrackDetail(track, List.of()).withPreview(
+                        List.of(new PreviewTagDetail("Night Drive", ExternalTagSource.LASTFM))));
+
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"spotifyTrackId\":\"track-1\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response.systemTags").isEmpty())
+                .andExpect(jsonPath("$.response.previewTags[0].name").value("Night Drive"))
+                .andExpect(jsonPath("$.response.previewTags[0].source").value("LASTFM"))
+                .andExpect(jsonPath("$.response.previewTags[0].score").doesNotExist())
+                .andExpect(jsonPath("$.response.tagDisplayStatus").value("PREVIEW"));
     }
 
     @Test

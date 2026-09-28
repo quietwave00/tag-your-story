@@ -20,16 +20,24 @@ public class DiscogsAlbumMatchingService {
     }
 
     public List<AlbumCandidate> matchingCandidates(ImportedAlbum album, List<AlbumCandidate> candidates) {
+        return matchingCandidates(album, album.getTitle(), candidates);
+    }
+
+    public List<AlbumCandidate> matchingCandidates(
+            ImportedAlbum album,
+            String validationTitle,
+            List<AlbumCandidate> candidates
+    ) {
         List<AlbumCandidate> artistMatches = candidates.stream()
                 .filter(candidate -> artistOverlap(album.getArtists(), candidate.artistNames()))
                 .toList();
         List<AlbumCandidate> rawTitleMatches = artistMatches.stream()
-                .filter(candidate -> identityNormalizer.rawTitleExact(album.getTitle(), candidate.title()))
+                .filter(candidate -> identityNormalizer.rawTitleExact(validationTitle, candidate.title()))
                 .toList();
         List<AlbumCandidate> titleMatches = rawTitleMatches.isEmpty()
                 ? artistMatches.stream()
                         .filter(candidate -> identityNormalizer.canonicalTitleExact(
-                                album.getTitle(), candidate.title()
+                                validationTitle, candidate.title()
                         ))
                         .toList()
                 : rawTitleMatches;
@@ -37,7 +45,11 @@ public class DiscogsAlbumMatchingService {
     }
 
     public boolean validates(ImportedAlbum album, AlbumDetails details) {
-        return identityNormalizer.canonicalTitleExact(album.getTitle(), details.title())
+        return validates(album, album.getTitle(), details);
+    }
+
+    public boolean validates(ImportedAlbum album, String validationTitle, AlbumDetails details) {
+        return identityNormalizer.canonicalTitleExact(validationTitle, details.title())
                 && artistOverlap(album.getArtists(), details.artistNames());
     }
 

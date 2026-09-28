@@ -1,6 +1,7 @@
 package com.tagnote.application.catalog.selection;
 
 import com.tagnote.application.catalog.detail.TrackDetailReadService;
+import com.tagnote.application.catalog.detail.TagPreviewService;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
 import com.tagnote.application.catalog.importer.TrackImportService;
@@ -8,13 +9,17 @@ import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.ExternalEnrichmentCollector;
 import com.tagnote.application.enrichment.ObservationProcessingService;
+import com.tagnote.application.enrichment.TagBootstrapService;
+import com.tagnote.application.enrichment.TrackTagCompletionService;
 import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
 import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
+import com.tagnote.application.enrichment.model.ObservationProcessingResult;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.enrichment.observation.ExternalTagSource;
+import com.tagnote.domain.taxonomy.matching.TagNameNormalizer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
@@ -40,6 +46,9 @@ class TrackSelectionServiceTest {
     @Mock private ObservationProcessingService observationProcessingService;
     @Mock private TagResolutionService tagResolutionService;
     @Mock private TrackDetailReadService trackDetailReadService;
+    @Mock private TagBootstrapService tagBootstrapService;
+    @Mock private TagPreviewService tagPreviewService;
+    @Mock private TrackTagCompletionService completionService;
 
     private TrackSelectionService service;
 
@@ -51,7 +60,11 @@ class TrackSelectionServiceTest {
                 catalogExternalIdentityWriteService,
                 observationProcessingService,
                 tagResolutionService,
-                trackDetailReadService
+                trackDetailReadService,
+                tagBootstrapService,
+                tagPreviewService,
+                completionService,
+                new TagNameNormalizer()
         );
     }
 
@@ -91,6 +104,14 @@ class TrackSelectionServiceTest {
         );
         when(tagResolutionService.resolvePersistedTrack(imported)).thenReturn(List.of());
         when(trackDetailReadService.fromResolved(imported, List.of())).thenReturn(detail);
+        when(tagBootstrapService.prepare(org.mockito.ArgumentMatchers.any())).thenReturn(Map.of());
+        when(observationProcessingService.processPersistedAlbum(imported, List.of(albumInput), Map.of()))
+                .thenReturn(ObservationProcessingResult.empty());
+        when(observationProcessingService.processPersistedTrack(imported, List.of(trackInput), Map.of()))
+                .thenReturn(ObservationProcessingResult.empty());
+        when(tagPreviewService.fromProcessed(ObservationProcessingResult.empty(),
+                ObservationProcessingResult.empty()))
+                .thenReturn(List.of());
 
         assertThat(service.select("track-1")).isSameAs(detail);
 
@@ -105,9 +126,9 @@ class TrackSelectionServiceTest {
         order.verify(trackImportService).importTrack("track-1");
         order.verify(externalEnrichmentCollector).collect(imported);
         order.verify(catalogExternalIdentityWriteService).attach(10L, CatalogExternalIdentityMatch.none());
-        order.verify(observationProcessingService).processPersistedAlbum(imported, List.of(albumInput));
+        order.verify(observationProcessingService).processPersistedAlbum(imported, List.of(albumInput), Map.of());
         order.verify(tagResolutionService).resolvePersistedAlbum(imported);
-        order.verify(observationProcessingService).processPersistedTrack(imported, List.of(trackInput));
+        order.verify(observationProcessingService).processPersistedTrack(imported, List.of(trackInput), Map.of());
         order.verify(tagResolutionService).resolvePersistedTrack(imported);
         order.verify(trackDetailReadService).fromResolved(imported, List.of());
     }
@@ -122,13 +143,21 @@ class TrackSelectionServiceTest {
                 catalogExternalIdentityWriteService,
                 observationProcessingService,
                 tagResolutionService,
-                trackDetailReadService
+                trackDetailReadService,
+                tagBootstrapService,
+                tagPreviewService,
+                completionService,
+                new TagNameNormalizer()
         );
         when(trackImportService.importTrack("track-1")).thenReturn(imported);
         when(trackDetailReadService.findResolved(imported)).thenReturn(Optional.empty());
         when(externalEnrichmentCollector.collect(imported)).thenReturn(ExternalEnrichmentCollection.empty());
         when(tagResolutionService.resolvePersistedTrack(imported)).thenReturn(List.of());
         when(trackDetailReadService.fromResolved(imported, List.of())).thenReturn(detail);
+        when(tagBootstrapService.prepare(org.mockito.ArgumentMatchers.any())).thenReturn(Map.of());
+        when(tagPreviewService.fromProcessed(ObservationProcessingResult.empty(),
+                ObservationProcessingResult.empty()))
+                .thenReturn(List.of());
 
         assertThat(service.select("track-1")).isSameAs(detail);
 
@@ -158,7 +187,7 @@ class TrackSelectionServiceTest {
                 "ISRC",
                 180_000,
                 List.of(),
-                ImportedAlbum.of(20L, "album-1", null, "Album", 2026, List.of())
+                ImportedAlbum.of(20L, "album-1", "Album", 2026, List.of())
         );
     }
 }

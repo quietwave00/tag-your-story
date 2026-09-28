@@ -208,7 +208,6 @@ class LastFmExternalTagProviderTest {
                 ImportedAlbum.of(
                         2L,
                         "spotify-album",
-                        "release-group-id",
                         "Album",
                         2026,
                         List.of(ImportedArtist.of(2L, "album-artist", "Album Artist", 0))

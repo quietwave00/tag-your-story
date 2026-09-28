@@ -1,5 +1,40 @@
 # Progress
 
+- 2026-09-28: CATALOG-ALBUM-IMPORT-001 사용자 요청으로 completed 이동.
+  - 통합 검색의 `subjectType`/`spotifyId`를 받는 Catalog import API와 Album 전용
+    Spotify metadata/Catalog/enrichment/resolved tag 경로를 추가했다. 기존 Track import는 유지한다.
+  - Album 빈 결과 완료 marker와 기준 DDL을 추가해 반복 선택에서 재수집을 피한다.
+  - API 라우팅과 Album 선택 테스트를 추가했다. 최신 Gradle 및 전체 검증 결과는 전달받지 못했다.
+  - 기존 `/api/tracks/import`는 호환 경로로 유지하고 Swagger/Java에서 deprecated로 표시했다.
+  - MusicBrainz Album의 edition title을 첫 검색에 정규화하고 원문 fallback, 유일성/연도 유지 테스트를 추가했다.
+  - 검증 결과를 완료로 주장하지 않고 미확인 상태를 Plan closure note에 남겼다.
+
+- 2026-09-28: ENRICHMENT-MATCHING-001 사용자 요청으로 completed 이동.
+  - 같은 ISRC의 MusicBrainz 복수 Recording은 metadata 허용 범위를 통과한 후보 중
+    유일한 최소 duration 차이를 선택하도록 ADR-012와 matching test를 추가했다.
+  - Discogs 검색을 canonical Album title, 제한된 box set base title, Track title 순서의
+    search plan으로 분리하고 `release_title`/`track` query와 단계별 unique 검증을 구현했다.
+  - 최신 Gradle 테스트·전체 검증 결과는 전달받지 못했다. Plan closure note에 미확인 상태를 남겼다.
+
+- 2026-09-28: CATALOG-IMPORT-002 사용자 요청으로 completed 이동.
+  - 이번 사용자 실행의 전체 `test`, `check`, `scripts/verify.sh` 성공을 확인했다.
+  - 별도 Acceptance Criteria의 31 Observation DB execution 목표와 query baseline 기록·리뷰는 아직 확인되지 않았다. 미확인 상태를 Plan closure note에 남겼다.
+
+- 2026-09-22: ALBUM-MBID-001 완료.
+  - 사용자 요청으로 Album Release Group MBID 컬럼·index·attach/cache 제거를 승인했다.
+  - ADR-011, 기준 DDL, Album 장르 observation 보존 경로와 관련 테스트를 갱신했다. 운영 오픈 전이므로 삭제 migration 문서는 두지 않는다.
+  - 사용자가 전체 `test`, `check`, `scripts/verify.sh` 성공을 확인했다. 정적 diff 검토 후 Plan을 `plans/completed/`로 이동했다.
+
+- 2026-09-22: TAG-BOOTSTRAP-001 완료.
+  - seedless System Tag 생성, Observation evidence metadata, 0건 완료 marker,
+    raw preview 및 API/Swagger 연결을 작성했다.
+  - 대상 테스트와 migration runbook을 추가했다.
+  - 첫 사용자 테스트에서 완료 marker의 제한된 JPA test context 매핑, 동시 Tag slug
+    unique 복구, SQL 계측 assertion 오류를 확인해 수정했다. 재검증 결과 대기 중이다.
+  - 재실행에서 JDBC batch 5건과 동시 import가 통과했다. 남은 2건은 Observation
+    조회를 canonical Tag 조회로 함께 세던 테스트 계측 조건을 수정했다.
+  - 사용자가 전체 `test`, `check`, `scripts/verify.sh` 성공을 확인했다. 정적 diff 검토 후 Plan을 `plans/completed/`로 이동했다.
+
 - 2026-09-18: CATALOG-SEARCH-001 완료.
   - Spotify Track/Album/Artist 통합 검색, provider-neutral adapter, 결정적 ranking,
     분리된 Swagger API 및 회귀 테스트를 완료했다.

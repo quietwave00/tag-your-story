@@ -49,6 +49,18 @@ class TaxonomyJpaRepositoryTest {
     private TestEntityManager entityManager;
 
     @Test
+    void canonical_normalized_name을_bulk_조회하고_전역_unique로_보호한다() {
+        TagEntity ambient = tagRepository.saveAndFlush(TagEntity.create(
+                "Ambient", "ambient-1", TagType.GENRE, TagStatus.ACTIVE, null));
+
+        assertThat(tagRepository.findByNormalizedNameIn(List.of("ambient")))
+                .containsExactly(ambient);
+        assertThatThrownBy(() -> tagRepository.saveAndFlush(TagEntity.create(
+                " AMBIENT ", "ambient-2", TagType.GENRE, TagStatus.ACTIVE, null)))
+                .isInstanceOfAny(DataIntegrityViolationException.class, PersistenceException.class);
+    }
+
+    @Test
     void Tag와_Alias를_저장하고_조회한다() {
         TagEntity tag = tagRepository.save(tag("ambient", TagStatus.ACTIVE));
         aliasRepository.save(alias(tag, "Ambient", AliasStatus.APPROVED));

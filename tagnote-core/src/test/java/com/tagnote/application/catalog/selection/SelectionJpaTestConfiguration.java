@@ -7,6 +7,7 @@ import com.tagnote.domain.catalog.track.TrackArtistEntity;
 import com.tagnote.domain.catalog.track.TrackEntity;
 import com.tagnote.domain.enrichment.assertion.TagAssertionEntity;
 import com.tagnote.domain.enrichment.observation.ExternalTagObservationEntity;
+import com.tagnote.domain.enrichment.observation.TrackTagCompletionEntity;
 import com.tagnote.domain.resolution.SubjectTagResolvedEntity;
 import com.tagnote.domain.taxonomy.alias.TagAliasEntity;
 import com.tagnote.domain.taxonomy.tag.TagEntity;
@@ -41,6 +42,7 @@ import java.util.Locale;
         TagEntity.class,
         TagAliasEntity.class,
         ExternalTagObservationEntity.class,
+        TrackTagCompletionEntity.class,
         TagAssertionEntity.class,
         SubjectTagResolvedEntity.class
 })
@@ -110,6 +112,23 @@ class SelectionJpaTestConfiguration {
             String expected = fragment.toLowerCase(Locale.ROOT);
             return executions.stream()
                     .filter(sql -> sql.startsWith("select") || sql.contains("*/ select"))
+                    .filter(sql -> sql.contains(expected))
+                    .count();
+        }
+
+        synchronized long selectCountContainingBoth(String first, String second) {
+            String expectedFirst = first.toLowerCase(Locale.ROOT);
+            String expectedSecond = second.toLowerCase(Locale.ROOT);
+            return executions.stream()
+                    .filter(sql -> sql.startsWith("select") || sql.contains("*/ select"))
+                    .filter(sql -> sql.contains(expectedFirst) && sql.contains(expectedSecond))
+                    .count();
+        }
+
+        synchronized long insertCountContaining(String fragment) {
+            String expected = fragment.toLowerCase(Locale.ROOT);
+            return executions.stream()
+                    .filter(sql -> sql.startsWith("insert") || sql.contains("*/insert"))
                     .filter(sql -> sql.contains(expected))
                     .count();
         }

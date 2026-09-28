@@ -2,12 +2,14 @@ package com.tagnote.application.enrichment.matching;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component
 public class DiscogsAlbumIdentityNormalizer {
 
     private static final Pattern DISCOGS_ARTIST_SUFFIX = Pattern.compile("\\s+\\([2-9][0-9]*\\)\\s*$");
+    private static final Pattern TRAILING_SLASH_LIST = Pattern.compile("^(.*?)\\s*\\(([^()]*/[^()]*)\\)\\s*$");
 
     private final MusicEntityNameNormalizer normalizer;
     private final MusicEditionTitleNormalizer editionTitleNormalizer;
@@ -37,6 +39,22 @@ public class DiscogsAlbumIdentityNormalizer {
                 ? null
                 : DISCOGS_ARTIST_SUFFIX.matcher(discogsArtist).replaceFirst("");
         return exactComparable(importedArtist, candidate);
+    }
+
+    public Optional<String> boxSetBaseTitle(String value) {
+        if (value == null) {
+            return Optional.empty();
+        }
+        var matcher = TRAILING_SLASH_LIST.matcher(value.trim());
+        if (!matcher.matches()) {
+            return Optional.empty();
+        }
+        String baseTitle = matcher.group(1).trim();
+        boolean validList = !baseTitle.isEmpty()
+                && java.util.Arrays.stream(matcher.group(2).split("/", -1))
+                .map(String::trim)
+                .allMatch(part -> !part.isEmpty());
+        return validList ? Optional.of(baseTitle) : Optional.empty();
     }
 
     private String normalizeComparable(String value) {

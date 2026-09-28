@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumCandidate;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumDetails;
+import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumSearchQuery;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.EntityType;
 import com.tagnote.application.enrichment.port.DiscogsCatalogClient;
 import com.tagnote.infrastructure.external.enrichment.ExternalHttpFailureTranslator;
@@ -34,11 +35,10 @@ public class DiscogsClient implements DiscogsCatalogClient {
 
     @Override
     public List<AlbumCandidate> searchAlbums(
-            String albumTitle,
-            List<String> artists,
+            AlbumSearchQuery query,
             EntityType type
     ) {
-        return search(albumTitle, artists, type);
+        return search(query, type);
     }
 
     @Override
@@ -69,8 +69,7 @@ public class DiscogsClient implements DiscogsCatalogClient {
     }
 
     private List<AlbumCandidate> search(
-            String albumTitle,
-            List<String> artists,
+            AlbumSearchQuery query,
             EntityType type
     ) {
         SearchResponse response;
@@ -79,10 +78,10 @@ public class DiscogsClient implements DiscogsCatalogClient {
                     .uri(uri -> {
                         var builder = uri.path("/database/search")
                                 .queryParam("type", type.name().toLowerCase(Locale.ROOT))
-                                .queryParam("release_title", albumTitle)
+                                .queryParam(searchParameter(query), query.value())
                                 .queryParam("per_page", 100);
-                        if (!artists.isEmpty()) {
-                            builder.queryParam("artist", artists.get(0));
+                        if (!query.artists().isEmpty()) {
+                            builder.queryParam("artist", query.artists().get(0));
                         }
                         return builder.build();
                     })
@@ -96,6 +95,13 @@ public class DiscogsClient implements DiscogsCatalogClient {
                 .filter(result -> result.id() > 0)
                 .map(result -> toCandidate(result, type))
                 .toList();
+    }
+
+    private String searchParameter(AlbumSearchQuery query) {
+        return switch (query.field()) {
+            case RELEASE_TITLE -> "release_title";
+            case TRACK -> "track";
+        };
     }
 
     private AlbumCandidate toCandidate(SearchResult result, EntityType requestedType) {

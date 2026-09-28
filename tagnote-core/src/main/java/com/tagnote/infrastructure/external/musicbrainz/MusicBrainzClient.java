@@ -111,6 +111,32 @@ public class MusicBrainzClient implements MusicBrainzCatalogClient {
         );
     }
 
+    @Override
+    public List<ReleaseGroupCandidate> searchReleaseGroups(String title, List<String> artists) {
+        StringBuilder query = new StringBuilder("releasegroup:\"").append(escape(title)).append("\"");
+        for (String artist : artists) {
+            query.append(" AND artist:\"").append(escape(artist)).append("\"");
+        }
+        ReleaseGroupSearchResponse response;
+        try {
+            requestGate.awaitPermission();
+            response = restClient.get()
+                    .uri(uri -> uri.path("/release-group")
+                            .queryParam("query", query.toString())
+                            .queryParam("limit", 100)
+                            .queryParam("fmt", "json")
+                            .build())
+                    .retrieve().body(ReleaseGroupSearchResponse.class);
+        } catch (RestClientException failure) {
+            throw ExternalHttpFailureTranslator.translate("MusicBrainz", failure);
+        }
+        return response == null ? List.of() : safe(response.releaseGroups()).stream()
+                .filter(group -> group.id() != null && !group.id().isBlank())
+                .map(group -> new ReleaseGroupCandidate(group.id(), group.title(),
+                        year(group.firstReleaseDate()), artistNames(group.artistCredit())))
+                .toList();
+    }
+
     private List<RecordingCandidate> searchRecordings(String query) {
         SearchResponse response;
         try {
@@ -185,6 +211,11 @@ public class MusicBrainzClient implements MusicBrainzCatalogClient {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record SearchResponse(List<RecordingDto> recordings) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record ReleaseGroupSearchResponse(
+            @JsonProperty("release-groups") List<ReleaseGroupDto> releaseGroups) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

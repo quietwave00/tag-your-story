@@ -28,16 +28,14 @@ create table artist
 
 create table album
 (
-    album_id       bigint auto_increment primary key,
-    created_at     datetime(6)  not null,
-    updated_at     datetime(6)  not null,
-    title          varchar(255) not null,
-    spotify_id     varchar(255) not null,
-    musicbrainz_id varchar(255),
-    release_year   int,
+    album_id     bigint auto_increment primary key,
+    created_at   datetime(6)  not null,
+    updated_at   datetime(6)  not null,
+    title        varchar(255) not null,
+    spotify_id   varchar(255) not null,
+    release_year int,
 
     constraint uk_album_spotify_id unique (spotify_id),
-    index idx_album_musicbrainz_id (musicbrainz_id),
     index idx_album_title (title)
 ) ENGINE = InnoDB;
 
@@ -95,6 +93,7 @@ create table tag
     created_at         datetime(6)  not null,
     updated_at         datetime(6)  not null,
     name               varchar(255) not null,
+    normalized_name    varchar(255) not null,
     slug               varchar(255) not null,
     type               varchar(255) not null,
     status             varchar(255) not null,
@@ -102,6 +101,7 @@ create table tag
     description        varchar(255),
 
     constraint uk_tag_slug unique (slug),
+    constraint uk_tag_normalized_name unique (normalized_name),
     foreign key (merged_into_tag_id) references tag (tag_id),
     index idx_tag_type_status (type, status),
     index idx_tag_name (name)
@@ -123,6 +123,22 @@ create table tag_alias
 
 create sequence external_tag_observation_seq start with 1 increment by 50;
 
+create table track_tag_completion
+(
+    track_id bigint not null,
+    completed_at datetime(6) not null,
+    constraint pk_track_tag_completion primary key (track_id),
+    foreign key (track_id) references track (track_id)
+) ENGINE = InnoDB;
+
+create table album_tag_completion
+(
+    album_id bigint not null,
+    completed_at datetime(6) not null,
+    constraint pk_album_tag_completion primary key (album_id),
+    foreign key (album_id) references album (album_id)
+) ENGINE = InnoDB;
+
 create table external_tag_observation
 (
     observation_id bigint primary key,
@@ -130,6 +146,8 @@ create table external_tag_observation
     subject_id     bigint       not null,
     source         varchar(255) not null,
     raw_name       varchar(255) not null,
+    evidence_type  varchar(255),
+    confidence     double,
     normalized_name varchar(255) not null,
     external_ref   varchar(255) not null,
     status         varchar(255) not null,

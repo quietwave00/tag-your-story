@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 public interface TagJpaRepository extends JpaRepository<TagEntity, Long> {
 
     Optional<TagEntity> findBySlug(String slug);
+
+    List<TagEntity> findByNormalizedNameIn(Collection<String> normalizedNames);
 
     @Query("select tag from TagEntity tag left join fetch tag.mergedIntoTag")
     List<TagEntity> findAllWithMergeTarget();

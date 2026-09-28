@@ -1,6 +1,7 @@
 package com.tagnote.domain.taxonomy.tag;
 
 import com.tagnote.core.domain.BaseTime;
+import com.tagnote.domain.taxonomy.matching.TagNameNormalizer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,7 +25,10 @@ import java.util.Objects;
 @Entity
 @Table(
         name = "tag",
-        uniqueConstraints = @UniqueConstraint(name = "uk_tag_slug", columnNames = "slug"),
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_tag_slug", columnNames = "slug"),
+                @UniqueConstraint(name = "uk_tag_normalized_name", columnNames = "normalized_name")
+        },
         indexes = {
                 @Index(name = "idx_tag_type_status", columnList = "type, status"),
                 @Index(name = "idx_tag_name", columnList = "name")
@@ -39,6 +43,9 @@ public class TagEntity extends BaseTime {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "normalized_name", nullable = false)
+    private String normalizedName;
 
     @Column(nullable = false)
     private String slug;
@@ -62,6 +69,7 @@ public class TagEntity extends BaseTime {
             throw new IllegalArgumentException("Merged tag requires a merge target");
         }
         this.name = requireText(name, "Tag name");
+        this.normalizedName = new TagNameNormalizer().normalize(name).value();
         this.slug = requireText(slug, "Tag slug");
         this.type = Objects.requireNonNull(type, "Tag type must not be null");
         this.status = Objects.requireNonNull(status, "Tag status must not be null");

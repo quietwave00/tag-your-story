@@ -1,6 +1,7 @@
 package com.tagnote.application.enrichment.provider;
 
 import com.tagnote.application.catalog.importer.model.ImportedArtist;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
 import com.tagnote.application.enrichment.exception.ExternalProviderException;
@@ -123,6 +124,25 @@ public class LastFmExternalTagProvider implements ExternalTagProvider {
                 new CollectedExternalTags(albumInputs, trackInputs),
                 CatalogExternalIdentityMatch.none()
         );
+    }
+
+    @Override
+    public ProviderEnrichmentResult collectAlbum(ImportedAlbum album, EnrichmentDeadline deadline) {
+        String artist = representativeArtist(album.getArtists());
+        if (artist == null) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "Last.fm Album lookup requires an Album Artist");
+        }
+        TopTags response = client.getAlbumTopTags(artist, album.getTitle());
+        if (!matchingService.matches(artist, album.getTitle(), response)) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "Last.fm Album identity did not match exactly");
+        }
+        return ProviderEnrichmentResult.completed(source(),
+                new CollectedExternalTags(inputs(response.tags(),
+                        externalRef("album", artist, album.getTitle()),
+                        confidence.getLastfmAlbumCommunityTag()), List.of()),
+                CatalogExternalIdentityMatch.none());
     }
 
     private TopTags exactTrackTopTags(String artist, String title) {

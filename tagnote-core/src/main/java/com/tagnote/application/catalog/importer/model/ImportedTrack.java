@@ -40,11 +40,9 @@ public class ImportedTrack {
                 .build();
     }
 
-    public ImportedTrack withMusicBrainzIdentity(String recordingId, String releaseGroupId) {
+    public ImportedTrack withMusicBrainzRecordingId(String recordingId) {
         String updatedRecordingId = recordingId == null ? musicBrainzRecordingId : recordingId;
-        ImportedAlbum updatedAlbum = album.withMusicBrainzReleaseGroupId(releaseGroupId);
-        if (java.util.Objects.equals(updatedRecordingId, musicBrainzRecordingId)
-                && updatedAlbum == album) {
+        if (java.util.Objects.equals(updatedRecordingId, musicBrainzRecordingId)) {
             return this;
         }
         return ImportedTrack.of(
@@ -55,7 +53,7 @@ public class ImportedTrack {
                 isrc,
                 durationMs,
                 artists,
-                updatedAlbum
+                album
         );
     }
 }

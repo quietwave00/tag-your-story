@@ -30,23 +30,48 @@ public class MusicBrainzEntityMatchingService {
                     ? Optional.of(candidate)
                     : Optional.empty();
         }
-        return matchRecordingByMetadata(track, candidates);
+        List<RecordingCandidate> matched = matchingRecordings(track, candidates);
+        if (matched.size() <= 1 || track.getDurationMs() == null) {
+            return unique(matched);
+        }
+        long minimumDifference = matched.stream()
+                .mapToLong(candidate -> durationDifference(track.getDurationMs(), candidate.durationMs()))
+                .min()
+                .orElseThrow();
+        return unique(matched.stream()
+                .filter(candidate -> durationDifference(track.getDurationMs(), candidate.durationMs())
+                        == minimumDifference)
+                .toList());
     }
 
     public Optional<RecordingCandidate> matchRecordingByMetadata(
             ImportedTrack track,
             List<RecordingCandidate> candidates
     ) {
-        List<RecordingCandidate> matched = candidates.stream()
+        return unique(matchingRecordings(track, candidates));
+    }
+
+    private List<RecordingCandidate> matchingRecordings(
+            ImportedTrack track,
+            List<RecordingCandidate> candidates
+    ) {
+        return candidates.stream()
                 .filter(candidate -> normalizer.exact(track.getTitle(), candidate.title()))
                 .filter(candidate -> hasArtistOverlap(track.getArtists(), candidate.artistNames()))
                 .filter(candidate -> durationMatches(track.getDurationMs(), candidate.durationMs()))
                 .toList();
-        return unique(matched);
     }
 
     public Optional<ReleaseGroupCandidate> matchReleaseGroup(
             ImportedAlbum album,
+            List<ReleaseGroupCandidate> candidates
+    ) {
+        return unique(matchingReleaseGroups(album, album.getTitle(), candidates));
+    }
+
+    public List<ReleaseGroupCandidate> matchingReleaseGroups(
+            ImportedAlbum album,
+            String expectedTitle,
             List<ReleaseGroupCandidate> candidates
     ) {
         List<ReleaseGroupCandidate> distinct = List.copyOf(candidates.stream().collect(
@@ -57,12 +82,11 @@ public class MusicBrainzEntityMatchingService {
                         LinkedHashMap::new
                 )
         ).values());
-        List<ReleaseGroupCandidate> matched = distinct.stream()
-                .filter(candidate -> normalizer.exact(album.getTitle(), candidate.title()))
+        return distinct.stream()
+                .filter(candidate -> normalizer.exact(expectedTitle, candidate.title()))
                 .filter(candidate -> hasArtistOverlap(album.getArtists(), candidate.artistNames()))
                 .filter(candidate -> yearsMatch(album.getReleaseYear(), candidate.releaseYear()))
                 .toList();
-        return unique(matched);
     }
 
     private boolean hasArtistOverlap(List<ImportedArtist> imported, List<String> candidates) {
@@ -72,7 +96,11 @@ public class MusicBrainzEntityMatchingService {
 
     private boolean durationMatches(Integer expected, Integer actual) {
         return expected != null && actual != null
-                && Math.abs((long) expected - actual) <= properties.getMatching().getDurationToleranceMs();
+                && durationDifference(expected, actual) <= properties.getMatching().getDurationToleranceMs();
+    }
+
+    private long durationDifference(Integer expected, Integer actual) {
+        return Math.abs((long) expected - actual);
     }
 
     private boolean yearsMatch(Integer expected, Integer actual) {

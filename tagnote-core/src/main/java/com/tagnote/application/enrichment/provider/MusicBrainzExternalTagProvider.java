@@ -1,10 +1,12 @@
 package com.tagnote.application.enrichment.provider;
 
 import com.tagnote.application.catalog.importer.model.ImportedArtist;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
 import com.tagnote.application.enrichment.exception.ExternalProviderException;
 import com.tagnote.application.enrichment.matching.MusicBrainzEntityMatchingService;
+import com.tagnote.application.enrichment.matching.MusicEditionTitleNormalizer;
 import com.tagnote.application.enrichment.matching.MusicEntityNameNormalizer;
 import com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.Genre;
 import com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.RecordingCandidate;
@@ -42,16 +44,19 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
     private final ExternalEnrichmentProperties.EvidenceConfidence confidence;
     private final ExternalEnrichmentProperties.MusicBrainz config;
     private final MusicEntityNameNormalizer normalizer;
+    private final MusicEditionTitleNormalizer editionTitleNormalizer;
 
     public MusicBrainzExternalTagProvider(
             MusicBrainzCatalogClient client,
             MusicBrainzEntityMatchingService matchingService,
             MusicEntityNameNormalizer normalizer,
+            MusicEditionTitleNormalizer editionTitleNormalizer,
             ExternalEnrichmentProperties properties
     ) {
         this.client = client;
         this.matchingService = matchingService;
         this.normalizer = normalizer;
+        this.editionTitleNormalizer = editionTitleNormalizer;
         this.config = properties.getMusicbrainz();
         this.confidence = properties.getEvidenceConfidence();
     }
@@ -85,17 +90,14 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
                 confidence.getMusicbrainzRecordingGenre()
         );
 
-        String releaseGroupId = track.getAlbum().getMusicBrainzReleaseGroupId();
+        List<ReleaseGroupCandidate> releaseGroups = collectRecordingReleaseGroups(
+                track, recordingId, deadline
+        );
+        String releaseGroupId = matchingService
+                .matchReleaseGroup(track.getAlbum(), releaseGroups)
+                .map(ReleaseGroupCandidate::id)
+                .orElse(null);
         List<ExternalTagInput> albumInputs = List.of();
-        if (releaseGroupId == null) {
-            List<ReleaseGroupCandidate> releaseGroups = collectRecordingReleaseGroups(
-                    track, recordingId, deadline
-            );
-            releaseGroupId = matchingService
-                    .matchReleaseGroup(track.getAlbum(), releaseGroups)
-                    .map(ReleaseGroupCandidate::id)
-                    .orElse(null);
-        }
         if (releaseGroupId != null) {
             albumInputs = collectReleaseGroup(track, releaseGroupId, deadline);
         }
@@ -103,8 +105,45 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
         return ProviderEnrichmentResult.completed(
                 source(),
                 new CollectedExternalTags(albumInputs, trackInputs),
-                new CatalogExternalIdentityMatch(recordingId, releaseGroupId)
+                new CatalogExternalIdentityMatch(recordingId)
         );
+    }
+
+    @Override
+    public ProviderEnrichmentResult collectAlbum(ImportedAlbum album, EnrichmentDeadline deadline) {
+        List<String> artists = album.getArtists().stream().map(ImportedArtist::getName).toList();
+        String canonicalTitle = editionTitleNormalizer.canonicalTitle(album.getTitle());
+        List<ReleaseGroupCandidate> candidates = client.searchReleaseGroups(canonicalTitle, artists);
+        List<ReleaseGroupCandidate> matches = matchingService.matchingReleaseGroups(
+                album, canonicalTitle, candidates);
+        String searchStage = "canonical";
+        if (matches.isEmpty() && !canonicalTitle.equals(album.getTitle())) {
+            if (!deadline.hasTimeFor(optionalRequestWorstCaseMs())) {
+                throw new ExternalProviderException(ProviderEnrichmentStatus.TIMEOUT,
+                        "MusicBrainz original Album search skipped due to insufficient remaining budget");
+            }
+            candidates = client.searchReleaseGroups(album.getTitle(), artists);
+            matches = matchingService.matchingReleaseGroups(album, album.getTitle(), candidates);
+            searchStage = "original";
+        }
+        if (matches.size() != 1) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "MusicBrainz Release Group was not uniquely matched. stage=" + searchStage
+                            + ", candidateCount=" + candidates.size()
+                            + ", matchedCount=" + matches.size()
+                            + ", spotifyReleaseYear=" + album.getReleaseYear());
+        }
+        ReleaseGroupCandidate matched = matches.get(0);
+        ReleaseGroupDetails details = client.getReleaseGroup(matched.id());
+        if (!matched.id().equals(details.id())) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "MusicBrainz Release Group lookup returned a mismatched identity");
+        }
+        return ProviderEnrichmentResult.completed(source(),
+                new CollectedExternalTags(genreInputs(details.genres(),
+                        "musicbrainz:release-group:" + matched.id(),
+                        confidence.getMusicbrainzReleaseGroupGenre()), List.of()),
+                CatalogExternalIdentityMatch.none());
     }
 
     private List<ReleaseGroupCandidate> collectRecordingReleaseGroups(

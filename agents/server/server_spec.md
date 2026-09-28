@@ -256,25 +256,18 @@ album
 - album_id
 - title
 - spotify_id
-- musicbrainz_id
 - release_year
 - created_at
 - updated_at
 ```
 
-의미:
-
-```text
-album.musicbrainz_id
-= MusicBrainz Release Group MBID
-```
+Album은 Spotify ID로 식별한다. MusicBrainz Release Group ID는 Catalog Album에 저장하지 않으며, ALBUM 태그는 해당 subject의 visible resolved projection에서 읽는다. ADR-011을 따른다.
 
 제약:
 
 ```text
 PK(album_id)
 UNIQUE(spotify_id)
-INDEX(musicbrainz_id)
 INDEX(title)
 ```
 
@@ -717,7 +710,7 @@ track.musicbrainz_id 저장
 ↓
 Release Group 확인
 ↓
-album.musicbrainz_id 저장
+ALBUM genre observation 수집(매칭 성공 시)
 ```
 
 MusicBrainz 역할:
@@ -729,6 +722,16 @@ Tag Evidence
 ```
 
 최종 장르 판단자는 아니다.
+
+ISRC lookup이 복수 Recording을 반환하면 title, Artist와 설정된 duration tolerance를 먼저
+적용한다. 복수 후보가 계속 남을 때 Spotify duration과의 절대 차이가 유일하게 가장 작은
+후보만 확정하며, 최소 차이가 동률이면 매칭하지 않는다. ISRC가 없는 metadata fallback은
+기존처럼 조건을 통과한 후보가 정확히 하나일 때만 확정한다.
+
+Discogs Album 검색은 canonical `release_title`, slash 목록형 trailing 괄호를 제거한
+base `release_title`, `track` title 순서로 시도한다. 각 시도는 MASTER 후 RELEASE 순서이며,
+Album title과 Artist 검증 뒤 정확히 하나인 후보만 확정한다. 복수 후보가 남으면 다음
+검색으로 우회하지 않는다.
 
 ### 13.4 External Tag 수집
 
@@ -743,6 +746,13 @@ external_tag_observation
 raw tag는 매칭 실패 여부와 관계없이 저장한다.
 
 ### 13.5 Matching
+
+TAG-BOOTSTRAP-001/ADR-010 적용: 최초 import는 Album/Track 입력을 합쳐 approved alias와
+ACTIVE canonical `tag.normalized_name`을 bulk 조회한다. alias가 ambiguous이면 fallback하지
+않는다. 두 경로에서 매칭되지 않은 MusicBrainz 명시적 genre와 Discogs 명시적 genre/style만
+ACTIVE `UNCLASSIFIED` Tag로 생성하고 해당 subject에 APPROVED Assertion을 만든다.
+Last.fm COMMUNITY_TAG 단독으로는 Tag를 만들지 않는다. 아래 alias-only 흐름은
+범용 Observation 처리와 기존 재매칭 경로에 해당한다.
 
 ```text
 external_tag_observation.normalized_name
@@ -795,6 +805,13 @@ subject_tag_resolved
 ```
 
 ### 13.8 Track 상세 조회
+
+`POST /api/tracks/import` 응답은 `systemTags` 외에 `previewTags(name, source)`와
+`tagDisplayStatus(CONFIRMED | PREVIEW | EMPTY)`를 제공한다. visible resolved가 없을 때
+`NEW` Observation만 중복 제거해 최대 5개 preview로 표시한다. preview는 검증 전 외부
+표현이며 Tag ID/score가 없다. HIDDEN-only 결과는 raw preview로 우회 노출하지 않는다.
+정상 계산 후 resolved 0건이면 Track 완료 marker를 기록하며, transient provider 실패는
+완료로 기록하지 않는다.
 
 ```text
 Track
@@ -1204,6 +1221,30 @@ Response:
   "enrichmentStatus": "SUCCESS"
 }
 ```
+
+### Catalog Subject Import
+
+통합 검색 결과에서 선택한 `subjectType`과 `spotifyId`를 그대로 전달한다.
+
+```http
+POST /api/catalog/import
+```
+
+```json
+{"subjectType":"ALBUM","spotifyId":"spotify-album-id"}
+```
+
+`subjectType`은 `TRACK` 또는 `ALBUM`이다. `ARTIST` import는 지원하지 않는다.
+Track은 기존 Track 선택 흐름을 재사용하고, Album은 Spotify Album 상세 metadata로
+Album/Artist Catalog를 생성 또는 재사용한 뒤 ALBUM subject의 external evidence와
+resolved System Tag를 계산한다. Album import는 Track을 생성하지 않는다.
+
+응답은 기존 `ApiResult` envelope 안의 `subjectType`, `track`, `album` 필드를 가진다.
+`TRACK`이면 `track`만, `ALBUM`이면 `album`만 값이 있다. Album 응답은 Catalog
+Album과 `systemTags`, `previewTags`, `tagDisplayStatus`를 포함한다. 기존
+`POST /api/tracks/import` 계약은 유지하되 deprecated로 표시한다. 새 클라이언트는
+`POST /api/catalog/import`를 사용한다. 빈 Album tag 계산도 완료 marker로
+기록하여 반복 요청에서 외부 provider를 재호출하지 않는다.
 
 ### Track 상세
 

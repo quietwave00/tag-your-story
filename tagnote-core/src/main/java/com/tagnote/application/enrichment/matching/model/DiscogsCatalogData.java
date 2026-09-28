@@ -12,6 +12,27 @@ public final class DiscogsCatalogData {
         RELEASE
     }
 
+    public enum SearchField {
+        RELEASE_TITLE,
+        TRACK
+    }
+
+    public record AlbumSearchQuery(
+            SearchField field,
+            String value,
+            List<String> artists
+    ) {
+        public AlbumSearchQuery {
+            artists = artists == null ? List.of() : List.copyOf(artists);
+        }
+    }
+
+    public record AlbumSearchAttempt(
+            AlbumSearchQuery query,
+            String validationTitle
+    ) {
+    }
+
     public record AlbumCandidate(
             long id,
             EntityType type,

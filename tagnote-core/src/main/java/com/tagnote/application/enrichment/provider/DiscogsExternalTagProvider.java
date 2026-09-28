@@ -6,9 +6,11 @@ import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
 import com.tagnote.application.enrichment.exception.ExternalProviderException;
 import com.tagnote.application.enrichment.matching.DiscogsAlbumMatchingService;
+import com.tagnote.application.enrichment.matching.DiscogsAlbumSearchPlan;
 import com.tagnote.application.enrichment.matching.MusicEntityNameNormalizer;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumCandidate;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumDetails;
+import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumSearchAttempt;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.EntityType;
 import com.tagnote.application.enrichment.model.CatalogExternalIdentityMatch;
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
@@ -34,17 +36,20 @@ public class DiscogsExternalTagProvider implements ExternalTagProvider {
 
     private final DiscogsCatalogClient client;
     private final DiscogsAlbumMatchingService matchingService;
+    private final DiscogsAlbumSearchPlan searchPlan;
     private final ExternalEnrichmentProperties.EvidenceConfidence confidence;
     private final MusicEntityNameNormalizer normalizer;
 
     public DiscogsExternalTagProvider(
             DiscogsCatalogClient client,
             DiscogsAlbumMatchingService matchingService,
+            DiscogsAlbumSearchPlan searchPlan,
             MusicEntityNameNormalizer normalizer,
             ExternalEnrichmentProperties properties
     ) {
         this.client = client;
         this.matchingService = matchingService;
+        this.searchPlan = searchPlan;
         this.normalizer = normalizer;
         this.confidence = properties.getEvidenceConfidence();
     }
@@ -56,7 +61,15 @@ public class DiscogsExternalTagProvider implements ExternalTagProvider {
 
     @Override
     public ProviderEnrichmentResult collect(ImportedTrack track, EnrichmentDeadline deadline) {
-        ImportedAlbum album = track.getAlbum();
+        return collectAlbum(track.getAlbum(), searchPlan.attempts(track));
+    }
+
+    @Override
+    public ProviderEnrichmentResult collectAlbum(ImportedAlbum album, EnrichmentDeadline deadline) {
+        return collectAlbum(album, searchPlan.attempts(album));
+    }
+
+    private ProviderEnrichmentResult collectAlbum(ImportedAlbum album, List<AlbumSearchAttempt> attempts) {
         List<String> artists = album.getArtists().stream().map(ImportedArtist::getName).toList();
         if (artists.isEmpty()) {
             throw new ExternalProviderException(
@@ -64,19 +77,19 @@ public class DiscogsExternalTagProvider implements ExternalTagProvider {
                     "Discogs matching requires an Album Artist"
             );
         }
-        AlbumCandidate matched = findAlbum(album, artists);
-        AlbumDetails details = client.getAlbum(matched.type(), matched.id());
-        if (details.id() != matched.id()
-                || details.type() != matched.type()
-                || !matchingService.validates(album, details)) {
+        MatchedAlbum matched = findAlbum(album, attempts);
+        AlbumDetails details = client.getAlbum(matched.candidate().type(), matched.candidate().id());
+        if (details.id() != matched.candidate().id()
+                || details.type() != matched.candidate().type()
+                || !matchingService.validates(album, matched.validationTitle(), details)) {
             throw new ExternalProviderException(
                     ProviderEnrichmentStatus.NOT_FOUND,
                     "Discogs Album detail did not pass exact validation"
             );
         }
 
-        String prefix = matched.type() == EntityType.MASTER ? "master" : "release";
-        String externalRef = "discogs:" + prefix + ":" + matched.id();
+        String prefix = matched.candidate().type() == EntityType.MASTER ? "master" : "release";
+        String externalRef = "discogs:" + prefix + ":" + matched.candidate().id();
         List<ExternalTagInput> inputs = new java.util.ArrayList<>();
         inputs.addAll(inputs(details.genres(), externalRef, EvidenceType.EXPLICIT_GENRE, confidence.getDiscogsGenre()));
         inputs.addAll(inputs(details.styles(), externalRef, EvidenceType.EXPLICIT_STYLE, confidence.getDiscogsStyle()));
@@ -87,29 +100,50 @@ public class DiscogsExternalTagProvider implements ExternalTagProvider {
         );
     }
 
-    private AlbumCandidate findAlbum(ImportedAlbum album, List<String> artists) {
-        String searchTitle = matchingService.searchTitle(album);
+    private MatchedAlbum findAlbum(ImportedAlbum album, List<AlbumSearchAttempt> attempts) {
+        for (AlbumSearchAttempt attempt : attempts) {
+            MatchedAlbum matched = findAlbum(album, attempt);
+            if (matched != null) {
+                return matched;
+            }
+        }
+        throw notUniquelyMatched("all search attempts returned zero matches");
+    }
+
+    private MatchedAlbum findAlbum(ImportedAlbum album, AlbumSearchAttempt attempt) {
         List<AlbumCandidate> masterMatches = matchingService.matchingCandidates(
                 album,
-                client.searchAlbums(searchTitle, artists, EntityType.MASTER)
+                attempt.validationTitle(),
+                client.searchAlbums(attempt.query(), EntityType.MASTER)
         );
         if (masterMatches.size() == 1) {
-            return masterMatches.get(0);
+            return new MatchedAlbum(masterMatches.get(0), attempt.validationTitle());
         }
         if (masterMatches.size() > 1) {
-            throw notUniquelyMatched("masterMatches=" + masterMatches.size());
+            throw notUniquelyMatched(attemptDetail(attempt, "masterMatches=" + masterMatches.size()));
         }
 
         List<AlbumCandidate> releaseMatches = matchingService.matchingCandidates(
                 album,
-                client.searchAlbums(searchTitle, artists, EntityType.RELEASE)
+                attempt.validationTitle(),
+                client.searchAlbums(attempt.query(), EntityType.RELEASE)
         );
         if (releaseMatches.size() == 1) {
-            return releaseMatches.get(0);
+            return new MatchedAlbum(releaseMatches.get(0), attempt.validationTitle());
         }
-        throw notUniquelyMatched(
-                "masterMatches=0, releaseMatches=" + releaseMatches.size()
-        );
+        if (releaseMatches.size() > 1) {
+            throw notUniquelyMatched(attemptDetail(
+                    attempt,
+                    "masterMatches=0, releaseMatches=" + releaseMatches.size()
+            ));
+        }
+        return null;
+    }
+
+    private String attemptDetail(AlbumSearchAttempt attempt, String matches) {
+        return "field=" + attempt.query().field()
+                + ", value=" + attempt.query().value()
+                + ", " + matches;
     }
 
     private ExternalProviderException notUniquelyMatched(String detail) {
@@ -135,5 +169,8 @@ public class DiscogsExternalTagProvider implements ExternalTagProvider {
             ));
         }
         return List.copyOf(unique.values());
+    }
+
+    private record MatchedAlbum(AlbumCandidate candidate, String validationTitle) {
     }
 }

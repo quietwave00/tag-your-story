@@ -62,15 +62,20 @@ public interface TrackApi {
 
     @Operation(
             summary = "Spotify Track Catalog Import",
+            deprecated = true,
             description = "Spotify track id를 기준으로 Artist, Album, Track과 전체 Artist credit을 내부 Catalog에 "
                     + "저장하거나 기존 데이터를 재사용하고, MusicBrainz/Discogs/Last.fm enrichment에서 성공한 "
-                    + "부분 결과로 계산된 System Tag를 함께 조회. 일부 또는 전체 enrichment provider 실패는 "
-                    + "Catalog import 성공을 실패로 변경하지 않음"
+                    + "부분 결과로 계산된 System Tag를 함께 조회. 확정 태그가 없으면 검증 전 raw preview를 "
+                    + "출처와 함께 최대 5개 제공. 일부 또는 전체 enrichment provider 실패는 "
+                    + "Catalog import 성공을 실패로 변경하지 않음. 인증 불필요. "
+                    + "새 클라이언트는 POST /api/catalog/import에 subjectType=TRACK과 spotifyId를 전달"
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
                     description = "Import 또는 기존 Catalog 조회 성공. systemTags는 HIDDEN을 제외한 resolved System Tag이며 "
+                            + "previewTags는 확정 결과가 없을 때의 검증 전 raw 이름과 출처. "
+                            + "tagDisplayStatus는 CONFIRMED, PREVIEW, EMPTY 중 하나. "
                             + "score 내림차순, 동일 score에서는 tagId 오름차순. Spotify 장애 시 기존 오류 정책에 따라 "
                             + "HTTP 200과 success=false로 반환될 수 있음",
                     useReturnTypeSchema = true,
@@ -89,6 +94,7 @@ public interface TrackApi {
                     ))
             )
     })
+    @Deprecated(since = "2026-09", forRemoval = false)
     ApiResult<CatalogTrackResponse> importTrack(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "선택한 Spotify Track",
