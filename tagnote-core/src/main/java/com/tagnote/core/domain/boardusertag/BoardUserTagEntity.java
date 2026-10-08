@@ -1,6 +1,7 @@
 package com.tagnote.core.domain.boardusertag;
 
 import com.tagnote.core.domain.board.BoardEntity;
+import com.tagnote.core.domain.BaseTime;
 import com.tagnote.core.domain.boardusertag.service.BoardUserTag;
 import com.tagnote.core.domain.usertag.UserTagEntity;
 import lombok.AllArgsConstructor;
@@ -10,30 +11,43 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="board_user_tag")
+@Table(
+        name = "board_user_tag",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_board_user_tag_board_tag",
+                columnNames = {"board_id", "user_tag_id"}
+        ),
+        indexes = @Index(name = "idx_board_user_tag_tag_board", columnList = "user_tag_id,board_id")
+)
 @Entity
-public class BoardUserTagEntity {
+public class BoardUserTagEntity extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardUserTagId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
+    @JoinColumn(name = "board_id", nullable = false)
     private BoardEntity board;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "user_tag_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_tag_id", nullable = false)
     private UserTagEntity userTag;
 
     /*
      * 연관관계 설정
      */
     public static BoardUserTagEntity of(BoardEntity board, UserTagEntity userTag) {
+        if (board.getUserEntity() == null || userTag.getOwner() == null
+                || !Objects.equals(board.getUserEntity().getUserId(), userTag.getOwner().getUserId())) {
+            throw new IllegalArgumentException("UserTag owner must match Board writer");
+        }
         return builder()
                 .board(board)
                 .userTag(userTag)

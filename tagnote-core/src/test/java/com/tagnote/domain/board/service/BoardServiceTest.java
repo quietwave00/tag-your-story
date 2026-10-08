@@ -1,7 +1,6 @@
 package com.tagnote.domain.board.service;
 
 import com.tagnote.core.domain.board.BoardEntity;
-import com.tagnote.core.domain.board.dto.command.CreateBoardCommand;
 import com.tagnote.core.domain.board.service.Board;
 import com.tagnote.core.domain.board.repository.BoardRepository;
 import com.tagnote.core.domain.board.service.BoardService;
@@ -9,7 +8,10 @@ import com.tagnote.core.domain.board.service.dto.BoardList;
 import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
 import com.tagnote.core.domain.boardusertag.repository.BoardUserTagRepository;
 import com.tagnote.core.domain.boardusertag.service.dto.UserTagNames;
-import com.tagnote.core.domain.user.service.User;
+import com.tagnote.core.domain.user.Role;
+import com.tagnote.core.domain.user.UserEntity;
+import com.tagnote.core.domain.user.UserStatus;
+import com.tagnote.core.domain.usertag.UserTagEntity;
 import com.tagnote.domain.board.fixture.BoardFixture;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,40 +42,31 @@ public class BoardServiceTest {
     @Test
     void 게시글을_작성한다() {
         // given
-        User user = User.builder()
+        UserEntity savedUserEntity = UserEntity.builder()
                 .userId(1L)
-                .build();
-
-        List<BoardUserTagEntity> boardUserTagEntityList = List.of(
-                BoardUserTagEntity.builder()
-                        .boardUserTagId(1L)
-                        .build(),
-                BoardUserTagEntity.builder()
-                        .boardUserTagId(2L)
-                        .build()
-        );
-
-        CreateBoardCommand command = CreateBoardCommand.builder()
-                .content("content")
-                .trackId("trackId")
-                .userTagList(List.of("userTag1", "userTag2"))
-                .userId(user.getUserId())
+                .userKey("user-key")
+                .email("user@test.com")
+                .nickname("nickname")
+                .role(Role.ROLE_USER)
+                .userStatus(UserStatus.ACTIVE)
                 .build();
 
         BoardEntity mockSavedBoard = BoardEntity.builder()
                 .boardId("1")
-                .userEntity(user.toEntity())
-                .boardUserTagEntityList(boardUserTagEntityList)
+                .content("content")
+                .trackId("trackId")
+                .userEntity(savedUserEntity)
                 .build();
+        List<BoardUserTagEntity> boardUserTagEntityList = List.of(
+                BoardUserTagEntity.of(mockSavedBoard, UserTagEntity.create(savedUserEntity, "userTag1")),
+                BoardUserTagEntity.of(mockSavedBoard, UserTagEntity.create(savedUserEntity, "userTag2"))
+        );
+        mockSavedBoard.addBoardUserTagList(boardUserTagEntityList);
 
         // when
         when(boardRepository.save(any())).thenReturn(mockSavedBoard);
-        when(boardUserTagRepository.findUserTagNameByBoardId(any()))
-                .thenReturn(List.of("userTag1", "userTag2"));
 
-        Board board = boardService.create(BoardFixture.createBoardEntityWithUserEntity(),
-                user, boardUserTagEntityList, command
-                );
+        Board board = boardService.create(BoardFixture.createBoardEntityWithUserEntity(), boardUserTagEntityList);
 
         // then
         assertThat(board.getBoardId()).isEqualTo("1");

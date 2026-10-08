@@ -1,52 +1,57 @@
 package com.tagnote.core.domain.usertag.service;
 
+import com.tagnote.core.domain.user.UserEntity;
 import com.tagnote.core.domain.usertag.UserTagEntity;
 import com.tagnote.core.domain.usertag.repository.UserTagRepository;
-import com.tagnote.core.exception.CustomException;
-import com.tagnote.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserTagService {
+
     private final UserTagRepository userTagRepository;
 
-    /**
-     *  유저 태그 이름 리스트로 UserTagEntity의 리스트를 생성한다.
-     */
-    public List<UserTagEntity> makeUserTagList(List<String> userTagNameList) {
-        List<UserTagEntity> existingUserTagList = userTagRepository.findAllByNameIn(userTagNameList);
+    public List<UserTagEntity> makeUserTagList(UserEntity owner, List<String> userTagNameList) {
+        LinkedHashSet<String> uniqueNames = new LinkedHashSet<>();
+        for (String name : userTagNameList) {
+            validateName(name);
+            uniqueNames.add(name);
+        }
 
-        List<UserTagEntity> newUserTagList = userTagNameList.stream()
-                .filter(name -> existingUserTagList.stream().noneMatch(userTag -> userTag.getName().equals(name)))
-                .map(UserTagEntity::create)
-                .toList();
+        if (uniqueNames.isEmpty()) {
+            return List.of();
+        }
 
-        return Stream
-                .concat(existingUserTagList.stream(), newUserTagList.stream())
+        List<String> names = List.copyOf(uniqueNames);
+        Map<String, UserTagEntity> userTagByName = userTagRepository
+                .findAllByOwner_UserIdAndNameIn(owner.getUserId(), names)
+                .stream()
+                .collect(Collectors.toMap(UserTagEntity::getName, Function.identity()));
+
+        List<UserTagEntity> newUserTags = names.stream()
+                .filter(name -> !userTagByName.containsKey(name))
+                .map(name -> UserTagEntity.create(owner, name))
                 .toList();
+        if (!newUserTags.isEmpty()) {
+            userTagRepository.saveAllAndFlush(newUserTags);
+            newUserTags.forEach(userTag -> userTagByName.put(userTag.getName(), userTag));
+        }
+
+        return names.stream().map(userTagByName::get).toList();
     }
 
-    /**
-     * 유저 태그 이름으로 유저 태그 아이디를 조회한다.
-     */
-    public Long getUserTagIdByUserTagName(String userTagName) {
-        return getUserTagByName(userTagName).getUserTagId();
-    }
-
-
-    /*
-     * private
-     */
-    private UserTag getUserTagByName(String userTagName) {
-        return userTagRepository.findByName(userTagName).orElseThrow(() -> new CustomException(ExceptionCode.USER_TAG_NOT_FOUND)).toUserTag();
+    private void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("User tag name must not be blank");
+        }
     }
 }

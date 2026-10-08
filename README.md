@@ -1,7 +1,7 @@
-# #TagYourStory
+# #TagNote
 `Spring Boot` `Spring Data JPA` `Spring Security` `Spring Batch` `MySQL` `Redis` `Java 17` `JavaScript`
 
-**#TagYourStory**는 음악을 검색하여 개인 이야기를 기록할 수 있는 서비스입니다.
+**#TagNote**는 음악을 검색하여 개인 이야기를 기록할 수 있는 서비스입니다.
 
 ## 소개
 * 프론트(Vanilla JS)과 3개의 스프링 모듈(api/core/batch)로 구성된 프로젝트입니다.
@@ -9,7 +9,7 @@
 * 깃 브랜치 전략을 통해 버전업을 기획하고 지속적인 업데이트 중입니다.
 
 ## 아키텍처
-<img width="1234" alt="image" src="https://github.com/quietwave00/tag-your-story/assets/51073778/bbadefd3-70b8-43b3-92f1-c025501e7496">
+<img width="1234" alt="image" src="https://github.com/quietwave00/tag-note/assets/51073778/bbadefd3-70b8-43b3-92f1-c025501e7496">
 
 
 ## 프로젝트 내용
@@ -32,7 +32,7 @@
 <br>
 
 ### 3. Spring Batch와 젠킨스
-<img width="1338" alt="image-1" src="https://github.com/quietwave00/tag-your-story/assets/51073778/30bb9fe1-7551-4449-b3ea-f29b65b4cc91">
+<img width="1338" alt="image-1" src="https://github.com/quietwave00/tag-note/assets/51073778/30bb9fe1-7551-4449-b3ea-f29b65b4cc91">
 
 * 도입 배경
     * 사용자가 업로드한 파일은 서버를 통해 AWS S3 버킷에 저장되게 됩니다.
@@ -44,7 +44,7 @@
     * 처리해야 하는 파일의 수가 많아지는 경우를 고려하여 chunkSize를 두고, ItemReader(Soft Delete된 파일 데이터 읽기), ItemProcessor(S3 삭제 요청)의 작업을 구현하였습니다.
 
 ### 4. Spring Event와 SSE(Sever-Sent Events)를 활용한 실시간 알림 기능
-<img width="1344" alt="image-2" src="https://github.com/quietwave00/tag-your-story/assets/51073778/cf9c3f65-8037-4347-8996-1b517254674a">
+<img width="1344" alt="image-2" src="https://github.com/quietwave00/tag-note/assets/51073778/cf9c3f65-8037-4347-8996-1b517254674a">
 
 <br>
 

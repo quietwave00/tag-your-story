@@ -44,7 +44,7 @@ public class BoardEntityTest {
     }
 
     @Test
-    void 유저 태그_리스트를_추가한다() {
+    void 유저_태그_리스트를_추가한다() {
         // given
         BoardUserTagEntity userTagEntity1 =   BoardUserTagEntity.builder()
                 .boardUserTagId(1L)
