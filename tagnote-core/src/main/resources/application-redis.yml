@@ -1,0 +1,12 @@
+spring:
+  config.activate.on-profile: local
+  data:
+    redis:
+      host: localhost
+      port: 6379
+---
+spring:
+  config.activate.on-profile: prod
+  data:
+    redis:
+      url: ${UPSTASH_REDIS_URL}

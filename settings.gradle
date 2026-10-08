@@ -1,5 +1,5 @@
-rootProject.name = 'story'
-include 'story-batch'
-include 'story-api'
-include 'story-core'
+rootProject.name = 'tagnote'
+include 'tagnote-batch'
+include 'tagnote-api'
+include 'tagnote-core'
 

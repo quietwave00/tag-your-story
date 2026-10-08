@@ -1,0 +1,19 @@
+spring:
+  config.activate.on-profile: local
+  datasource:
+    url: jdbc:h2:mem:tagnote;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+---
+spring:
+  config.activate.on-profile: prod
+  datasource:
+    url: jdbc:oracle:thin:@(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.ap-seoul-1.oraclecloud.com))(connect_data=(service_name=g35a6afa74c4134_tagnotedb_tp.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver

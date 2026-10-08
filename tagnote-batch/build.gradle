@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':tagnote-core')
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+}
+
+jar.enabled = false;

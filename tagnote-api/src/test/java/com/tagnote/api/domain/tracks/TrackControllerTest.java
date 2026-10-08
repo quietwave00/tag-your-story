@@ -1,0 +1,177 @@
+package com.tagnote.api.domain.tracks;
+
+import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
+import com.tagnote.application.catalog.detail.model.SystemTagDetail;
+import com.tagnote.application.catalog.detail.model.PreviewTagDetail;
+import com.tagnote.application.catalog.detail.model.TrackDetail;
+import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.catalog.importer.model.ImportedArtist;
+import com.tagnote.application.catalog.importer.model.ImportedTrack;
+import com.tagnote.application.catalog.search.TrackSearchService;
+import com.tagnote.application.catalog.search.model.TrackSearchItem;
+import com.tagnote.application.catalog.search.model.TrackSearchResult;
+import com.tagnote.application.catalog.selection.TrackSelectionService;
+import com.tagnote.core.domain.tracks.service.TrackService;
+import com.tagnote.core.domain.tracks.service.dto.TrackData;
+import com.tagnote.core.domain.tracks.service.dto.response.RankingList;
+import com.tagnote.domain.enrichment.observation.ExternalTagSource;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(TrackController.class)
+@Import(WebMvcMethodSecurityTestConfig.class)
+class TrackControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private TrackSearchService trackSearchService;
+
+    @MockBean
+    private TrackService trackService;
+
+    @MockBean
+    private TrackSelectionService trackSelectionService;
+
+    @Test
+    void POST_api_tracks_import는_인증없이_전체_Artist_credit을_반환한다() throws Exception {
+        ImportedArtist trackArtist = ImportedArtist.of(3L, "track-artist", "Track Artist", 0);
+        ImportedArtist albumArtist = ImportedArtist.of(7L, "album-artist", "Album Artist", 0);
+        ImportedAlbum album = ImportedAlbum.of(
+                5L,
+                "album-1",
+                "album",
+                2024,
+                List.of(albumArtist)
+        );
+        when(trackSelectionService.select("track-1")).thenReturn(
+                new TrackDetail(ImportedTrack.of(
+                        10L,
+                        "track-1",
+                        null,
+                        "title",
+                        "ISRC-1",
+                        240_000,
+                        List.of(trackArtist),
+                        album
+                ), List.of(new SystemTagDetail(11L, "Ambient", 0.9)))
+        );
+
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"spotifyTrackId\":\"track-1\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response.catalogTrackId").value(10))
+                .andExpect(jsonPath("$.response.spotifyTrackId").value("track-1"))
+                .andExpect(jsonPath("$.response.artists[0].spotifyArtistId").value("track-artist"))
+                .andExpect(jsonPath("$.response.artists[0].position").value(0))
+                .andExpect(jsonPath("$.response.album.albumId").value(5))
+                .andExpect(jsonPath("$.response.album.artists[0].spotifyArtistId").value("album-artist"))
+                .andExpect(jsonPath("$.response.systemTags[0].tagId").value(11))
+                .andExpect(jsonPath("$.response.systemTags[0].name").value("Ambient"))
+                .andExpect(jsonPath("$.response.systemTags[0].score").value(0.9))
+                .andExpect(jsonPath("$.response.previewTags").isEmpty())
+                .andExpect(jsonPath("$.response.tagDisplayStatus").value("CONFIRMED"));
+    }
+
+    @Test
+    void POST_api_tracks_import_preview는_source만_표시하고_score를_노출하지_않는다() throws Exception {
+        ImportedTrack track = ImportedTrack.of(10L, "track-1", null, "title", null,
+                240_000, List.of(), ImportedAlbum.of(5L, "album-1",
+                        "album", 2024, List.of()));
+        when(trackSelectionService.select("track-1")).thenReturn(
+                new TrackDetail(track, List.of()).withPreview(
+                        List.of(new PreviewTagDetail("Night Drive", ExternalTagSource.LASTFM))));
+
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"spotifyTrackId\":\"track-1\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response.systemTags").isEmpty())
+                .andExpect(jsonPath("$.response.previewTags[0].name").value("Night Drive"))
+                .andExpect(jsonPath("$.response.previewTags[0].source").value("LASTFM"))
+                .andExpect(jsonPath("$.response.previewTags[0].score").doesNotExist())
+                .andExpect(jsonPath("$.response.tagDisplayStatus").value("PREVIEW"));
+    }
+
+    @Test
+    void POST_api_tracks_import는_blank_spotifyTrackId를_거부한다() throws Exception {
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"spotifyTrackId\":\" \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.response.message").value("spotifyTrackId는 비어 있을 수 없습니다."))
+                .andExpect(jsonPath("$.response.status").value(400));
+    }
+
+    @Test
+    void POST_api_tracks_import는_요청_body_누락을_400으로_반환한다() throws Exception {
+        mockMvc.perform(post("/api/tracks/import")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.response.message").value("요청 본문을 읽을 수 없습니다."))
+                .andExpect(jsonPath("$.response.status").value(400));
+    }
+
+    @Test
+    void GET_api_tracks는_keyword와_page_query를_유지한다() throws Exception {
+        when(trackSearchService.search("rock", 0)).thenReturn(
+                TrackSearchResult.of(
+                        List.of(TrackSearchItem.of("track-1", "artist", "title", "album", "image")),
+                        42
+                )
+        );
+
+        mockMvc.perform(get("/api/tracks").param("keyword", "rock").param("page", "0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response.trackDataList[0].trackId").value("track-1"))
+                .andExpect(jsonPath("$.response.trackDataList[0].artistName").value("artist"))
+                .andExpect(jsonPath("$.response.trackDataList[0].title").value("title"))
+                .andExpect(jsonPath("$.response.trackDataList[0].albumName").value("album"))
+                .andExpect(jsonPath("$.response.trackDataList[0].imageUrl").value("image"))
+                .andExpect(jsonPath("$.response.totalCount").value(42));
+    }
+
+    @Test
+    void GET_api_tracks_trackId는_TrackData_shape를_그대로_반환한다() throws Exception {
+        when(trackService.getDetail("track-1")).thenReturn(TrackData.of("track-1", "artist", "title", "album", "image"));
+
+        mockMvc.perform(get("/api/tracks/{trackId}", "track-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response.trackId").value("track-1"))
+                .andExpect(jsonPath("$.response.artistName").value("artist"))
+                .andExpect(jsonPath("$.response.title").value("title"))
+                .andExpect(jsonPath("$.response.albumName").value("album"))
+                .andExpect(jsonPath("$.response.imageUrl").value("image"));
+    }
+
+    @Test
+    void GET_api_tracks_ranking_route를_유지한다() throws Exception {
+        when(trackService.getKeywordRanking()).thenReturn(RankingList.onComplete(List.of("rock", "pop")));
+
+        mockMvc.perform(get("/api/tracks/ranking"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response.keywordList[0]").value("rock"))
+                .andExpect(jsonPath("$.response.keywordList[1]").value("pop"));
+    }
+}

@@ -1,0 +1,19 @@
+spotify:
+  client-id: ${SPOTIFY_CLIENT_ID}
+  client-secret: ${SPOTIFY_CLIENT_SECRET}
+
+spring:
+  config.activate.on-profile: local
+api:
+  redirect-url: "http://localhost:5500/token.html"
+  domain: ""
+  allowed-origins:
+    - "http://localhost:5173"
+---
+spring:
+  config.activate.on-profile: prod
+api:
+  redirect-url: "https://tagnote.blog/token.html"
+  domain: "tagnote.blog"
+  allowed-origins:
+    - "https://tagnote.blog"
