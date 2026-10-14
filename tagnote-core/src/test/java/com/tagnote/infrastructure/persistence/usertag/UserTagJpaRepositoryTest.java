@@ -2,7 +2,6 @@ package com.tagnote.infrastructure.persistence.usertag;
 
 import com.tagnote.core.domain.board.BoardEntity;
 import com.tagnote.core.domain.board.BoardStatus;
-import com.tagnote.core.domain.board.repository.BoardRepository;
 import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
 import com.tagnote.core.domain.boardusertag.repository.BoardUserTagRepository;
 import com.tagnote.core.domain.user.Role;
@@ -10,6 +9,9 @@ import com.tagnote.core.domain.user.UserEntity;
 import com.tagnote.core.domain.user.UserStatus;
 import com.tagnote.core.domain.usertag.UserTagEntity;
 import com.tagnote.core.domain.usertag.repository.UserTagRepository;
+import com.tagnote.domain.catalog.album.AlbumEntity;
+import com.tagnote.domain.catalog.track.TrackEntity;
+import com.tagnote.infrastructure.persistence.board.BoardJpaRepository;
 import jakarta.persistence.PersistenceException;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
@@ -41,7 +43,7 @@ class UserTagJpaRepositoryTest {
     private UserTagRepository userTagRepository;
 
     @Autowired
-    private BoardRepository boardRepository;
+    private BoardJpaRepository boardRepository;
 
     @Autowired
     private BoardUserTagRepository boardUserTagRepository;
@@ -130,10 +132,7 @@ class UserTagJpaRepositoryTest {
         statistics.clear();
 
         List<BoardEntity> boards = boardRepository.findBoardsByUserTagName("Jazz", BoardStatus.POST);
-        boards.forEach(board -> {
-            board.getUserEntity().getNickname();
-            board.getBoardUserTagEntityList().forEach(join -> join.getUserTag().getName());
-        });
+        boards.forEach(board -> board.getUserEntity().getNickname());
 
         assertThat(boards).hasSize(2);
         assertThat(boards).allMatch(board -> board.getStatus() == BoardStatus.POST);
@@ -154,8 +153,7 @@ class UserTagJpaRepositoryTest {
     }
 
     private BoardEntity persistBoard(UserEntity owner, String content, boolean removed) {
-        BoardEntity board = BoardEntity.create(content, "track-1");
-        board.addUser(owner);
+        BoardEntity board = BoardEntity.createForTrack(content, owner, persistTrack());
         if (removed) {
             board.delete();
         }
@@ -163,14 +161,23 @@ class UserTagJpaRepositoryTest {
     }
 
     private void persistBoardWithTags(UserEntity owner, boolean removed, UserTagEntity... tags) {
-        BoardEntity board = BoardEntity.create("content", "track-1");
-        board.addUser(owner);
+        BoardEntity board = BoardEntity.createForTrack("content", owner, persistTrack());
         if (removed) {
             board.delete();
         }
-        board.addBoardUserTagList(
+        boardRepository.saveAndFlush(board);
+        boardUserTagRepository.saveAll(
                 java.util.Arrays.stream(tags).map(tag -> BoardUserTagEntity.of(board, tag)).toList()
         );
-        boardRepository.save(board);
+    }
+
+    private TrackEntity persistTrack() {
+        String suffix = java.util.UUID.randomUUID().toString();
+        AlbumEntity album = entityManager.persistAndFlush(AlbumEntity.create(
+                "album-" + suffix, "album-" + suffix, 2026
+        ));
+        return entityManager.persistAndFlush(TrackEntity.create(
+                "track-" + suffix, "track-" + suffix, null, 1000, album
+        ));
     }
 }

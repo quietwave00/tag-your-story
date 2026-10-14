@@ -366,9 +366,10 @@ board
 - board_id
 - user_id
 - track_id
+- album_id
 - content
 - status
-- read_count
+- count
 - like_count
 - created_at
 - updated_at
@@ -377,25 +378,24 @@ board
 ### BoardStatus
 
 ```text
-PUBLISHED
-HIDDEN
-DELETED
+POST
+REMOVAL
 ```
 
 정책:
 
-- `PUBLISHED`: 일반 노출
-- `HIDDEN`: 운영 정책에 의한 비노출
-- `DELETED`: soft delete
+- `POST`: 일반 노출
+- `REMOVAL`: soft delete
 
 관계:
 
 ```text
 board.user_id → user.user_id
 board.track_id → track.track_id
+board.album_id → album.album_id
 ```
 
-Board는 반드시 하나의 Track을 대상으로 작성한다.
+Board는 Track 또는 Album 중 정확히 하나를 대상으로 작성한다. `track_id`, `album_id`는 각각 nullable이지만 둘 다 null이거나 둘 다 non-null인 row는 허용하지 않는다. ADR-013을 따른다.
 
 제약 / 인덱스:
 
@@ -403,16 +403,19 @@ Board는 반드시 하나의 Track을 대상으로 작성한다.
 PK(board_id)
 FK(user_id → user.user_id)
 FK(track_id → track.track_id)
+FK(album_id → album.album_id)
+CHECK(exactly one of track_id, album_id is not null)
 
 INDEX(user_id, created_at)
 INDEX(track_id, created_at)
+INDEX(album_id, created_at)
 INDEX(status, created_at)
 INDEX(like_count)
 ```
 
 ### Count 정책
 
-`like_count`, `read_count`는 조회 성능용 denormalized counter다.
+`like_count`, `count`는 조회 성능용 denormalized counter다.
 
 ```text
 board_like
@@ -829,9 +832,9 @@ Response
 ```text
 인증 User
 ↓
-Track 선택
+Track 또는 Album 선택
 ↓
-Track 확보
+선택한 Catalog subject 확보
 ↓
 content 작성
 ↓
@@ -849,6 +852,7 @@ Board
 ↓
 작성자
 User Tags
+대상 Track/Album의 visible subject_tag_resolved
 Like 상태
 ↓
 Response
@@ -983,6 +987,8 @@ commit
 9. resolved tag 포함 Response
 
 ### Board 생성
+
+Track/Album 선택과 외부 enrichment는 아래 transaction 전에 완료한다.
 
 하나의 트랜잭션:
 
@@ -1262,46 +1268,44 @@ Request:
 
 ```json
 {
-  "trackId": 100,
+  "trackId": "spotify-track-id",
   "content": "이 곡의 후반부가 정말 좋다.",
-  "userTags": [
+  "userTagList": [
     "새벽감성",
     "비오는날"
   ]
 }
 ```
 
+Album Board는 `trackId` 대신 Spotify Album ID 의미의 `albumId`를 전달한다. `trackId`, `albumId`는 정확히 하나만 존재해야 한다.
+
 ### Board 상세
 
 ```http
-GET /api/boards/{boardId}
+GET /api/boards?boardId={boardId}
 ```
 
 Response 예:
 
 ```json
 {
-  "boardId": 1000,
   "content": "이 곡의 후반부가 정말 좋다.",
-  "author": {
-    "userKey": "uuid",
-    "nickname": "listener"
-  },
-  "track": {
-    "trackId": 100,
-    "title": "Track",
-    "artistName": "Artist"
-  },
-  "userTags": [
-    {
-      "userTagId": 20,
-      "name": "새벽감성"
-    }
-  ],
-  "readCount": 120,
+  "nickname": "listener",
   "likeCount": 15,
-  "likedByMe": true,
-  "createdAt": "..."
+  "createdAt": "...",
+  "subjectType": "TRACK",
+  "trackId": "spotify-track-id",
+  "albumId": null,
+  "userTagNameList": {
+    "nameList": ["새벽감성"]
+  },
+  "systemTags": [
+    {
+      "tagId": 1,
+      "name": "Ambient",
+      "score": 0.9
+    }
+  ]
 }
 ```
 
@@ -1322,6 +1326,8 @@ tagId
 userTagId
 userKey
 ```
+
+현재 호환 API는 Track 목록 `GET /api/boards/{trackId}`와 Album 목록 `GET /api/boards/albums/{albumId}`를 제공하며 두 ID는 Spotify ID다. count도 각각 `GET /api/boards/count/{trackId}`, `GET /api/boards/count/albums/{albumId}`로 조회한다. 조회 인증은 필요하지 않다.
 
 대량 목록은 cursor pagination을 우선 검토한다.
 
@@ -1372,7 +1378,7 @@ GET /api/boards/user-tags?userTagName={name}
 - `userTagName`을 변형하지 않고 정확히 같은 `name`을 가진 모든 사용자의 UserTag를 대상으로 조회한다.
 - 단일 `user_tag_id`를 임의로 선택하지 않는다.
 - `POST` 상태 Board만 중복 없이 반환한다.
-- 응답 Board의 `trackId`를 통해 해당 이름으로 분류된 Track을 확인할 수 있다.
+- 응답 Board의 `subjectType`과 `trackId` 또는 `albumId`를 통해 해당 이름으로 분류된 대상을 확인할 수 있다.
 
 ### 사용자 프로필
 
@@ -1712,8 +1718,8 @@ Track / Album
 6. 외부 raw tag는 Observation에 보존한다.
 7. System Tag와 User Tag를 분리한다.
 8. Assertion은 근거이고 Resolved는 사용자 노출용 read model이다.
-9. Board는 하나의 Track을 참조한다.
-10. Board의 System Tag는 Track의 resolved tag를 통해 조회한다.
+9. Board는 Track 또는 Album 중 정확히 하나를 참조한다.
+10. Board의 System Tag는 대상 Track/Album의 visible resolved tag를 통해 조회한다.
 11. BoardUserTag는 Board와 작성자 소유 UserTag의 N:M 관계이며, UserTag identity는 입력값을 보존하는 `(user_id, name)` 단위다.
 12. User가 Board 목록 FK를 소유하지 않는다.
 13. Like 관계가 source of truth이고 `board.like_count`는 조회용 counter다.

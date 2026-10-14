@@ -1,7 +1,6 @@
 package com.tagnote.api.domain.board.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.tagnote.core.domain.board.service.dto.BoardList;
+import com.tagnote.application.board.model.BoardPage;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,10 +12,10 @@ public class BoardListResponse {
     private List<BoardResponse> boardResponseList;
     private long totalCount;
 
-    public static BoardListResponse from(BoardList boardList) {
+    public static BoardListResponse from(BoardPage boardList) {
         return BoardListResponse.builder()
-                .boardResponseList(boardList.getBoardList().stream().map(BoardResponse::from).toList())
-                .totalCount(boardList.getTotalCount())
+                .boardResponseList(boardList.boards().stream().map(BoardResponse::from).toList())
+                .totalCount(boardList.totalCount())
                 .build();
     }
 }

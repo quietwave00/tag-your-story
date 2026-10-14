@@ -210,10 +210,22 @@ create table board
     content    longtext      not null,
     count      int default 0 not null,
     status     varchar(255)  not null,
-    track_id   varchar(255)  not null,
+    track_id   bigint,
+    album_id   bigint,
     user_id    bigint        not null,
     like_count int default 0 not null,
-    foreign key (user_id) references users (user_id)
+    constraint fk_board_user foreign key (user_id) references users (user_id),
+    constraint fk_board_track foreign key (track_id) references track (track_id),
+    constraint fk_board_album foreign key (album_id) references album (album_id),
+    constraint ck_board_exactly_one_subject check (
+        (track_id is not null and album_id is null)
+        or (track_id is null and album_id is not null)
+    ),
+    index idx_board_user_created (user_id, created_at),
+    index idx_board_track_created (track_id, created_at),
+    index idx_board_album_created (album_id, created_at),
+    index idx_board_status_created (status, created_at),
+    index idx_board_like_count (like_count)
 ) ENGINE = InnoDB;
 
 create table comments

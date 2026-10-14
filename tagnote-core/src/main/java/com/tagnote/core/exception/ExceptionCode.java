@@ -10,6 +10,8 @@ public enum ExceptionCode {
 
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시물입니다."),
+    TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 트랙입니다."),
+    ALBUM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 앨범입니다."),
     USER_TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 유저 태그입니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
@@ -26,7 +28,9 @@ public enum ExceptionCode {
     LOCKED_RESOURCE(HttpStatus.LOCKED, "사용할 수 없는 자원입니다."),
 
     NO_READ_PERMISSION(HttpStatus.FORBIDDEN, "조회 권한이 없습니다."),
-    NO_PERMISSION(HttpStatus.FORBIDDEN, "권한이 없습니다.")
+    NO_PERMISSION(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+    BOARD_ACCESS_DENIED(HttpStatus.FORBIDDEN, "게시물 작성자만 변경할 수 있습니다."),
+    INVALID_BOARD_SUBJECT(HttpStatus.BAD_REQUEST, "trackId와 albumId 중 하나만 입력해야 합니다.")
     ;
 
     private final HttpStatus httpStatus;

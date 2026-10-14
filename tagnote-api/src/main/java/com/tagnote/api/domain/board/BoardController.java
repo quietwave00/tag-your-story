@@ -4,10 +4,11 @@ import com.tagnote.api.annotations.CurrentUserId;
 import com.tagnote.api.domain.board.dto.request.CreateBoardRequest;
 import com.tagnote.api.domain.board.dto.request.UpdateBoardRequest;
 import com.tagnote.api.domain.board.dto.response.*;
+import com.tagnote.application.board.BoardCommandService;
+import com.tagnote.application.board.BoardQueryService;
+import com.tagnote.application.board.model.BoardPage;
+import com.tagnote.application.board.model.BoardView;
 import com.tagnote.core.domain.board.BoardOrderType;
-import com.tagnote.core.domain.board.service.Board;
-import com.tagnote.core.domain.board.service.BoardFacade;
-import com.tagnote.core.domain.board.service.dto.BoardList;
 import com.tagnote.core.utils.api.ApiResult;
 import com.tagnote.core.utils.api.ApiUtils;
 import jakarta.validation.Valid;
@@ -20,17 +21,19 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/boards")
-public class BoardController {
+public class BoardController implements BoardApi {
 
-    private final BoardFacade boardFacade;
+    private final BoardCommandService commandService;
+    private final BoardQueryService queryService;
 
     /*
      * 게시글을 작성한다.
      */
     @PreAuthorize("hasRole('USER')")
     @PostMapping
+    @Override
     public ApiResult<CreateBoardResponse> create(@RequestBody @Valid CreateBoardRequest request, @CurrentUserId Long userId) {
-        Board response = boardFacade.create(request.toCommand(userId));
+        BoardView response = commandService.create(request.toCommand(userId));
         return ApiUtils.success(CreateBoardResponse.from(response));
     }
 
@@ -38,19 +41,31 @@ public class BoardController {
      * 트랙 아이디에 해당하는 게시물 리스트를 조회한다.
      */
     @GetMapping("/{trackId}")
+    @Override
     public ApiResult<BoardListResponse> getBoardListByTrackId(@PathVariable("trackId") String trackId,
                                                               @RequestParam("order-type") BoardOrderType orderType,
                                                               @RequestParam("page") int page) {
-        BoardList boardList = boardFacade.getBoardListByTrackId(trackId, orderType, page);
+        BoardPage boardList = queryService.getTrackBoards(trackId, orderType, page);
         return ApiUtils.success(BoardListResponse.from(boardList));
+    }
+
+    @GetMapping("/albums/{albumId}")
+    @Override
+    public ApiResult<BoardListResponse> getBoardListByAlbumId(
+            @PathVariable("albumId") String albumId,
+            @RequestParam("order-type") BoardOrderType orderType,
+            @RequestParam("page") int page
+    ) {
+        return ApiUtils.success(BoardListResponse.from(queryService.getAlbumBoards(albumId, orderType, page)));
     }
 
     /*
      * 게시물을 조회한다.
      */
     @GetMapping
+    @Override
     public ApiResult<DetailBoardResponse> getDetailBoard(@RequestParam("boardId") String boardId) {
-        Board response = boardFacade.getDetailBoard(boardId);
+        BoardView response = queryService.getDetail(boardId);
         return ApiUtils.success(DetailBoardResponse.from(response));
     }
 
@@ -58,9 +73,16 @@ public class BoardController {
      * 트랙 아이디에 대한 전체 게시물 개수를 조회한다.
      */
     @GetMapping("/count/{trackId}")
+    @Override
     public ApiResult<BoardCountResponse> getBoardCountByTrackId(@PathVariable("trackId") String trackId) {
-        int response = boardFacade.getBoardCountByTrackId(trackId);
+        int response = queryService.countTrackBoards(trackId);
         return ApiUtils.success(BoardCountResponse.from(response));
+    }
+
+    @GetMapping("/count/albums/{albumId}")
+    @Override
+    public ApiResult<BoardCountResponse> getBoardCountByAlbumId(@PathVariable("albumId") String albumId) {
+        return ApiUtils.success(BoardCountResponse.from(queryService.countAlbumBoards(albumId)));
     }
 
 
@@ -68,8 +90,9 @@ public class BoardController {
      * 유저 태그 이름을 갖고 있는 게시물 목록을 조회한다.
      */
     @GetMapping("/user-tags")
+    @Override
     public ApiResult<List<BoardResponse>> getBoardListByUserTagName(@RequestParam("userTagName") String userTagName) {
-        List<Board> boardList = boardFacade.getBoardListByUserTagName(userTagName);
+        List<BoardView> boardList = queryService.getBoardsByUserTagName(userTagName);
         return ApiUtils.success(boardList.stream().map(BoardResponse::from).toList());
     }
 
@@ -78,8 +101,9 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/auth/{boardId}")
+    @Override
     public ApiResult<Boolean> isWriter(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
-        Boolean isWriter = boardFacade.isWriter(boardId, userId);
+        Boolean isWriter = queryService.isWriter(boardId, userId);
         return ApiUtils.success(isWriter);
     }
 
@@ -88,8 +112,12 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('USER')")
     @PatchMapping
-    public ApiResult<BoardResponse> updateBoardAndUserTag(@RequestBody @Valid UpdateBoardRequest request) {
-        Board board = boardFacade.updateBoardAndUserTag(request.toCommand());
+    @Override
+    public ApiResult<BoardResponse> updateBoardAndUserTag(
+            @RequestBody @Valid UpdateBoardRequest request,
+            @CurrentUserId Long userId
+    ) {
+        BoardView board = commandService.update(request.toCommand(), userId);
         return ApiUtils.success(BoardResponse.from(board));
     }
 
@@ -98,8 +126,9 @@ public class BoardController {
      */
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{boardId}")
-    public ApiResult<Void> delete(@PathVariable("boardId") String boardId) {
-        boardFacade.delete(boardId);
+    @Override
+    public ApiResult<Void> delete(@PathVariable("boardId") String boardId, @CurrentUserId Long userId) {
+        commandService.delete(boardId, userId);
         return ApiUtils.success();
     }
 }

@@ -1,7 +1,6 @@
 package com.tagnote.core.domain.user;
 
 import com.tagnote.core.domain.BaseTime;
-import com.tagnote.core.domain.board.BoardEntity;
 import com.tagnote.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +9,6 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -45,17 +42,6 @@ public class UserEntity extends BaseTime implements Serializable {
     @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "userEntity")
-    private List<BoardEntity> boardList = new ArrayList<>();
-
-    /*
-     * 연관 관계 설정
-     */
-    public void addBoard(BoardEntity board) {
-        this.boardList.add(board);
-    }
 
     /*
      * 비즈니스 로직

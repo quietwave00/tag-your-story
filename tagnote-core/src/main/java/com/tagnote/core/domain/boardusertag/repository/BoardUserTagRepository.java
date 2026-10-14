@@ -1,12 +1,15 @@
 package com.tagnote.core.domain.boardusertag.repository;
 
 import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
+import com.tagnote.infrastructure.persistence.board.BoardUserTagNameRow;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Collection;
 
 public interface BoardUserTagRepository extends JpaRepository<BoardUserTagEntity, Long> {
 
@@ -18,7 +21,17 @@ public interface BoardUserTagRepository extends JpaRepository<BoardUserTagEntity
                 """)
     List<String> findUserTagNameByBoardId(@Param("boardId") String boardId);
 
-    void deleteByBoard_BoardId(String boardId);
+    @Modifying
+    @Query("delete from BoardUserTagEntity h where h.board.boardId = :boardId")
+    void deleteByBoard_BoardId(@Param("boardId") String boardId);
+
+    @Query("""
+            select new com.tagnote.infrastructure.persistence.board.BoardUserTagNameRow(h.board.boardId, h.userTag.name)
+            from BoardUserTagEntity h
+            where h.board.boardId in :boardIds
+            order by h.board.boardId asc, h.boardUserTagId asc
+            """)
+    List<BoardUserTagNameRow> findNamesByBoardIds(@Param("boardIds") Collection<String> boardIds);
 
     @Query("""
             SELECT bh

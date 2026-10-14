@@ -10,6 +10,7 @@ import java.util.List;
 public class CreateBoardCommand {
     private String content;
     private String trackId;
+    private String albumId;
     private List<String> userTagList;
     private Long userId;
 }

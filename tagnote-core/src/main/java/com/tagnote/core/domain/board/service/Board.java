@@ -32,6 +32,8 @@ public class Board {
 
     private String trackId;
 
+    private String albumId;
+
     private User user;
 
     private UserTagNames userTagNameList;
@@ -55,7 +57,6 @@ public class Board {
                 .status(this.getStatus())
                 .count(this.getCount())
                 .likeCount(this.getLikeCount())
-                .trackId(this.getTrackId())
                 .userEntity(this.getUser().toEntity())
                 .build();
     }

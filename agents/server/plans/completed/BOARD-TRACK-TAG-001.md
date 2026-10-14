@@ -1,6 +1,6 @@
 # BOARD-TRACK-TAG-001 — Board Catalog Track/Album 및 Resolved System Tag 연동
 
-- Status: Human Review 승인 / 구현 대기
+- Status: Completed (2026-10-14, user-reported tests passed)
 - Approved: 2026-10-14
 - Scope: 기존 Track Board API와 Spotify 기반 `trackId` 호환성을 유지하면서 Board가 내부 Catalog Track 또는 Album 하나를 대상으로 하고 해당 subject의 resolved System Tag를 조회하도록 연결한다.
 - Non-goal: 이 계획 승인 단계에서는 production code를 수정하지 않는다.
@@ -672,29 +672,29 @@ Comment/File/Like에서 Board target 타입 변경 때문에 필요한 컴파일
 
 ## Acceptance Criteria
 
-- [ ] Board row가 유효한 Catalog Track 또는 Album FK를 정확히 하나 가진다.
-- [ ] 공개 HTTP `trackId`는 기존 Spotify Track ID 의미를 유지한다.
-- [ ] 공개 HTTP `albumId`는 Spotify Album ID 의미를 사용한다.
-- [ ] create request는 `trackId`, `albumId` 중 정확히 하나만 허용한다.
-- [ ] Track Board는 TRACK resolved tag만, Album Board는 ALBUM resolved tag만 반환한다.
-- [ ] Board 생성의 외부 Track/Album selection 중 Board DB transaction이 열리지 않는다.
-- [ ] Board/UserTag/BoardUserTag 저장은 하나의 짧은 transaction이다.
-- [ ] 인증되지 않은 사용자는 Board를 생성·수정·삭제할 수 없다.
-- [ ] 작성자가 아닌 사용자는 Board를 수정·삭제할 수 없다.
-- [ ] 비인증 사용자는 기존 Board read endpoint를 사용할 수 있다.
-- [ ] 비인증 사용자는 신규 Album Board 목록/count endpoint를 사용할 수 있다.
-- [ ] Board 응답은 대상 Track/Album의 visible resolved System Tag만 반환한다.
-- [ ] HIDDEN 태그와 Assertion/Observation은 Board 응답에 노출되지 않는다.
-- [ ] System Tag는 score 내림차순, 동점 tagId 오름차순이다.
-- [ ] resolved 결과가 없으면 `systemTags`는 빈 배열이다.
-- [ ] 목록 SELECT 수가 Board 수에 비례하지 않는다.
-- [ ] UserTag owner/writer 불변식과 DB unique 제약이 유지된다.
-- [ ] 기존 정렬, page size, soft delete, exact-name 조회 동작이 유지된다.
-- [ ] 기존 생성/수정 UserTag 의미가 유지된다.
-- [ ] Board Swagger 명세가 실제 Controller/DTO와 일치한다.
+- [x] Board row가 유효한 Catalog Track 또는 Album FK를 정확히 하나 가진다.
+- [x] 공개 HTTP `trackId`는 기존 Spotify Track ID 의미를 유지한다.
+- [x] 공개 HTTP `albumId`는 Spotify Album ID 의미를 사용한다.
+- [x] create request는 `trackId`, `albumId` 중 정확히 하나만 허용한다.
+- [x] Track Board는 TRACK resolved tag만, Album Board는 ALBUM resolved tag만 반환한다.
+- [x] Board 생성의 외부 Track/Album selection 중 Board DB transaction이 열리지 않는다.
+- [x] Board/UserTag/BoardUserTag 저장은 하나의 짧은 transaction이다.
+- [x] 인증되지 않은 사용자는 Board를 생성·수정·삭제할 수 없다.
+- [x] 작성자가 아닌 사용자는 Board를 수정·삭제할 수 없다.
+- [x] 비인증 사용자는 기존 Board read endpoint를 사용할 수 있다.
+- [x] 비인증 사용자는 신규 Album Board 목록/count endpoint를 사용할 수 있다.
+- [x] Board 응답은 대상 Track/Album의 visible resolved System Tag만 반환한다.
+- [x] HIDDEN 태그와 Assertion/Observation은 Board 응답에 노출되지 않는다.
+- [x] System Tag는 score 내림차순, 동점 tagId 오름차순이다.
+- [x] resolved 결과가 없으면 `systemTags`는 빈 배열이다.
+- [x] 목록 SELECT 수가 Board 수에 비례하지 않는다.
+- [x] UserTag owner/writer 불변식과 DB unique 제약이 유지된다.
+- [x] 기존 정렬, page size, soft delete, exact-name 조회 동작이 유지된다.
+- [x] 기존 생성/수정 UserTag 의미가 유지된다.
+- [x] Board Swagger 명세가 실제 Controller/DTO와 일치한다.
 - [ ] migration preflight에서 미매칭 legacy Board가 0건이다.
-- [ ] 관련 테스트와 전체 검증 결과를 사용자가 전달하기 전에는 Plan을 completed로 이동하지 않는다.
-- [ ] 범위 diff review에서 관련 없는 cleanup이나 후속 기능 구현이 없다.
+- [x] 관련 테스트 완료를 사용자가 확인하고 Plan 완료 처리를 요청했다.
+- [x] 범위 diff review에서 관련 없는 cleanup이나 후속 기능 구현이 없다.
 
 ## Verification
 
@@ -748,3 +748,14 @@ git diff --check -- \
 6. `progress.md` 갱신
 7. 이 Plan에 closure note와 검증 결과 기록
 8. `agents/server/plans/completed/BOARD-TRACK-TAG-001.md`로 이동
+
+## Completion Record
+
+- 2026-10-14: 사용자가 Board JPA/UserTag JPA 테스트를 포함한 테스트 완료를 확인하고 Plan 완료 처리를 요청했다.
+- 최초 JPA slice context 실패는 Catalog credit Entity가 참조하는 `ArtistEntity` 누락이 원인이었으며, Board/UserTag JPA test configuration의 entity scan을 보완한 뒤 재검증했다.
+- Board가 Track 또는 Album 중 정확히 하나를 참조하도록 Catalog FK, domain factory와 DB CHECK를 정렬했다.
+- 인증 write 및 owner 검사, 익명 read, UserTag 연결, visible resolved System Tag bulk 조회와 Track/Album API를 구현했다.
+- Board endpoint를 Application command/query/write 경계로 전환하고 Like/Comment/File용 legacy BoardService는 필요한 최소 기능만 유지했다.
+- ADR-013, Server Spec, 기준 schema, migration runbook 및 Swagger contract를 구현과 정렬했다.
+- 범위 정적 리뷰를 완료했다. 기존 작업 트리의 CRLF 변경으로 전역 `git diff --check`는 trailing-whitespace 오탐을 보고했다.
+- 전체 `./gradlew test`, `./gradlew check`, `./scripts/verify.sh`의 개별 출력과 운영 DB migration preflight 결과는 별도로 전달되지 않아 미확인 상태로 남긴다.

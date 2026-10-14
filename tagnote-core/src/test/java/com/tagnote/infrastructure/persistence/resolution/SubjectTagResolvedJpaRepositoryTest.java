@@ -251,6 +251,54 @@ class SubjectTagResolvedJpaRepositoryTest {
     }
 
     @Test
+    void Board_bulk_조회는_subject_집합의_HIDDEN을_제외하고_한_query로_Tag를_적재한다() {
+        TrackEntity otherTrack = trackRepository.saveAndFlush(TrackEntity.create(
+                "Other Track", "resolution-other-track", null, 200_000, track.getAlbum()
+        ));
+        TagEntity high = activeTag("board-high");
+        TagEntity low = activeTag("board-low");
+        TagEntity hidden = activeTag("board-hidden");
+        resolvedRepository.saveAllAndFlush(List.of(
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(track), low, 0.6, ResolvedStatus.MANUAL_FIXED,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                ),
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(track), high, 0.9, ResolvedStatus.MANUAL_FIXED,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                ),
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(otherTrack), high, 0.8, ResolvedStatus.MANUAL_FIXED,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                ),
+                SubjectTagResolvedEntity.manual(
+                        SubjectRef.track(otherTrack), hidden, 1.0, ResolvedStatus.HIDDEN,
+                        ResolutionReason.ADMIN_APPROVED, LocalDateTime.now()
+                )
+        ));
+        entityManager.clear();
+        Statistics statistics = entityManager.getEntityManagerFactory()
+                .unwrap(SessionFactory.class)
+                .getStatistics();
+        statistics.clear();
+
+        List<SubjectTagResolvedEntity> visible = resolvedRepository.findVisibleBySubjectsWithTag(
+                SubjectType.TRACK,
+                List.of(track.getTrackId(), otherTrack.getTrackId()),
+                ResolvedStatus.HIDDEN
+        );
+        visible.forEach(row -> assertThat(row.getTag().getName()).isNotBlank());
+
+        assertThat(visible).hasSize(3);
+        assertThat(visible.stream()
+                .filter(row -> row.getSubjectId().equals(track.getTrackId()))
+                .map(row -> row.getTag().getTagId())
+                .toList()).containsExactly(high.getTagId(), low.getTagId());
+        assertThat(visible).noneMatch(row -> row.getTag().getTagId().equals(hidden.getTagId()));
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1L);
+    }
+
+    @Test
     void import에서_검증된_Track_context는_Track과_Album_subject_재조회를_생략한다() {
         ImportedTrack imported = ImportedTrack.of(
                 track.getTrackId(), "resolution-track", null, "Track", "ISRC-R", 180_000, List.of(),

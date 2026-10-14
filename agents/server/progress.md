@@ -1,5 +1,12 @@
 # Progress
 
+- 2026-10-14: BOARD-TRACK-TAG-001 사용자 요청으로 completed 이동.
+  - Board가 Catalog Track 또는 Album 중 정확히 하나를 FK로 참조하도록 ADR-013, JPA mapping, 기준 DDL과 migration runbook을 정렬했다.
+  - Spotify `trackId`/`albumId` 기반 인증 Board 작성과 owner write 검증, 익명 조회 및 visible resolved System Tag bulk 조회를 구현했다.
+  - Board HTTP endpoint를 Application command/query/write 경계로 전환하고 기존 Track API 호환 및 신규 Album 목록/count API를 유지했다.
+  - 최초 JPA slice context의 누락된 `ArtistEntity` scan을 보완했으며, 사용자가 테스트 완료를 확인하고 Plan 완료 처리를 요청했다.
+  - 전체 `test`, `check`, `scripts/verify.sh`의 개별 출력과 운영 DB migration preflight 결과는 전달받지 않아 Plan closure record에 미확인으로 남겼다.
+
 - 2026-09-28: CATALOG-ALBUM-IMPORT-001 사용자 요청으로 completed 이동.
   - 통합 검색의 `subjectType`/`spotifyId`를 받는 Catalog import API와 Album 전용
     Spotify metadata/Catalog/enrichment/resolved tag 경로를 추가했다. 기존 Track import는 유지한다.

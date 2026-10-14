@@ -1,11 +1,12 @@
 package com.tagnote.api.domain.board.dto.response;
 
-import com.tagnote.core.domain.board.service.Board;
+import com.tagnote.application.board.model.BoardView;
 import com.tagnote.core.domain.boardusertag.service.dto.UserTagNames;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -15,14 +16,24 @@ public class CreateBoardResponse {
     private String content;
     private LocalDateTime createdAt;
     private UserTagNames userTagList;
+    private String subjectType;
+    private String trackId;
+    private String albumId;
+    private List<BoardSystemTagResponse> systemTags;
 
-    public static CreateBoardResponse from(Board board) {
+    public static CreateBoardResponse from(BoardView board) {
         return builder()
-                .boardId(board.getBoardId())
-                .nickname(board.getUser().getNickname())
-                .content(board.getContent())
-                .createdAt(board.getCreatedAt())
-                .userTagList(board.getUserTagNameList())
+                .boardId(board.boardId())
+                .nickname(board.nickname())
+                .content(board.content())
+                .createdAt(board.createdAt())
+                .userTagList(UserTagNames.ofNameList(board.userTagNames()))
+                .subjectType(board.subject().type().name())
+                .trackId(board.subject().type() == com.tagnote.domain.enrichment.subject.SubjectType.TRACK
+                        ? board.subject().spotifyId() : null)
+                .albumId(board.subject().type() == com.tagnote.domain.enrichment.subject.SubjectType.ALBUM
+                        ? board.subject().spotifyId() : null)
+                .systemTags(board.systemTags().stream().map(BoardSystemTagResponse::from).toList())
                 .build();
     }
 }

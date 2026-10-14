@@ -1,69 +1,55 @@
 package com.tagnote.domain.board;
 
 import com.tagnote.core.domain.board.BoardEntity;
-import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
+import com.tagnote.core.domain.board.BoardStatus;
 import com.tagnote.core.domain.user.UserEntity;
-import com.tagnote.domain.board.fixture.BoardFixture;
-import org.junit.jupiter.api.BeforeEach;
+import com.tagnote.domain.catalog.album.AlbumEntity;
+import com.tagnote.domain.catalog.track.TrackEntity;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
+class BoardEntityTest {
 
-public class BoardEntityTest {
+    private final UserEntity writer = UserEntity.builder().userId(1L).build();
 
-    private BoardEntity boardEntity;
+    @Test
+    void Track_Board는_Track만_대상으로_가진다() {
+        TrackEntity track = mock(TrackEntity.class);
 
-    @BeforeEach
-    void setUp() {
-        boardEntity = BoardEntity.builder()
-                .boardId("1")
-                .build();
+        BoardEntity board = BoardEntity.createForTrack("content", writer, track);
+
+        assertThat(board.getTrack()).isSameAs(track);
+        assertThat(board.getAlbum()).isNull();
+        assertThat(board.getStatus()).isEqualTo(BoardStatus.POST);
     }
 
     @Test
-    void 유저를_추가한다() {
-        // given
-        UserEntity userEntity = UserEntity.builder()
-                .userId(1L)
-                .build();
+    void Album_Board는_Album만_대상으로_가진다() {
+        AlbumEntity album = mock(AlbumEntity.class);
 
-        // when
-        /* 의존하는 객체가 없으므로 검증 할 필요가 없다.*/
+        BoardEntity board = BoardEntity.createForAlbum("content", writer, album);
 
-        boardEntity.addUser(userEntity);
-
-        // then
-        assertSoftly(softly -> {
-            softly.assertThat(boardEntity.getUserEntity()).isNotNull();
-            softly.assertThat(boardEntity.getUserEntity()).isEqualTo(userEntity);
-        });
+        assertThat(board.getAlbum()).isSameAs(album);
+        assertThat(board.getTrack()).isNull();
     }
 
     @Test
-    void 유저_태그_리스트를_추가한다() {
-        // given
-        BoardUserTagEntity userTagEntity1 =   BoardUserTagEntity.builder()
-                .boardUserTagId(1L)
-                .build();
-        BoardUserTagEntity userTagEntity2 =  BoardUserTagEntity.builder()
-                .boardUserTagId(2L)
-                .build();
-        List<BoardUserTagEntity> boardUserTagEntityList = List.of(
-                userTagEntity1, userTagEntity2
-        );
+    void target이_null이면_생성을_거부한다() {
+        assertThatThrownBy(() -> BoardEntity.createForTrack("content", writer, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> BoardEntity.createForAlbum("content", writer, null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 
-        BoardEntity boardEntity = BoardFixture.createBoardEntityWithUserEntity();
-        boardEntity.addBoardUserTagList(boardUserTagEntityList);
+    @Test
+    void 삭제는_REMOVAL_soft_delete다() {
+        BoardEntity board = BoardEntity.createForTrack("content", writer, mock(TrackEntity.class));
 
-        //then
-        assertThat(boardEntity.getBoardUserTagEntityList()).isNotNull();
-        assertThat(boardEntity.getBoardUserTagEntityList().get(0).getBoardUserTagId()).isEqualTo(1L);
-        assertThat(boardEntity.getBoardUserTagEntityList().size()).isEqualTo(2);
+        board.delete();
 
-      //  assertThat(boardEntity.getBoardUserTagEntityList()).containsExactly(userTagEntity1, userTagEntity2);
+        assertThat(board.getStatus()).isEqualTo(BoardStatus.REMOVAL);
     }
 }

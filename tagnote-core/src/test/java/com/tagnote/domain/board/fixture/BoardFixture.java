@@ -13,12 +13,10 @@ public class BoardFixture {
     }
 
     public static BoardEntity createBoardEntityWithUserEntity() {
-        BoardEntity boardEntity = createBoardEntity();
         UserEntity userEntity = UserEntity.builder()
                 .userId(1L)
                 .build();
-        boardEntity.addUser(userEntity);
-        return boardEntity;
+        return BoardEntity.builder().boardId("1").userEntity(userEntity).build();
     }
 
     public static Board createBoard(String boardId) {

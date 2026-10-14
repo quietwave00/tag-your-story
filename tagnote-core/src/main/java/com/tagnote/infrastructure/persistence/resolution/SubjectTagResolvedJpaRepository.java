@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Collection;
 
 public interface SubjectTagResolvedJpaRepository extends JpaRepository<SubjectTagResolvedEntity, Long> {
 
@@ -37,6 +38,21 @@ public interface SubjectTagResolvedJpaRepository extends JpaRepository<SubjectTa
     List<SubjectTagResolvedEntity> findVisibleBySubjectWithTag(
             @Param("subjectType") SubjectType subjectType,
             @Param("subjectId") long subjectId,
+            @Param("hiddenStatus") ResolvedStatus hiddenStatus
+    );
+
+    @Query("""
+            select resolved
+            from SubjectTagResolvedEntity resolved
+            join fetch resolved.tag tag
+            where resolved.subjectType = :subjectType
+              and resolved.subjectId in :subjectIds
+              and resolved.status <> :hiddenStatus
+            order by resolved.subjectId asc, resolved.score desc, tag.tagId asc
+            """)
+    List<SubjectTagResolvedEntity> findVisibleBySubjectsWithTag(
+            @Param("subjectType") SubjectType subjectType,
+            @Param("subjectIds") Collection<Long> subjectIds,
             @Param("hiddenStatus") ResolvedStatus hiddenStatus
     );
 }

@@ -54,11 +54,6 @@ public class BoardUserTagEntity extends BaseTime {
                 .build();
     }
 
-    public void addBoard(BoardEntity board) {
-        this.board = board;
-    }
-
-
     /*
      * 형변환
      */
