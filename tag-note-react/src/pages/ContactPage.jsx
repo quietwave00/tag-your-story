@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import '../styles/contact.css';
 
 const contactLinks = [
@@ -8,12 +9,14 @@ const contactLinks = [
 ];
 
 export default function ContactPage() {
+  const { t } = useTranslation('common');
+
   return (
     <section className="contact-page" aria-labelledby="contact-title">
       <h1 className="contact-title" id="contact-title">
-        Contact
+        {t('contact.title')}
       </h1>
-      <nav className="contact-links" aria-label="Contact links">
+      <nav className="contact-links" aria-label={t('contact.linksLabel')}>
         {contactLinks.map((link) => (
           <a className="contact-link" href={link.href} key={link.label} rel="noreferrer" target="_blank">
             <span className="contact-icon" aria-hidden="true" />

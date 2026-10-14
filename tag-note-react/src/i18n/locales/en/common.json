@@ -1,0 +1,38 @@
+{
+  "navigation": {
+    "primary": "Primary navigation",
+    "brandHome": "#tagnote home",
+    "log": "LOG",
+    "dig": "DIG",
+    "contact": "CONTACT",
+    "myTags": "MY TAGS",
+    "exit": "EXIT"
+  },
+  "language": {
+    "label": "Language",
+    "korean": "Korean",
+    "english": "English"
+  },
+  "actions": {
+    "save": "SAVE",
+    "cancel": "CANCEL",
+    "write": "WRITE",
+    "edit": "EDIT",
+    "delete": "DELETE",
+    "uploadImage": "UPLOAD IMAGE",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "generic": "We could not process your request."
+  },
+  "images": {
+    "albumCover": "{{title}} album cover",
+    "uploaded": "Uploaded image"
+  },
+  "contact": {
+    "title": "Contact",
+    "linksLabel": "Contact links"
+  }
+}

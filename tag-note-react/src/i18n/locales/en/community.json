@@ -1,0 +1,25 @@
+{
+  "comments": {
+    "title": "Comments",
+    "input": "Write a comment",
+    "replyInput": "Write a reply",
+    "loading": "Loading comments.",
+    "error": "We could not process the comment request.",
+    "empty": "No comments yet.",
+    "deleteConfirm": "Delete this comment?",
+    "replyAction": "Reply",
+    "moreReplies": "Show more replies",
+    "pagination": "Comment pages"
+  },
+  "notifications": {
+    "trigger": "Notifications",
+    "loading": "Loading notifications.",
+    "error": "We could not load notifications.",
+    "empty": "No notifications.",
+    "allRead": "Mark all as read",
+    "close": "Close notification",
+    "comment": "{{publisher}} commented on your tag note.",
+    "like": "{{publisher}} liked your tag note.",
+    "generic": "You have a new notification."
+  }
+}

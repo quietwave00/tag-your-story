@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { commentService } from '../../services/commentService.js';
 import '../../styles/commentSection.css';
 
@@ -30,6 +31,8 @@ function CommentItem({
   onReplyStart,
   children,
 }) {
+  const { t } = useTranslation(['community', 'common']);
+
   return (
     <>
       <div className={isReply ? 'comment-row reply' : 'comment-row'}>
@@ -38,7 +41,12 @@ function CommentItem({
           {isReply ? <span className="reply-symbol">↳ </span> : null}
           <span>{comment.content}</span>
           {!isReply ? (
-            <button className="comment-reply-trigger" onClick={() => onReplyStart(comment.commentId)} type="button">
+            <button
+              aria-label={t('comments.replyAction')}
+              className="comment-reply-trigger"
+              onClick={() => onReplyStart(comment.commentId)}
+              type="button"
+            >
               ↳
             </button>
           ) : null}
@@ -46,10 +54,10 @@ function CommentItem({
         {canEdit ? (
           <div className="comment-actions">
             <button onClick={() => onEditStart(comment)} type="button">
-              수정
+              {t('common:actions.edit')}
             </button>
             <button onClick={() => onDelete(comment.commentId)} type="button">
-              삭제
+              {t('common:actions.delete')}
             </button>
           </div>
         ) : null}
@@ -60,6 +68,7 @@ function CommentItem({
 }
 
 export default function CommentSection({ boardId, isAuthenticated }) {
+  const { t } = useTranslation(['community', 'common']);
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
@@ -199,7 +208,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
   };
 
   const handleDeleteComment = async (commentId) => {
-    const shouldDelete = window.confirm('삭제하시겠습니까?');
+    const shouldDelete = window.confirm(t('comments.deleteConfirm'));
 
     if (!shouldDelete || isSubmitting) {
       return;
@@ -241,26 +250,26 @@ export default function CommentSection({ boardId, isAuthenticated }) {
   return (
     <section className="comment-section" aria-labelledby="comment-section-title">
       <h2 className="comment-section-title" id="comment-section-title">
-        댓글
+        {t('comments.title')}
       </h2>
 
       <form className="comment-write-form" onSubmit={handleWriteComment}>
         <input
           className="comment-input"
           onChange={(event) => setNewCommentContent(event.target.value)}
-          placeholder="Comment"
+          placeholder={t('comments.input')}
           type="text"
           value={newCommentContent}
         />
         <button className="comment-submit-button" disabled={!newCommentContent.trim() || isSubmitting} type="submit">
-          WRITE
+          {t('common:actions.write')}
         </button>
       </form>
 
-      {isLoading ? <p className="comment-message">댓글을 불러오는 중입니다.</p> : null}
-      {error ? <p className="comment-message error">댓글 요청을 처리하지 못했습니다.</p> : null}
+      {isLoading ? <p className="comment-message">{t('comments.loading')}</p> : null}
+      {error ? <p className="comment-message error">{t('comments.error')}</p> : null}
       {!isLoading && !error && comments.length === 0 ? (
-        <p className="comment-message">작성된 댓글이 없습니다.</p>
+        <p className="comment-message">{t('comments.empty')}</p>
       ) : null}
 
       <div className="comment-list">
@@ -281,7 +290,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
                     value={editingContent}
                   />
                   <button disabled={!editingContent.trim() || isSubmitting} onClick={() => handleUpdateComment(comment.commentId)} type="button">
-                    WRITE
+                    {t('common:actions.write')}
                   </button>
                 </div>
               ) : (
@@ -298,6 +307,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
                 <div className="reply-write-form">
                   <input
                     className="reply-input"
+                    placeholder={t('comments.replyInput')}
                     onChange={(event) =>
                       setReplyInputs((inputs) => ({
                         ...inputs,
@@ -312,7 +322,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
                     onClick={() => handleCreateReply(comment.commentId)}
                     type="button"
                   >
-                    WRITE
+                    {t('common:actions.write')}
                   </button>
                 </div>
               ) : null}
@@ -327,7 +337,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
                       value={editingContent}
                     />
                     <button disabled={!editingContent.trim() || isSubmitting} onClick={() => handleUpdateComment(reply.commentId)} type="button">
-                      WRITE
+                      {t('common:actions.write')}
                     </button>
                   </div>
                 ) : (
@@ -344,7 +354,12 @@ export default function CommentSection({ boardId, isAuthenticated }) {
               ))}
 
               {hasMoreReplies ? (
-                <button className="more-replies-button" onClick={() => showMoreReplies(comment.commentId)} type="button">
+                <button
+                  aria-label={t('comments.moreReplies')}
+                  className="more-replies-button"
+                  onClick={() => showMoreReplies(comment.commentId)}
+                  type="button"
+                >
                   ● ● ●
                 </button>
               ) : null}
@@ -354,9 +369,9 @@ export default function CommentSection({ boardId, isAuthenticated }) {
       </div>
 
       {!isLoading && !error && commentCount > 0 ? (
-        <nav className="comment-pagination" aria-label="댓글 목록 페이지">
+        <nav className="comment-pagination" aria-label={t('comments.pagination')}>
           <button
-            aria-label="이전 페이지"
+            aria-label={t('common:actions.previousPage')}
             disabled={currentPage <= 1}
             onClick={() => handlePageChange(currentPage - 1)}
             type="button"
@@ -375,7 +390,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
             </button>
           ))}
           <button
-            aria-label="다음 페이지"
+            aria-label={t('common:actions.nextPage')}
             disabled={currentPage >= totalPages}
             onClick={() => handlePageChange(currentPage + 1)}
             type="button"

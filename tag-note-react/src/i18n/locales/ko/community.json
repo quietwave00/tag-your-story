@@ -1,0 +1,25 @@
+{
+  "comments": {
+    "title": "댓글",
+    "input": "댓글 작성",
+    "replyInput": "답글 작성",
+    "loading": "댓글을 불러오는 중입니다.",
+    "error": "댓글 요청을 처리하지 못했습니다.",
+    "empty": "작성된 댓글이 없습니다.",
+    "deleteConfirm": "이 댓글을 삭제하시겠습니까?",
+    "replyAction": "답글",
+    "moreReplies": "답글 더 보기",
+    "pagination": "댓글 목록 페이지"
+  },
+  "notifications": {
+    "trigger": "알림",
+    "loading": "알림을 불러오는 중입니다.",
+    "error": "알림을 불러오지 못했습니다.",
+    "empty": "알림 내역이 없습니다.",
+    "allRead": "모두 읽음",
+    "close": "알림 닫기",
+    "comment": "{{publisher}} 님이 내 글에 댓글을 달았습니다.",
+    "like": "{{publisher}} 님이 내 글에 좋아요를 눌렀습니다.",
+    "generic": "새 알림이 도착했습니다."
+  }
+}

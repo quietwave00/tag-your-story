@@ -1,0 +1,33 @@
+{
+  "search": {
+    "title": "검색",
+    "prompt": "홈에서 트랙, 앨범, 아티스트를 검색해 주세요.",
+    "resultsTitle": "검색 결과",
+    "loading": "트랙을 불러오는 중입니다 █",
+    "error": "트랙을 불러오지 못했습니다.",
+    "empty": "검색 결과가 없습니다.",
+    "pagination": "트랙 검색 결과 페이지"
+  },
+  "metadata": {
+    "artist": "아티스트",
+    "album": "앨범",
+    "tag": "태그",
+    "trackId": "트랙 ID"
+  },
+  "detail": {
+    "back": "검색 결과로 돌아가기",
+    "loading": "트랙 정보를 불러오는 중입니다.",
+    "error": "트랙 정보를 불러오지 못했습니다.",
+    "addTag": "+ 커스텀 태그 추가"
+  },
+  "boards": {
+    "title": "태그 노트",
+    "sortLabel": "태그 노트 정렬",
+    "latest": "최신순",
+    "popular": "추천순",
+    "loading": "태그 노트를 불러오는 중입니다 █",
+    "error": "태그 노트를 불러오지 못했습니다.",
+    "empty": "아직 작성된 태그 노트가 없습니다.",
+    "pagination": "태그 노트 목록 페이지"
+  }
+}

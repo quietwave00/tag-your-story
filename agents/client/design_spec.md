@@ -104,27 +104,28 @@ Line Rules:
 ## 8. 질감과 이미지
 
 자산:
-- `tag-note-react/assets/img_1.png`: 구겨진 종이 질감. 홈 히어로와 전역 질감의 주 자산으로 사용한다.
+- `tag-note-react/assets/tagnote-logo-transparent.png`: 홈 히어로와 홈 화면 헤더의 브랜드 이미지로 사용한다.
 - `tag-note-react/assets/img.png`: 명시적 dot/grain 인상이 강하므로 기본 디자인에서는 사용하지 않는다.
 
 Texture Rules:
 - dot 패턴처럼 보이는 noise는 사용하지 않는다.
-- dust는 작은 점이 아니라 흐린 종이 안개처럼 보여야 한다.
-- 전역 질감은 `img_1.png`를 blur, low opacity, slow drift로 처리한다.
+- 배경 질감은 이미지 대신 낮은 대비의 CSS gradient와 blur로 제한한다.
 - 질감은 콘텐츠를 방해하지 않아야 한다.
 
 ## 9. 메인 페이지
 
 Header:
-- 좌측 상단 브랜드는 `#tagnote`.
+- 모든 화면의 좌측 상단 브랜드는 `tagnote-logo-transparent.png`를 사용한다.
+- 네비게이션은 브랜드 바로 옆에 좌측 정렬한다.
 - 네비게이션은 `LOG / DIG / CONTACT / MY TAGS` 같은 짧은 라벨을 사용한다.
 - active underline은 금지한다.
 
 Hero:
 - 홈 내부에 별도의 `#tagnote` 텍스트 타이틀을 반복하지 않는다.
 - `home-visual-type`처럼 히어로 이미지 위에 `dig/tag/note` 텍스트를 올리는 레이어는 사용하지 않는다.
-- 히어로에는 `img_1.png` 기반의 구겨진 종이 질감을 크게 배치한다.
-- 검색창은 종이 질감 위에 살짝 떠 있는 translucent blur panel처럼 배치한다.
+- 히어로에는 `tagnote-logo-transparent.png`를 중심 브랜드 비주얼로 배치한다.
+- 검색 영역은 낮은 높이의 translucent blur panel로 배치한다.
+- 첫 화면에서 검색과 많이 찾는 키워드를 함께 인지할 수 있도록 히어로 높이와 섹션 간격을 과도하게 키우지 않는다.
 
 Search:
 - input focus는 solid outline이 아니라 font-weight/bold와 미세한 blur 변화로 표현한다.

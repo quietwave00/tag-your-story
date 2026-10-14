@@ -1,63 +1,23 @@
 .home-page {
   display: grid;
-  gap: clamp(60px, 8vw, 104px);
+  gap: clamp(42px, 5vw, 64px);
 }
 
 .home-hero {
   position: relative;
   display: grid;
   justify-items: center;
-  gap: clamp(16px, 2vw, 26px);
-  min-height: min(620px, 68vh);
+  gap: clamp(20px, 3vw, 30px);
+  min-height: clamp(320px, 47vh, 440px);
   align-content: center;
-  overflow: hidden;
   text-align: center;
 }
 
-.home-paper-visual {
-  position: relative;
-  width: min(920px, 100%);
-  aspect-ratio: 2.7;
-  min-height: 260px;
-  overflow: hidden;
-  background: var(--color-paper);
-  isolation: isolate;
-  animation: paper-enter 1200ms linear both;
-}
-
-.home-paper-visual::before,
-.home-paper-visual::after {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  content: "";
-}
-
-.home-paper-visual::before {
-  background: linear-gradient(90deg, rgb(242 242 242 / 86%) 0%, rgb(242 242 242 / 22%) 38%, rgb(10 10 10 / 8%) 100%);
-  mix-blend-mode: screen;
-}
-
-.home-paper-visual::after {
-  background: url("../../assets/img_1.png") center / cover;
-  filter: blur(16px) contrast(0.9);
-  mix-blend-mode: multiply;
-  opacity: 0.1;
-  animation: local-dust 18s linear infinite alternate;
-}
-
-.home-paper-visual img {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(1) contrast(1.08) brightness(1.08);
-  opacity: 0.92;
-  transform: scale(1.05);
-  animation: paper-breathe 18s linear infinite alternate;
+.home-logo {
+  display: block;
+  width: min(760px, 88%);
+  height: auto;
+  animation: logo-enter 1000ms linear both;
 }
 
 .home-kicker,
@@ -82,10 +42,9 @@
   z-index: 4;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
-  width: min(720px, 100%);
-  margin-top: -58px;
-  padding: 18px 20px;
+  gap: 14px;
+  width: min(680px, 100%);
+  padding: 12px 14px;
   background: color-mix(in srgb, var(--color-bg) 72%, transparent);
   backdrop-filter: blur(16px);
   animation: search-float 1400ms linear both;
@@ -93,7 +52,7 @@
 
 .track-search-input {
   width: 100%;
-  min-height: 62px;
+  min-height: 52px;
   padding: 0 14px;
   border: 0;
   border-bottom: 1px solid rgb(10 10 10 / 34%);
@@ -121,8 +80,8 @@
 }
 
 .track-search-button {
-  min-width: 116px;
-  min-height: 62px;
+  min-width: 108px;
+  min-height: 52px;
   border: 0;
   background: #737373;
   color: var(--color-bg);
@@ -151,11 +110,11 @@
 .home-section {
   display: grid;
   justify-items: center;
-  gap: 22px;
+  gap: 18px;
   max-width: 980px;
-  min-height: 240px;
+  min-height: 200px;
   margin: 0 auto;
-  padding: 28px 0 42px;
+  padding: 16px 0 34px;
   text-align: center;
   animation: section-rise 900ms linear both;
   animation-timeline: view();
@@ -164,6 +123,11 @@
     opacity 420ms linear,
     filter 620ms linear,
     transform 420ms linear;
+}
+
+.tag-cloud-section {
+  min-height: 180px;
+  padding-top: 0;
 }
 
 .home-section:last-of-type {
@@ -284,39 +248,17 @@
   text-decoration: line-through;
 }
 
-@keyframes paper-enter {
+@keyframes logo-enter {
   from {
     opacity: 0;
-    filter: blur(18px);
-    transform: scale(0.985);
+    filter: blur(14px);
+    transform: translateY(10px);
   }
 
   to {
     opacity: 1;
     filter: blur(0);
-    transform: scale(1);
-  }
-}
-
-@keyframes paper-breathe {
-  from {
-    transform: scale(1.04) translate3d(-1%, -1%, 0);
-  }
-
-  to {
-    transform: scale(1.1) translate3d(1.2%, 1%, 0);
-  }
-}
-
-@keyframes local-dust {
-  from {
-    transform: translate3d(-2%, 0, 0);
-    opacity: 0.12;
-  }
-
-  to {
-    transform: translate3d(2%, -1%, 0);
-    opacity: 0.26;
+    transform: translateY(0);
   }
 }
 
@@ -356,19 +298,17 @@
 @media (max-width: 767px) {
   .home-hero {
     min-height: auto;
-    padding: 12px 0 40px;
+    padding: 0 0 12px;
   }
 
-  .home-paper-visual {
-    aspect-ratio: 1.18;
-    min-height: 360px;
+  .home-logo {
+    width: 100%;
   }
 
   .track-search-form {
     grid-template-columns: 1fr;
-    gap: 16px;
-    margin-top: -42px;
-    padding: 16px 14px;
+    gap: 10px;
+    padding: 10px;
   }
 
   .track-search-button {

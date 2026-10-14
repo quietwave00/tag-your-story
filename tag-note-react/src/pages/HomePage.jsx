@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { userTagService } from '../services/userTagService.js';
 import { trackService } from '../services/trackService.js';
 import { buildRoute, routes } from '../utils/routes.js';
 import { saveTrackSearch } from '../utils/trackSearchStorage.js';
 import { tokenStorage } from '../utils/tokenStorage.js';
-import paperTextureUrl from '../../assets/img_1.png';
+import logoUrl from '../../assets/tagnote-logo-transparent.png';
 import '../styles/home.css';
 
 const DEFAULT_PAGE = 1;
@@ -15,6 +16,7 @@ function normalizeKeywordList(rankingResponse) {
 }
 
 export default function HomePage() {
+  const { t } = useTranslation('home');
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
   const [userTags, setUserTags] = useState([]);
@@ -116,31 +118,29 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
-      <section className="home-hero" aria-label="음악 검색">
-        <div className="home-paper-visual" aria-hidden="true">
-          <img src={paperTextureUrl} alt="" />
-        </div>
+      <section className="home-hero" aria-label={t('search.label')}>
+        <img aria-hidden="true" className="home-logo" src={logoUrl} alt="" />
         <form className="track-search-form" onSubmit={handleSubmit}>
           <input
-            aria-label="음악 검색"
+            aria-label={t('search.label')}
             className="track-search-input"
             onChange={(event) => setKeyword(event.target.value)}
-            placeholder="트랙, 앨범, 아티스트 검색"
+            placeholder={t('search.placeholder')}
             type="search"
             value={keyword}
           />
           <button className="track-search-button" disabled={!trimmedKeyword} type="submit">
-            SEARCH
+            {t('search.submit')}
           </button>
         </form>
       </section>
 
       <section className="home-section tag-cloud-section" aria-labelledby="ranking-title">
         <h2 className="home-section-title" id="ranking-title">
-          많이 찾는 키워드
+          {t('ranking.title')}
         </h2>
-        {isLoadingRanking ? <p className="home-message">키워드를 불러오는 중입니다 █</p> : null}
-        {rankingError ? <p className="home-message error">키워드를 불러오지 못했습니다</p> : null}
+        {isLoadingRanking ? <p className="home-message">{t('ranking.loading')}</p> : null}
+        {rankingError ? <p className="home-message error">{t('ranking.error')}</p> : null}
         <div className="keyword-cloud">
           {cloudKeywords.map((rankingKeyword, index) => (
             <button
@@ -158,14 +158,14 @@ export default function HomePage() {
 
       <section className="home-section" aria-labelledby="recent-user-tag-title">
         <h2 className="home-section-title" id="recent-user-tag-title">
-          최근 태그 노트
+          {t('recentTags.title')}
         </h2>
-        {isLoadingUserTags ? <p className="home-message">최근 태그를 불러오는 중입니다 █</p> : null}
+        {isLoadingUserTags ? <p className="home-message">{t('recentTags.loading')}</p> : null}
         {userTagError ? (
-          <p className="home-message error">최근 태그를 불러오지 못했습니다</p>
+          <p className="home-message error">{t('recentTags.error')}</p>
         ) : null}
         {!isLoadingUserTags && !userTagError && userTags.length === 0 ? (
-          <p className="home-message">아직 기록된 태그가 없습니다</p>
+          <p className="home-message">{t('recentTags.empty')}</p>
         ) : null}
         <div className="user-tag-list">
           {userTags.map(({ boardId, userTag }, index) => (

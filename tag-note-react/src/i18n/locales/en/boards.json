@@ -1,0 +1,35 @@
+{
+  "detail": {
+    "backToTrack": "Back to {{title}}",
+    "back": "Go back",
+    "loading": "Loading the tag note.",
+    "error": "We could not load the tag note.",
+    "likeLabel": "Like",
+    "likeCount_one": "{{count}} Like",
+    "likeCount_other": "{{count}} Likes",
+    "likeError": "We could not update the like."
+  },
+  "deleteConfirm": "Delete this tag note?",
+  "form": {
+    "createTitle": "Write a tag note",
+    "editTitle": "Edit tag note",
+    "userTags": "User tags",
+    "tagInput": "Enter a tag and press Enter",
+    "images": "Images",
+    "story": "Story",
+    "storyPlaceholder": "Write your story.",
+    "loading": "Loading the tag note.",
+    "validation": {
+      "loadFailed": "We could not load the tag note.",
+      "tagRequired": "Enter a user tag.",
+      "tagLimit": "You can add up to five user tags.",
+      "tagDuplicate": "This user tag has already been added.",
+      "fileLimit": "You can attach up to three images.",
+      "fileType": "Only PNG, JPG, and JPEG images are supported.",
+      "contentRequired": "Write your story.",
+      "tagsRequired": "Add at least one user tag.",
+      "trackMissing": "Track information is missing, so this tag note cannot be saved.",
+      "saveFailed": "We could not save the tag note."
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { boardService } from '../services/boardService.js';
 import { fileService } from '../services/fileService.js';
@@ -29,6 +30,7 @@ function validateImageFile(file) {
 }
 
 export default function BoardEditPage() {
+  const { t } = useTranslation(['boards', 'common']);
   const { boardId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -42,9 +44,9 @@ export default function BoardEditPage() {
   const [newFiles, setNewFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorKey, setErrorKey] = useState('');
 
-  const title = isEditMode ? '게시글 수정' : '게시글 작성';
+  const title = isEditMode ? t('form.editTitle') : t('form.createTitle');
   const totalFileCount = existingFiles.length + newFiles.length;
   const canSubmit = content.trim() && userTags.length > 0 && !isSubmitting;
 
@@ -83,11 +85,11 @@ export default function BoardEditPage() {
           setContent(boardResponse?.content ?? '');
           setUserTags(boardResponse?.userTagNameList?.nameList ?? []);
           setExistingFiles(fileResponse ?? []);
-          setErrorMessage('');
+          setErrorKey('');
         }
       } catch {
         if (!ignore) {
-          setErrorMessage('게시글 정보를 불러오지 못했습니다.');
+          setErrorKey('form.validation.loadFailed');
         }
       } finally {
         if (!ignore) {
@@ -107,24 +109,24 @@ export default function BoardEditPage() {
     const userTag = normalizeUserTag(userTagInput);
 
     if (!userTag) {
-      setErrorMessage('유저 태그 내용을 입력해 주세요.');
+      setErrorKey('form.validation.tagRequired');
       return;
     }
 
     if (userTags.length >= MAX_USER_TAG_COUNT) {
-      setErrorMessage('유저 태그는 다섯 개까지 입력 가능합니다.');
+      setErrorKey('form.validation.tagLimit');
       return;
     }
 
     if (userTags.includes(userTag)) {
-      setErrorMessage('이미 입력된 유저 태그입니다.');
+      setErrorKey('form.validation.tagDuplicate');
       setUserTagInput('');
       return;
     }
 
     setUserTags((currentUserTags) => [...currentUserTags, userTag]);
     setUserTagInput('');
-    setErrorMessage('');
+    setErrorKey('');
   };
 
   const handleUserTagKeyDown = (event) => {
@@ -148,7 +150,7 @@ export default function BoardEditPage() {
     const availableCount = MAX_FILE_COUNT - totalFileCount;
 
     if (availableCount <= 0) {
-      setErrorMessage('이미지는 3개까지 첨부 가능합니다.');
+      setErrorKey('form.validation.fileLimit');
       event.target.value = '';
       return;
     }
@@ -156,9 +158,9 @@ export default function BoardEditPage() {
     const validFiles = selectedFiles.filter(validateImageFile).slice(0, availableCount);
 
     if (validFiles.length !== selectedFiles.length) {
-      setErrorMessage('png, jpg, jpeg 이미지 파일만 선택할 수 있습니다.');
+      setErrorKey('form.validation.fileType');
     } else {
-      setErrorMessage('');
+      setErrorKey('');
     }
 
     setNewFiles((currentFiles) => [...currentFiles, ...validFiles]);
@@ -193,17 +195,17 @@ export default function BoardEditPage() {
     event.preventDefault();
 
     if (!content.trim()) {
-      setErrorMessage('이야기를 작성해 주세요.');
+      setErrorKey('form.validation.contentRequired');
       return;
     }
 
     if (userTags.length === 0) {
-      setErrorMessage('유저 태그를 하나 이상 작성해 주셔야 합니다.');
+      setErrorKey('form.validation.tagsRequired');
       return;
     }
 
     if (!isEditMode && !trackId) {
-      setErrorMessage('트랙 정보가 없어 게시글을 작성할 수 없습니다.');
+      setErrorKey('form.validation.trackMissing');
       return;
     }
 
@@ -231,7 +233,7 @@ export default function BoardEditPage() {
       await uploadNewFiles(createdBoard.boardId, 'create');
       navigate(buildRoute.boardDetail(createdBoard.boardId));
     } catch {
-      setErrorMessage('게시글 저장 요청을 처리하지 못했습니다.');
+      setErrorKey('form.validation.saveFailed');
     } finally {
       setIsSubmitting(false);
     }
@@ -247,7 +249,7 @@ export default function BoardEditPage() {
   };
 
   if (isLoading) {
-    return <p className="board-edit-message">게시글 정보를 불러오는 중입니다.</p>;
+    return <p className="board-edit-message">{t('form.loading')}</p>;
   }
 
   return (
@@ -257,7 +259,7 @@ export default function BoardEditPage() {
       </header>
 
       <section className="board-edit-section" aria-labelledby="user-tag-title">
-        <h2 id="user-tag-title">유저 태그</h2>
+        <h2 id="user-tag-title">{t('form.userTags')}</h2>
         <div className="board-edit-user-tag-list">
           {userTags.map((userTag) => (
             <button
@@ -274,17 +276,17 @@ export default function BoardEditPage() {
           className="board-edit-tag-input"
           onChange={(event) => setUserTagInput(event.target.value)}
           onKeyDown={handleUserTagKeyDown}
-          placeholder="입력, 엔터!"
+          placeholder={t('form.tagInput')}
           type="text"
           value={userTagInput}
         />
       </section>
 
       <section className="board-edit-section" aria-labelledby="file-title">
-        <h2 id="file-title">이미지</h2>
+        <h2 id="file-title">{t('form.images')}</h2>
         <label className="board-file-upload">
           <input accept="image/png,image/jpeg" multiple onChange={handleFileChange} type="file" />
-          <span>Upload Image</span>
+          <span>{t('common:actions.uploadImage')}</span>
         </label>
         <div className="board-file-preview-list">
           {existingFiles.map((file) => (
@@ -294,7 +296,7 @@ export default function BoardEditPage() {
               onClick={() => removeExistingFile(file.fileId)}
               type="button"
             >
-              <img src={file.filePath} alt="uploaded" />
+              <img src={file.filePath} alt={t('common:images.uploaded')} />
             </button>
           ))}
           {newFilePreviews.map(({ file, previewUrl }) => (
@@ -311,23 +313,23 @@ export default function BoardEditPage() {
       </section>
 
       <section className="board-edit-section" aria-labelledby="content-title">
-        <h2 id="content-title">이야기</h2>
+        <h2 id="content-title">{t('form.story')}</h2>
         <textarea
           className="board-edit-content"
           onChange={(event) => setContent(event.target.value)}
-          placeholder="이야기를 작성해 주세요."
+          placeholder={t('form.storyPlaceholder')}
           value={content}
         />
       </section>
 
-      {errorMessage ? <p className="board-edit-message error">{errorMessage}</p> : null}
+      {errorKey ? <p className="board-edit-message error">{t(errorKey)}</p> : null}
 
       <footer className="board-edit-footer">
         <button className="secondary-button" onClick={handleCancel} type="button">
-          Cancel
+          {t('common:actions.cancel')}
         </button>
         <button className="primary-button" disabled={!canSubmit} type="submit">
-          {isEditMode ? 'Edit' : 'Write'}
+          {isEditMode ? t('common:actions.edit') : t('common:actions.write')}
         </button>
       </footer>
     </form>

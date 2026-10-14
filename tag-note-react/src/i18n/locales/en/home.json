@@ -1,0 +1,18 @@
+{
+  "search": {
+    "label": "Search music",
+    "placeholder": "Search tracks, albums, and artists",
+    "submit": "SEARCH"
+  },
+  "ranking": {
+    "title": "Popular searches",
+    "loading": "Loading popular searches █",
+    "error": "We could not load popular searches."
+  },
+  "recentTags": {
+    "title": "Recent tag notes",
+    "loading": "Loading recent tags █",
+    "error": "We could not load recent tags.",
+    "empty": "No tag notes have been recorded yet."
+  }
+}

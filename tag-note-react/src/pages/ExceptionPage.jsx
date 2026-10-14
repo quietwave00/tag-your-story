@@ -1,11 +1,13 @@
 import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import EmptyState from '../components/common/EmptyState.jsx';
 
 export default function ExceptionPage() {
+  const { t } = useTranslation('common');
   const error = useRouteError();
   const message = isRouteErrorResponse(error)
     ? `${error.status} ${error.statusText}`
-    : '요청을 처리하지 못했습니다.';
+    : t('errors.generic');
 
-  return <EmptyState title="오류가 발생했습니다" description={message} />;
+  return <EmptyState title={t('errors.title')} description={message} />;
 }

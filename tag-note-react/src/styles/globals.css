@@ -31,25 +31,14 @@ body {
   background: var(--color-bg);
 }
 
+html {
+  scrollbar-gutter: stable both-edges;
+}
+
 body {
   position: relative;
   margin: 0;
   color: var(--color-text);
-}
-
-body::before {
-  position: fixed;
-  inset: -18%;
-  z-index: 999;
-  pointer-events: none;
-  content: "";
-  background-image: url("../../assets/img_1.png");
-  background-size: 760px auto;
-  filter: blur(18px) contrast(0.82) brightness(1.08);
-  mix-blend-mode: multiply;
-  opacity: 0.11;
-  transform: scale(1.04);
-  animation: dust-drift 28s linear infinite alternate;
 }
 
 body::after {
@@ -108,8 +97,8 @@ a:active {
   z-index: 20;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: flex-start;
+  gap: clamp(18px, 3vw, 36px);
   width: min(var(--content-max), calc(100% - (var(--space-page) * 2)));
   margin: 0 auto;
   padding: 24px 0 16px;
@@ -118,12 +107,26 @@ a:active {
 }
 
 .brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 58px;
   font-family: var(--font-display);
   font-size: clamp(30px, 4.8vw, 62px);
   font-weight: 760;
   line-height: 0.94;
   letter-spacing: 0;
   text-transform: lowercase;
+}
+
+.image-brand {
+  width: clamp(156px, 17vw, 196px);
+}
+
+.brand-logo {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .brand:hover {
@@ -134,7 +137,7 @@ a:active {
 .app-nav {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 2px;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -158,6 +161,34 @@ a:active {
     color 220ms linear,
     background-color 220ms linear,
     filter 420ms linear;
+}
+
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  margin-left: 6px;
+}
+
+.language-option {
+  min-width: 34px;
+  padding: 8px 5px;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 520;
+}
+
+.language-option[aria-pressed="true"] {
+  color: var(--color-text);
+  font-weight: 760;
+}
+
+.language-option:hover {
+  background: var(--color-invert);
+  color: var(--color-invert-text);
 }
 
 .nav-link.active {
@@ -284,18 +315,6 @@ button:disabled {
   }
 }
 
-@keyframes dust-drift {
-  from {
-    transform: translate3d(-2.5%, -1.5%, 0) scale(1.04);
-    opacity: 0.08;
-  }
-
-  to {
-    transform: translate3d(2.5%, 1.8%, 0) scale(1.09);
-    opacity: 0.15;
-  }
-}
-
 @media (max-width: 767px) {
   :root {
     --space-page: 12px;
@@ -307,6 +326,14 @@ button:disabled {
     gap: 12px;
     width: calc(100% - 24px);
     padding-top: 22px;
+  }
+
+  .brand {
+    min-height: 0;
+  }
+
+  .image-brand {
+    width: 168px;
   }
 
   .app-nav {

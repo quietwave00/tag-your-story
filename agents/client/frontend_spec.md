@@ -214,6 +214,29 @@ features/
 - 오래된 바닐라 JS CSS 파일명을 무조건 유지하지 않는다. React 컴포넌트 경계에 맞춰 이름을 조정한다.
 - 전역 class 충돌을 줄이기 위해 page/feature prefix를 일관되게 사용한다.
 
+### 2.9 I18n 계층
+
+위치: `tag-note-react/src/i18n`
+
+역할:
+- 한국어(`ko`)와 영어(`en`) UI resource, 언어 감지와 fallback 정책을 관리한다.
+- `i18next` instance를 앱 전체의 언어 상태 Source of Truth로 사용한다.
+- 공통 문구와 feature 문구를 namespace로 분리한다.
+
+구성 기준:
+- `index.js`: bundled resource, browser language detector, React 연결, `<html lang>` 동기화
+- `languages.js`: 지원 언어, fallback, storage key, base language 변환
+- `locales/{ko,en}/`: `common`, `auth`, `home`, `tracks`, `boards`, `community` namespace
+- `components/common/LanguageSwitcher.jsx`: 전역 언어 선택 UI
+
+번역 경계:
+- navigation, 버튼, 제목, 안내/검증/오류 문구, 접근성 라벨, 알림 문장 템플릿은 번역한다.
+- User/System Tag 이름, 검색어, 트랙·앨범·아티스트명, 닉네임, Board/Comment/Reply 본문은 원문을 유지한다.
+- 동적 콘텐츠를 `t(dynamicValue)`로 조회하지 않고 필요한 문장의 interpolation 값으로만 전달한다.
+- service와 API mapper에는 번역 호출을 두지 않는다.
+- UI page는 locale과 무관한 기존 URL을 유지하며 locale 변경만으로 API를 다시 요청하지 않는다.
+- 날짜/숫자 UI format은 현재 resolved language의 `Intl` formatter를 사용한다.
+
 ## 3. Repo 구조
 
 전체 repository는 Spring/Gradle backend와 기존 vanilla frontend, React frontend가 함께 있는 monorepo 형태다.

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '../features/comments/CommentSection.jsx';
 import { boardService } from '../services/boardService.js';
@@ -12,14 +13,14 @@ function getUserTagNames(board) {
   return board?.userTagNameList?.nameList ?? [];
 }
 
-function formatCreatedAt(createdAt) {
+function formatCreatedAt(createdAt, language) {
   if (!createdAt) {
     return '';
   }
 
   if (Array.isArray(createdAt)) {
     const [year, month, day] = createdAt;
-    return `${year}.${month}.${day}`;
+    return new Intl.DateTimeFormat(language).format(new Date(year, month - 1, day));
   }
 
   const date = new Date(createdAt);
@@ -28,7 +29,7 @@ function formatCreatedAt(createdAt) {
     return String(createdAt);
   }
 
-  return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`;
+  return new Intl.DateTimeFormat(language).format(date);
 }
 
 function getLikeStatus(response) {
@@ -36,6 +37,7 @@ function getLikeStatus(response) {
 }
 
 export default function BoardDetailPage() {
+  const { i18n, t } = useTranslation(['boards', 'common']);
   const { boardId } = useParams();
   const navigate = useNavigate();
   const [board, setBoard] = useState(null);
@@ -190,7 +192,7 @@ export default function BoardDetailPage() {
       return;
     }
 
-    const shouldDelete = window.confirm('삭제하시겠습니까?');
+    const shouldDelete = window.confirm(t('deleteConfirm'));
 
     if (!shouldDelete) {
       return;
@@ -210,12 +212,16 @@ export default function BoardDetailPage() {
     <div className="board-detail-page">
       <button className="board-detail-back" onClick={handleBack} type="button">
         <span>◀</span>
-        {selectedTrack.title ? <span>{selectedTrack.title}으로 돌아가기</span> : <span>돌아가기</span>}
+        {selectedTrack.title ? (
+          <span>{t('detail.backToTrack', { title: selectedTrack.title })}</span>
+        ) : (
+          <span>{t('detail.back')}</span>
+        )}
       </button>
 
-      {isBoardLoading ? <p className="board-detail-message">게시글을 불러오는 중입니다.</p> : null}
+      {isBoardLoading ? <p className="board-detail-message">{t('detail.loading')}</p> : null}
       {boardError ? (
-        <p className="board-detail-message error">게시글을 불러오지 못했습니다.</p>
+        <p className="board-detail-message error">{t('detail.error')}</p>
       ) : null}
 
       {!isBoardLoading && !boardError && board ? (
@@ -229,7 +235,9 @@ export default function BoardDetailPage() {
                   </button>
                 ))}
               </div>
-              <time className="board-detail-date">{formatCreatedAt(board.createdAt)}</time>
+              <time className="board-detail-date">
+                {formatCreatedAt(board.createdAt, i18n.resolvedLanguage ?? i18n.language)}
+              </time>
             </header>
             <p className="board-detail-content">{board.content}</p>
             <footer className="board-detail-author">{board.nickname}</footer>
@@ -238,16 +246,17 @@ export default function BoardDetailPage() {
           {isWriter ? (
             <div className="board-detail-actions">
               <button onClick={handleEdit} type="button">
-                수정
+                {t('common:actions.edit')}
               </button>
               <button disabled={isDeleting} onClick={handleDelete} type="button">
-                삭제
+                {t('common:actions.delete')}
               </button>
             </div>
           ) : null}
 
-          <section className="board-like-section" aria-label="좋아요">
+          <section className="board-like-section" aria-label={t('detail.likeLabel')}>
             <button
+              aria-label={t('detail.likeLabel')}
               aria-pressed={isLiked}
               className={isLiked ? 'board-like-button liked' : 'board-like-button'}
               disabled={isLikeLoading}
@@ -256,9 +265,9 @@ export default function BoardDetailPage() {
             >
               {isLiked ? '♥' : '♡'}
             </button>
-            <span className="board-like-count">{likeCount} Like</span>
+            <span className="board-like-count">{t('detail.likeCount', { count: likeCount })}</span>
           </section>
-          {likeError ? <p className="board-detail-message error">좋아요 요청을 처리하지 못했습니다.</p> : null}
+          {likeError ? <p className="board-detail-message error">{t('detail.likeError')}</p> : null}
 
           <CommentSection boardId={boardId} isAuthenticated={isAuthenticated} />
         </>

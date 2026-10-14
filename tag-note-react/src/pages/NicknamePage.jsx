@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService.js';
 import { authStore, useAuthStore } from '../store/authStore.js';
@@ -8,25 +9,26 @@ import '../styles/auth.css';
 
 function validateNickname(nickname) {
   if (!nickname) {
-    return '사용하실 닉네임을 입력해 주세요.';
+    return 'nickname.validation.required';
   }
 
   if (/\s/.test(nickname)) {
-    return '공백을 제거해 주세요.';
+    return 'nickname.validation.noSpaces';
   }
 
   if (nickname.length > 7) {
-    return '7자를 초과할 수 없습니다.';
+    return 'nickname.validation.maxLength';
   }
 
   return '';
 }
 
 export default function NicknamePage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const isPendingUser = useAuthStore((state) => state.isPendingUser);
   const [nickname, setNickname] = useState('');
-  const [message, setMessage] = useState('');
+  const [messageKey, setMessageKey] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -44,17 +46,17 @@ export default function NicknamePage() {
     event.preventDefault();
 
     const trimmedNickname = nickname.trim();
-    const validationMessage = validateNickname(trimmedNickname);
+    const validationMessageKey = validateNickname(trimmedNickname);
 
-    if (validationMessage) {
-      setMessage(validationMessage);
+    if (validationMessageKey) {
+      setMessageKey(validationMessageKey);
       if (/\s/.test(trimmedNickname) || trimmedNickname.length > 7) {
         setNickname('');
       }
       return;
     }
 
-    const shouldRegister = window.confirm(`${trimmedNickname}으로 가입하시겠습니까?`);
+    const shouldRegister = window.confirm(t('nickname.confirm', { nickname: trimmedNickname }));
 
     if (!shouldRegister) {
       return;
@@ -68,11 +70,12 @@ export default function NicknamePage() {
       navigate(routes.login, {
         replace: true,
         state: {
-          message: `${trimmedNickname}님, 회원가입이 정상적으로 완료되었습니다. 다시 로그인 해주세요.`,
+          messageKey: 'nickname.registered',
+          messageParams: { nickname: trimmedNickname },
         },
       });
     } catch {
-      setMessage('닉네임 설정 요청을 처리하지 못했습니다.');
+      setMessageKey('nickname.requestFailed');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,20 +84,21 @@ export default function NicknamePage() {
   return (
     <main className="auth-page">
       <form className="auth-panel" onSubmit={handleSubmit}>
-        <h1 className="auth-title">SET NICKNAME</h1>
-        <p className="auth-description">공백 없이 7자까지 사용할 수 있습니다.</p>
-        {message ? <p className="auth-message">{message}</p> : <p className="auth-message placeholder"> </p>}
+        <h1 className="auth-title">{t('nickname.title')}</h1>
+        <p className="auth-description">{t('nickname.description')}</p>
+        {messageKey ? <p className="auth-message">{t(messageKey)}</p> : <p className="auth-message placeholder"> </p>}
         <input
           className="nickname-input"
+          aria-label={t('nickname.inputLabel')}
           onChange={(event) => {
             setNickname(event.target.value);
-            setMessage('');
+            setMessageKey('');
           }}
           type="text"
           value={nickname}
         />
         <button className="nickname-button" disabled={isSubmitting} type="submit">
-          SAVE ID
+          {t('nickname.save')}
         </button>
       </form>
     </main>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { trackService } from '../services/trackService.js';
 import { buildRoute } from '../utils/routes.js';
@@ -19,6 +20,7 @@ function getPageNumbers(totalPages) {
 }
 
 export default function TracksPage() {
+  const { t } = useTranslation(['tracks', 'common']);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const keyword = searchParams.get('keyword')?.trim() ?? '';
@@ -96,8 +98,8 @@ export default function TracksPage() {
     return (
       <section className="tracks-page">
         <header className="tracks-header">
-          <h1 className="tracks-title">검색</h1>
-          <p className="tracks-description">홈에서 트랙, 앨범, 아티스트를 검색해 주세요.</p>
+          <h1 className="tracks-title">{t('search.title')}</h1>
+          <p className="tracks-description">{t('search.prompt')}</p>
         </header>
       </section>
     );
@@ -106,16 +108,16 @@ export default function TracksPage() {
   return (
     <section className="tracks-page">
       <header className="tracks-header">
-        <h1 className="tracks-title">검색 결과</h1>
+        <h1 className="tracks-title">{t('search.resultsTitle')}</h1>
         <p className="tracks-description">
           <strong>{keyword}</strong>
         </p>
       </header>
 
-      {isLoading ? <p className="tracks-message">트랙을 불러오는 중입니다 █</p> : null}
-      {error ? <p className="tracks-message error">트랙을 불러오지 못했습니다</p> : null}
+      {isLoading ? <p className="tracks-message">{t('search.loading')}</p> : null}
+      {error ? <p className="tracks-message error">{t('search.error')}</p> : null}
       {!isLoading && !error && tracks.length === 0 ? (
-        <p className="tracks-message">검색 결과가 없습니다</p>
+        <p className="tracks-message">{t('search.empty')}</p>
       ) : null}
 
       <div className="track-list">
@@ -127,20 +129,20 @@ export default function TracksPage() {
             type="button"
           >
             <span className="track-row-index">{String(index + 1).padStart(2, '0')}</span>
-            <img className="track-image" src={track.imageUrl} alt={`${track.title} album cover`} />
+            <img className="track-image" src={track.imageUrl} alt={t('common:images.albumCover', { title: track.title })} />
             <span className="track-content">
               <span className="track-title">{track.title}</span>
               <span className="track-meta">
                 <span className="track-meta-row">
-                  <span className="track-meta-label">Artist</span>
+                  <span className="track-meta-label">{t('metadata.artist')}</span>
                   <span className="track-meta-value">{track.artistName}</span>
                 </span>
                 <span className="track-meta-row">
-                  <span className="track-meta-label">Album</span>
+                  <span className="track-meta-label">{t('metadata.album')}</span>
                   <span className="track-meta-value">{track.albumName}</span>
                 </span>
                 <span className="track-meta-row">
-                  <span className="track-meta-label">Tag</span>
+                  <span className="track-meta-label">{t('metadata.tag')}</span>
                   <span className="track-meta-value">#{keyword}</span>
                 </span>
               </span>
@@ -150,9 +152,9 @@ export default function TracksPage() {
       </div>
 
       {!isLoading && !error && tracks.length > 0 ? (
-        <nav className="tracks-pagination" aria-label="트랙 검색 결과 페이지">
+        <nav className="tracks-pagination" aria-label={t('search.pagination')}>
           <button
-            aria-label="이전 페이지"
+            aria-label={t('common:actions.previousPage')}
             className="pagination-button"
             disabled={currentPage <= 1}
             onClick={() => moveToPage(currentPage - 1)}
@@ -172,7 +174,7 @@ export default function TracksPage() {
             </button>
           ))}
           <button
-            aria-label="다음 페이지"
+            aria-label={t('common:actions.nextPage')}
             className="pagination-button"
             disabled={currentPage >= totalPages}
             onClick={() => moveToPage(currentPage + 1)}

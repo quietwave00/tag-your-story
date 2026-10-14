@@ -1,0 +1,35 @@
+{
+  "detail": {
+    "backToTrack": "{{title}}으로 돌아가기",
+    "back": "돌아가기",
+    "loading": "게시글을 불러오는 중입니다.",
+    "error": "게시글을 불러오지 못했습니다.",
+    "likeLabel": "좋아요",
+    "likeCount_one": "좋아요 {{count}}개",
+    "likeCount_other": "좋아요 {{count}}개",
+    "likeError": "좋아요 요청을 처리하지 못했습니다."
+  },
+  "deleteConfirm": "이 태그 노트를 삭제하시겠습니까?",
+  "form": {
+    "createTitle": "게시글 작성",
+    "editTitle": "게시글 수정",
+    "userTags": "유저 태그",
+    "tagInput": "태그 입력 후 Enter",
+    "images": "이미지",
+    "story": "이야기",
+    "storyPlaceholder": "이야기를 작성해 주세요.",
+    "loading": "게시글 정보를 불러오는 중입니다.",
+    "validation": {
+      "loadFailed": "게시글 정보를 불러오지 못했습니다.",
+      "tagRequired": "유저 태그 내용을 입력해 주세요.",
+      "tagLimit": "유저 태그는 다섯 개까지 입력 가능합니다.",
+      "tagDuplicate": "이미 입력된 유저 태그입니다.",
+      "fileLimit": "이미지는 3개까지 첨부 가능합니다.",
+      "fileType": "PNG, JPG, JPEG 이미지 파일만 선택할 수 있습니다.",
+      "contentRequired": "이야기를 작성해 주세요.",
+      "tagsRequired": "유저 태그를 하나 이상 작성해 주세요.",
+      "trackMissing": "트랙 정보가 없어 게시글을 작성할 수 없습니다.",
+      "saveFailed": "게시글 저장 요청을 처리하지 못했습니다."
+    }
+  }
+}

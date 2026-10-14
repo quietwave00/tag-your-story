@@ -1,0 +1,38 @@
+{
+  "navigation": {
+    "primary": "주요 메뉴",
+    "brandHome": "#tagnote 홈",
+    "log": "기록",
+    "dig": "탐색",
+    "contact": "연락처",
+    "myTags": "내 태그",
+    "exit": "로그아웃"
+  },
+  "language": {
+    "label": "언어",
+    "korean": "한국어",
+    "english": "영어"
+  },
+  "actions": {
+    "save": "저장",
+    "cancel": "취소",
+    "write": "작성",
+    "edit": "수정",
+    "delete": "삭제",
+    "uploadImage": "이미지 업로드",
+    "previousPage": "이전 페이지",
+    "nextPage": "다음 페이지"
+  },
+  "errors": {
+    "title": "오류가 발생했습니다",
+    "generic": "요청을 처리하지 못했습니다."
+  },
+  "images": {
+    "albumCover": "{{title}} 앨범 커버",
+    "uploaded": "업로드된 이미지"
+  },
+  "contact": {
+    "title": "연락처",
+    "linksLabel": "연락처 링크"
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { authStore } from '../store/authStore.js';
 import { routes } from '../utils/routes.js';
@@ -6,6 +7,7 @@ import { tokenStorage } from '../utils/tokenStorage.js';
 import '../styles/auth.css';
 
 export default function TokenPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,8 +20,8 @@ export default function TokenPage() {
   return (
     <main className="auth-page">
       <section className="auth-panel compact" aria-live="polite">
-        <h1 className="auth-title">SYNC TOKEN</h1>
-        <p className="auth-description">로그인 정보를 확인하고 있습니다 █</p>
+        <h1 className="auth-title">{t('token.title')}</h1>
+        <p className="auth-description">{t('token.checking')}</p>
       </section>
     </main>
   );

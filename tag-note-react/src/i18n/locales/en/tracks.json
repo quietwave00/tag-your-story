@@ -1,0 +1,33 @@
+{
+  "search": {
+    "title": "Search",
+    "prompt": "Search for a track, album, or artist from Home.",
+    "resultsTitle": "Search results",
+    "loading": "Loading tracks █",
+    "error": "We could not load the tracks.",
+    "empty": "No results found.",
+    "pagination": "Track search result pages"
+  },
+  "metadata": {
+    "artist": "Artist",
+    "album": "Album",
+    "tag": "Tag",
+    "trackId": "Track ID"
+  },
+  "detail": {
+    "back": "Back to search",
+    "loading": "Loading track information.",
+    "error": "We could not load the track information.",
+    "addTag": "+ ADD CUSTOM TAG"
+  },
+  "boards": {
+    "title": "Tag notes",
+    "sortLabel": "Sort tag notes",
+    "latest": "Latest",
+    "popular": "Most liked",
+    "loading": "Loading tag notes █",
+    "error": "We could not load the tag notes.",
+    "empty": "No tag notes have been written yet.",
+    "pagination": "Tag note pages"
+  }
+}

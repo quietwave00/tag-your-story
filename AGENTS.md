@@ -33,7 +33,32 @@ System Tag 아키텍처:
 현재 구현 진행 상황:
 -agents/server/progress.md
 
+Client 명세:
+- agents/client/frontend_spec.md
+- agents/client/design_spec.md
+
+Client 구현 계획:
+- agents/client/plans/FRONTEND-ROADMAP.md
+- agents/client/plans/active/
+- agents/client/plans/completed/
+
 명시적으로 문서화된 아키텍처 결정 사항을 충돌 보고 없이 임의로 재해석하지 마라.
+
+## Client 작업 규칙
+
+- React 클라이언트의 구현 루트는 `tag-note-react/`이다. 기존 React 구현을 버리고 다시 작성하지 말고, 특성화 테스트를 추가한 뒤 점진적으로 정리한다.
+- 프론트엔드 구조와 책임은 `agents/client/frontend_spec.md`, 시각 언어와 금지사항은 `agents/client/design_spec.md`를 Source of Truth로 사용한다.
+- 프론트엔드 작업 순서와 의존성은 `agents/client/plans/FRONTEND-ROADMAP.md`에서 관리한다.
+- 실제 착수할 작은 마일스톤은 Human Review 후 `agents/client/plans/active/`에 상세 Plan으로 작성한다. 수용 기준과 사용자 검증 결과를 확인한 뒤 `completed/`로 이동한다.
+- 프론트엔드 디자인 작업은 별도 Plan 작성과 사전 Human Review 없이 바로 구현한다. 다만 API 계약, 라우트, 상태 관리, 컴포넌트 책임 또는 아키텍처 변경이 함께 필요하면 디자인 변경만 즉시 진행하고 나머지 변경에는 기존 Plan 규칙을 적용한다. 디자인 작업에도 디자인 명세 확인, 기존 동작 보존, diff 검토와 사용자 검증 안내는 수행한다.
+- 서버 연동 전 실행 중인 서버의 `/v3/api-docs` 또는 `/swagger-ui/index.html`에서 현재 OpenAPI 계약을 확인한다. 실행 문서를 사용할 수 없으면 Swagger API interface, Controller, Request/Response DTO 순서로 확인하고 문서화 누락을 Plan의 계약 위험으로 기록한다.
+- 프론트엔드가 서버에 없는 endpoint, response field, 인증 동작을 추측하여 구현하지 않는다. 명세와 실제 OpenAPI/Controller가 충돌하면 구현 전에 보고한다.
+- API 호출은 `src/services`, 공유 인증 상태는 `src/store/authStore.js`, 브라우저 저장소는 `src/utils`를 경유한다. page나 공통 UI에 endpoint 호출 또는 token 직접 판독을 새로 추가하지 않는다.
+- API page는 0-based, 화면 page는 1-based일 수 있으므로 service 또는 feature mapper 한 곳에서만 변환한다.
+- `TRACK`, `ALBUM`, `ARTIST` 통합 검색 결과를 같은 형태로 가정하지 않는다. 현재 Catalog import는 `TRACK`과 `ALBUM`만 지원하고 `ARTIST` import는 지원하지 않는 서버 계약을 지킨다.
+- 전역 UI 언어는 한국어(`ko`)와 영어(`en`)만 지원한다. 내비게이션, 버튼, 제목, 안내/검증/오류 문구, 접근성 라벨과 알림 문장 템플릿은 번역하되 User/System Tag 이름, 검색어, 트랙·앨범·아티스트명, 닉네임, 게시글·댓글 본문 등 API 또는 사용자 콘텐츠는 번역하지 않고 원문을 보존한다.
+- 번역 대상 UI 문자열을 component/page에 새로 하드코딩하지 않는다. 동적 콘텐츠를 번역 key로 사용하거나 번역 리소스에 복사하지 않는다.
+- 구현 검증에는 최소 `cd tag-note-react && npm run lint`와 `npm run build`를 사용한다. 테스트 스크립트가 추가된 마일스톤부터 `npm run test`도 수행하며, 실행하지 않은 검증을 통과했다고 표현하지 않는다.
 
 ## Plan 관리
 

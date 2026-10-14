@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { boardService } from '../services/boardService.js';
 import { trackService } from '../services/trackService.js';
@@ -11,8 +12,8 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER_TYPE = 'CREATED_AT';
 
 const boardOrderOptions = [
-  { label: '최신순', value: 'CREATED_AT' },
-  { label: '추천순', value: 'LIKE' },
+  { labelKey: 'boards.latest', value: 'CREATED_AT' },
+  { labelKey: 'boards.popular', value: 'LIKE' },
 ];
 
 function getBoardPageNumbers(totalPages) {
@@ -24,6 +25,7 @@ function getUserTagNames(board) {
 }
 
 export default function TrackDetailPage() {
+  const { t } = useTranslation(['tracks', 'common']);
   const { trackId } = useParams();
   const navigate = useNavigate();
   const [track, setTrack] = useState(null);
@@ -162,21 +164,21 @@ export default function TrackDetailPage() {
 
   return (
     <div className="track-detail-page">
-      <button className="track-detail-back-button" onClick={handleBack} type="button">
+      <button aria-label={t('detail.back')} className="track-detail-back-button" onClick={handleBack} type="button">
         ◀
       </button>
 
       <section className="track-detail-card" aria-labelledby="track-detail-title">
-        {isTrackLoading ? <p className="track-detail-message">트랙 정보를 불러오는 중입니다.</p> : null}
+        {isTrackLoading ? <p className="track-detail-message">{t('detail.loading')}</p> : null}
         {trackError ? (
-          <p className="track-detail-message error">트랙 정보를 불러오지 못했습니다.</p>
+          <p className="track-detail-message error">{t('detail.error')}</p>
         ) : null}
         {!isTrackLoading && !trackError && track ? (
           <>
             <img
               className="track-detail-image"
               src={track.imageUrl}
-              alt={`${track.title} album cover`}
+              alt={t('common:images.albumCover', { title: track.title })}
             />
             <div className="track-detail-content">
               <h1 className="track-detail-title" id="track-detail-title">
@@ -184,20 +186,20 @@ export default function TrackDetailPage() {
               </h1>
               <dl className="track-detail-meta">
                 <div className="track-detail-meta-row">
-                  <dt>Artist</dt>
+                  <dt>{t('metadata.artist')}</dt>
                   <dd>{track.artistName}</dd>
                 </div>
                 <div className="track-detail-meta-row">
-                  <dt>Album</dt>
+                  <dt>{t('metadata.album')}</dt>
                   <dd>{track.albumName}</dd>
                 </div>
                 <div className="track-detail-meta-row">
-                  <dt>Track ID</dt>
+                  <dt>{t('metadata.trackId')}</dt>
                   <dd>{trackId}</dd>
                 </div>
               </dl>
               <button className="track-detail-write-button" onClick={moveBoardCreate} type="button">
-                + ADD CUSTOM TAG
+                {t('detail.addTag')}
               </button>
             </div>
           </>
@@ -207,10 +209,10 @@ export default function TrackDetailPage() {
       <section className="board-list-section" aria-labelledby="board-list-title">
         <div className="board-list-header">
           <h2 className="board-list-title" id="board-list-title">
-            게시글
+            {t('boards.title')}
           </h2>
           <fieldset className="board-order-fieldset">
-            <legend className="visually-hidden">게시글 정렬</legend>
+            <legend className="visually-hidden">{t('boards.sortLabel')}</legend>
             {boardOrderOptions.map((option) => (
               <label className="board-order-option" key={option.value}>
                 <input
@@ -220,18 +222,18 @@ export default function TrackDetailPage() {
                   type="radio"
                   value={option.value}
                 />
-                <span>{option.label}</span>
+                <span>{t(option.labelKey)}</span>
               </label>
             ))}
           </fieldset>
         </div>
 
-        {isBoardLoading ? <p className="track-detail-message">태그 노트를 불러오는 중입니다 █</p> : null}
+        {isBoardLoading ? <p className="track-detail-message">{t('boards.loading')}</p> : null}
         {boardError ? (
-          <p className="track-detail-message error">태그 노트를 불러오지 못했습니다</p>
+          <p className="track-detail-message error">{t('boards.error')}</p>
         ) : null}
         {!isBoardLoading && !boardError && boards.length === 0 ? (
-          <p className="track-detail-message">아직 작성된 태그 노트가 없습니다</p>
+          <p className="track-detail-message">{t('boards.empty')}</p>
         ) : null}
 
         <div className="board-list-grid">
@@ -255,9 +257,9 @@ export default function TrackDetailPage() {
         </div>
 
         {!isBoardLoading && !boardError && boards.length > 0 ? (
-          <nav className="board-pagination" aria-label="게시글 목록 페이지">
+          <nav className="board-pagination" aria-label={t('boards.pagination')}>
             <button
-              aria-label="이전 페이지"
+              aria-label={t('common:actions.previousPage')}
               className="board-pagination-button"
               disabled={boardPage <= 1}
               onClick={() => moveBoardPage(boardPage - 1)}
@@ -277,7 +279,7 @@ export default function TrackDetailPage() {
               </button>
             ))}
             <button
-              aria-label="다음 페이지"
+              aria-label={t('common:actions.nextPage')}
               className="board-pagination-button"
               disabled={boardPage >= totalBoardPages}
               onClick={() => moveBoardPage(boardPage + 1)}
