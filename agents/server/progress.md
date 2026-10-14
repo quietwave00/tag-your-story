@@ -1,5 +1,22 @@
 # Progress
 
+## User/Auth 마이그레이션 로드맵 (2026-10-14)
+
+사용자 요청에 따라 기존 `AUTH-001-proposal.md`를 순서대로 실행 가능한 독립 Plan으로 분할했다. 이번에는 Plan 문서만 작성했으며 production code, 자동 테스트, 운영 DB는 변경하지 않았다. 첫 Plan만 `plans/active/`, 나머지는 `plans/ready/`에 둔다. 각 단계는 사용자 실행 검증과 리뷰를 확인한 뒤 completed로 이동하고 다음 Plan을 active로 옮긴다. 프론트 구현은 서버 단계 완료 후 별도로 진행한다.
+
+| 순서 | Plan | 상태 | 완료 목표 |
+| --- | --- | --- | --- |
+| 1 | [AUTH-001](plans/active/AUTH-001.md) | active, 미구현 | ACCESS/REFRESH 타입 분리, Redis refresh 검증, 로그아웃 폐기 |
+| 2 | [AUTH-002](plans/active/AUTH-002.md) | ready | 정규화 이메일·provider identity·DB unique·기존 데이터 migration |
+| 3 | [AUTH-003](plans/active/AUTH-003.md) | ready | Google 즉시 가입, 형용사+동물+숫자 nickname, GUEST/PENDING_USER 제거 |
+| 4 | [AUTH-004](plans/active/AUTH-004.md) | ready | 메일 발송 adapter와 안전한 가입 challenge 저장 기반 |
+| 5 | [AUTH-005](plans/active/AUTH-005.md) | ready | 자체 이메일 가입·중복 확인·6자리 confirm |
+| 6 | [AUTH-006](plans/active/AUTH-006.md) | ready | 정규화 이메일·비밀번호 로그인 |
+| 7 | [AUTH-007](plans/active/AUTH-007.md) | ready | 닉네임 변경 API |
+| 8 | [AUTH-008](plans/active/AUTH-008.md) | ready | 탈퇴 API, 계정 비식별화, 게시글·댓글 공개 유지 |
+
+공통 결정: 서버 이메일 `trim`+소문자화, Google/자체 계정 자동 연결 금지, 이미 Google로 가입한 이메일에 provider 안내 오류, 가입 전 이탈 시 DB 계정 없음, 닉네임 자동 생성과 변경 허용, 탈퇴 후 게시글·댓글 공개 유지. AUTH-002에서 관련 ADR을 작성해 기존 User 명세와 정렬한다. 사용자가 특정 단계의 구현을 지시하면 해당 Plan만 착수한다.
+
 - 2026-10-14: BOARD-TRACK-TAG-001 사용자 요청으로 completed 이동.
   - Board가 Catalog Track 또는 Album 중 정확히 하나를 FK로 참조하도록 ADR-013, JPA mapping, 기준 DDL과 migration runbook을 정렬했다.
   - Spotify `trackId`/`albumId` 기반 인증 Board 작성과 owner write 검증, 익명 조회 및 visible resolved System Tag bulk 조회를 구현했다.
