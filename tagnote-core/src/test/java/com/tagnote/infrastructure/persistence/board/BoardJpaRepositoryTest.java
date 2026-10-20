@@ -100,6 +100,23 @@ class BoardJpaRepositoryTest {
     }
 
     @Test
+    void withdrawal_keeps_board_foreign_key_and_public_count() {
+        BoardEntity board = boardRepository.saveAndFlush(
+                BoardEntity.createForTrack("retained content", writer, track));
+        Long writerId = writer.getUserId();
+        writer.withdraw();
+        entityManager.flush();
+        entityManager.clear();
+
+        BoardEntity retained = boardRepository.findByBoardIdAndStatus(board.getBoardId(), BoardStatus.POST)
+                .orElseThrow();
+        assertThat(retained.getUserEntity().getUserId()).isEqualTo(writerId);
+        assertThat(retained.getUserEntity().getDisplayNickname()).isEqualTo("탈퇴한 사용자");
+        assertThat(boardRepository.countByTrack_SpotifyIdAndStatus("spotify-track", BoardStatus.POST))
+                .isEqualTo(1);
+    }
+
+    @Test
     void page_base_query는_writer와_subject를_추가_SELECT없이_읽는다() {
         boardRepository.saveAndFlush(BoardEntity.createForTrack("first", writer, track));
         boardRepository.saveAndFlush(BoardEntity.createForTrack("second", writer, track));

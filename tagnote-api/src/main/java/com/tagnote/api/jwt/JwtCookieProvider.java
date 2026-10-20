@@ -29,12 +29,16 @@ public class JwtCookieProvider {
         return refreshCookie;
     }
 
-    public Cookie generatePendingUserCookie(String pendingToken) {
-        Cookie pendingCookie = new Cookie(TOKEN_TYPE_PENDING, pendingToken);
-        pendingCookie.setHttpOnly(false);
-        pendingCookie.setPath("/");
-        pendingCookie.setDomain(DOMAIN);
-        return pendingCookie;
+    public Cookie expireAccessTokenCookie() {
+        Cookie cookie = generateAccessTokenCookie("");
+        cookie.setMaxAge(0);
+        return cookie;
+    }
+
+    public Cookie expireRefreshTokenCookie() {
+        Cookie cookie = generateRefreshTokenCookie("");
+        cookie.setMaxAge(0);
+        return cookie;
     }
 
     public String encodeJwt(String token) {

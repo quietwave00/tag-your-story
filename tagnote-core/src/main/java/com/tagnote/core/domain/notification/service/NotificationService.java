@@ -5,6 +5,9 @@ import com.tagnote.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagnote.core.domain.notification.repository.NotificationRepository;
 import com.tagnote.core.domain.notification.sse.SseManager;
 import com.tagnote.core.domain.user.service.User;
+import com.tagnote.core.domain.user.Role;
+import com.tagnote.core.domain.user.UserStatus;
+import com.tagnote.core.domain.user.repository.UserRepository;
 import com.tagnote.core.exception.CustomException;
 import com.tagnote.core.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class NotificationService {
     private final NotificationManager notificationManager;
     private final NotificationRepository notificationRepository;
     private final SseManager sseManager;
+    private final UserRepository users;
 
     public SseEmitter subscribe(Long userId) {
         log.info("SSE subscribe");
@@ -44,12 +48,29 @@ public class NotificationService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification save(Notification notification) {
+        // Lock the recipient so a delayed event cannot create a notification after withdrawal.
+        var subscriber = users.findByUserIdForUpdate(notification.getSubscriber().getUserId());
+        if (subscriber.isEmpty() || subscriber.get().getUserStatus() != UserStatus.ACTIVE
+                || subscriber.get().getRole() != Role.ROLE_USER) {
+            return null;
+        }
+        if (notification.getPublisher() != null) {
+            var publisher = users.findByUserId(notification.getPublisher().getUserId());
+            if (publisher.isEmpty() || publisher.get().getUserStatus() != UserStatus.ACTIVE) {
+                return null;
+            }
+        }
         return notificationRepository
                 .save(notification.toEntity())
                 .toNotification();
     }
 
     public void send(Notification notification) {
+        if (users.findByUserId(notification.getSubscriber().getUserId())
+                .map(user -> user.getUserStatus() != UserStatus.ACTIVE)
+                .orElse(true)) {
+            return;
+        }
         SseEmitter sseEmitter = sseManager.get(notification.getSubscriber().getUserId());
         if(Objects.nonNull(sseEmitter)) {
             try {

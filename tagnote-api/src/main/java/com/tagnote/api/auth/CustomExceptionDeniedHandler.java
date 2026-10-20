@@ -36,6 +36,8 @@ public class CustomExceptionDeniedHandler implements AccessDeniedHandler {
                 .build();
 
         try {
+            response.setStatus(exception.getExceptionCode().getHttpStatus().value());
+            response.setContentType("application/json");
             String exceptionMessage = objectMapper.writeValueAsString(exceptionResponse);
             response.getOutputStream().write(exceptionMessage.getBytes());
             response.getOutputStream().flush();

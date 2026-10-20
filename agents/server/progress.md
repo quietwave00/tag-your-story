@@ -2,20 +2,34 @@
 
 ## User/Auth 마이그레이션 로드맵 (2026-10-14)
 
-사용자 요청에 따라 기존 `AUTH-001-proposal.md`를 순서대로 실행 가능한 독립 Plan으로 분할했다. 이번에는 Plan 문서만 작성했으며 production code, 자동 테스트, 운영 DB는 변경하지 않았다. 첫 Plan만 `plans/active/`, 나머지는 `plans/ready/`에 둔다. 각 단계는 사용자 실행 검증과 리뷰를 확인한 뒤 completed로 이동하고 다음 Plan을 active로 옮긴다. 프론트 구현은 서버 단계 완료 후 별도로 진행한다.
+기존 `AUTH-001-proposal.md`를 독립 Plan으로 분할해 구현했으며, 2026-10-20 사용자가 AUTH-001~008 전체 테스트 완료와 Human Review 완료 처리를 확인했다. 모든 Auth Plan을 `plans/completed/`로 이동했다. 프론트 구현은 서버 단계와 별도로 진행한다.
 
 | 순서 | Plan | 상태 | 완료 목표 |
 | --- | --- | --- | --- |
-| 1 | [AUTH-001](plans/active/AUTH-001.md) | active, 미구현 | ACCESS/REFRESH 타입 분리, Redis refresh 검증, 로그아웃 폐기 |
-| 2 | [AUTH-002](plans/active/AUTH-002.md) | ready | 정규화 이메일·provider identity·DB unique·기존 데이터 migration |
-| 3 | [AUTH-003](plans/active/AUTH-003.md) | ready | Google 즉시 가입, 형용사+동물+숫자 nickname, GUEST/PENDING_USER 제거 |
-| 4 | [AUTH-004](plans/active/AUTH-004.md) | ready | 메일 발송 adapter와 안전한 가입 challenge 저장 기반 |
-| 5 | [AUTH-005](plans/active/AUTH-005.md) | ready | 자체 이메일 가입·중복 확인·6자리 confirm |
-| 6 | [AUTH-006](plans/active/AUTH-006.md) | ready | 정규화 이메일·비밀번호 로그인 |
-| 7 | [AUTH-007](plans/active/AUTH-007.md) | ready | 닉네임 변경 API |
-| 8 | [AUTH-008](plans/active/AUTH-008.md) | ready | 탈퇴 API, 계정 비식별화, 게시글·댓글 공개 유지 |
+| 1 | [AUTH-001](plans/completed/AUTH-001.md) | completed | ACCESS/REFRESH 타입 분리, Redis refresh 검증, 로그아웃 폐기 |
+| 2 | [AUTH-002](plans/completed/AUTH-002.md) | completed | 정규화 이메일·provider identity·DB unique·기존 데이터 migration |
+| 3 | [AUTH-003](plans/completed/AUTH-003.md) | completed | Google 즉시 가입, 형용사+동물+숫자 nickname, GUEST/PENDING_USER 제거 |
+| 4 | [AUTH-004](plans/completed/AUTH-004.md) | completed | 메일 발송 adapter와 안전한 가입 challenge 저장 기반 |
+| 5 | [AUTH-005](plans/completed/AUTH-005.md) | completed | 자체 이메일 가입·중복 확인·6자리 confirm |
+| 6 | [AUTH-006](plans/completed/AUTH-006.md) | completed | 정규화 이메일·비밀번호 로그인 |
+| 7 | [AUTH-007](plans/completed/AUTH-007.md) | completed | 닉네임 변경 API |
+| 8 | [AUTH-008](plans/completed/AUTH-008.md) | completed | 탈퇴 API, 계정 비식별화, 게시글·댓글 공개 유지 |
 
-공통 결정: 서버 이메일 `trim`+소문자화, Google/자체 계정 자동 연결 금지, 이미 Google로 가입한 이메일에 provider 안내 오류, 가입 전 이탈 시 DB 계정 없음, 닉네임 자동 생성과 변경 허용, 탈퇴 후 게시글·댓글 공개 유지. AUTH-002에서 관련 ADR을 작성해 기존 User 명세와 정렬한다. 사용자가 특정 단계의 구현을 지시하면 해당 Plan만 착수한다.
+공통 결정: 서버 이메일 `trim`+소문자화, Google/자체 계정 자동 연결 금지, 이미 Google로 가입한 이메일에 provider 안내 오류, 가입 전 이탈 시 DB 계정 없음, 닉네임 자동 생성과 변경 허용, 탈퇴 후 게시글·댓글 공개 유지. 관련 결정은 ADR-014~016과 서버 명세에 정렬했다.
+
+- 2026-10-20: AUTH-001~008 완료.
+  - 사용자가 `plans/active/` 전체 구현의 테스트 완료를 확인하고 Human Review 완료 처리를 요청했다.
+  - JWT 타입 경계와 refresh token 검증·갱신·로그아웃 폐기, Google 즉시 가입, LOCAL 이메일 가입·로그인, 닉네임 변경, 회원 탈퇴·비식별화·공개 콘텐츠 보존을 완료했다.
+  - SMTP와 Redis 가입 challenge, 이메일 인증 코드, Access/Refresh `Set-Cookie`, 토큰 갱신 전후 무효화 동작을 포함한 API 검증 결과를 확인했다.
+  - 사용자 확인을 최종 검증 근거로 AUTH-001~008을 `plans/completed/`로 이동했다. 실행 명령별 원문 출력은 별도로 첨부되지 않았다.
+
+- 2026-10-15: 사용자 요청으로 AUTH-003 구현 착수. ADR-015, Google 즉시 가입·canonical 인증·pending 역할 제거, OAuth Swagger 및 Oracle nickname migration runbook과 테스트를 작성했다. AUTH-002 사용자 재검증·운영 migration 결과와 AUTH-003 테스트/검증 결과는 아직 전달받지 못했으므로 Plan은 active에 둔다.
+
+- 2026-10-16: 사용자 요청으로 AUTH-004 구현 착수. 내부 SMTP 발송과 Redis 가입 challenge, HMAC 코드 검증값, 재발송·실패 제한·발송 장애 보상, 설정·runbook 및 테스트를 작성했다. 사용자 실행 검증 결과 대기 중이며 Plan은 active에 둔다.
+- 2026-10-16: 사용자 요청으로 AUTH-005 구현 착수. 이메일 가입 API, BCrypt 및 LOCAL 계정 저장, Redis 확인 선점·멱등 복구, 가용성 조회 제한, Swagger와 테스트를 작성했다. AUTH-004 및 AUTH-005 사용자 실행 검증 결과 대기 중이며 Plan은 active에 둔다.
+- 2026-10-16: 사용자 요청으로 AUTH-006 구현 착수. LOCAL 로그인과 Redis 요청·실패 제한, 기존 token/cookie 경로 연결, Swagger와 테스트 코드를 작성했다. 기존 쿠키 전달과 CSRF 비활성화 정책은 유지했다. 사용자 실행 검증 결과 대기 중이며 Plan은 active에 둔다.
+- 2026-10-16: 사용자 요청으로 AUTH-007 구현 착수. 인증 사용자 본인 닉네임 변경, DB unique 충돌 처리, USER 캐시 무효화, Swagger와 테스트 코드를 작성했다. 사용자 실행 검증 결과 대기 중이며 Plan은 active에 둔다.
+- 2026-10-16: 사용자 요청으로 AUTH-008 구현 착수. ADR-016, 탈퇴 API와 식별자 tombstone, 쿠키/Redis 정리, 공개 작성자명·쓰기 상태 검사, Swagger, 운영 runbook 및 테스트 코드를 작성했다. 사용자 실행 검증 결과 대기 중이며 Plan은 active에 둔다.
 
 - 2026-10-14: BOARD-TRACK-TAG-001 사용자 요청으로 completed 이동.
   - Board가 Catalog Track 또는 Album 중 정확히 하나를 FK로 참조하도록 ADR-013, JPA mapping, 기준 DDL과 migration runbook을 정렬했다.

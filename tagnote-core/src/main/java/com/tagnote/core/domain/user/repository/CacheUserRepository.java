@@ -7,11 +7,9 @@ public interface CacheUserRepository {
 
     User saveCache(User user, CacheSpec cacheSpec);
 
-    void deletePendingUser(User user, CacheSpec cacheSpec);
-
     User findCachedUserByUserId(Long userId, CacheSpec cacheSpec);
 
-    User findCachedUserByPendingUserId(String pendingUserId, CacheSpec cacheSpec);
-
     User findCachedUserByUserKey(String userKey, CacheSpec user);
+
+    void deleteCachedUser(Long userId, String userKey);
 }

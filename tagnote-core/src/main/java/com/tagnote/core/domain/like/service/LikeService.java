@@ -1,5 +1,6 @@
 package com.tagnote.core.domain.like.service;
 
+
 import com.tagnote.core.domain.board.service.Board;
 import com.tagnote.core.domain.event.publisher.CommonEventPublisher;
 import com.tagnote.core.domain.like.LikeEntity;
@@ -35,6 +36,7 @@ public class LikeService {
         return true;
     }
 
+    @Transactional
     public void unLike(String boardId, Long userId) {
         likeRepository.deleteByBoard_BoardId_AndUser_UserId(boardId, userId);
     }

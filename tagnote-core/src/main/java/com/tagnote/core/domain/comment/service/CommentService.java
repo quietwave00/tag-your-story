@@ -1,5 +1,7 @@
 package com.tagnote.core.domain.comment.service;
 
+import com.tagnote.application.user.ActiveUserWriteGuard;
+
 import com.tagnote.core.domain.board.service.Board;
 import com.tagnote.core.domain.comment.CommentEntity;
 import com.tagnote.core.domain.comment.CommentStatus;
@@ -29,9 +31,11 @@ import java.util.Objects;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommonEventPublisher eventPublisher;
+    private final ActiveUserWriteGuard activeUserWriteGuard;
 
     @Transactional
     public Comment create(Board board, User user, CreateCommentCommand command) {
+        activeUserWriteGuard.lock(user.getUserId());
         CommentEntity commentEntity = CommentEntity.create(command.getContent());
         commentEntity.addUser(user.toEntity());
         commentEntity.addBoard(board.toEntity());
@@ -78,6 +82,7 @@ public class CommentService {
 
     @Transactional
     public Comment createReply(Board board, User user, CreateReplyCommand command) {
+        activeUserWriteGuard.lock(user.getUserId());
         CommentEntity parentComment = getCommentEntityByCommentId(command.getParentId());
         CommentEntity replyEntity = CommentEntity.create(command.getContent());
         replyEntity.addParent(parentComment);

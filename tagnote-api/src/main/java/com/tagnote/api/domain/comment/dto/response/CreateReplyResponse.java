@@ -17,7 +17,7 @@ public class CreateReplyResponse {
     public static CreateReplyResponse from(Comment comment) {
         return builder()
                 .commentId(comment.getCommentId())
-                .nickname(comment.getUser().getNickname())
+                .nickname(comment.getUser().getDisplayNickname())
                 .content(comment.getContent())
                 .createdDate(comment.getCreatedAt())
                 .build();

@@ -1,6 +1,9 @@
 package com.tagnote.domain.notification.service;
 
 import com.tagnote.core.domain.notification.NotificationEntity;
+import com.tagnote.core.domain.user.repository.UserRepository;
+import com.tagnote.core.domain.user.UserEntity;
+import com.tagnote.core.domain.user.UserStatus;
 import com.tagnote.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagnote.core.domain.notification.repository.NotificationRepository;
 import com.tagnote.core.domain.notification.service.NotificationManager;
@@ -22,6 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 public class NotificationServiceTest {
@@ -35,8 +39,31 @@ public class NotificationServiceTest {
     @Mock
     private SseManager sseManager;
 
+    @Mock
+    private UserRepository users;
+
     @InjectMocks
     private NotificationService notificationService;
+
+    @Test
+    void delayed_notification_is_discarded_for_withdrawn_subscriber() {
+        var notification = NotificationFixture.createNotification(1L);
+        when(users.findByUserIdForUpdate(1L)).thenReturn(Optional.of(UserEntity.builder()
+                .userId(1L).userStatus(UserStatus.WITHDRAWN).build()));
+
+        assertThat(notificationService.save(notification)).isNull();
+        verifyNoInteractions(notificationRepository);
+    }
+
+    @Test
+    void withdrawn_subscriber_receives_no_sse() {
+        var notification = NotificationFixture.createNotification(1L);
+        when(users.findByUserId(1L)).thenReturn(Optional.of(UserEntity.builder()
+                .userId(1L).userStatus(UserStatus.WITHDRAWN).build()));
+
+        notificationService.send(notification);
+        verifyNoInteractions(sseManager);
+    }
 
     @Test
     void SseEmitter를_구독시_SseEmitter가_존재하는_경우() {

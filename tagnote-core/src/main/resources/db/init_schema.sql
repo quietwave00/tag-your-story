@@ -4,12 +4,24 @@ create table users
     created_at  datetime(6)  not null,
     updated_at  datetime(6)  not null,
     email       varchar(255) not null,
-    nickname    varchar(255) not null,
+    nickname    varchar(20) null,
+    provider    varchar(16)  not null,
+    subject     varchar(255) character set utf8mb4 collate utf8mb4_bin null,
+    password_hash varchar(255) null,
     role        varchar(255) not null,
-    user_key    varchar(255) not null,
+    user_key    varchar(255) character set utf8mb4 collate utf8mb4_bin not null,
     user_status varchar(255) not null,
 
-    index idx_user_key (user_key)
+    constraint uk_users_email unique (email),
+    constraint uk_users_user_key unique (user_key),
+    constraint uk_users_nickname unique (nickname),
+    constraint uk_users_provider_subject unique (provider, subject),
+    constraint ck_users_email_normalized check (binary email = binary lower(trim(email))),
+    constraint ck_users_provider_subject check (
+        (provider = 'GOOGLE' and subject is not null and subject = user_key)
+        or (provider = 'LOCAL' and subject is null)
+    ),
+    index idx_users_status (user_status)
 ) ENGINE = InnoDB;
 
 create table artist

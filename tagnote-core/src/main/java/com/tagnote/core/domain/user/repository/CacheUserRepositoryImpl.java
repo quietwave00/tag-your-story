@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.Objects;
-
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -19,19 +17,8 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
 
     @Override
     public User saveCache(User user, CacheSpec cacheSpec) {
-        redisTemplate.set(
-                Objects.nonNull(user.getUserId()) ?
-                        user.getUserId()
-                        : user.getPendingUserId(),
-                user,
-                cacheSpec
-        );
+        redisTemplate.set(user.getUserId(), user, cacheSpec);
         return user;
-    }
-
-    @Override
-    public void deletePendingUser(User user, CacheSpec cacheSpec) {
-        redisTemplate.delete(user.getPendingUserId(), cacheSpec);
     }
 
     @Override
@@ -40,12 +27,13 @@ public class CacheUserRepositoryImpl implements CacheUserRepository {
     }
 
     @Override
-    public User findCachedUserByPendingUserId(String pendingUserId, CacheSpec cacheSpec) {
-        return redisTemplate.get(pendingUserId, cacheSpec);
+    public User findCachedUserByUserKey(String userKey, CacheSpec cacheSpec) {
+        return redisTemplate.get(userKey, cacheSpec);
     }
 
     @Override
-    public User findCachedUserByUserKey(String userKey, CacheSpec cacheSpec) {
-        return redisTemplate.get(userKey, cacheSpec);
+    public void deleteCachedUser(Long userId, String userKey) {
+        redisTemplate.delete(userId, CacheSpec.USER);
+        redisTemplate.delete(userKey, CacheSpec.USER);
     }
 }

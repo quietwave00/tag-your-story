@@ -8,9 +8,10 @@ import com.tagnote.core.domain.user.UserStatus;
 import com.tagnote.core.domain.user.repository.UserRepository;
 import com.tagnote.core.domain.user.service.User;
 import com.tagnote.core.domain.user.service.UserService;
-import com.tagnote.core.domain.user.service.dto.command.RegisterCommand;
 import com.tagnote.core.domain.user.service.dto.command.ReissueAccessTokenCommand;
 import com.tagnote.core.domain.user.service.dto.response.Token;
+import com.tagnote.core.exception.CustomException;
+import com.tagnote.core.exception.ExceptionCode;
 import com.tagnote.core.utils.jwt.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.tagnote.core.utils.jwt.JwtProperties.TOKEN_TYPE_REFRESH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
@@ -45,22 +48,70 @@ class UserServiceTest {
     private UserService userService;
 
     @Test
-    void reissueAccessToken은_refreshToken에서_userId를_꺼내_cache우선으로_조회한다() {
-        User cachedUser = user(1L, "cached", Role.ROLE_USER);
-        when(jwtUtil.getUserIdFromToken("refresh-token")).thenReturn(1L);
-        when(userRepository.findCachedUserByUserId(1L, CacheSpec.USER)).thenReturn(cachedUser);
+    void reissueAccessToken은_refreshToken에서_userId를_꺼내_DB의_현재_상태를_확인한다() {
+        UserEntity activeUser = userEntity(1L, "user-key", "user@test.com", "cached", Role.ROLE_USER);
+        when(jwtUtil.getUserIdFromToken("refresh-token", TOKEN_TYPE_REFRESH)).thenReturn(1L);
+        when(redisTemplate.get(1L, CacheSpec.REFRESH_TOKEN)).thenReturn("refresh-token");
+        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(activeUser));
         when(jwtUtil.generateAccessToken(1L)).thenReturn("new-access-token");
 
         Token result = userService.reissueAccessToken(ReissueAccessTokenCommand.builder().refreshToken("refresh-token").build());
 
         assertThat(result.getToken()).isEqualTo("new-access-token");
+        verify(userRepository, never()).findCachedUserByUserId(any(), any());
+    }
+
+    @Test
+    void reissueAccessToken은_현재_redis_refresh_token만_허용한다() {
+        when(jwtUtil.getUserIdFromToken("old-refresh-token", TOKEN_TYPE_REFRESH)).thenReturn(1L);
+        when(redisTemplate.get(1L, CacheSpec.REFRESH_TOKEN)).thenReturn("new-refresh-token");
+
+        assertThatThrownBy(() -> userService.reissueAccessToken(
+                ReissueAccessTokenCommand.builder().refreshToken("old-refresh-token").build()))
+                .isInstanceOf(CustomException.class)
+                .satisfies(error -> assertThat(((CustomException) error).getExceptionCode())
+                        .isEqualTo(ExceptionCode.INVALID_REFRESH_TOKEN));
         verify(userRepository, never()).findByUserId(any());
     }
 
     @Test
+    void reissueAccessToken은_redis_token이_삭제되면_거부한다() {
+        when(jwtUtil.getUserIdFromToken("refresh-token", TOKEN_TYPE_REFRESH)).thenReturn(1L);
+
+        assertThatThrownBy(() -> userService.reissueAccessToken(
+                ReissueAccessTokenCommand.builder().refreshToken("refresh-token").build()))
+                .isInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void reissueAccessToken은_비활성_계정을_거부한다() {
+        when(jwtUtil.getUserIdFromToken("refresh-token", TOKEN_TYPE_REFRESH)).thenReturn(1L);
+        when(redisTemplate.get(1L, CacheSpec.REFRESH_TOKEN)).thenReturn("refresh-token");
+        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(UserEntity.builder()
+                .userId(1L).role(Role.ROLE_USER).userStatus(UserStatus.DORMANT).build()));
+
+        assertThatThrownBy(() -> userService.reissueAccessToken(
+                ReissueAccessTokenCommand.builder().refreshToken("refresh-token").build()))
+                .isInstanceOf(CustomException.class);
+    }
+
+    @Test
+    void withdrawn_account_cannot_reissue_even_when_redis_token_remains() {
+        when(jwtUtil.getUserIdFromToken("refresh-token", TOKEN_TYPE_REFRESH)).thenReturn(1L);
+        when(redisTemplate.get(1L, CacheSpec.REFRESH_TOKEN)).thenReturn("refresh-token");
+        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(UserEntity.builder()
+                .userId(1L).role(Role.ROLE_USER).userStatus(UserStatus.WITHDRAWN).build()));
+
+        assertThatThrownBy(() -> userService.reissueAccessToken(
+                ReissueAccessTokenCommand.builder().refreshToken("refresh-token").build()))
+                .isInstanceOf(CustomException.class)
+                .satisfies(error -> assertThat(((CustomException) error).getExceptionCode())
+                        .isEqualTo(ExceptionCode.INVALID_REFRESH_TOKEN));
+    }
+
+    @Test
     void reissueRefreshToken은_userId기준_새토큰을_발급하고_redis에_저장한다() {
-        User cachedUser = user(1L, "cached", Role.ROLE_USER);
-        when(userRepository.findCachedUserByUserId(1L, CacheSpec.USER)).thenReturn(cachedUser);
+        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(userEntity(1L, "user-key", "user@test.com", "cached", Role.ROLE_USER)));
         when(jwtUtil.generateRefreshToken(1L)).thenReturn("new-refresh-token");
 
         Token result = userService.reissueRefreshToken(1L);
@@ -70,65 +121,49 @@ class UserServiceTest {
     }
 
     @Test
-    void logout은_SecurityContext를_비운다() {
+    void logout은_refresh_token을_삭제하고_SecurityContext를_비운다() {
         SecurityContextHolder.getContext()
                 .setAuthentication(new UsernamePasswordAuthenticationToken("principal", "credentials"));
 
-        userService.logout();
+        userService.logout(1L);
 
+        verify(redisTemplate).delete(1L, CacheSpec.REFRESH_TOKEN);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-    }
-
-    @Test
-    void register는_pending_cache를_읽어_role과_nickname을_변경하고_pending_cache를_삭제한다() {
-        User pendingUser = User.builder()
-                .pendingUserId("pending-1")
-                .userId(1L)
-                .userKey("user-key")
-                .email("user@test.com")
-                .role(Role.ROLE_PENDING_USER)
-                .userStatus(UserStatus.ACTIVE)
-                .build();
-        UserEntity savedEntity = UserEntity.builder()
-                .userId(1L)
-                .userKey("user-key")
-                .email("user@test.com")
-                .nickname("newbie")
-                .role(Role.ROLE_USER)
-                .userStatus(UserStatus.ACTIVE)
-                .build();
-        RegisterCommand command = RegisterCommand.builder()
-                .pendingUserId("pending-1")
-                .nickname("newbie")
-                .build();
-
-        when(userRepository.findCachedUserByPendingUserId("pending-1", CacheSpec.PENDING_USER)).thenReturn(pendingUser);
-        when(userRepository.save(any(UserEntity.class))).thenReturn(savedEntity);
-
-        User result = userService.register(command);
-
-        assertThat(result.getNickname()).isEqualTo("newbie");
-        assertThat(result.getRole()).isEqualTo(Role.ROLE_USER);
-        verify(userRepository).saveCache(argThat(savedUser ->
-                savedUser.getUserId().equals(1L)
-                        && "user-key".equals(savedUser.getUserKey())
-                        && "user@test.com".equals(savedUser.getEmail())
-                        && "newbie".equals(savedUser.getNickname())
-                        && savedUser.getRole() == Role.ROLE_USER
-        ), any());
-        verify(userRepository).deletePendingUser(pendingUser, CacheSpec.PENDING_USER);
     }
 
     @Test
     void getCacheByUserId는_cache_miss면_DB로_fallback한다() {
         UserEntity userEntity = userEntity(1L, "user-key", "user@test.com", "nickname", Role.ROLE_USER);
-        when(userRepository.findCachedUserByUserId(1L, CacheSpec.USER)).thenReturn(null);
         when(userRepository.findByUserId(1L)).thenReturn(Optional.of(userEntity));
 
         User result = userService.getCacheByUserId(1L);
 
         assertThat(result.getUserId()).isEqualTo(1L);
         verify(userRepository).findByUserId(1L);
+    }
+
+    @Test
+    void cached_active_user_does_not_override_inactive_database_status() {
+        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(UserEntity.builder()
+                .userId(1L).role(Role.ROLE_USER).userStatus(UserStatus.DORMANT).build()));
+
+        assertThatThrownBy(() -> userService.getCacheByUserId(1L))
+                .isInstanceOf(CustomException.class)
+                .satisfies(error -> assertThat(((CustomException) error).getExceptionCode())
+                        .isEqualTo(ExceptionCode.USER_INACTIVE));
+        verify(userRepository, never()).findCachedUserByUserId(any(), any());
+    }
+
+    @Test
+    void withdrawn_account_is_rejected_before_cached_identity_is_read() {
+        when(userRepository.findByUserId(1L)).thenReturn(Optional.of(UserEntity.builder()
+                .userId(1L).role(Role.ROLE_USER).userStatus(UserStatus.WITHDRAWN).build()));
+
+        assertThatThrownBy(() -> userService.requireActiveUser(1L))
+                .isInstanceOf(CustomException.class)
+                .satisfies(error -> assertThat(((CustomException) error).getExceptionCode())
+                        .isEqualTo(ExceptionCode.ACCOUNT_WITHDRAWN));
+        verify(userRepository, never()).findCachedUserByUserId(any(), any());
     }
 
     @Test
@@ -141,17 +176,6 @@ class UserServiceTest {
 
         assertThat(result.getUserKey()).isEqualTo("user-key");
         verify(userRepository).findByUserKey("user-key");
-    }
-
-    private User user(Long userId, String nickname, Role role) {
-        return User.builder()
-                .userId(userId)
-                .nickname(nickname)
-                .role(role)
-                .userKey("user-key")
-                .email("user@test.com")
-                .userStatus(UserStatus.ACTIVE)
-                .build();
     }
 
     private UserEntity userEntity(Long userId, String userKey, String email, String nickname, Role role) {

@@ -1,7 +1,6 @@
 package com.tagnote.api.auth;
 
 import com.tagnote.core.domain.user.Role;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,12 +12,10 @@ import java.util.Collection;
 import java.util.Map;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private Long userId;
-    private String pendingId;
     private Role role;
     private Map<String, Object> userInfoMap;
 
@@ -28,10 +25,6 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         this.userId = userId;
     }
 
-    public PrincipalDetails(String pendingId) {
-        this.pendingId = pendingId;
-    }
-
     public PrincipalDetails(Long userId, Role role) {
         this.userId = userId;
         this.role = role;
@@ -39,12 +32,6 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     public PrincipalDetails(Long userId, Role role, Map<String, Object> attributes) {
         this.userId = userId;
-        this.role = role;
-        this.userInfoMap = attributes;
-    }
-
-    public PrincipalDetails(String pendingId, Role role, Map<String, Object> attributes) {
-        this.pendingId = pendingId;
         this.role = role;
         this.userInfoMap = attributes;
     }

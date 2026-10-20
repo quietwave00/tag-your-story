@@ -3,9 +3,8 @@ package com.tagnote.core.utils.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.AlgorithmMismatchException;
-import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.tagnote.core.exception.CustomException;
 import com.tagnote.core.exception.ExceptionCode;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static com.tagnote.core.utils.jwt.JwtProperties.*;
 
@@ -31,9 +31,6 @@ public class JwtUtil {
 
     @Value("${jwt.refresh.expiration}")
     private int refreshTokenExpiration;
-
-    @Value("${jwt.pending.expiration}")
-    private int pendingTokenExpiration;
 
 //    private final JWTVerifier jwtVerifier;
 //
@@ -56,29 +53,25 @@ public class JwtUtil {
                 .withExpiresAt(Instant.ofEpochSecond(refreshTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
                 .withClaim("TOKEN_TYPE", TOKEN_TYPE_REFRESH)
                 .withSubject(String.valueOf(userId))
+                .withJWTId(UUID.randomUUID().toString())
                 .sign(Algorithm.HMAC512(jwtKey));
     }
 
-    public String generatePendingToken(String pendingId) {
-        return JWT.create()
-                .withExpiresAt(Instant.ofEpochSecond(pendingTokenExpiration).plusSeconds(Instant.now().getEpochSecond()))
-                .withClaim("TOKEN_TYPE", TOKEN_TYPE_PENDING)
-                .withSubject(pendingId)
-                .sign(Algorithm.HMAC512(jwtKey));
+    public Long getUserIdFromToken(String token, String expectedType) {
+        DecodedJWT decoded = validateToken(token);
+        if ("Pending".equals(decoded.getClaim("TOKEN_TYPE").asString())) {
+            throw new CustomException(ExceptionCode.GOOGLE_RELOGIN_REQUIRED);
+        }
+        if (!expectedType.equals(decoded.getClaim("TOKEN_TYPE").asString())) {
+            throw new CustomException(ExceptionCode.INVALID_REFRESH_TOKEN);
+        }
+        try {
+            return Long.valueOf(decoded.getSubject());
+        } catch (NumberFormatException | NullPointerException e) {
+            throw new CustomException(ExceptionCode.INVALID_REFRESH_TOKEN);
+        }
     }
 
-    public Long getUserIdFromToken(String token) throws CustomException {
-        return Long.valueOf(validateToken(token).getSubject());
-    }
-
-    public String getPendingIdFromToken(String token) throws CustomException {
-        return validateToken(token).getSubject();
-    }
-
-
-    public String getTokenTypeFromToken(String token) {
-        return validateToken(token).getClaim("TOKEN_TYPE").asString();
-    }
 
     public DecodedJWT validateToken(String token) {
         try {
@@ -86,7 +79,7 @@ public class JwtUtil {
             return verifier.verify(token);
         } catch (TokenExpiredException e) {
             throw new CustomException(ExceptionCode.TOKEN_HAS_EXPIRED);
-        } catch (AlgorithmMismatchException | SignatureVerificationException e) {
+        } catch (JWTVerificationException | IllegalArgumentException e) {
             throw new CustomException(ExceptionCode.TOKEN_HAS_TEMPERED);
         }
     }

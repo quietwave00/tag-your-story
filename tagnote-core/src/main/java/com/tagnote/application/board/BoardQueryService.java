@@ -107,7 +107,7 @@ public class BoardQueryService {
                     board.getBoardId(),
                     board.getContent(),
                     board.getCreatedAt(),
-                    board.getUserEntity().getNickname(),
+                    board.getUserEntity().getDisplayNickname(),
                     board.getLikeCount(),
                     subject,
                     userTags.getOrDefault(board.getBoardId(), List.of()),

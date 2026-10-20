@@ -2,7 +2,8 @@ package com.tagnote.api.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tagnote.api.auth.PrincipalDetails;
-import com.tagnote.core.domain.user.Role;
+import com.tagnote.core.domain.user.service.User;
+import com.tagnote.core.domain.user.service.UserService;
 import com.tagnote.core.exception.CustomException;
 import com.tagnote.core.exception.ExceptionResponse;
 import com.tagnote.core.utils.jwt.JwtUtil;
@@ -15,13 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
 import static com.tagnote.core.utils.jwt.JwtProperties.*;
@@ -33,6 +32,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final UserService userService;
 
     private static final String EMPTY_TOKEN = "null";
 
@@ -43,20 +43,24 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        if ("POST".equals(request.getMethod()) && ("/api/user/reissue/accessToken".equals(request.getServletPath())
+                || "/api/auth/login".equals(request.getServletPath()))) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String token = extractToken(request);
 
         try {
-            /* 토큰이 없으면 게스트 권한을 부여한다. */
+            /* No token: let Spring Security's anonymous filter handle the request. */
             if (!StringUtils.hasText(token) || EMPTY_TOKEN.equals(token)) {
-                handleGuestRequest(request, response, filterChain);
+                filterChain.doFilter(request, response);
                 return;
             }
 
-            /* 토큰 타입이 PENDING이면 PENDING 권한을 부여한다. */
-            if (TOKEN_TYPE_PENDING.equals(jwtUtil.getTokenTypeFromToken(token))) {
-                handlePendingUserRequest(request, response, filterChain, token);
-                return;
+            if (token.startsWith(TOKEN_PREFIX)) {
+                token = token.substring(TOKEN_PREFIX.length());
             }
+
             handleUserRequest(request, response, filterChain, token);
         } catch(CustomException e) {
             sendExceptionMessage(response, e);
@@ -76,28 +80,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private void handleGuestRequest(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws IOException, ServletException {
-        registerAsGuest();
-        filterChain.doFilter(request, response);
-    }
-
-    private void handlePendingUserRequest(HttpServletRequest request,
-                                          HttpServletResponse response,
-                                          FilterChain filterChain,
-                                          String token) throws IOException, ServletException {
-        registerAsPendingUser(jwtUtil.getPendingIdFromToken(token));
-        filterChain.doFilter(request, response);
-    }
-
     private void handleUserRequest(HttpServletRequest request,
                                    HttpServletResponse response,
                                    FilterChain filterChain,
                                    String token) throws IOException, ServletException {
         try {
-            jwtUtil.validateToken(token);
-            Long userId = jwtUtil.getUserIdFromToken(token.replace(TOKEN_PREFIX, ""));
+            Long userId = jwtUtil.getUserIdFromToken(token, TOKEN_TYPE_ACCESS);
             setAuthentication(userId);
             filterChain.doFilter(request, response);
         } catch (CustomException e) {
@@ -106,27 +94,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private void setAuthentication(Long userId) {
-        PrincipalDetails principalDetails = new PrincipalDetails(userId, Role.ROLE_USER);
+        User user = userService.requireActiveUser(userId);
+        PrincipalDetails principalDetails = new PrincipalDetails(user.getUserId(), user.getRole());
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    /*
-     * Guest 권한을 부여해준다.
-     */
-    private void registerAsGuest() {
-        PrincipalDetails principalDetails = new PrincipalDetails(null, Role.ROLE_GUEST);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    /*
-     * Pending User 권한을 부여해준다.
-     */
-    private void registerAsPendingUser(String pendingId) {
-        PrincipalDetails principalDetails = new PrincipalDetails(pendingId);
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(Role.ROLE_PENDING_USER.toString()));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
@@ -135,6 +105,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      */
     private void sendExceptionMessage(HttpServletResponse response, CustomException exception) {
         try {
+            response.setStatus(exception.getExceptionCode().getHttpStatus().value());
+            response.setContentType("application/json");
             ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                             .exceptionCode(exception.getExceptionCode())
                             .message(exception.getMessage())

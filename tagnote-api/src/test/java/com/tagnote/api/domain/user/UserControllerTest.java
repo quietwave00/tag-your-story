@@ -2,11 +2,16 @@ package com.tagnote.api.domain.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tagnote.api.auth.PrincipalDetails;
+import com.tagnote.application.user.NicknameChangeService;
+import com.tagnote.application.user.AccountWithdrawalService;
+import com.tagnote.api.jwt.JwtCookieProvider;
+import jakarta.servlet.http.Cookie;
 import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
 import com.tagnote.core.domain.user.Role;
-import com.tagnote.core.domain.user.service.User;
 import com.tagnote.core.domain.user.service.UserService;
 import com.tagnote.core.domain.user.service.dto.response.Token;
+import com.tagnote.core.exception.CustomException;
+import com.tagnote.core.exception.ExceptionCode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,7 +25,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,12 +44,76 @@ class UserControllerTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private NicknameChangeService nicknameChangeService;
+
+    @MockBean
+    private AccountWithdrawalService accountWithdrawalService;
+
+    @MockBean
+    private JwtCookieProvider jwtCookieProvider;
+
+    @Test
+    void withdrawal_uses_only_principal_id_and_expires_both_cookies() throws Exception {
+        Cookie access = new Cookie("Authorization", "");
+        access.setMaxAge(0);
+        Cookie refresh = new Cookie("Refresh", "");
+        refresh.setMaxAge(0);
+        when(jwtCookieProvider.expireAccessTokenCookie()).thenReturn(access);
+        when(jwtCookieProvider.expireRefreshTokenCookie()).thenReturn(refresh);
+
+        mockMvc.perform(delete("/api/user/me?userId=2")
+                        .with(user(new PrincipalDetails(1L, Role.ROLE_USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie()
+                        .maxAge("Authorization", 0))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie()
+                        .maxAge("Refresh", 0));
+        verify(accountWithdrawalService).withdraw(1L);
+    }
+
+    @Test
+    void withdrawal_requires_authentication() throws Exception {
+        mockMvc.perform(delete("/api/user/me")).andExpect(status().isForbidden());
+        org.mockito.Mockito.verifyNoInteractions(accountWithdrawalService);
+    }
+
+    @Test
+    void nickname_change_uses_authenticated_user_id_and_returns_confirmed_value() throws Exception {
+        when(nicknameChangeService.change(1L, "새닉네임")).thenReturn("새닉네임");
+
+        mockMvc.perform(patch("/api/user/me/nickname")
+                        .with(user(new PrincipalDetails(1L, Role.ROLE_USER)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nickname\":\"새닉네임\",\"userId\":2}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response.nickname").value("새닉네임"));
+        verify(nicknameChangeService).change(1L, "새닉네임");
+    }
+
+    @Test
+    void nickname_change_requires_authentication() throws Exception {
+        mockMvc.perform(patch("/api/user/me/nickname")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nickname\":\"새닉네임\"}"))
+                .andExpect(status().isForbidden());
+        org.mockito.Mockito.verifyNoInteractions(nicknameChangeService);
+    }
+
+    @Test
+    void nickname_change_rejects_missing_body() throws Exception {
+        mockMvc.perform(patch("/api/user/me/nickname")
+                        .with(user(new PrincipalDetails(1L, Role.ROLE_USER)))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
     @Test
     void POST_api_user_reissue_accessToken은_newAccessToken_field를_유지한다() throws Exception {
         when(userService.reissueAccessToken(any())).thenReturn(Token.onComplete("new-access-token"));
 
         mockMvc.perform(post("/api/user/reissue/accessToken")
-                        .with(user(new PrincipalDetails(1L, Role.ROLE_USER)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshTokenPayload("refresh-token"))))
                 .andExpect(status().isOk())
@@ -68,43 +139,36 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(userService).logout();
+        verify(userService).logout(1L);
     }
 
     @Test
-    void POST_api_user_register는_CurrentPendingUserId를_사용한다() throws Exception {
-        when(userService.register(any()))
-                .thenReturn(User.builder().pendingUserId("pending-1").nickname("tagger").role(Role.ROLE_USER).build());
-
-        mockMvc.perform(post("/api/user/register")
-                        .with(user(new PrincipalDetails("pending-1", Role.ROLE_PENDING_USER, null)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new RegisterPayload("tagger"))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.response.nickname").value("tagger"));
+    void removed_register_and_guest_test_routes_are_404() throws Exception {
+        mockMvc.perform(post("/api/user/register")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/user/test")).andExpect(status().isNotFound());
     }
 
     @Test
-    void GET_api_user_test는_guest_role_requirements를_유지한다() throws Exception {
-        mockMvc.perform(get("/api/user/test")
-                        .with(user(new PrincipalDetails(null, Role.ROLE_GUEST))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.response").value("success"));
+    void POST_api_user_reissue_accessToken은_body가_없으면_거부된다() throws Exception {
+        mockMvc.perform(post("/api/user/reissue/accessToken")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void POST_api_user_reissue_accessToken은_인증없이는_차단된다() throws Exception {
+    void POST_api_user_reissue_accessToken은_유효하지_않은_refresh를_401로_응답한다() throws Exception {
+        when(userService.reissueAccessToken(any()))
+                .thenThrow(new CustomException(ExceptionCode.INVALID_REFRESH_TOKEN));
+
         mockMvc.perform(post("/api/user/reissue/accessToken")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new RefreshTokenPayload("refresh-token"))))
-                .andExpect(status().isForbidden());
+                        .content(objectMapper.writeValueAsString(new RefreshTokenPayload("old-refresh-token"))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.response.exceptionCode").value("INVALID_REFRESH_TOKEN"));
     }
 
     private record RefreshTokenPayload(String refreshToken) {
     }
 
-    private record RegisterPayload(String nickname) {
-    }
 }

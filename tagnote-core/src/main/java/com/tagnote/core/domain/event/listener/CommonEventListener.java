@@ -25,7 +25,9 @@ public class CommonEventListener {
         if(commonEvent instanceof NotificationAdaptor) {
             Notification notification = commonEvent.getNotification();
             Notification savedNotification = notificationService.save(notification);
-            sendNotification(savedNotification);
+            if (savedNotification != null) {
+                sendNotification(savedNotification);
+            }
         }
     }
 

@@ -19,7 +19,7 @@ public class PrincipalDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
         log.info("PrincipalDetailsService Execute");
-        User user = userService.getCacheByUserId(Long.valueOf(userId));
-        return new PrincipalDetails(user.getUserId());
+        User user = userService.requireActiveUser(Long.valueOf(userId));
+        return new PrincipalDetails(user.getUserId(), user.getRole());
     }
 }

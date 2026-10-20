@@ -1,6 +1,7 @@
 package com.tagnote.application.board;
 
 import com.tagnote.application.board.model.BoardSubject;
+import com.tagnote.application.user.ActiveUserWriteGuard;
 import com.tagnote.core.domain.board.BoardEntity;
 import com.tagnote.core.domain.board.BoardStatus;
 import com.tagnote.core.domain.board.dto.command.CreateBoardCommand;
@@ -8,7 +9,8 @@ import com.tagnote.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
 import com.tagnote.core.domain.boardusertag.repository.BoardUserTagRepository;
 import com.tagnote.core.domain.user.UserEntity;
-import com.tagnote.core.domain.user.repository.UserRepository;
+import com.tagnote.core.domain.user.UserStatus;
+import com.tagnote.core.domain.user.Role;
 import com.tagnote.core.domain.usertag.UserTagEntity;
 import com.tagnote.core.domain.usertag.service.UserTagService;
 import com.tagnote.core.exception.CustomException;
@@ -43,7 +45,7 @@ class BoardTransactionalWriterTest {
     @Mock
     private BoardUserTagRepository boardUserTagRepository;
     @Mock
-    private UserRepository userRepository;
+    private ActiveUserWriteGuard activeUserWriteGuard;
     @Mock
     private TrackJpaRepository trackRepository;
     @Mock
@@ -67,7 +69,7 @@ class BoardTransactionalWriterTest {
                 .userEntity(owner)
                 .track(track)
                 .build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+        when(activeUserWriteGuard.lock(1L)).thenReturn(owner);
         when(trackRepository.findById(10L)).thenReturn(Optional.of(track));
         when(boardRepository.saveAndFlush(any(BoardEntity.class))).thenReturn(saved);
         when(userTagService.makeUserTagList(owner, List.of("Jazz"))).thenReturn(List.of(userTag));
@@ -95,7 +97,7 @@ class BoardTransactionalWriterTest {
         UserEntity owner = user(1L);
         AlbumEntity album = org.mockito.Mockito.mock(AlbumEntity.class);
         CreateBoardCommand command = createCommand(null, "spotify-album");
-        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+        when(activeUserWriteGuard.lock(1L)).thenReturn(owner);
         when(albumRepository.findById(20L)).thenReturn(Optional.of(album));
         when(boardRepository.saveAndFlush(any(BoardEntity.class))).thenAnswer(invocation -> {
             BoardEntity board = invocation.getArgument(0);
@@ -122,6 +124,7 @@ class BoardTransactionalWriterTest {
     @Test
     void 수정은_writer만_허용하고_non_empty_UserTag를_교체한다() {
         UserEntity owner = user(1L);
+        when(activeUserWriteGuard.lock(1L)).thenReturn(owner);
         BoardEntity board = BoardEntity.builder()
                 .boardId("board-1")
                 .content("before")
@@ -146,6 +149,7 @@ class BoardTransactionalWriterTest {
 
     @Test
     void 작성자가_아니면_수정하거나_태그를_변경하지_않는다() {
+        when(activeUserWriteGuard.lock(2L)).thenReturn(user(2L));
         BoardEntity board = BoardEntity.builder()
                 .boardId("board-1")
                 .content("before")
@@ -169,6 +173,7 @@ class BoardTransactionalWriterTest {
 
     @Test
     void 빈_update_UserTag_목록은_기존_연결을_유지한다() {
+        when(activeUserWriteGuard.lock(1L)).thenReturn(user(1L));
         BoardEntity board = BoardEntity.builder()
                 .boardId("board-1")
                 .content("before")
@@ -189,6 +194,7 @@ class BoardTransactionalWriterTest {
 
     @Test
     void 삭제는_writer만_soft_delete할_수_있다() {
+        when(activeUserWriteGuard.lock(1L)).thenReturn(user(1L));
         BoardEntity board = BoardEntity.builder()
                 .boardId("board-1")
                 .status(BoardStatus.POST)
@@ -204,6 +210,7 @@ class BoardTransactionalWriterTest {
 
     @Test
     void 작성자가_아니면_삭제할_수_없다() {
+        when(activeUserWriteGuard.lock(2L)).thenReturn(user(2L));
         BoardEntity board = BoardEntity.builder()
                 .boardId("board-1")
                 .status(BoardStatus.POST)
@@ -221,7 +228,8 @@ class BoardTransactionalWriterTest {
     }
 
     private UserEntity user(long userId) {
-        return UserEntity.builder().userId(userId).nickname("writer").build();
+        return UserEntity.builder().userId(userId).nickname("writer")
+                .role(Role.ROLE_USER).userStatus(UserStatus.ACTIVE).build();
     }
 
     private CreateBoardCommand createCommand(String trackId, String albumId) {

@@ -1,6 +1,7 @@
 package com.tagnote.domain.comment;
 
 import com.tagnote.core.domain.comment.CommentEntity;
+import com.tagnote.application.user.ActiveUserWriteGuard;
 import com.tagnote.core.domain.comment.repository.CommentRepository;
 import com.tagnote.core.domain.comment.service.CommentService;
 import com.tagnote.core.domain.comment.service.Comment;
@@ -24,6 +25,9 @@ public class CommentServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
+
+    @Mock
+    private ActiveUserWriteGuard activeUserWriteGuard;
 
     @InjectMocks
     private CommentService commentService;

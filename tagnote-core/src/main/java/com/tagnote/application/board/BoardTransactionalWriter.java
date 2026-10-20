@@ -1,5 +1,6 @@
 package com.tagnote.application.board;
 
+import com.tagnote.application.user.ActiveUserWriteGuard;
 import com.tagnote.application.board.model.BoardSubject;
 import com.tagnote.core.domain.board.BoardEntity;
 import com.tagnote.core.domain.board.BoardStatus;
@@ -8,7 +9,6 @@ import com.tagnote.core.domain.board.dto.command.UpdateBoardCommand;
 import com.tagnote.core.domain.boardusertag.BoardUserTagEntity;
 import com.tagnote.core.domain.boardusertag.repository.BoardUserTagRepository;
 import com.tagnote.core.domain.user.UserEntity;
-import com.tagnote.core.domain.user.repository.UserRepository;
 import com.tagnote.core.domain.usertag.UserTagEntity;
 import com.tagnote.core.domain.usertag.service.UserTagService;
 import com.tagnote.core.exception.CustomException;
@@ -32,15 +32,14 @@ public class BoardTransactionalWriter {
 
     private final BoardJpaRepository boardRepository;
     private final BoardUserTagRepository boardUserTagRepository;
-    private final UserRepository userRepository;
+    private final ActiveUserWriteGuard activeUserWriteGuard;
     private final TrackJpaRepository trackRepository;
     private final AlbumJpaRepository albumRepository;
     private final UserTagService userTagService;
 
     @Transactional
     public String create(CreateBoardCommand command, BoardSubject subject) {
-        UserEntity writer = userRepository.findById(command.getUserId())
-                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+        UserEntity writer = activeUserWriteGuard.lock(command.getUserId());
         BoardEntity board = createBoard(command.getContent(), writer, subject);
         BoardEntity saved = boardRepository.saveAndFlush(board);
 
@@ -54,6 +53,7 @@ public class BoardTransactionalWriter {
 
     @Transactional
     public String update(UpdateBoardCommand command, Long currentUserId) {
+        activeUserWriteGuard.lock(currentUserId);
         BoardEntity board = getPublished(command.getBoardId());
         requireWriter(board, currentUserId);
         board.update(command.getContent());
@@ -72,6 +72,7 @@ public class BoardTransactionalWriter {
 
     @Transactional
     public void delete(String boardId, Long currentUserId) {
+        activeUserWriteGuard.lock(currentUserId);
         BoardEntity board = getPublished(boardId);
         requireWriter(board, currentUserId);
         board.delete();

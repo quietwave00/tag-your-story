@@ -17,8 +17,14 @@ import java.io.Serializable;
 @Entity
 @Table(
         name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
+                @UniqueConstraint(name = "uk_users_user_key", columnNames = "user_key"),
+                @UniqueConstraint(name = "uk_users_nickname", columnNames = "nickname"),
+                @UniqueConstraint(name = "uk_users_provider_subject", columnNames = {"provider", "subject"})
+        },
         indexes = {
-                @Index(name = "idx_user_key", columnList = "userKey")
+                @Index(name = "idx_users_status", columnList = "user_status")
         }
 )
 public class UserEntity extends BaseTime implements Serializable {
@@ -27,13 +33,24 @@ public class UserEntity extends BaseTime implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(name = "user_key", nullable = false)
     private String userKey;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String email;
 
+    @Column(length = 20)
     private String nickname;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private AccountProvider provider;
+
+    @Column(length = 255)
+    private String subject;
+
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
 
     @Column(columnDefinition = "VARCHAR(255)")
     @Enumerated(EnumType.STRING)
@@ -44,18 +61,6 @@ public class UserEntity extends BaseTime implements Serializable {
     private UserStatus userStatus;
 
     /*
-     * 비즈니스 로직
-     */
-    public static UserEntity register(String userKey, String email) {
-        return builder()
-                .userKey(userKey)
-                .email(email)
-                .role(Role.ROLE_USER)
-                .userStatus(UserStatus.ACTIVE)
-                .build();
-    }
-
-    /*
      * 서비스 도메인 형변환
      */
     public User toUser() {
@@ -63,6 +68,8 @@ public class UserEntity extends BaseTime implements Serializable {
                 .userId(this.getUserId())
                 .userKey(this.getUserKey())
                 .email(this.getEmail())
+                .provider(this.getProvider())
+                .subject(this.getSubject())
                 .nickname(this.getNickname())
                 .role(this.getRole())
                 .userStatus(this.getUserStatus())
@@ -71,5 +78,42 @@ public class UserEntity extends BaseTime implements Serializable {
 
     public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public String getDisplayNickname() {
+        return userStatus == UserStatus.WITHDRAWN ? "탈퇴한 사용자" : nickname;
+    }
+
+    public void withdraw() {
+        if (userId == null || userStatus != UserStatus.ACTIVE) {
+            throw new IllegalStateException("Only a persisted active user can withdraw");
+        }
+        String tombstone = "withdrawn:" + userId;
+        userStatus = UserStatus.WITHDRAWN;
+        userKey = tombstone;
+        subject = provider == AccountProvider.GOOGLE ? tombstone : null;
+        email = "withdrawn+" + userId + "@invalid.local";
+        passwordHash = null;
+        nickname = null;
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void normalizeIdentity() {
+        email = EmailNormalizer.normalize(email);
+        if (provider == null) {
+            // Legacy Google builders and cached pending users have no provider field.
+            provider = AccountProvider.GOOGLE;
+        }
+        if (provider == AccountProvider.GOOGLE) {
+            if (subject == null) {
+                subject = userKey;
+            }
+            if (subject == null || subject.isBlank() || !subject.equals(userKey)) {
+                throw new IllegalArgumentException("Google subject must equal legacy userKey");
+            }
+        } else if (subject != null) {
+            throw new IllegalArgumentException("Local account must not have a provider subject");
+        }
     }
 }

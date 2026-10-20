@@ -7,6 +7,7 @@ import com.tagnote.core.domain.board.BoardOrderType;
 import com.tagnote.core.domain.board.BoardStatus;
 import com.tagnote.core.domain.boardusertag.repository.BoardUserTagRepository;
 import com.tagnote.core.domain.user.UserEntity;
+import com.tagnote.core.domain.user.UserStatus;
 import com.tagnote.domain.catalog.album.AlbumEntity;
 import com.tagnote.domain.catalog.track.TrackEntity;
 import com.tagnote.domain.enrichment.subject.SubjectRef;
@@ -127,6 +128,27 @@ class BoardQueryServiceTest {
         );
         verify(boardUserTagRepository, never()).findNamesByBoardIds(any());
         verify(resolvedRepository, never()).findVisibleBySubjectsWithTag(any(), any(), any());
+    }
+
+    @Test
+    void withdrawn_author_board_remains_public_with_generic_name() {
+        TrackEntity track = org.mockito.Mockito.mock(TrackEntity.class);
+        when(track.getTrackId()).thenReturn(10L);
+        when(track.getSpotifyId()).thenReturn("spotify-track");
+        BoardEntity board = BoardEntity.builder().boardId("board-1").content("original content")
+                .status(BoardStatus.POST).likeCount(0).track(track)
+                .userEntity(UserEntity.builder().userId(1L).userStatus(UserStatus.WITHDRAWN).build())
+                .build();
+        when(boardRepository.findByBoardIdAndStatus("board-1", BoardStatus.POST))
+                .thenReturn(java.util.Optional.of(board));
+        when(boardUserTagRepository.findNamesByBoardIds(List.of("board-1")))
+                .thenReturn(List.of());
+        when(resolvedRepository.findVisibleBySubjectsWithTag(
+                SubjectType.TRACK, Set.of(10L), ResolvedStatus.HIDDEN)).thenReturn(List.of());
+
+        BoardView result = service().getDetail("board-1");
+        assertThat(result.content()).isEqualTo("original content");
+        assertThat(result.nickname()).isEqualTo("탈퇴한 사용자");
     }
 
     private BoardQueryService service() {

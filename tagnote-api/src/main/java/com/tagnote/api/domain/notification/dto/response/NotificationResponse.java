@@ -18,7 +18,7 @@ public class NotificationResponse {
         return NotificationResponse.builder()
                 .notificationId(notification.getNotificationId())
                 .contentId(notification.getContentId())
-                .pubNickname(notification.getPublisher().getNickname())
+                .pubNickname(notification.getPublisher().getDisplayNickname())
                 .type(notification.getType())
                 .isRead(notification.getIsRead())
                 .build();
