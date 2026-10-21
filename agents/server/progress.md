@@ -1,5 +1,10 @@
 # Progress
 
+## 현재 진행: Like 리팩토링 계획 (2026-10-20)
+
+- [LIKE-REF-001](plans/active/LIKE-REF-001.md): Human Review 승인으로 active Plan을 작성했다. 기존 Like API 호환, DB unique와 atomic counter 정합성, 마이페이지의 `boardId`·`author`·`content` 목록 조회를 한 마일스톤으로 계획했다.
+- 현재 단계는 계획 수립이다. production code와 자동 검증은 아직 수행하지 않았다.
+
 ## User/Auth 마이그레이션 로드맵 (2026-10-14)
 
 기존 `AUTH-001-proposal.md`를 독립 Plan으로 분할해 구현했으며, 2026-10-20 사용자가 AUTH-001~008 전체 테스트 완료와 Human Review 완료 처리를 확인했다. 모든 Auth Plan을 `plans/completed/`로 이동했다. 프론트 구현은 서버 단계와 별도로 진행한다.
