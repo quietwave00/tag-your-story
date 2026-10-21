@@ -1,7 +1,9 @@
 .tracks-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: clamp(28px, 5vw, 56px);
+  width: 100%;
 }
 
 .tracks-header {
@@ -39,15 +41,43 @@
   text-transform: uppercase;
 }
 
-.tracks-description strong {
+.search-keyword {
+  margin: 0;
   color: var(--color-text);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1;
+}
+
+.search-keyword strong {
+  color: var(--color-text);
+  font-weight: 760;
 }
 
 .track-list {
   display: grid;
   gap: 12px;
   width: min(860px, 100%);
+}
+
+.track-loading {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: clamp(220px, 42vh, 360px);
+}
+
+.track-loading-disc {
+  display: block;
+  width: clamp(132px, 18vw, 174px);
+  height: auto;
+  animation: track-disc-spin 2.4s linear infinite;
+}
+
+@keyframes track-disc-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .track-card {
@@ -61,14 +91,16 @@
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
+  filter: blur(0);
   text-align: left;
+  transition: filter 700ms ease, background-color 240ms ease, color 240ms ease;
 }
 
 .track-card:hover,
 .track-card:focus-visible {
   background: var(--color-invert);
   color: var(--color-invert-text);
-  filter: blur(0.5px);
+  filter: blur(1px);
 }
 
 .track-card:hover .track-image {
@@ -169,5 +201,11 @@
 
   .track-title {
     font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track-loading-disc {
+    animation-duration: 6s;
   }
 }

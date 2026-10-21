@@ -53,6 +53,11 @@ body::after {
   opacity: 0.88;
 }
 
+body:has(.tracks-page)::after {
+  background: none;
+  opacity: 0;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -102,8 +107,8 @@ a:active {
   width: min(var(--content-max), calc(100% - (var(--space-page) * 2)));
   margin: 0 auto;
   padding: 24px 0 16px;
-  background: color-mix(in srgb, var(--color-bg) 86%, transparent);
-  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--color-bg) 52%, transparent);
+  backdrop-filter: blur(20px);
 }
 
 .brand {
@@ -136,13 +141,21 @@ a:active {
 
 .app-nav {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 2px;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 640;
   text-transform: uppercase;
+}
+
+.app-nav-primary,
+.app-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .nav-link,
@@ -194,6 +207,28 @@ a:active {
 .nav-link.active {
   color: var(--color-text);
   text-decoration: none;
+}
+
+.nav-link.nav-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: auto;
+  min-height: 32px;
+  margin-left: 6px;
+  padding: 8px 9px;
+  background: var(--color-invert);
+  color: var(--color-invert-text);
+  line-height: 1;
+}
+
+.nav-link.nav-login.active {
+  color: var(--color-invert-text);
+}
+
+.nav-link.nav-login:hover {
+  background: var(--color-muted);
+  color: var(--color-bg);
 }
 
 .nav-link:hover,
@@ -337,14 +372,36 @@ button:disabled {
   }
 
   .app-nav {
-    justify-content: flex-start;
-    overflow-x: auto;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .app-nav-primary,
+  .app-nav-actions {
+    gap: 0;
   }
 
   .nav-link,
   .nav-action,
   .notification-trigger {
+    min-width: auto;
     padding-block: 14px;
+    padding-inline: 6px;
+    font-size: 10px;
+  }
+
+  .nav-login {
+    margin-left: 2px;
+    padding-inline: 10px;
+  }
+
+  .language-switcher {
+    margin-left: 0;
+  }
+
+  .language-option {
+    min-width: 28px;
+    padding-inline: 3px;
   }
 
   .app-main {

@@ -8,9 +8,7 @@ import { routes } from '../../utils/routes.js';
 import logoUrl from '../../../assets/tagnote-logo-transparent.png';
 
 const navItems = [
-  { to: routes.home, labelKey: 'navigation.log' },
   { to: routes.tracks, labelKey: 'navigation.dig' },
-  { to: routes.contact, labelKey: 'navigation.contact' },
 ];
 
 export default function AppLayout() {
@@ -38,29 +36,39 @@ export default function AppLayout() {
           <img className="brand-logo" src={logoUrl} alt="" />
         </NavLink>
         <nav className="app-nav" aria-label={t('navigation.primary')}>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              to={item.to}
-            >
-              {t(item.labelKey)}
-            </NavLink>
-          ))}
-          <NotificationCenter />
-          {isAuthenticated ? (
-            <button className="nav-action" onClick={handleLogout} type="button">
-              {t('navigation.exit')}
-            </button>
-          ) : (
+          <div className="app-nav-primary">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                to={item.to}
+              >
+                {t(item.labelKey)}
+              </NavLink>
+            ))}
+          </div>
+          <div className="app-nav-actions">
             <NavLink
               className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              to={routes.login}
+              to={routes.contact}
             >
-              {t('navigation.myTags')}
+              {t('navigation.contact')}
             </NavLink>
-          )}
-          <LanguageSwitcher />
+            <NotificationCenter />
+            <LanguageSwitcher />
+            {isAuthenticated ? (
+              <button className="nav-action" onClick={handleLogout} type="button">
+                {t('navigation.exit')}
+              </button>
+            ) : (
+              <NavLink
+                className={({ isActive }) => `nav-link nav-login${isActive ? ' active' : ''}`}
+                to={routes.login}
+              >
+                {t('navigation.login')}
+              </NavLink>
+            )}
+          </div>
         </nav>
       </header>
       <main className="app-main">

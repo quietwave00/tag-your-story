@@ -2,10 +2,9 @@
   "navigation": {
     "primary": "주요 메뉴",
     "brandHome": "#tagnote 홈",
-    "log": "기록",
     "dig": "탐색",
     "contact": "연락처",
-    "myTags": "내 태그",
+    "login": "로그인",
     "exit": "로그아웃"
   },
   "language": {

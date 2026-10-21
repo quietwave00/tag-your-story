@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { trackService } from '../services/trackService.js';
 import { buildRoute } from '../utils/routes.js';
 import { saveSelectedTrack, saveTrackSearch } from '../utils/trackSearchStorage.js';
+import loadingCdUrl from '../../assets/loading-cd.webp';
 import '../styles/tracks.css';
 
 const PAGE_SIZE = 10;
@@ -108,48 +109,54 @@ export default function TracksPage() {
   return (
     <section className="tracks-page">
       <header className="tracks-header">
-        <h1 className="tracks-title">{t('search.resultsTitle')}</h1>
-        <p className="tracks-description">
+        <p className="search-keyword">
           <strong>{keyword}</strong>
         </p>
       </header>
 
-      {isLoading ? <p className="tracks-message">{t('search.loading')}</p> : null}
+      {isLoading ? (
+        <div className="track-loading" role="status">
+          <p className="visually-hidden">{t('search.loading')}</p>
+          <img aria-hidden="true" alt="" className="track-loading-disc" src={loadingCdUrl} />
+        </div>
+      ) : null}
       {error ? <p className="tracks-message error">{t('search.error')}</p> : null}
       {!isLoading && !error && tracks.length === 0 ? (
         <p className="tracks-message">{t('search.empty')}</p>
       ) : null}
 
-      <div className="track-list">
-        {tracks.map((track, index) => (
-          <button
-            className="track-card"
-            key={track.trackId}
-            onClick={() => handleTrackClick(track)}
-            type="button"
-          >
-            <span className="track-row-index">{String(index + 1).padStart(2, '0')}</span>
-            <img className="track-image" src={track.imageUrl} alt={t('common:images.albumCover', { title: track.title })} />
-            <span className="track-content">
-              <span className="track-title">{track.title}</span>
-              <span className="track-meta">
-                <span className="track-meta-row">
-                  <span className="track-meta-label">{t('metadata.artist')}</span>
-                  <span className="track-meta-value">{track.artistName}</span>
-                </span>
-                <span className="track-meta-row">
-                  <span className="track-meta-label">{t('metadata.album')}</span>
-                  <span className="track-meta-value">{track.albumName}</span>
-                </span>
-                <span className="track-meta-row">
-                  <span className="track-meta-label">{t('metadata.tag')}</span>
-                  <span className="track-meta-value">#{keyword}</span>
+      {!isLoading && (
+        <div className="track-list">
+          {tracks.map((track, index) => (
+            <button
+              className="track-card"
+              key={track.trackId}
+              onClick={() => handleTrackClick(track)}
+              type="button"
+            >
+              <span className="track-row-index">{String(index + 1).padStart(2, '0')}</span>
+              <img className="track-image" src={track.imageUrl} alt={t('common:images.albumCover', { title: track.title })} />
+              <span className="track-content">
+                <span className="track-title">{track.title}</span>
+                <span className="track-meta">
+                  <span className="track-meta-row">
+                    <span className="track-meta-label">{t('metadata.artist')}</span>
+                    <span className="track-meta-value">{track.artistName}</span>
+                  </span>
+                  <span className="track-meta-row">
+                    <span className="track-meta-label">{t('metadata.album')}</span>
+                    <span className="track-meta-value">{track.albumName}</span>
+                  </span>
+                  <span className="track-meta-row">
+                    <span className="track-meta-label">{t('metadata.tag')}</span>
+                    <span className="track-meta-value">#{keyword}</span>
+                  </span>
                 </span>
               </span>
-            </span>
-          </button>
-        ))}
-      </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {!isLoading && !error && tracks.length > 0 ? (
         <nav className="tracks-pagination" aria-label={t('search.pagination')}>

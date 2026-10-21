@@ -15,7 +15,7 @@
 
 .home-logo {
   display: block;
-  width: min(760px, 88%);
+  width: min(456px, 52.8%);
   height: auto;
   animation: logo-enter 1000ms linear both;
 }
@@ -42,68 +42,82 @@
   z-index: 4;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  align-items: center;
+  gap: 8px;
   width: min(680px, 100%);
-  padding: 12px 14px;
-  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
-  backdrop-filter: blur(16px);
+  padding: 8px;
+  border: 1px solid rgb(10 10 10 / 7%);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  box-shadow: 0 16px 48px rgb(10 10 10 / 9%), 0 2px 8px rgb(10 10 10 / 4%);
+  backdrop-filter: blur(20px);
   animation: search-float 1400ms linear both;
+  transition: box-shadow 240ms ease, border-color 240ms ease, background-color 240ms ease;
+}
+
+.track-search-form:focus-within {
+  border-color: rgb(10 10 10 / 16%);
+  background: color-mix(in srgb, var(--color-bg) 96%, transparent);
+  box-shadow: 0 20px 56px rgb(10 10 10 / 12%), 0 2px 8px rgb(10 10 10 / 4%);
 }
 
 .track-search-input {
   width: 100%;
-  min-height: 52px;
-  padding: 0 14px;
+  min-height: 54px;
+  padding: 0 20px;
   border: 0;
-  border-bottom: 1px solid rgb(10 10 10 / 34%);
+  border-radius: 12px;
   background: transparent;
   color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: clamp(16px, 2vw, 22px);
-  text-align: center;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.6vw, 18px);
+  text-align: left;
   transition:
-    border-color 260ms linear,
-    filter 520ms linear,
-    font-weight 180ms linear;
+    background-color 220ms ease,
+    font-weight 180ms ease;
 }
 
 .track-search-input::placeholder {
-  color: rgb(115 115 115 / 84%);
+  color: var(--color-muted);
 }
 
 .track-search-input:focus {
-  border-color: rgb(10 10 10 / 72%);
   outline: 0;
-  font-weight: 700;
-  filter: blur(0.15px);
+  font-weight: 560;
 }
 
 .track-search-button {
-  min-width: 108px;
-  min-height: 52px;
+  min-width: 116px;
+  min-height: 54px;
+  padding: 0 24px;
   border: 0;
-  background: #737373;
+  border-radius: 12px;
+  background: var(--color-invert);
   color: var(--color-bg);
   cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 650;
   transition:
-    background-color 260ms linear,
-    color 260ms linear,
-    filter 640ms linear,
-    transform 180ms linear;
+    background-color 200ms ease,
+    color 200ms ease,
+    transform 180ms ease;
 }
 
 .track-search-button:hover {
-  background: var(--color-invert);
+  background: #303030;
   color: var(--color-invert-text);
-  filter: blur(0.8px);
+  transform: translateY(-1px);
+}
+
+.track-search-button:active {
+  transform: translateY(0);
 }
 
 .track-search-button:disabled {
-  background: #d1d1d1;
-  color: #737373;
+  background: #e5e5e5;
+  color: #858585;
+  cursor: default;
   opacity: 1;
 }
 
@@ -302,17 +316,24 @@
   }
 
   .home-logo {
-    width: 100%;
+    width: 60%;
   }
 
   .track-search-form {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 10px;
+    gap: 6px;
+    padding: 7px;
+    border-radius: 16px;
+  }
+
+  .track-search-input {
+    min-height: 50px;
+    padding-inline: 14px;
   }
 
   .track-search-button {
     width: 100%;
+    min-height: 48px;
   }
 
   .home-page:has(.home-section:is(:hover, :focus-within)) .home-section:not(:hover):not(:focus-within) {

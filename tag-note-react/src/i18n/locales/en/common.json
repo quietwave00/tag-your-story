@@ -2,10 +2,9 @@
   "navigation": {
     "primary": "Primary navigation",
     "brandHome": "#tagnote home",
-    "log": "LOG",
     "dig": "DIG",
     "contact": "CONTACT",
-    "myTags": "MY TAGS",
+    "login": "LOGIN",
     "exit": "EXIT"
   },
   "language": {
