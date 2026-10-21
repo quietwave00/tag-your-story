@@ -116,8 +116,9 @@ Texture Rules:
 
 Header:
 - 모든 화면의 좌측 상단 브랜드는 `tagnote-logo-transparent.png`를 사용한다.
-- 네비게이션은 브랜드 바로 옆에 좌측 정렬한다.
-- 네비게이션은 `LOG / DIG / CONTACT / MY TAGS` 같은 짧은 라벨을 사용한다.
+- 브랜드 오른쪽의 좌측 영역에는 `DIG`만 둔다. `LOG`와 `MY TAGS` 메뉴는 표시하지 않는다.
+- `CONTACT`와 `KO / EN` 언어 선택기는 우측 영역에 배치한다.
+- 비로그인 상태에서는 우측 끝에 `LOGIN` 버튼을 표시하고, 로그인 상태에서는 같은 위치에 로그아웃 액션을 표시한다.
 - active underline은 금지한다.
 
 Hero:
