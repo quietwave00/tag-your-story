@@ -1,8 +1,9 @@
 # Progress
 
-## 현재 진행: NOTIFICATION-REF-001 Plan 승인, 구현 미착수 (2026-10-26)
+## 현재 진행: NOTIFICATION-REF-001·CATALOG-SEARCH-002 Plan 승인, 구현 미착수 (2026-10-26)
 
 - [NOTIFICATION-REF-001](plans/active/NOTIFICATION-REF-001.md): Notification의 SSE 전달 경계, 연결 수명, 다중 탭, 재접속 동기화, 최소 payload 계약을 다루는 단일 서버 범위 리팩토링 Plan을 Human Review로 승인했다. production code·테스트 수정과 자동 검증은 아직 수행하지 않았다.
+- [CATALOG-SEARCH-002](plans/active/CATALOG-SEARCH-002.md): 기존 통합 Catalog 검색을 호환 유지하면서 선택적 `type=TRACK|ALBUM|ARTIST`로 Spotify 타입별 결과·total·page를 독립 조회하는 Plan을 Human Review로 승인했다. ADR-017을 추가했으며 production code·테스트 수정과 자동 검증은 아직 수행하지 않았다.
 
 - [COMMENT-REF-001](plans/completed/COMMENT-REF-001.md): 기존 8개 Comment API 계약을 특성화하고 최상위 댓글·답글 작성의 Board/User 조회 조율을 Application 서비스로 이동했다. Swagger interface와 요청·응답 Schema를 추가하고 저장·알림·조회 정책을 유지했다. 2026-10-26 사용자가 테스트 결과 확인 및 완료 처리를 요청했다. Codex는 검증 명령을 실행하지 않았고 `test`·`check`·`verify.sh`의 개별 출력은 전달받지 않아 명령별 통과 여부는 미확인으로 기록했다.
 - [LIKE-REF-001](plans/completed/LIKE-REF-001.md): 기존 Like API 호환, DB unique·atomic counter 정합성, 마이페이지 좋아요 목록, Swagger와 migration runbook을 구현했다. 최초 테스트에서 발견된 status JSON 필드 `liked` 불일치를 정정했고, 2026-10-26 사용자가 확인 완료 및 완료 처리를 요청했다. 최종 검증 명령별 출력과 운영 migration 적용 결과는 전달되지 않아 완료 기록에 미확인으로 남겼다.
