@@ -4,9 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import CommentSection from '../features/comments/CommentSection.jsx';
 import { boardService } from '../services/boardService.js';
 import { likeService } from '../services/likeService.js';
-import { buildRoute } from '../utils/routes.js';
+import { AuthExpiredError } from '../services/apiClient.js';
+import { useAuthStore } from '../store/authStore.js';
+import { buildRoute, routes } from '../utils/routes.js';
 import { getSelectedTrack } from '../utils/trackSearchStorage.js';
-import { tokenStorage } from '../utils/tokenStorage.js';
 import '../styles/boardDetail.css';
 
 function getUserTagNames(board) {
@@ -37,9 +38,10 @@ function getLikeStatus(response) {
 }
 
 export default function BoardDetailPage() {
-  const { i18n, t } = useTranslation(['boards', 'common']);
+  const { i18n, t } = useTranslation(['boards', 'common', 'auth']);
   const { boardId } = useParams();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [board, setBoard] = useState(null);
   const [isWriter, setIsWriter] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -49,10 +51,22 @@ export default function BoardDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [boardError, setBoardError] = useState(null);
   const [likeError, setLikeError] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
 
   const userTagNames = useMemo(() => getUserTagNames(board), [board]);
   const selectedTrack = useMemo(() => getSelectedTrack(), []);
-  const isAuthenticated = Boolean(tokenStorage.getAccessToken());
+  const displayLiked = isAuthenticated && isLiked;
+
+  const moveToLogin = (messageKey, hasDraft = false) => {
+    if (hasDraft && !window.confirm(t('auth:loginRequired.discardDraft'))) {
+      return;
+    }
+    navigate(routes.login, { state: { messageKey } });
+  };
+
+  const handleLoginRequired = (hasDraft = false, reason = 'comment') => {
+    moveToLogin(reason === 'expired' ? 'loginRequired.expired' : 'loginRequired.comment', hasDraft);
+  };
 
   useEffect(() => {
     if (!boardId) {
@@ -161,6 +175,10 @@ export default function BoardDetailPage() {
     if (!boardId || isLikeLoading) {
       return;
     }
+    if (!isAuthenticated) {
+      moveToLogin('loginRequired.like');
+      return;
+    }
 
     setIsLikeLoading(true);
 
@@ -177,18 +195,30 @@ export default function BoardDetailPage() {
 
       setLikeError(null);
     } catch (error) {
-      setLikeError(error);
+      if (error instanceof AuthExpiredError) {
+        moveToLogin('loginRequired.expired');
+      } else {
+        setLikeError(error);
+      }
     } finally {
       setIsLikeLoading(false);
     }
   };
 
   const handleEdit = () => {
+    if (!isAuthenticated) {
+      moveToLogin('loginRequired.editBoard');
+      return;
+    }
     navigate(buildRoute.boardEdit(boardId));
   };
 
   const handleDelete = async () => {
     if (!boardId || isDeleting) {
+      return;
+    }
+    if (!isAuthenticated) {
+      moveToLogin('loginRequired.deleteBoard');
       return;
     }
 
@@ -203,6 +233,12 @@ export default function BoardDetailPage() {
     try {
       await boardService.deleteBoard(boardId);
       handleBack();
+    } catch (error) {
+      if (error instanceof AuthExpiredError) {
+        moveToLogin('loginRequired.expired');
+      } else {
+        setDeleteError(error);
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -243,7 +279,7 @@ export default function BoardDetailPage() {
             <footer className="board-detail-author">{board.nickname}</footer>
           </article>
 
-          {isWriter ? (
+          {isAuthenticated && isWriter ? (
             <div className="board-detail-actions">
               <button onClick={handleEdit} type="button">
                 {t('common:actions.edit')}
@@ -253,23 +289,24 @@ export default function BoardDetailPage() {
               </button>
             </div>
           ) : null}
+          {deleteError ? <p className="board-detail-message error">{t('detail.deleteError')}</p> : null}
 
           <section className="board-like-section" aria-label={t('detail.likeLabel')}>
             <button
               aria-label={t('detail.likeLabel')}
-              aria-pressed={isLiked}
-              className={isLiked ? 'board-like-button liked' : 'board-like-button'}
+              aria-pressed={displayLiked}
+              className={displayLiked ? 'board-like-button liked' : 'board-like-button'}
               disabled={isLikeLoading}
               onClick={handleLikeClick}
               type="button"
             >
-              {isLiked ? '♥' : '♡'}
+              {displayLiked ? '♥' : '♡'}
             </button>
             <span className="board-like-count">{t('detail.likeCount', { count: likeCount })}</span>
           </section>
           {likeError ? <p className="board-detail-message error">{t('detail.likeError')}</p> : null}
 
-          <CommentSection boardId={boardId} isAuthenticated={isAuthenticated} />
+          <CommentSection boardId={boardId} isAuthenticated={isAuthenticated} onLoginRequired={handleLoginRequired} />
         </>
       ) : null}
     </div>

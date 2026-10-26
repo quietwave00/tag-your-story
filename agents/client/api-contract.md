@@ -4,10 +4,10 @@
 
 ## 근거와 갱신 규칙
 
-- 기준 서버: `D:\p\tag-your-story`의 `feature/migration-server` worktree, 2026-10-20 커밋 `afbab28`. 이 클라이언트 worktree 안의 서버 코드는 최신 기준이 아니다.
+- 참조 서버: `D:\p\tag-your-story`의 `migration-server` worktree(`feature/migration-server`). 이 문서의 항목은 작성 당시 그 worktree에서 확인한 정적 기록이다. 이후 작업에서는 **그 worktree의 현재 코드**를 다시 확인한다. 이 클라이언트 worktree 안의 서버 코드를 최신 기준으로 사용하지 않는다.
 - 근거 순서: 최신 서버 worktree의 공개 `*Api.java` 문서 → 구현 Controller → Request/Response DTO → 인증 필터·예외 처리·관련 ADR. 공개 `*Api`가 없는 도메인은 그 사실을 표시한다.
 - 실행 서버의 OpenAPI와 실제 HTTP 응답은 이 문서 작성 시 확인하지 않았다. 이 환경에서 Swagger 접속을 시도하지 않는다. 사용자가 curl 응답을 전달하면 별도의 실행 근거로 기록한다. 정적 문서와 Controller/DTO 또는 실행 응답이 충돌하면 임의로 선택하지 말고 보고한다.
-- 최신 서버 커밋이 바뀌면 작업 대상 API의 근거와 확인 날짜를 갱신한다. 명시되지 않은 endpoint, 응답 필드, 인증 동작은 계약으로 취급하지 않는다.
+- 서버 worktree의 관련 코드가 바뀌면 작업 대상 API의 근거와 확인 날짜를 갱신한다. 명시되지 않은 endpoint, 응답 필드, 인증 동작은 계약으로 취급하지 않는다.
 - 서버 파일 경로의 기준은 `tagnote-api/src/main/java/com/tagnote/api/`이다. 아래 `domain/...`, `oauth/...`, `filter/...`는 이 경로에 상대적이다.
 
 ## 공통 wire 계약
@@ -63,7 +63,7 @@
 
 ## Comment · Like
 
-이 두 도메인에는 공개 `*Api` 문서가 없다. 근거: `domain/comment/CommentController.java`, `domain/like/LikeController.java`와 각 DTO/권한 선언. page 기준 등 명시되지 않은 값은 구현 전 재확인한다.
+Comment에는 공개 `*Api` 문서가 없다. Like에는 현재 `domain/like/LikeApi.java`가 있으며 Controller가 이를 구현한다. 근거: `domain/comment/CommentController.java`, `domain/like/LikeApi.java`, `LikeController.java`와 각 DTO/권한 선언. M2-3 착수 시 최신 서버 worktree에서 재확인했다. page 기준 등 명시되지 않은 값은 구현 전 재확인한다.
 
 - `POST /api/comments` — USER. `boardId`, `content`; `CommentResponse`는 `commentId`, `parentId`, `nickname`, `content`, `createdDate`.
 - `PATCH /api/comments` — USER. `commentId`, `content`.
@@ -75,7 +75,8 @@
 - `GET /api/comments/replies/{parentId}/{page}` — 공개. 답글 `CommentResponse` 목록.
 - `POST /api/likes` — USER. `boardId` 입력, boolean 반환.
 - `DELETE /api/likes` — USER. `boardId` 입력, 데이터 없는 성공 응답.
-- `GET /api/likes/status/{boardId}` — USER. `isLiked` 반환.
+- `GET /api/likes/status/{boardId}` — USER. LikeApi는 `response.liked`로 설명하고 DTO의 내부 필드명은 `isLiked`다. 실제 JSON 필드명은 실행 응답 미확인으로 남기며 현재 React는 두 이름을 모두 읽는다.
+- `POST/DELETE /api/boards/{boardId}/likes` — USER. LikeApi가 문서화한 게시글 경로이며 현재 React는 기존 `/api/likes` 경로를 사용한다.
 
 ## File · Notification · User Tag
 

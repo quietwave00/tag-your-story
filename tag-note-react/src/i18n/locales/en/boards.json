@@ -7,7 +7,8 @@
     "likeLabel": "Like",
     "likeCount_one": "{{count}} Like",
     "likeCount_other": "{{count}} Likes",
-    "likeError": "We could not update the like."
+    "likeError": "We could not update the like.",
+    "deleteError": "We could not delete the tag note."
   },
   "deleteConfirm": "Delete this tag note?",
   "form": {

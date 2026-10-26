@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { boardService } from '../services/boardService.js';
 import { trackService } from '../services/trackService.js';
+import { useAuthStore } from '../store/authStore.js';
 import { buildRoute, routes } from '../utils/routes.js';
 import { getTrackSearch } from '../utils/trackSearchStorage.js';
 import '../styles/trackDetail.css';
@@ -28,6 +29,7 @@ export default function TrackDetailPage() {
   const { t } = useTranslation(['tracks', 'common']);
   const { trackId } = useParams();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [track, setTrack] = useState(null);
   const [boards, setBoards] = useState([]);
   const [totalBoardCount, setTotalBoardCount] = useState(0);
@@ -158,6 +160,10 @@ export default function TrackDetailPage() {
 
   const moveBoardCreate = () => {
     if (trackId) {
+      if (!isAuthenticated) {
+        navigate(routes.login, { state: { messageKey: 'loginRequired.createBoard' } });
+        return;
+      }
       navigate(buildRoute.boardCreate(trackId));
     }
   };

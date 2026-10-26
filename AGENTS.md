@@ -53,7 +53,7 @@ Client 구현 계획:
 - 프론트엔드 작업 순서와 의존성은 `agents/client/plans/FRONTEND-ROADMAP.md`에서 관리한다.
 - 실제 착수할 작은 마일스톤은 Human Review 후 `agents/client/plans/active/`에 상세 Plan으로 작성한다. 수용 기준과 사용자 검증 결과를 확인한 뒤 `completed/`로 이동한다.
 - 프론트엔드 디자인 작업은 별도 Plan 작성과 사전 Human Review 없이 바로 구현한다. 다만 API 계약, 라우트, 상태 관리, 컴포넌트 책임 또는 아키텍처 변경이 함께 필요하면 디자인 변경만 즉시 진행하고 나머지 변경에는 기존 Plan 규칙을 적용한다. 디자인 작업에도 디자인 명세 확인, 기존 동작 보존, diff 검토와 사용자 검증 안내는 수행한다.
-- 클라이언트 작업을 시작할 때 `agents/client/AGENTS.md`의 세션 규칙과 `agents/client/api-contract.md`의 도메인별 API 기준선을 읽고 최신 서버 worktree와 대조한다. 현재 환경에서는 실행 Swagger 접속을 시도하지 않고 공개 `*Api` interface, Controller, Request/Response DTO 순서로 확인한다. 사용자가 curl 응답을 전달하면 실행 계약의 별도 근거로 사용한다. 문서화 누락은 Plan의 계약 위험으로 기록한다.
+- 클라이언트 작업을 시작할 때 `agents/client/AGENTS.md`의 세션 규칙과 `agents/client/api-contract.md`의 도메인별 API 기준선을 읽고 `D:\p\tag-your-story`의 `migration-server` worktree 현재 코드와 대조한다. 현재 환경에서는 실행 Swagger 접속을 시도하지 않고 공개 `*Api` interface, Controller, Request/Response DTO 순서로 확인한다. 사용자가 curl 응답을 전달하면 실행 계약의 별도 근거로 사용한다. 문서화 누락은 Plan의 계약 위험으로 기록한다.
 - 프론트엔드가 서버에 없는 endpoint, response field, 인증 동작을 추측하여 구현하지 않는다. 명세와 실제 OpenAPI/Controller가 충돌하면 구현 전에 보고한다.
 - API 호출은 `src/services`, 공유 인증 상태는 `src/store/authStore.js`, 브라우저 저장소는 `src/utils`를 경유한다. page나 공통 UI에 endpoint 호출 또는 token 직접 판독을 새로 추가하지 않는다.
 - API page는 0-based, 화면 page는 1-based일 수 있으므로 service 또는 feature mapper 한 곳에서만 변환한다.

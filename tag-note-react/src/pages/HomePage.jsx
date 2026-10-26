@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { userTagService } from '../services/userTagService.js';
 import { trackService } from '../services/trackService.js';
+import { authStore } from '../store/authStore.js';
 import { buildRoute, routes } from '../utils/routes.js';
 import { saveTrackSearch } from '../utils/trackSearchStorage.js';
 import { tokenStorage } from '../utils/tokenStorage.js';
@@ -29,8 +30,8 @@ export default function HomePage() {
   const trimmedKeyword = useMemo(() => keyword.trim(), [keyword]);
 
   useEffect(() => {
-    if (tokenStorage.getPendingToken()) {
-      navigate(routes.nickname, { replace: true });
+    if (tokenStorage.discardLegacyPending() && !authStore.getState().isAuthenticated) {
+      navigate(routes.login, { replace: true, state: { messageKey: 'oauth.legacyPending' } });
     }
   }, [navigate]);
 

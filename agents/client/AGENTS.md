@@ -13,7 +13,7 @@
 
 ## 계약 확인과 문서 우선순위
 
-- `api-contract.md`는 기준 서버 커밋을 명시한 **정적 조사 기록**이다. 새 세션에서 해당 API를 사용하기 전에 최신 서버 worktree의 공개 `*Api.java` → Controller → Request/Response DTO → 인증 필터·예외 처리·관련 ADR을 대조한다. 이 클라이언트 worktree에 포함된 서버 코드를 최신으로 가정하지 않는다.
+- `api-contract.md`는 `D:\p\tag-your-story`의 `migration-server` worktree를 조사한 **정적 기록**이다. 특정 커밋에 고정된 계약으로 취급하지 않는다. 새 세션에서 해당 API를 사용하기 전에 그 worktree의 현재 `*Api.java` → Controller → Request/Response DTO → 인증 필터·예외 처리·관련 ADR을 대조한다. 이 클라이언트 worktree에 포함된 서버 코드를 최신으로 가정하지 않는다.
 - 이 환경에서는 Swagger/OpenAPI 접속을 시도하지 않는다. 사용자가 전달한 curl 응답만 실행 서버 계약의 근거로 추가한다. 정적 문서, Controller/DTO, 실행 응답이 다르면 충돌을 보고하고 임의로 선택하지 않는다.
 - 클라이언트 구현 범위는 Human Review를 거친 해당 active Plan을 따른다. Plan과 최신 서버 계약이 충돌하면 구현 전에 보고한다. 확인되지 않은 endpoint, 응답 필드, 인증 동작은 추측하지 않는다.
 - API 변경이 확인되면 `api-contract.md`의 해당 항목과 기준 근거를 갱신한다. 마일스톤 순서 변경은 `FRONTEND-ROADMAP.md`, 실행 범위 변경은 해당 Plan에 기록한다. 같은 계약 목록을 여러 문서에 복제하지 않는다.

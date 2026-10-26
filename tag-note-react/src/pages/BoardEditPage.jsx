@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { boardService } from '../services/boardService.js';
 import { fileService } from '../services/fileService.js';
-import { buildRoute } from '../utils/routes.js';
+import { AuthExpiredError } from '../services/apiClient.js';
+import { useAuthStore } from '../store/authStore.js';
+import { buildRoute, routes } from '../utils/routes.js';
 import '../styles/boardEdit.css';
 
 const MAX_USER_TAG_COUNT = 5;
@@ -30,10 +32,12 @@ function validateImageFile(file) {
 }
 
 export default function BoardEditPage() {
-  const { t } = useTranslation(['boards', 'common']);
+  const { t } = useTranslation(['boards', 'common', 'auth']);
   const { boardId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const wasAuthenticatedOnEntry = useRef(isAuthenticated);
   const trackId = searchParams.get('trackId');
   const isEditMode = Boolean(boardId);
   const [content, setContent] = useState('');
@@ -49,6 +53,20 @@ export default function BoardEditPage() {
   const title = isEditMode ? t('form.editTitle') : t('form.createTitle');
   const totalFileCount = existingFiles.length + newFiles.length;
   const canSubmit = content.trim() && userTags.length > 0 && !isSubmitting;
+
+  useEffect(() => {
+    if (!wasAuthenticatedOnEntry.current) {
+      navigate(routes.login, { replace: true, state: { messageKey: isEditMode ? 'loginRequired.editBoard' : 'loginRequired.createBoard' } });
+    } else if (!isAuthenticated && isEditMode && isLoading) {
+      navigate(routes.login, { replace: true, state: { messageKey: 'loginRequired.expired' } });
+    }
+  }, [isAuthenticated, isEditMode, isLoading, navigate]);
+
+  const moveToLogin = () => {
+    const hasDraft = Boolean(content.trim() || userTags.length || newFiles.length || deletedFileIds.length);
+    if (hasDraft && !window.confirm(t('auth:loginRequired.discardDraft'))) return;
+    navigate(routes.login, { state: { messageKey: 'loginRequired.expired' } });
+  };
 
   const newFilePreviews = useMemo(
     () =>
@@ -66,7 +84,7 @@ export default function BoardEditPage() {
   }, [newFilePreviews]);
 
   useEffect(() => {
-    if (!isEditMode || !boardId) {
+    if (!isAuthenticated || !isEditMode || !boardId) {
       return;
     }
 
@@ -103,7 +121,7 @@ export default function BoardEditPage() {
     return () => {
       ignore = true;
     };
-  }, [boardId, isEditMode]);
+  }, [boardId, isAuthenticated, isEditMode]);
 
   const addUserTag = () => {
     const userTag = normalizeUserTag(userTagInput);
@@ -194,6 +212,11 @@ export default function BoardEditPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (!isAuthenticated) {
+      moveToLogin();
+      return;
+    }
+
     if (!content.trim()) {
       setErrorKey('form.validation.contentRequired');
       return;
@@ -232,8 +255,12 @@ export default function BoardEditPage() {
 
       await uploadNewFiles(createdBoard.boardId, 'create');
       navigate(buildRoute.boardDetail(createdBoard.boardId));
-    } catch {
-      setErrorKey('form.validation.saveFailed');
+    } catch (error) {
+      if (error instanceof AuthExpiredError) {
+        moveToLogin();
+      } else {
+        setErrorKey('form.validation.saveFailed');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -247,6 +274,10 @@ export default function BoardEditPage() {
 
     navigate(-1);
   };
+
+  if (!wasAuthenticatedOnEntry.current) {
+    return null;
+  }
 
   if (isLoading) {
     return <p className="board-edit-message">{t('form.loading')}</p>;
@@ -323,6 +354,7 @@ export default function BoardEditPage() {
       </section>
 
       {errorKey ? <p className="board-edit-message error">{t(errorKey)}</p> : null}
+      {!isAuthenticated ? <p className="board-edit-message error">{t('auth:loginRequired.expired')}</p> : null}
 
       <footer className="board-edit-footer">
         <button className="secondary-button" onClick={handleCancel} type="button">

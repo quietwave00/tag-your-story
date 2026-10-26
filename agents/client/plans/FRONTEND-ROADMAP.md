@@ -3,22 +3,22 @@
 ## 문서 역할과 현재 상태
 
 - 이 문서는 클라이언트 마일스톤의 **순서와 의존성**을 관리한다. 아키텍처·시각 언어는 `agents/client/frontend_spec.md`, `design_spec.md`, 세션 규칙은 `agents/client/AGENTS.md`, 도메인별 서버 계약은 `agents/client/api-contract.md`를 따른다.
-- 갱신일: 2026-10-21. 대상: `tag-note-react/`. 기존 React 구현은 유지하며 작은 마일스톤으로 진행한다.
-- 완료 기반: Vitest 테스트 명령, `I18N-001` 한국어/영어 전역 UI 다국어화, Header 메뉴 재구성.
-- `M2-1`, `M2-2`, `M2-3`은 Human Review가 끝나 `active/`에 등록됐다. 현재 다음 구현 대상은 **M2-1**이다. 세 Plan은 M2-1 → M2-2 → M2-3 순서로 실행하며, 후속 Plan은 선행 Plan의 수용 기준과 사용자 검증이 끝난 뒤 착수한다. `active/`에 여러 승인 Plan이 있어도 한 세션에서는 하나만 구현한다.
+- 갱신일: 2026-10-26. 대상: `tag-note-react/`. 기존 React 구현은 유지하며 작은 마일스톤으로 진행한다.
+- 완료 기반: Vitest 테스트 명령, `I18N-001` 한국어/영어 전역 UI 다국어화, Header 메뉴 재구성, `M2-1` API 오류와 access token 재발급 정합성, `M2-2` OAuth 쿠키와 인증 수명주기 정합성, `M2-3` 인증 필요 mutation의 로그인 유도.
+- `M2-1`~`M2-3`은 구현을 마쳤고 사용자가 완료를 확인해 `completed/`에 기록했다. 다음 Roadmap 항목은 M3이며 상세 Plan 작성과 Human Review가 필요하다. `active/`에 여러 승인 Plan이 있어도 한 세션에서는 하나만 구현한다.
 - API 계약 목록은 M1 마일스톤 대신 `agents/client/api-contract.md`에 유지한다. 각 Plan 착수 시 해당 API를 최신 서버 worktree에서 다시 확인하고 문서·구현 충돌을 보고한다.
 
 ## 마일스톤 순서
 
 1. **M2-1 — API 오류와 access token 재발급 정합성**
-   - Plan: [active/M2-1-api-error-and-reissue.md](active/M2-1-api-error-and-reissue.md)
-   - 선행: 없음. 다음 구현 대상.
+   - Plan: [completed/M2-1-api-error-and-reissue.md](completed/M2-1-api-error-and-reissue.md)
+   - 상태: 2026-10-26 사용자 검증 완료.
 2. **M2-2 — OAuth 쿠키와 인증 수명주기 정합성**
-   - Plan: [active/M2-2-oauth-and-auth-lifecycle.md](active/M2-2-oauth-and-auth-lifecycle.md)
-   - 선행: M2-1 수용 기준 및 사용자 검증 완료.
+   - Plan: [completed/M2-2-oauth-and-auth-lifecycle.md](completed/M2-2-oauth-and-auth-lifecycle.md)
+   - 상태: 2026-10-26 사용자 완료 확인. 실행 로그와 실제 Google 브라우저 callback 검증 근거는 미수령.
 3. **M2-3 — 인증 필요 mutation의 로그인 유도**
-   - Plan: [active/M2-3-protected-mutation-navigation.md](active/M2-3-protected-mutation-navigation.md)
-   - 선행: M2-1, M2-2 수용 기준 및 사용자 검증 완료.
+   - Plan: [completed/M2-3-protected-mutation-navigation.md](completed/M2-3-protected-mutation-navigation.md)
+   - 상태: 2026-10-26 사용자 완료 확인. 재실행 로그와 개별 검증 결과는 미수령.
 4. **M3 — App shell과 디자인 토큰 정렬**
    - 선행: 없음. M2와 독립적으로 계획할 수 있다.
 5. **M4 — 홈과 Catalog 통합 검색**

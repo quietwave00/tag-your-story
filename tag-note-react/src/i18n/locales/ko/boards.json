@@ -7,7 +7,8 @@
     "likeLabel": "좋아요",
     "likeCount_one": "좋아요 {{count}}개",
     "likeCount_other": "좋아요 {{count}}개",
-    "likeError": "좋아요 요청을 처리하지 못했습니다."
+    "likeError": "좋아요 요청을 처리하지 못했습니다.",
+    "deleteError": "게시글을 삭제하지 못했습니다."
   },
   "deleteConfirm": "이 태그 노트를 삭제하시겠습니까?",
   "form": {

@@ -6,7 +6,10 @@ export function getCookie(name) {
   const value =
     document.cookie
       .split('; ')
-      .map((cookie) => cookie.split('='))
+      .map((cookie) => {
+        const separator = cookie.indexOf('=');
+        return [cookie.slice(0, separator), cookie.slice(separator + 1)];
+      })
       .find(([cookieName]) => cookieName === name)?.[1] ?? null;
 
   return value ? decodeURIComponent(value) : null;

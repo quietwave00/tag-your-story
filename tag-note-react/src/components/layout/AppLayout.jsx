@@ -17,11 +17,16 @@ export default function AppLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const handleLogout = async () => {
+    let failed = false;
     try {
       await authService.logout();
+    } catch {
+      failed = true;
     } finally {
       authStore.clear();
-      navigate(routes.home);
+      navigate(failed ? routes.login : routes.home, {
+        state: failed ? { messageKey: 'oauth.logoutFailed' } : undefined,
+      });
     }
   };
 

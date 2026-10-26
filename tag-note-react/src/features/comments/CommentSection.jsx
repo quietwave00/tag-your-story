@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { commentService } from '../../services/commentService.js';
+import { AuthExpiredError } from '../../services/apiClient.js';
 import '../../styles/commentSection.css';
 
 const COMMENT_PAGE_SIZE = 20;
@@ -67,7 +68,7 @@ function CommentItem({
   );
 }
 
-export default function CommentSection({ boardId, isAuthenticated }) {
+export default function CommentSection({ boardId, isAuthenticated, onLoginRequired }) {
   const { t } = useTranslation(['community', 'common']);
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(0);
@@ -81,11 +82,27 @@ export default function CommentSection({ boardId, isAuthenticated }) {
   const [editingContent, setEditingContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [mutationError, setMutationError] = useState(null);
 
   const totalPages = useMemo(() => getTotalPages(commentCount), [commentCount]);
   const pageNumbers = useMemo(() => getPageNumbers(totalPages), [totalPages]);
   const writableIdSet = useMemo(() => getWritableIdSet(writableCommentIds), [writableCommentIds]);
+  const error = mutationError ?? loadError;
+
+  const requireLogin = (hasDraft = false) => {
+    if (isAuthenticated) return false;
+    onLoginRequired(hasDraft);
+    return true;
+  };
+
+  const handleMutationError = (requestError, hasDraft = false) => {
+    if (requestError instanceof AuthExpiredError) {
+      onLoginRequired(hasDraft, 'expired');
+    } else {
+      setMutationError(requestError);
+    }
+  };
 
   const loadWritableComments = useCallback(async () => {
     if (!boardId || !isAuthenticated) {
@@ -116,11 +133,11 @@ export default function CommentSection({ boardId, isAuthenticated }) {
 
       setComments(commentList ?? []);
       setCommentCount(countResponse?.count ?? 0);
-      setError(null);
+      setLoadError(null);
     } catch (requestError) {
       setComments([]);
       setCommentCount(0);
-      setError(requestError);
+      setLoadError(requestError);
     } finally {
       setIsLoading(false);
     }
@@ -135,6 +152,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
   }, [loadWritableComments, comments]);
 
   const refreshComments = async (nextPage = currentPage) => {
+    setMutationError(null);
     setCurrentPage(nextPage);
 
     if (nextPage === currentPage) {
@@ -145,6 +163,8 @@ export default function CommentSection({ boardId, isAuthenticated }) {
 
   const handleWriteComment = async (event) => {
     event.preventDefault();
+
+    if (requireLogin(Boolean(newCommentContent.trim()))) return;
 
     const content = newCommentContent.trim();
 
@@ -159,13 +179,15 @@ export default function CommentSection({ boardId, isAuthenticated }) {
       setNewCommentContent('');
       await refreshComments(DEFAULT_PAGE);
     } catch (requestError) {
-      setError(requestError);
+      handleMutationError(requestError, true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCreateReply = async (parentId) => {
+    if (requireLogin(Boolean(replyInputs[parentId]?.trim()))) return;
+
     const content = replyInputs[parentId]?.trim();
 
     if (!content || !boardId || isSubmitting) {
@@ -180,13 +202,15 @@ export default function CommentSection({ boardId, isAuthenticated }) {
       setActiveReplyParentId(null);
       await refreshComments();
     } catch (requestError) {
-      setError(requestError);
+      handleMutationError(requestError, true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleUpdateComment = async (commentId) => {
+    if (requireLogin(Boolean(editingContent.trim()))) return;
+
     const content = editingContent.trim();
 
     if (!content || isSubmitting) {
@@ -201,13 +225,15 @@ export default function CommentSection({ boardId, isAuthenticated }) {
       setEditingContent('');
       await refreshComments();
     } catch (requestError) {
-      setError(requestError);
+      handleMutationError(requestError, true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteComment = async (commentId) => {
+    if (requireLogin()) return;
+
     const shouldDelete = window.confirm(t('comments.deleteConfirm'));
 
     if (!shouldDelete || isSubmitting) {
@@ -220,15 +246,21 @@ export default function CommentSection({ boardId, isAuthenticated }) {
       await commentService.deleteComment(commentId);
       await refreshComments();
     } catch (requestError) {
-      setError(requestError);
+      handleMutationError(requestError);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleEditStart = (comment) => {
+    if (requireLogin()) return;
     setEditingCommentId(comment.commentId);
     setEditingContent(comment.content);
+  };
+
+  const handleReplyStart = (commentId) => {
+    if (requireLogin()) return;
+    setActiveReplyParentId(commentId);
   };
 
   const handlePageChange = (page) => {
@@ -256,6 +288,7 @@ export default function CommentSection({ boardId, isAuthenticated }) {
       <form className="comment-write-form" onSubmit={handleWriteComment}>
         <input
           className="comment-input"
+          onFocus={() => requireLogin(Boolean(newCommentContent.trim()))}
           onChange={(event) => setNewCommentContent(event.target.value)}
           placeholder={t('comments.input')}
           type="text"
@@ -295,11 +328,11 @@ export default function CommentSection({ boardId, isAuthenticated }) {
                 </div>
               ) : (
                 <CommentItem
-                  canEdit={writableIdSet.has(comment.commentId)}
+                  canEdit={isAuthenticated && writableIdSet.has(comment.commentId)}
                   comment={comment}
                   onDelete={handleDeleteComment}
                   onEditStart={handleEditStart}
-                  onReplyStart={setActiveReplyParentId}
+                  onReplyStart={handleReplyStart}
                 />
               )}
 
@@ -342,13 +375,13 @@ export default function CommentSection({ boardId, isAuthenticated }) {
                   </div>
                 ) : (
                   <CommentItem
-                    canEdit={writableIdSet.has(reply.commentId)}
+                    canEdit={isAuthenticated && writableIdSet.has(reply.commentId)}
                     comment={reply}
                     isReply
                     key={reply.commentId}
                     onDelete={handleDeleteComment}
                     onEditStart={handleEditStart}
-                    onReplyStart={setActiveReplyParentId}
+                    onReplyStart={handleReplyStart}
                   />
                 )
               ))}

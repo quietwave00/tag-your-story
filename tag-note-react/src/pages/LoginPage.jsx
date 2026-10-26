@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getOAuthAuthorizationUrl } from '../services/authService.js';
 import { useAuthStore } from '../store/authStore.js';
 import { routes } from '../utils/routes.js';
+import { tokenStorage } from '../utils/tokenStorage.js';
 import '../styles/auth.css';
 
 export default function LoginPage() {
@@ -22,6 +23,7 @@ export default function LoginPage() {
   }, [isAuthenticated, navigate]);
 
   const handleGoogleLogin = () => {
+    tokenStorage.prepareForLogin();
     window.location.assign(getOAuthAuthorizationUrl('google'));
   };
 

@@ -5,9 +5,10 @@ const TOKEN_KEYS = {
   refreshToken: 'RefreshToken',
   pendingToken: 'Pending',
 };
+const LOGGED_OUT_KEY = 'TagNoteLoggedOut';
 
 function stripBearerPrefix(token) {
-  return token?.replace(/^Bearer\+?/, '') ?? null;
+  return token?.replace(/^Bearer(?:\+|\s)+/i, '') ?? null;
 }
 
 function readStorage(key) {
@@ -57,37 +58,38 @@ export const tokenStorage = {
     writeStorage(TOKEN_KEYS.refreshToken, stripBearerPrefix(token));
   },
 
-  setPendingToken(token) {
-    writeStorage(TOKEN_KEYS.pendingToken, token);
-  },
-
   removePendingToken() {
     removeStorage(TOKEN_KEYS.pendingToken);
     deleteCookie(TOKEN_KEYS.pendingToken);
   },
 
-  syncFromCookies() {
-    const accessToken = getCookie(TOKEN_KEYS.accessToken);
-    const refreshToken = getCookie(TOKEN_KEYS.refreshToken);
-    const pendingToken = getCookie(TOKEN_KEYS.pendingToken);
+  discardLegacyPending() {
+    const hadPending = Boolean(readStorage(TOKEN_KEYS.pendingToken) || getCookie(TOKEN_KEYS.pendingToken));
+    this.removePendingToken();
+    return hadPending;
+  },
 
-    if (accessToken) {
-      this.setAccessToken(accessToken);
-      this.removePendingToken();
+  syncFromCookies() {
+    this.discardLegacyPending();
+    if (readStorage(LOGGED_OUT_KEY)) {
+      return { hasAccessToken: false };
     }
 
-    if (refreshToken) {
+    const accessToken = getCookie(TOKEN_KEYS.accessToken);
+    const refreshToken = getCookie(TOKEN_KEYS.refreshToken);
+
+    if (accessToken && refreshToken) {
+      this.setAccessToken(accessToken);
       this.setRefreshToken(refreshToken);
     }
 
-    if (pendingToken && !accessToken) {
-      this.setPendingToken(pendingToken);
-    }
-
     return {
-      hasAccessToken: Boolean(accessToken),
-      hasPendingToken: Boolean(pendingToken && !accessToken),
+      hasAccessToken: Boolean(accessToken && refreshToken),
     };
+  },
+
+  prepareForLogin() {
+    removeStorage(LOGGED_OUT_KEY);
   },
 
   clearAuth() {
@@ -95,5 +97,6 @@ export const tokenStorage = {
       removeStorage(key);
       deleteCookie(key);
     });
+    writeStorage(LOGGED_OUT_KEY, '1');
   },
 };

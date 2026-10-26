@@ -3,13 +3,10 @@ import { tokenStorage } from '../utils/tokenStorage.js';
 
 function getInitialAuthState() {
   const accessToken = tokenStorage.getAccessToken();
-  const pendingToken = tokenStorage.getPendingToken();
 
   return {
     accessToken,
-    pendingToken,
     isAuthenticated: Boolean(accessToken),
-    isPendingUser: Boolean(pendingToken && !accessToken),
   };
 }
 
@@ -17,6 +14,11 @@ const store = createStore(getInitialAuthState());
 
 export const authStore = {
   ...store,
+
+  setAccessToken(token) {
+    tokenStorage.setAccessToken(token);
+    store.setState(getInitialAuthState());
+  },
 
   refreshFromStorage() {
     store.setState(getInitialAuthState());
@@ -26,15 +28,8 @@ export const authStore = {
     tokenStorage.clearAuth();
     store.setState({
       accessToken: null,
-      pendingToken: null,
       isAuthenticated: false,
-      isPendingUser: false,
     });
-  },
-
-  clearPending() {
-    tokenStorage.removePendingToken();
-    store.setState(getInitialAuthState());
   },
 };
 
