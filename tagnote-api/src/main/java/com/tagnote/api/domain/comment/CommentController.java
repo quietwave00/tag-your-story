@@ -1,6 +1,7 @@
 package com.tagnote.api.domain.comment;
 
 import com.tagnote.api.annotations.CurrentUserId;
+import com.tagnote.application.comment.CommentCommandService;
 import com.tagnote.api.domain.comment.dto.request.CreateCommentRequest;
 import com.tagnote.api.domain.comment.dto.request.CreateReplyRequest;
 import com.tagnote.api.domain.comment.dto.request.UpdateCommentRequest;
@@ -24,8 +25,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/comments")
-public class CommentController {
+public class CommentController implements CommentApi {
     private final CommentFacade commentFacade;
+    private final CommentCommandService commentCommandService;
 
     /*
      * 댓글을 작성한다.
@@ -33,7 +35,7 @@ public class CommentController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ApiResult<CommentResponse> create(@RequestBody @Valid CreateCommentRequest request, @CurrentUserId Long userId) throws ExecutionException, InterruptedException {
-        Comment comment = commentFacade.create(request.toCommand(userId));
+        Comment comment = commentCommandService.create(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
     }
 
@@ -95,7 +97,7 @@ public class CommentController {
     @PostMapping("/replies")
     public ApiResult<CommentResponse> createReply(@RequestBody @Valid CreateReplyRequest request,
                                                                                       @CurrentUserId Long userId) {
-        Comment comment = commentFacade.createReply(request.toCommand(userId));
+        Comment comment = commentCommandService.createReply(request.toCommand(userId));
         return ApiUtils.success(CommentResponse.from(comment));
     }
 

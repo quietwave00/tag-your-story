@@ -1,6 +1,6 @@
 # COMMENT-REF-001 — Comment 작성 유스케이스 경계 이동
 
-상태: Human Review 승인, 구현 전
+상태: 완료 (2026-10-26, 사용자 테스트 결과 확인 및 완료 처리 요청)
 
 ## Goal
 
@@ -122,4 +122,13 @@ Codex는 코드 읽기, diff 리뷰와 `git diff --check`만 직접 수행한다
 ./scripts/verify.sh
 ```
 
-구현·검증·리뷰가 완료되고 사용자 실행 결과가 확인되면 이 파일을 `plans/completed/`로 옮기고 `progress.md`를 업데이트한다. 현재는 구현과 검증 모두 미실행이다.
+구현과 정적 diff 검토를 완료했다. 2026-10-26 사용자가 테스트 결과를 확인하고 완료 처리를 요청했다. Codex는 검증 명령을 직접 실행하지 않았다. `./gradlew test`, `./gradlew check`, `./scripts/verify.sh`의 명령별 출력은 전달받지 않았으므로 개별 통과 여부는 기록하지 않는다.
+
+## 구현 기록
+
+- 최상위 댓글·답글 작성의 Board → User → CommentService 순서를 `CommentCommandService`로 이동했다. CommentService의 쓰기 트랜잭션, ACTIVE 사용자 잠금, 저장·알림 정책은 유지했다.
+- Controller의 8개 경로와 응답 변환은 유지하면서 작성 두 경로만 Application 서비스로 연결했다.
+- `CommentApi`와 DTO Schema에 현재 인증, 요청·응답 필드, 오류 응답을 문서화했다.
+- HTTP 계약, 서비스 동작, Application 호출 순서에 대한 특성화 테스트를 추가했다.
+- 현재 깊이·Board 일치·소유권 검사 부재는 그대로 두었다. 이는 후속 정책 마일스톤의 관찰 사항이다.
+- 리뷰 피드백에 따라 추가한 테스트의 `var` 선언 5곳을 명시적 타입으로 변경했다.

@@ -1,7 +1,8 @@
 # Progress
 
-## 현재 진행: LIKE-REF-001 완료 (2026-10-26)
+## 현재 진행: COMMENT-REF-001 완료 (2026-10-26)
 
+- [COMMENT-REF-001](plans/completed/COMMENT-REF-001.md): 기존 8개 Comment API 계약을 특성화하고 최상위 댓글·답글 작성의 Board/User 조회 조율을 Application 서비스로 이동했다. Swagger interface와 요청·응답 Schema를 추가하고 저장·알림·조회 정책을 유지했다. 2026-10-26 사용자가 테스트 결과 확인 및 완료 처리를 요청했다. Codex는 검증 명령을 실행하지 않았고 `test`·`check`·`verify.sh`의 개별 출력은 전달받지 않아 명령별 통과 여부는 미확인으로 기록했다.
 - [LIKE-REF-001](plans/completed/LIKE-REF-001.md): 기존 Like API 호환, DB unique·atomic counter 정합성, 마이페이지 좋아요 목록, Swagger와 migration runbook을 구현했다. 최초 테스트에서 발견된 status JSON 필드 `liked` 불일치를 정정했고, 2026-10-26 사용자가 확인 완료 및 완료 처리를 요청했다. 최종 검증 명령별 출력과 운영 migration 적용 결과는 전달되지 않아 완료 기록에 미확인으로 남겼다.
 
 ## User/Auth 마이그레이션 로드맵 (2026-10-14)
