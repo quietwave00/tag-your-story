@@ -18,6 +18,10 @@ public interface BoardJpaRepository extends JpaRepository<BoardEntity, String> {
     @EntityGraph(attributePaths = {"userEntity", "track", "album"})
     Optional<BoardEntity> findByBoardIdAndStatus(String boardId, BoardStatus status);
 
+    @EntityGraph(attributePaths = {"userEntity"})
+    @Query("select b from BoardEntity b where b.boardId = :boardId and b.status = :status")
+    Optional<BoardEntity> findLikeTarget(@Param("boardId") String boardId, @Param("status") BoardStatus status);
+
     @EntityGraph(attributePaths = {"userEntity", "track", "album"})
     Page<BoardEntity> findByStatusAndTrack_SpotifyIdOrderByCreatedAtDesc(
             BoardStatus status, String spotifyId, Pageable pageable
@@ -65,5 +69,5 @@ public interface BoardJpaRepository extends JpaRepository<BoardEntity, String> {
 
     @Modifying
     @Query("update BoardEntity b set b.likeCount = b.likeCount + :value where b.boardId = :boardId")
-    void updateLikeCount(@Param("boardId") String boardId, @Param("value") int value);
+    int updateLikeCount(@Param("boardId") String boardId, @Param("value") int value);
 }

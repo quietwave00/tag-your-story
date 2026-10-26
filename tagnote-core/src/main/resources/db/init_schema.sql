@@ -295,14 +295,18 @@ create table files
     foreign key (board_id) references board (board_id)
 ) ENGINE = InnoDB;
 
-create table likes
+create table board_like
 (
     like_id  bigint auto_increment primary key,
     board_id varchar(255) not null,
     user_id  bigint       not null,
+    created_at datetime(6) not null,
 
-    foreign key (board_id) references board (board_id),
-    foreign key (user_id) references users (user_id)
+    constraint fk_board_like_board foreign key (board_id) references board (board_id),
+    constraint fk_board_like_user foreign key (user_id) references users (user_id),
+    constraint uk_board_like_user_board unique (user_id, board_id),
+    index idx_board_like_user_created (user_id, created_at),
+    index idx_board_like_board_created (board_id, created_at)
 ) ENGINE = InnoDB;
 
 create table notification

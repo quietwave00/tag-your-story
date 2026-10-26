@@ -19,7 +19,8 @@ public class CustomExceptionManager {
                 .build());
         if (e.getExceptionCode() == ExceptionCode.TOKEN_HAS_EXPIRED
                 || e.getExceptionCode() == ExceptionCode.TOKEN_HAS_TEMPERED
-                || e.getExceptionCode() == ExceptionCode.INVALID_REFRESH_TOKEN) {
+                || e.getExceptionCode() == ExceptionCode.INVALID_REFRESH_TOKEN
+                || e.getExceptionCode() == ExceptionCode.LIKE_ALREADY_EXISTS) {
             return ResponseEntity.status(e.getExceptionCode().getHttpStatus()).body(result);
         }
         return ResponseEntity.ok(result);

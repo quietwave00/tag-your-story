@@ -32,6 +32,7 @@ public enum ExceptionCode {
     NICKNAME_INVALID(HttpStatus.BAD_REQUEST, "닉네임은 공백 없이 1~20자여야 합니다."),
     NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시물입니다."),
+    LIKE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 좋아요한 게시물입니다."),
     TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 트랙입니다."),
     ALBUM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 앨범입니다."),
     USER_TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 유저 태그입니다."),

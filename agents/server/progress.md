@@ -1,9 +1,8 @@
 # Progress
 
-## 현재 진행: Like 리팩토링 계획 (2026-10-20)
+## 현재 진행: LIKE-REF-001 완료 (2026-10-26)
 
-- [LIKE-REF-001](plans/active/LIKE-REF-001.md): Human Review 승인으로 active Plan을 작성했다. 기존 Like API 호환, DB unique와 atomic counter 정합성, 마이페이지의 `boardId`·`author`·`content` 목록 조회를 한 마일스톤으로 계획했다.
-- 현재 단계는 계획 수립이다. production code와 자동 검증은 아직 수행하지 않았다.
+- [LIKE-REF-001](plans/completed/LIKE-REF-001.md): 기존 Like API 호환, DB unique·atomic counter 정합성, 마이페이지 좋아요 목록, Swagger와 migration runbook을 구현했다. 최초 테스트에서 발견된 status JSON 필드 `liked` 불일치를 정정했고, 2026-10-26 사용자가 확인 완료 및 완료 처리를 요청했다. 최종 검증 명령별 출력과 운영 migration 적용 결과는 전달되지 않아 완료 기록에 미확인으로 남겼다.
 
 ## User/Auth 마이그레이션 로드맵 (2026-10-14)
 

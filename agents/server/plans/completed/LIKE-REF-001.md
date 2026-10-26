@@ -1,6 +1,6 @@
 # LIKE-REF-001 — Like 책임 분리와 내 좋아요 게시글 목록
 
-- Status: Active (Human Review 승인: 2026-10-20)
+- Status: Completed (Human Review 승인: 2026-10-20, 완료 확인: 2026-10-26)
 - Plan 변경 (2026-10-21, 사용자 요청): DB unique는 유지하고 중복 등록 처리를 단순화한다. 중복 Like는 `LIKE_ALREADY_EXISTS`/HTTP 409로 반환하며 재시도나 성공 응답 복구를 하지 않는다.
 - Plan 보완 (2026-10-21): Like insert는 `save`를 기본으로 하고, 명시적 flush는 실제 409 오류 변환에 필요함이 통합 테스트에서 확인될 때만 사용한다.
 - Milestone: 기존 Like API를 유지하며 Like 쓰기 정합성을 확보하고, 마이페이지용 내 좋아요 게시글 목록을 추가한다.
@@ -156,3 +156,11 @@ Codex는 코드 읽기와 `git diff --check` 등 정적 검사만 수행한다. 
 ```
 
 명령 결과와 Acceptance Criteria 검토가 확인되기 전에는 이 Plan을 completed로 옮기지 않는다. 완료 시 `agents/server/progress.md`를 갱신한다.
+
+## Completion record (2026-10-26)
+
+- 기존 Like API 호환, Board 하위 좋아요 경로, 내 좋아요 목록, DB unique·counter 정합성, Swagger, migration runbook과 관련 테스트 코드를 구현했다.
+- 최초 사용자 테스트에서 기존 상태 응답의 JSON 필드가 `isLiked`가 아닌 `liked`임을 확인했고 테스트·Swagger·서버 명세를 정정했다.
+- 2026-10-26 사용자가 수정 후 확인 완료와 Plan 완료 처리를 명시적으로 요청했다. 이를 Acceptance Criteria 검토 및 Human Review 완료 확인으로 기록한다.
+- `./gradlew test`, `./gradlew check`, `./scripts/verify.sh` 각각의 최종 실행 원문과 운영 DB migration 적용 결과는 전달되지 않았으므로 개별 실행 성공 또는 운영 적용 완료로 기록하지 않는다.
+- 구현 범위의 정적 `git diff --check`는 Codex가 확인했다. 운영 migration은 별도 runbook에 따른다.

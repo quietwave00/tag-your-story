@@ -502,7 +502,7 @@ board_like
 
 ```text
 PK(like_id)
-FK(user_id → user.user_id)
+FK(user_id → users.user_id)
 FK(board_id → board.board_id)
 
 UNIQUE(user_id, board_id)
@@ -515,6 +515,8 @@ INDEX(user_id, created_at)
 
 ```text
 한 사용자는 하나의 Board에 한 번만 좋아요 가능
+본인 게시글 좋아요는 허용하며 LIKE 알림은 발행하지 않는다.
+중복 등록은 LIKE_ALREADY_EXISTS / HTTP 409이다. 관계가 없는 취소는 성공하며 counter를 변경하지 않는다.
 ```
 
 ---
@@ -1360,6 +1362,21 @@ DELETE /api/boards/{boardId}
 POST   /api/boards/{boardId}/likes
 DELETE /api/boards/{boardId}/likes
 ```
+
+기존 클라이언트 호환 경로 `POST/DELETE /api/likes`는 JSON body `{ "boardId": "..." }`를 받는다.
+`GET /api/likes/status/{boardId}`는 없는 게시글에도 `ApiResult.response.liked=false`를 반환한다.
+세 경로 모두 USER 인증이 필요하고 기존 `ApiResult` 성공 응답을 유지한다.
+중복 등록은 `LIKE_ALREADY_EXISTS`/HTTP 409 (`custom_error_code`/`exceptionCode`)를 반환한다.
+
+```http
+GET /api/users/me/liked-boards?page=0
+```
+
+USER 인증 사용자의 공개(`POST`) 게시글만 조회한다. page는 0-based, 크기는 8이다.
+`created_at DESC, like_id DESC` 순으로 반환하며 응답은 `ApiResult.response.items`와
+`totalCount`이다. 각 항목은 `boardId`, `author`, `content`만 포함한다.
+`author`는 작성자의 현재 표시 이름이며 탈퇴 사용자는 `탈퇴한 사용자`다.
+상세 조회는 기존 `GET /api/boards?boardId=...`를 사용한다.
 
 ### UserTag 검색
 

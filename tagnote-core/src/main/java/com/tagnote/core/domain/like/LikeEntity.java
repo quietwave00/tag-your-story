@@ -1,17 +1,19 @@
 package com.tagnote.core.domain.like;
 
 import com.tagnote.core.domain.board.BoardEntity;
-import com.tagnote.core.domain.board.service.Board;
-import com.tagnote.core.domain.like.service.Like;
 import com.tagnote.core.domain.user.UserEntity;
-import com.tagnote.core.domain.user.service.User;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
 @Entity
-@Table(name = "likes")
+@Table(name = "board_like", uniqueConstraints =
+        @UniqueConstraint(name = "uk_board_like_user_board", columnNames = {"user_id", "board_id"}), indexes = {
+        @Index(name = "idx_board_like_user_created", columnList = "user_id,created_at"),
+        @Index(name = "idx_board_like_board_created", columnList = "board_id,created_at")
+})
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 public class LikeEntity {
@@ -20,12 +22,15 @@ public class LikeEntity {
     private Long likeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
+    @JoinColumn(name = "board_id", nullable = false)
     private BoardEntity board;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     /*
      * 생성자
@@ -35,21 +40,12 @@ public class LikeEntity {
         this.board = board;
     }
 
-    /*
-     * 형변환
-     */
-    public Like toLike() {
-        return Like.builder()
-                .likeId(this.likeId)
-                .board(this.board.toBoard())
-                .user(this.user.toUser())
-                .build();
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
-    /*
-     * 비즈니스 로직
-     */
-    public static LikeEntity createLike(User user, Board board) {
-        return new LikeEntity(user.toEntity(), board.toEntity());
+    public static LikeEntity createLike(UserEntity user, BoardEntity board) {
+        return new LikeEntity(user, board);
     }
 }
