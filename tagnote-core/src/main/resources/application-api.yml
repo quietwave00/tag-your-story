@@ -5,7 +5,7 @@ spotify:
 spring:
   config.activate.on-profile: local
 api:
-  redirect-url: "http://localhost:5500/token.html"
+  redirect-url: "http://localhost:5173/token"
   domain: ""
   allowed-origins:
     - "http://localhost:5173"
