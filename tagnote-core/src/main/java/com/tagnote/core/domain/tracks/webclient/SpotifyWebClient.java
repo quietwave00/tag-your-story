@@ -148,4 +148,13 @@ public class SpotifyWebClient {
             throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
         }
     }
+
+    public Artist getDetailArtistInfo(String artistId) {
+        try {
+            return getSpotifyApi().getArtist(artistId).build().execute();
+        } catch (IOException | ParseException | SpotifyWebApiException e) {
+            log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
+        }
+    }
 }

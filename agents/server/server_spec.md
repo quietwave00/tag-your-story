@@ -1200,6 +1200,17 @@ Response:
 
 `type`은 선택적이며 생략하면 통합 결과 최대 30개와 세 타입 total 합계를 반환한다. 지정하면 선택 타입 결과 최대 10개와 해당 타입 total만 반환한다. 각 요청은 Spotify Search HTTP 호출 한 번만 수행하며 잘못된 type은 HTTP 400이다.
 
+### Catalog Album·Artist 상세 메타데이터
+
+```http
+GET /api/catalog/albums/{spotifyAlbumId}
+GET /api/catalog/artists/{spotifyArtistId}
+```
+
+두 API는 인증 없이 Spotify ID로 단건 상세를 조회하고 기존 `ApiResult` envelope에 결과를 반환한다. Album 응답은 `spotifyId`, `title`, `imageUrl`, `releaseDate`, `totalTracks`, Spotify 표시 순서의 `artists[{spotifyId,name}]`를 포함한다. Artist 응답은 `spotifyId`, `name`, `imageUrl`, `genres`를 포함하며 팔로워 수는 포함하지 않는다. 이미지가 없으면 `NO_IMAGE`, 장르가 없으면 빈 목록이다. `releaseDate`는 Spotify 원문으로 연도 또는 연월만 포함할 수 있다.
+
+조회는 Catalog 저장, DB 조회, 태그 계산 및 enrichment 없이 Spotify 메타데이터만 사용한다. Album Track 목록과 Artist Album 목록은 이 단건 응답에 포함하지 않는다. Spotify 조회 실패는 기존 오류 체계의 `SPOTIFY_EXCEPTION`이며 현재 `CustomExceptionManager` 정책상 HTTP 200, `success=false`, `response.status=503`이다. 기존 `GET /api/tracks/{trackId}` 상세 계약은 유지한다.
+
 ### Track Import
 
 ```http
