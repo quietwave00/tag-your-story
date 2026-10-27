@@ -54,6 +54,22 @@ class UserControllerTest {
     private JwtCookieProvider jwtCookieProvider;
 
     @Test
+    void 내_프로필_조회는_인증된_사용자의_닉네임만_반환한다() throws Exception {
+        mockMvc.perform(get("/api/user/me?userId=2")
+                        .with(user(new PrincipalDetails(1L, Role.ROLE_USER, "GoogleListener"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response.nickname").value("GoogleListener"))
+                .andExpect(jsonPath("$.response.userId").doesNotExist())
+                .andExpect(jsonPath("$.response.email").doesNotExist());
+        org.mockito.Mockito.verifyNoInteractions(userService);
+    }
+
+    @Test
+    void 내_프로필_조회는_인증이_필요하다() throws Exception {
+        mockMvc.perform(get("/api/user/me")).andExpect(status().isForbidden());
+    }
+
+    @Test
     void withdrawal_uses_only_principal_id_and_expires_both_cookies() throws Exception {
         Cookie access = new Cookie("Authorization", "");
         access.setMaxAge(0);

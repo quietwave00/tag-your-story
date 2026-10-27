@@ -1,6 +1,7 @@
 package com.tagnote.api.domain.user;
 
 import com.tagnote.api.annotations.CurrentUserId;
+import com.tagnote.api.auth.PrincipalDetails;
 import com.tagnote.api.domain.user.dto.request.ReissueAccessTokenRequest;
 import com.tagnote.api.domain.user.dto.response.ReissueAccessTokenResponse;
 import com.tagnote.api.domain.user.dto.response.ReissueRefreshTokenResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +30,12 @@ public class UserController implements UserApi {
     private final NicknameChangeService nicknameChangeService;
     private final AccountWithdrawalService accountWithdrawalService;
     private final JwtCookieProvider jwtCookieProvider;
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/me")
+    public ApiResult<NicknameResponse> me(@AuthenticationPrincipal PrincipalDetails principal) {
+        return ApiUtils.success(new NicknameResponse(principal.getNickname()));
+    }
 
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/me")

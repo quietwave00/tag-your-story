@@ -17,6 +17,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private Long userId;
     private Role role;
+    private String nickname;
     private Map<String, Object> userInfoMap;
 
 
@@ -28,6 +29,12 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
     public PrincipalDetails(Long userId, Role role) {
         this.userId = userId;
         this.role = role;
+    }
+
+    public PrincipalDetails(Long userId, Role role, String nickname) {
+        this.userId = userId;
+        this.role = role;
+        this.nickname = nickname;
     }
 
     public PrincipalDetails(Long userId, Role role, Map<String, Object> attributes) {

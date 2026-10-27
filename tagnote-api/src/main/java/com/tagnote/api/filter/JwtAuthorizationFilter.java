@@ -95,7 +95,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private void setAuthentication(Long userId) {
         User user = userService.requireActiveUser(userId);
-        PrincipalDetails principalDetails = new PrincipalDetails(user.getUserId(), user.getRole());
+        PrincipalDetails principalDetails = new PrincipalDetails(user.getUserId(), user.getRole(), user.getNickname());
         Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

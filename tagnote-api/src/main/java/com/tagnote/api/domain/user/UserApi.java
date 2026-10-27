@@ -1,5 +1,6 @@
 package com.tagnote.api.domain.user;
 
+import com.tagnote.api.auth.PrincipalDetails;
 import com.tagnote.api.domain.user.dto.request.ReissueAccessTokenRequest;
 import com.tagnote.api.domain.user.dto.response.ReissueAccessTokenResponse;
 import com.tagnote.api.domain.user.dto.response.ReissueRefreshTokenResponse;
@@ -13,6 +14,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "User", description = "JWT 재발급, 로그아웃, 프로필 변경")
 public interface UserApi {
+
+    @Operation(summary = "내 닉네임 조회", description = "GET /api/user/me. ROLE_USER AccessToken 인증 필수. "
+            + "인증 필터가 현재 DB의 ACTIVE USER 상태를 확인한 뒤 저장된 닉네임을 principal에 담는다. "
+            + "응답은 ApiResult.response.nickname이며 이메일·내부 식별자 등은 반환하지 않는다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "현재 인증된 사용자의 nickname", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "401", description = "만료·위변조 token 또는 ACCOUNT_WITHDRAWN", content = @Content),
+            @ApiResponse(responseCode = "403", description = "인증 누락 NO_PERMISSION 또는 USER_INACTIVE", content = @Content),
+            @ApiResponse(responseCode = "404", description = "계정 없음 USER_NOT_FOUND", content = @Content)
+    })
+    ApiResult<NicknameResponse> me(@Parameter(hidden = true) PrincipalDetails principal);
 
     @Operation(summary = "회원 탈퇴", description = "DELETE /api/user/me. ROLE_USER AccessToken 인증 필수. 요청 본문과 userId parameter가 없다. "
             + "성공 시 빈 ApiResult와 만료된 access/refresh 쿠키를 반환한다. 재요청은 기존 token의 계정 상태 검사에서 ACCOUNT_WITHDRAWN으로 거부된다. "

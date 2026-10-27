@@ -3,6 +3,7 @@ package com.tagnote.api.filter;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tagnote.api.auth.PrincipalDetails;
 import com.tagnote.core.domain.user.Role;
 import com.tagnote.core.domain.user.UserStatus;
 import com.tagnote.core.domain.user.service.User;
@@ -55,6 +56,19 @@ class JwtAuthorizationFilterTest {
         assertThat(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
                 .extracting("authority").containsExactly("ROLE_USER");
         verify(chain).doFilter(eq(request), any());
+    }
+
+    @Test
+    void 인증_필터는_데이터베이스의_현재_닉네임을_인증_정보에_담는다() throws Exception {
+        when(users.requireActiveUser(1L)).thenReturn(User.builder().userId(1L)
+                .role(Role.ROLE_USER).userStatus(UserStatus.ACTIVE).nickname("새닉네임").build());
+        MockHttpServletRequest request = request("GET", "/api/user/me", jwtUtil.generateAccessToken(1L));
+
+        filter.doFilter(request, new MockHttpServletResponse(), mock(FilterChain.class));
+
+        PrincipalDetails principal = (PrincipalDetails)
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        assertThat(principal.getNickname()).isEqualTo("새닉네임");
     }
 
     @Test
