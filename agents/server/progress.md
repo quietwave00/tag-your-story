@@ -1,8 +1,8 @@
 # Progress
 
-## 현재 진행: CATALOG-SEARCH-002 구현, 사용자 검증 대기 (2026-10-27)
+## 현재 진행: CATALOG-SEARCH-002 완료 (2026-10-27)
 
-- [CATALOG-SEARCH-002](plans/active/CATALOG-SEARCH-002.md): 선택적 `type=TRACK|ALBUM|ARTIST` 검색, Spotify 단일 타입 요청, 타입별 결과·total, Swagger·Server Spec·테스트를 작성했다. 기존 통합 검색과 `GET /api/tracks`는 유지한다. 사용자 실행 검증 결과를 기다리므로 Plan은 active다.
+- [CATALOG-SEARCH-002](plans/completed/CATALOG-SEARCH-002.md): 선택적 `type=TRACK|ALBUM|ARTIST` 검색, Spotify 단일 타입 요청, 타입별 결과·total, Swagger·Server Spec·테스트를 작성했다. 기존 통합 검색과 `GET /api/tracks`는 유지한다. 2026-10-27 사용자 확인으로 완료 처리했다. Codex는 검증 명령을 실행하지 않았고 명령별 출력은 전달받지 않아 개별 통과 여부는 미확인이다.
 
 - [AUTH-ME-001](plans/completed/AUTH-ME-001.md): 인증 사용자 닉네임 조회 API와 Google callback 조회를 구현하고 Swagger·클라이언트 계약을 갱신했다. 사용자 실행에서 발견된 컴파일 오류와 익명 principal SpEL 오류를 수정했으며, 2026-10-27 사용자 확인으로 완료 처리했다. 최종 검증 명령별 출력은 전달되지 않아 개별 통과 여부는 미확인이다.
 - [NOTIFICATION-REF-001](plans/completed/NOTIFICATION-REF-001.md): 단일 서버 SSE 전달 경계를 Application port와 Infrastructure transport로 분리하고 다중 연결·heartbeat·최소 payload·재접속 조회를 구현했다. 2026-10-27 사용자 확인으로 완료 처리했다. 최종 검증 명령별 출력은 전달되지 않아 개별 통과 여부는 미확인이다.

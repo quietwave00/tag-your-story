@@ -1,6 +1,6 @@
 # CATALOG-SEARCH-002 — Spotify 타입별 Catalog 검색
 
-> 상태: 2026-10-26 Human Review 승인, 구현 미착수. 이번 계획 승인 단계에서는 production code를 수정하지 않는다.
+> 상태: 2026-10-27 사용자 확인으로 완료 처리. 검증 명령별 출력은 미전달.
 
 ## Goal
 
@@ -130,3 +130,9 @@ Codex는 저장소 정책에 따라 Gradle과 `verify.sh`를 실행하지 않는
 ./gradlew check
 ./scripts/verify.sh
 ```
+
+## Completion Record (2026-10-27)
+
+- 선택적 타입 검색, 기존 통합 검색 호환, Swagger·Server Spec·클라이언트 계약 및 관련 테스트 코드를 정적 검토했다.
+- 관련 범위의 `git diff --check`를 통과했다. Codex는 Gradle 및 `verify.sh`를 실행하지 않았다.
+- 사용자가 검증 확인 후 완료 처리를 요청했다. 명령별 출력은 전달받지 않아 `test`, `check`, `verify.sh` 각각의 통과 여부는 별도로 확인하지 못했다.
