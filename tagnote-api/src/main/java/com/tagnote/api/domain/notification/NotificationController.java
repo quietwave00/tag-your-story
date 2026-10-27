@@ -6,6 +6,7 @@ import com.tagnote.api.domain.notification.dto.response.NotificationCountRespons
 import com.tagnote.api.domain.notification.dto.response.NotificationResponse;
 import com.tagnote.core.domain.notification.service.Notification;
 import com.tagnote.core.domain.notification.service.NotificationFacade;
+import com.tagnote.infrastructure.notification.sse.SseNotificationTransport;
 import com.tagnote.core.utils.api.ApiResult;
 import com.tagnote.core.utils.api.ApiUtils;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,10 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notification")
-public class NotificationController {
+public class NotificationController implements NotificationApi {
 
     private final NotificationFacade notificationFacade;
+    private final SseNotificationTransport sseTransport;
 
     /*
      * 알림 수신을 위한 SSE를 구독한다.
@@ -30,7 +32,7 @@ public class NotificationController {
     @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/subscription", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@CurrentUserId Long userId) {
-        return notificationFacade.subscribe(userId);
+        return sseTransport.open(userId);
     }
 
     /*

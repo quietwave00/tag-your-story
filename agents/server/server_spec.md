@@ -662,11 +662,11 @@ graph recommendation
 ```text
 User
 ↓
-GET /api/catalog/search?keyword=&page=
+GET /api/catalog/search?keyword=&page=&type=TRACK|ALBUM|ARTIST (type 선택)
 ↓
-Spotify Search API (Track + Album + Artist)
+Spotify Search API (type 생략: Track + Album + Artist, type 지정: 선택 타입만)
 ↓
-현재 page 후보 통합 유사도 정렬
+현재 page 후보 유사도 정렬
 ↓
 subjectType과 Spotify ID가 포함된 검색 결과 반환
 ```
@@ -674,6 +674,8 @@ subjectType과 Spotify ID가 포함된 검색 결과 반환
 검색 결과 표시 단계에서는 내부 DB 저장이 필수가 아니다.
 
 각 subject type에서 최대 10개씩 같은 page를 조회하므로 응답 후보는 최대 30개다. 정렬은 현재 page 후보 안에서 이름 exact match, prefix match, 이름 유사도, artist 유사도, Spotify 원본 순서를 사용한다. `totalCount`는 세 subject type total의 합이다.
+
+선택적 `type=TRACK|ALBUM|ARTIST`를 지정하면 Spotify에 해당 타입만 요청한다. `items`는 그 타입의 현재 page 후보 최대 10개이고 `totalCount`는 그 타입의 Spotify total이다. `page`는 0-based이며 타입별로 독립적으로 사용한다. 허용되지 않은 type은 HTTP 400이다. type을 생략하면 위 통합 검색 동작을 유지한다.
 
 기존 `GET /api/tracks?keyword=&page=` Track 전용 검색은 하위 호환을 위해 유지한다.
 
@@ -1167,10 +1169,11 @@ EXTERNAL_PROVIDER_NOT_FOUND
 
 ## 21. API 초안
 
-### Catalog 통합 검색
+### Catalog 통합·타입별 검색
 
 ```http
 GET /api/catalog/search?keyword={keyword}&page={page}
+GET /api/catalog/search?keyword={keyword}&page={page}&type=TRACK|ALBUM|ARTIST
 ```
 
 Response:
@@ -1192,6 +1195,8 @@ Response:
 ```
 
 `subjectType`은 `TRACK`, `ALBUM`, `ARTIST` 중 하나다. Album 결과는 `albumName`, Artist 결과는 `artistName`과 `albumName`이 null이다. 검색 GET은 내부 Catalog 저장이나 enrichment를 실행하지 않는다.
+
+`type`은 선택적이며 생략하면 통합 결과 최대 30개와 세 타입 total 합계를 반환한다. 지정하면 선택 타입 결과 최대 10개와 해당 타입 total만 반환한다. 각 요청은 Spotify Search HTTP 호출 한 번만 수행하며 잘못된 type은 HTTP 400이다.
 
 ### Track Import
 

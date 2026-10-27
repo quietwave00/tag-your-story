@@ -5,7 +5,6 @@ import com.tagnote.core.domain.user.service.UserService;
 import com.tagnote.core.domain.user.service.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -15,10 +14,6 @@ public class NotificationFacade {
 
     private final NotificationService notificationService;
     private final UserService userService;
-
-    public SseEmitter subscribe(Long userId) {
-        return notificationService.subscribe(userId);
-    }
 
     public List<Notification> getNotificationList(Long userId, int page) {
         User user = userService.getCacheByUserId(userId);

@@ -6,9 +6,7 @@ import com.tagnote.core.domain.user.UserEntity;
 import com.tagnote.core.domain.user.UserStatus;
 import com.tagnote.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagnote.core.domain.notification.repository.NotificationRepository;
-import com.tagnote.core.domain.notification.service.NotificationManager;
 import com.tagnote.core.domain.notification.service.NotificationService;
-import com.tagnote.core.domain.notification.sse.SseManager;
 import com.tagnote.core.exception.CustomException;
 import com.tagnote.domain.notification.fixture.NotificationFixture;
 import org.junit.jupiter.api.Test;
@@ -16,14 +14,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -31,13 +26,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 public class NotificationServiceTest {
 
     @Mock
-    private NotificationManager notificationManager;
-
-    @Mock
     private NotificationRepository notificationRepository;
-
-    @Mock
-    private SseManager sseManager;
 
     @Mock
     private UserRepository users;
@@ -46,66 +35,13 @@ public class NotificationServiceTest {
     private NotificationService notificationService;
 
     @Test
-    void delayed_notification_is_discarded_for_withdrawn_subscriber() {
+    void 지연된_알림은_탈퇴한_수신자에게_저장하지_않는다() {
         var notification = NotificationFixture.createNotification(1L);
         when(users.findByUserIdForUpdate(1L)).thenReturn(Optional.of(UserEntity.builder()
                 .userId(1L).userStatus(UserStatus.WITHDRAWN).build()));
 
         assertThat(notificationService.save(notification)).isNull();
         verifyNoInteractions(notificationRepository);
-    }
-
-    @Test
-    void withdrawn_subscriber_receives_no_sse() {
-        var notification = NotificationFixture.createNotification(1L);
-        when(users.findByUserId(1L)).thenReturn(Optional.of(UserEntity.builder()
-                .userId(1L).userStatus(UserStatus.WITHDRAWN).build()));
-
-        notificationService.send(notification);
-        verifyNoInteractions(sseManager);
-    }
-
-    @Test
-    void SseEmitter를_구독시_SseEmitter가_존재하는_경우() {
-        // given
-        Long userId = 1L;
-        SseEmitter mockSseEmitter = mock(SseEmitter.class);
-
-        // when
-        when(sseManager.get(userId)).thenReturn(mockSseEmitter);
-        SseEmitter result = notificationService.subscribe(userId);
-
-        // then
-        assertThat(result).isEqualTo(mockSseEmitter);
-    }
-
-    @Test
-    void SseEmitter를_구독시_SseEmitter가_존재하지_않는_경우() {
-        // given
-        Long userId = 1L;
-        SseEmitter mockSseEmitter = mock(SseEmitter.class);
-
-        // when
-        when(sseManager.get(userId)).thenReturn(null);
-        when(sseManager.create(userId)).thenReturn(mockSseEmitter);
-        SseEmitter result = notificationService.subscribe(userId);
-
-        // then
-        assertThat(result).isEqualTo(mockSseEmitter);
-    }
-
-    @Test
-    void SseEmitter로_메시지를_보낸다() throws IOException {
-//        // given
-//        Notification notification = NotificationFixture.createNotification();
-//        String notificationData = new ObjectMapper().writeValueAsString(notification);
-//        SseEmitter mockSseEmitter = mock(SseEmitter.class);
-//
-//        // when
-//        when(sseManager.get(notification.getSubscriber().getUserId())).thenReturn(mockSseEmitter);
-//        when(notificationManager.getNotificationData(notification))
-//                .thenReturn(notificationData);
-//        notificationService.send(notification);
     }
 
     @Test

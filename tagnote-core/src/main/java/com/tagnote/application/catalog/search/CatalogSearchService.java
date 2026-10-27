@@ -2,6 +2,7 @@ package com.tagnote.application.catalog.search;
 
 import com.tagnote.application.catalog.search.model.CatalogSearchItem;
 import com.tagnote.application.catalog.search.model.CatalogSearchResult;
+import com.tagnote.application.catalog.search.model.CatalogSearchScope;
 import com.tagnote.application.catalog.search.port.CatalogSearchProvider;
 import com.tagnote.application.catalog.search.port.SearchKeywordRecorder;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,12 @@ public class CatalogSearchService {
     private final CatalogSearchProvider catalogSearchProvider;
 
     public CatalogSearchResult search(String keyword, int page) {
+        return search(keyword, page, CatalogSearchScope.ALL);
+    }
+
+    public CatalogSearchResult search(String keyword, int page, CatalogSearchScope scope) {
         searchKeywordRecorder.record(keyword);
-        CatalogSearchResult providerResult = catalogSearchProvider.search(keyword, page);
+        CatalogSearchResult providerResult = catalogSearchProvider.search(keyword, page, scope);
         List<CatalogSearchItem> rankedItems = CatalogSearchRanker.rank(keyword, providerResult.getItems());
         return CatalogSearchResult.of(rankedItems, providerResult.getTotalCount());
     }

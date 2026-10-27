@@ -11,10 +11,10 @@ import java.util.List;
 @Builder
 public class CatalogSearchResponse {
 
-    @Schema(description = "현재 page의 통합 정렬된 검색 후보. 최대 30개", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "현재 page 검색 후보. 통합 검색은 최대 30개, 타입별 검색은 최대 10개", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<CatalogSearchItemResponse> items;
 
-    @Schema(description = "Spotify가 반환한 Track, Album, Artist total의 합", example = "153", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "통합 검색은 세 타입 total 합계, 타입별 검색은 선택 타입의 Spotify total", example = "153", requiredMode = Schema.RequiredMode.REQUIRED)
     private long totalCount;
 
     public static CatalogSearchResponse from(CatalogSearchResult result) {

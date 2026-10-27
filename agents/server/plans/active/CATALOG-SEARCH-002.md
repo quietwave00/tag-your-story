@@ -1,6 +1,6 @@
 # CATALOG-SEARCH-002 — Spotify 타입별 Catalog 검색
 
-> 상태: 2026-10-26 Human Review 승인, 구현 미착수. 이번 계획 승인 단계에서는 production code를 수정하지 않는다.
+> 상태: 2026-10-26 Human Review 승인. 2026-10-27 구현 및 테스트 코드 작성, 사용자 실행 검증 대기.
 
 ## Goal
 
@@ -122,6 +122,8 @@ GET /api/catalog/search?keyword=Queen&type=ARTIST&page=0
 ## Verification
 
 Codex는 저장소 정책에 따라 Gradle과 `verify.sh`를 실행하지 않는다.
+
+2026-10-27 구현 기록: 기존 endpoint에 선택적 `type`을 추가하고 Application 범위 `ALL|TRACK|ALBUM|ARTIST`, Spotify 단일 타입 요청, 선택 타입만 매핑하는 adapter를 연결했다. Swagger, Server Spec, Controller/Application/adapter 테스트를 갱신했다. 사용자 요청에 따라 새로 작성하거나 수정한 테스트 메서드명은 한글 문장으로 작성하고 `agents/server/conventions.md`에 규칙을 기록했다. 사용자 실행 검증 결과 전에는 completed로 이동하지 않는다.
 
 사용자 실행 명령:
 

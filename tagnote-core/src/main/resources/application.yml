@@ -13,6 +13,13 @@ logging:
   level:
     root: info
 
+# Single-instance SSE transport. Heartbeats use a dedicated scheduler.
+notification:
+  sse:
+    timeout-ms: ${NOTIFICATION_SSE_TIMEOUT_MS:1800000}
+    heartbeat-ms: ${NOTIFICATION_SSE_HEARTBEAT_MS:25000}
+    per-user-limit: ${NOTIFICATION_SSE_PER_USER_LIMIT:5}
+
 signup:
   code-secret: ${SIGNUP_CODE_SECRET:}
   mail:

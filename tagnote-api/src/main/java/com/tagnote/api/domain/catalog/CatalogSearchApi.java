@@ -7,22 +7,26 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Catalog Search", description = "Spotify 기반 Track, Album, Artist 통합 검색 API")
+@Tag(name = "Catalog Search", description = "Spotify 기반 Track, Album, Artist 통합 및 타입별 검색 API")
 public interface CatalogSearchApi {
 
     @Operation(
-            summary = "Catalog 통합 검색",
-            description = "인증 없이 Spotify Track, Album, Artist를 함께 검색한다. 각 type에서 최대 10개를 조회한 뒤 "
-                    + "현재 page의 후보를 이름 유사도 기준으로 통합 정렬한다. 검색만 수행하며 Catalog 저장이나 태그 계산은 하지 않는다."
+            summary = "Catalog 통합·타입별 검색",
+            description = "GET /api/catalog/search. 인증 불필요. type 생략 시 Spotify Track, Album, Artist를 함께 검색하고 "
+                    + "각 타입에서 최대 10개씩 현재 page 후보를 통합 정렬한다. type=TRACK|ALBUM|ARTIST 지정 시 "
+                    + "해당 Spotify 타입만 검색하고 page당 최대 10개를 그 타입 안에서 정렬한다. "
+                    + "검색만 수행하며 Catalog 저장이나 태그 계산은 하지 않는다."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "검색 성공. totalCount는 Track, Album, Artist total의 합",
+                    description = "검색 성공. type 생략 시 totalCount는 세 타입 total 합계, type 지정 시 해당 타입 total. "
+                            + "Spotify 장애는 기존 정책에 따라 HTTP 200의 success=false, response.exceptionCode=SPOTIFY_EXCEPTION, response.status=503으로 반환",
                     useReturnTypeSchema = true,
                     content = @Content(examples = @ExampleObject(
                             name = "spotifyError",
@@ -33,7 +37,7 @@ public interface CatalogSearchApi {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "필수 query parameter 누락 또는 page 타입 오류",
+                    description = "필수 query parameter 누락, page 타입 오류 또는 type이 TRACK/ALBUM/ARTIST 외 값",
                     content = @Content
             )
     })
@@ -53,6 +57,14 @@ public interface CatalogSearchApi {
                     in = ParameterIn.QUERY,
                     example = "0"
             )
-            int page
+            int page,
+            @Parameter(
+                    name = "type",
+                    description = "선택 검색 타입. 생략하면 통합 검색. 지정 시 items와 totalCount는 해당 타입만 포함",
+                    required = false,
+                    in = ParameterIn.QUERY,
+                    schema = @Schema(allowableValues = {"TRACK", "ALBUM", "ARTIST"})
+            )
+            String type
     );
 }

@@ -101,10 +101,10 @@ public class SpotifyWebClient {
         }
     }
 
-    public SpotifyCatalogSearchInfo searchCatalog(String keyword, int page) {
+    public SpotifyCatalogSearchInfo searchCatalog(String keyword, int page, String spotifyTypes) {
         try {
             SpotifyApi spotifyApi = getSpotifyApi();
-            SearchItemRequest request = spotifyApi.searchItem(keyword, "track,album,artist")
+            SearchItemRequest request = spotifyApi.searchItem(keyword, spotifyTypes)
                     .limit(10)
                     .offset(page * 10)
                     .build();
@@ -113,12 +113,12 @@ public class SpotifyWebClient {
             Paging<AlbumSimplified> albums = result.getAlbums();
             Paging<Artist> artists = result.getArtists();
             return SpotifyCatalogSearchInfo.of(
-                    tracks.getItems(),
-                    albums.getItems(),
-                    artists.getItems(),
-                    tracks.getTotal(),
-                    albums.getTotal(),
-                    artists.getTotal()
+                    tracks == null ? new Track[0] : tracks.getItems(),
+                    albums == null ? new AlbumSimplified[0] : albums.getItems(),
+                    artists == null ? new Artist[0] : artists.getItems(),
+                    tracks == null ? 0 : tracks.getTotal(),
+                    albums == null ? 0 : albums.getTotal(),
+                    artists == null ? 0 : artists.getTotal()
             );
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());

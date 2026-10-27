@@ -2,6 +2,7 @@ package com.tagnote.infrastructure.external.spotify;
 
 import com.tagnote.application.catalog.search.model.CatalogSearchItem;
 import com.tagnote.application.catalog.search.model.CatalogSearchResult;
+import com.tagnote.application.catalog.search.model.CatalogSearchScope;
 import com.tagnote.application.catalog.search.model.CatalogSearchSubjectType;
 import com.tagnote.application.catalog.search.port.CatalogSearchProvider;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
@@ -26,20 +27,36 @@ public class SpotifyCatalogSearchAdapter implements CatalogSearchProvider {
     private final SpotifyWebClient spotifyWebClient;
 
     @Override
-    public CatalogSearchResult search(String keyword, int page) {
-        SpotifyCatalogSearchInfo searchInfo = spotifyWebClient.searchCatalog(keyword, page);
+    public CatalogSearchResult search(String keyword, int page, CatalogSearchScope scope) {
+        SpotifyCatalogSearchInfo searchInfo = spotifyWebClient.searchCatalog(keyword, page, spotifyTypes(scope));
         List<CatalogSearchItem> items = new ArrayList<>();
-        addTracks(items, searchInfo.getTracks());
-        addAlbums(items, searchInfo.getAlbums());
-        addArtists(items, searchInfo.getArtists());
-
-        long totalCount = (long) searchInfo.getTrackTotalCount()
-                + searchInfo.getAlbumTotalCount()
-                + searchInfo.getArtistTotalCount();
+        long totalCount = 0;
+        if (scope == CatalogSearchScope.ALL || scope == CatalogSearchScope.TRACK) {
+            addTracks(items, searchInfo.getTracks());
+            totalCount += searchInfo.getTrackTotalCount();
+        }
+        if (scope == CatalogSearchScope.ALL || scope == CatalogSearchScope.ALBUM) {
+            addAlbums(items, searchInfo.getAlbums());
+            totalCount += searchInfo.getAlbumTotalCount();
+        }
+        if (scope == CatalogSearchScope.ALL || scope == CatalogSearchScope.ARTIST) {
+            addArtists(items, searchInfo.getArtists());
+            totalCount += searchInfo.getArtistTotalCount();
+        }
         return CatalogSearchResult.of(items, totalCount);
     }
 
+    private String spotifyTypes(CatalogSearchScope scope) {
+        return switch (scope) {
+            case ALL -> "track,album,artist";
+            case TRACK -> "track";
+            case ALBUM -> "album";
+            case ARTIST -> "artist";
+        };
+    }
+
     private void addTracks(List<CatalogSearchItem> items, Track[] tracks) {
+        if (tracks == null) return;
         for (int rank = 0; rank < tracks.length; rank++) {
             Track track = tracks[rank];
             AlbumSimplified album = track.getAlbum();
@@ -56,6 +73,7 @@ public class SpotifyCatalogSearchAdapter implements CatalogSearchProvider {
     }
 
     private void addAlbums(List<CatalogSearchItem> items, AlbumSimplified[] albums) {
+        if (albums == null) return;
         for (int rank = 0; rank < albums.length; rank++) {
             AlbumSimplified album = albums[rank];
             items.add(CatalogSearchItem.of(
@@ -71,6 +89,7 @@ public class SpotifyCatalogSearchAdapter implements CatalogSearchProvider {
     }
 
     private void addArtists(List<CatalogSearchItem> items, Artist[] artists) {
+        if (artists == null) return;
         for (int rank = 0; rank < artists.length; rank++) {
             Artist artist = artists[rank];
             items.add(CatalogSearchItem.of(
