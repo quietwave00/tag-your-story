@@ -1,6 +1,6 @@
 # NOTIFICATION-REF-001 — SSE 전달 경계 리팩토링
 
-> 상태: 2026-10-26 Human Review 승인, 구현 코드 및 테스트 작성. 사용자 실행 검증 결과 대기 중.
+> 상태: 2026-10-27 사용자 확인 및 완료 처리. `plans/completed/`로 이동.
 
 ## Goal
 
@@ -150,3 +150,4 @@ SSE 전송과 heartbeat는 DB transaction을 열지 않는다. user status 재�
 - 구현 후 사용자가 `./gradlew test`, `./gradlew check`, `./scripts/verify.sh`를 실행하고 결과를 전달한다. 전달된 결과와 Acceptance Criteria, 리뷰를 확인한 뒤에만 `plans/completed/`로 이동하고 `progress.md`를 갱신한다.
 - 2026-10-26 Human Review 승인으로 `agents/server/plans/active/NOTIFICATION-REF-001.md`에 확정했다. 구현과 자동 검증은 아직 시작하지 않았다.
 - 2026-10-26 구현: Application 전달 port/service와 Infrastructure SSE registry/transport를 추가하고 Controller/Listener 연결을 전환했다. 최소 SSE payload, 연결 상한 5, timeout 30분, heartbeat 25초와 React 재접속 조회를 반영했다. 설정은 기존 `application.yml`에 환경변수 override로 추가했다. 코드·클라이언트 테스트를 작성했으며 자동 검증은 사용자 결과를 기다린다.
+- 2026-10-27 사용자가 확인했고 완료 처리를 요청했다. 이를 수용 기준과 리뷰 완료의 근거로 삼아 Plan을 닫는다. Codex는 Gradle·클라이언트 테스트를 실행하지 않았다. 최종 `test`·`check`·`verify.sh`·클라이언트 테스트의 명령별 출력은 전달되지 않아 각각의 통과 여부는 별도로 확인하지 못했다.

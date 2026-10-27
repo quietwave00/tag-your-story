@@ -1,6 +1,6 @@
 # AUTH-ME-001 — 인증 사용자 닉네임 조회
 
-> 상태: 2026-10-27 사용자 구현 요청으로 승인, 구현·테스트 코드 작성. 사용자 실행 검증 대기.
+> 상태: 2026-10-27 사용자 확인 및 완료 처리. `plans/completed/`로 이동.
 
 ## Goal
 
@@ -28,3 +28,5 @@ Codex는 코드·diff·`git diff --check`만 정적으로 확인한다. 사용�
 2026-10-27 사용자 실행의 `:tagnote-api:compileTestJava`에서 기존 `PrincipalDetails`에 닉네임 생성자·getter가 없어 2건의 컴파일 오류가 발생했다. `PrincipalDetails`에 닉네임을 추가하고 JWT 필터가 DB에서 검증한 현재 닉네임을 전달하도록 수정했다. 재검증 결과를 기다린다.
 
 2026-10-27 사용자 실행의 `:tagnote-api:test`에서 미인증 `/me` 요청 시 `@AuthenticationPrincipal(expression = "nickname")`이 익명 principal에 먼저 적용되어 SpEL 예외가 발생했다. Controller가 `PrincipalDetails`를 직접 받아 인가된 요청에서만 닉네임을 읽도록 수정했다. 재검증 결과를 기다린다.
+
+2026-10-27 사용자가 수정 후 확인했고 완료 처리를 요청했다. 이를 수용 기준과 리뷰 완료의 근거로 삼아 Plan을 닫는다. Codex는 Gradle·클라이언트 테스트를 실행하지 않았다. 최종 `test`·`check`·`verify.sh`·`npm test`의 명령별 출력은 전달되지 않아 각각의 통과 여부는 별도로 확인하지 못했다.
