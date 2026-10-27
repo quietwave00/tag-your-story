@@ -208,6 +208,8 @@ INDEX(user_status)
 
 현재 Google 계정의 `user_key`는 Google `sub` 그대로다. 기존 값과 `user_id`를 유지하고 `provider=GOOGLE`, `subject=user_key`로 backfill한다. `user_key`를 공개 UUID로 재해석하거나 API에 새로 노출하지 않는다. LOCAL 계정은 별도의 내부 `user_key`를 사용한다. 이메일은 서버의 단일 normalizer가 trim 후 `Locale.ROOT` lowercase로 저장·조회하며 점/`+` 별칭을 합치지 않는다. 이메일 일치만으로 Google과 LOCAL 계정을 자동 연결하지 않는다. Google 가입 시 nickname은 자동 생성하며 1~20자다. 기존 pending JWT는 거부하고 Google 재로그인을 안내한다.
 
+인증된 사용자는 `GET /api/user/me`로 자신의 현재 닉네임을 조회할 수 있다. ROLE_USER AccessToken 인증이 필요하며 성공 응답은 `ApiResult.response.nickname` 하나다. Google OAuth redirect는 닉네임을 직접 반환하지 않으므로 클라이언트는 token cookie를 저장한 뒤 이 API로 현재 닉네임을 읽는다. 서버는 인증 필터가 DB에서 확인한 ACTIVE 사용자 principal의 닉네임을 사용한다.
+
 ### User ↔ Board
 
 User에 `boardList` 컬럼을 만들지 않는다.

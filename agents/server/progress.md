@@ -1,6 +1,8 @@
 # Progress
 
-## 현재 진행: NOTIFICATION-REF-001·CATALOG-SEARCH-002 구현, 사용자 검증 대기 (2026-10-27)
+## 현재 진행: AUTH-ME-001·NOTIFICATION-REF-001·CATALOG-SEARCH-002 구현, 사용자 검증 대기 (2026-10-27)
+
+- [AUTH-ME-001](plans/active/AUTH-ME-001.md): 사용자 요청으로 인증된 자신의 닉네임 조회 API와 Google callback 클라이언트 조회를 작성했다. Swagger·클라이언트 계약 문서·관련 테스트를 갱신했으며 사용자 실행 검증 결과를 기다린다.
 
 - [NOTIFICATION-REF-001](plans/active/NOTIFICATION-REF-001.md): 승인된 단일 서버 SSE 전달 경계 리팩토링의 구현 및 관련 테스트 코드를 작성했다. 사용자 실행 `./gradlew test`, `./gradlew check`, `./scripts/verify.sh` 결과와 Acceptance Criteria 검토를 기다리므로 Plan은 active다.
 - [CATALOG-SEARCH-002](plans/active/CATALOG-SEARCH-002.md): 선택적 `type=TRACK|ALBUM|ARTIST` 검색, Spotify 단일 타입 요청, 타입별 결과·total, Swagger·Server Spec·테스트를 작성했다. 기존 통합 검색과 `GET /api/tracks`는 유지한다. 사용자 실행 검증 결과를 기다리므로 Plan은 active다.
