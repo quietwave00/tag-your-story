@@ -19,6 +19,7 @@ import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Album;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.Track;
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
 import se.michaelthelin.spotify.requests.data.search.SearchItemRequest;
 import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
@@ -152,6 +153,32 @@ public class SpotifyWebClient {
     public Artist getDetailArtistInfo(String artistId) {
         try {
             return getSpotifyApi().getArtist(artistId).build().execute();
+        } catch (IOException | ParseException | SpotifyWebApiException e) {
+            log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
+        }
+    }
+
+    public Paging<AlbumSimplified> getArtistAlbums(String artistId, int page) {
+        try {
+            return getSpotifyApi().getArtistsAlbums(artistId)
+                    .limit(10)
+                    .offset(page * 10)
+                    .build()
+                    .execute();
+        } catch (IOException | ParseException | SpotifyWebApiException e) {
+            log.error(e.getMessage());
+            throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);
+        }
+    }
+
+    public Paging<TrackSimplified> getAlbumTracks(String albumId, int page) {
+        try {
+            return getSpotifyApi().getAlbumsTracks(albumId)
+                    .limit(10)
+                    .offset(page * 10)
+                    .build()
+                    .execute();
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error(e.getMessage());
             throw new CustomException(ExceptionCode.SPOTIFY_EXCEPTION);

@@ -2,7 +2,7 @@
 
 ## 현재 진행: CATALOG-DETAIL-001 구현, 사용자 검증 대기 (2026-10-27)
 
-- [CATALOG-DETAIL-001](plans/active/CATALOG-DETAIL-001.md): 사용자 승인에 따라 Album·Artist 공개 상세 조회를 Catalog 경계에 추가했다. 팔로워 수와 클라이언트 소스 변경은 제외했다. Swagger, Server Spec, API 계약 및 관련 테스트를 작성했으며 사용자 실행 검증 결과를 기다린다.
+- [CATALOG-DETAIL-001](plans/active/CATALOG-DETAIL-001.md): 사용자 승인에 따라 Album·Artist 공개 상세 조회와 Artist Album·Album Track 페이지 목록을 Catalog 경계에 추가했다. 팔로워 수와 클라이언트 소스 변경은 제외했다. Swagger, Server Spec, API 계약 및 관련 테스트를 작성했으며 사용자 실행 검증 결과를 기다린다.
 
 - [CATALOG-SEARCH-002](plans/completed/CATALOG-SEARCH-002.md): 선택적 `type=TRACK|ALBUM|ARTIST` 검색, Spotify 단일 타입 요청, 타입별 결과·total, Swagger·Server Spec·테스트를 작성했다. 기존 통합 검색과 `GET /api/tracks`는 유지한다. 2026-10-27 사용자 확인으로 완료 처리했다. Codex는 검증 명령을 실행하지 않았고 명령별 출력은 전달받지 않아 개별 통과 여부는 미확인이다.
 

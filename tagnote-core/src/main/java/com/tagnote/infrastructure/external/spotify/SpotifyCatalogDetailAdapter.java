@@ -1,15 +1,21 @@
 package com.tagnote.infrastructure.external.spotify;
 
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumDetail;
+import com.tagnote.application.catalog.detail.model.SpotifyAlbumSummary;
+import com.tagnote.application.catalog.detail.model.SpotifyAlbumTrack;
 import com.tagnote.application.catalog.detail.model.SpotifyArtistDetail;
+import com.tagnote.application.catalog.detail.model.SpotifyCatalogPage;
 import com.tagnote.application.catalog.detail.port.SpotifyCatalogDetailProvider;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import se.michaelthelin.spotify.model_objects.specification.Album;
+import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Image;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +47,33 @@ public class SpotifyCatalogDetailAdapter implements SpotifyCatalogDetailProvider
         String[] genres = artist.getGenres();
         return new SpotifyArtistDetail(artist.getId(), artist.getName(), imageUrl(artist.getImages()),
                 genres == null ? List.of() : Arrays.asList(genres));
+    }
+
+    @Override
+    public SpotifyCatalogPage<SpotifyAlbumSummary> getArtistAlbums(String spotifyArtistId, int page) {
+        Paging<AlbumSimplified> result = client.getArtistAlbums(spotifyArtistId, page);
+        AlbumSimplified[] albums = result.getItems();
+        List<SpotifyAlbumSummary> items = albums == null ? List.of() : Arrays.stream(albums)
+                .map(album -> new SpotifyAlbumSummary(album.getId(), album.getName(),
+                        imageUrl(album.getImages()), album.getReleaseDate()))
+                .toList();
+        return new SpotifyCatalogPage<>(items, result.getTotal());
+    }
+
+    @Override
+    public SpotifyCatalogPage<SpotifyAlbumTrack> getAlbumTracks(String spotifyAlbumId, int page) {
+        Paging<TrackSimplified> result = client.getAlbumTracks(spotifyAlbumId, page);
+        TrackSimplified[] tracks = result.getItems();
+        List<SpotifyAlbumTrack> items = tracks == null ? List.of() : Arrays.stream(tracks)
+                .map(track -> new SpotifyAlbumTrack(track.getId(), track.getName(),
+                        firstArtistName(track.getArtists()), track.getDiscNumber(),
+                        track.getTrackNumber(), track.getDurationMs()))
+                .toList();
+        return new SpotifyCatalogPage<>(items, result.getTotal());
+    }
+
+    private String firstArtistName(ArtistSimplified[] artists) {
+        return artists == null || artists.length == 0 || artists[0] == null ? null : artists[0].getName();
     }
 
     private String imageUrl(Image[] images) {

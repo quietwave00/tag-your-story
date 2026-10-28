@@ -1211,6 +1211,17 @@ GET /api/catalog/artists/{spotifyArtistId}
 
 조회는 Catalog 저장, DB 조회, 태그 계산 및 enrichment 없이 Spotify 메타데이터만 사용한다. Album Track 목록과 Artist Album 목록은 이 단건 응답에 포함하지 않는다. Spotify 조회 실패는 기존 오류 체계의 `SPOTIFY_EXCEPTION`이며 현재 `CustomExceptionManager` 정책상 HTTP 200, `success=false`, `response.status=503`이다. 기존 `GET /api/tracks/{trackId}` 상세 계약은 유지한다.
 
+### Catalog Artist Album·Album Track 목록
+
+```http
+GET /api/catalog/artists/{spotifyArtistId}/albums?page=0
+GET /api/catalog/albums/{spotifyAlbumId}/tracks?page=0
+```
+
+두 목록 API는 인증 없이 Spotify ID로 조회하며 `page`는 선택적 0-based, 기본값 0, page size 10, Spotify offset `page * 10`이다. 응답은 기존 `ApiResult` envelope 안에 현재 page의 `items`와 Spotify `totalCount`를 둔다. 음수·정수가 아닌 page 또는 offset 계산 범위 초과는 HTTP 400이다. 빈 page는 `items=[]`와 Spotify total을 반환한다.
+
+Artist Album 목록은 Spotify 기본 포함 범위(Album, Single, Compilation, Appears On)와 순서를 유지하고 로컬 필터링·중복 제거를 하지 않는다. 각 item은 `spotifyId`, `title`, `imageUrl`, `releaseDate`를 포함한다. Album Track 목록은 Spotify 디스크·트랙 순서를 유지하고 각 item에 `spotifyId`, `title`, nullable `artistName`, `discNumber`, `trackNumber`, `durationMs`를 포함한다. 이미지가 없으면 `NO_IMAGE`다. 목록 GET도 Catalog 저장, DB 조회, 태그 계산 및 enrichment를 수행하지 않으며 Spotify 장애는 기존 `SPOTIFY_EXCEPTION` 계약을 따른다.
+
 ### Track Import
 
 ```http
