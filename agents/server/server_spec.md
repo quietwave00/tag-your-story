@@ -677,9 +677,13 @@ subjectType과 Spotify ID가 포함된 검색 결과 반환
 
 각 subject type에서 최대 10개씩 같은 page를 조회하므로 응답 후보는 최대 30개다. 정렬은 현재 page 후보 안에서 이름 exact match, prefix match, 이름 유사도, artist 유사도, Spotify 원본 순서를 사용한다. `totalCount`는 세 subject type total의 합이다.
 
-선택적 `type=TRACK|ALBUM|ARTIST`를 지정하면 Spotify에 해당 타입만 요청한다. `items`는 그 타입의 현재 page 후보 최대 10개이고 `totalCount`는 그 타입의 Spotify total이다. `page`는 0-based이며 타입별로 독립적으로 사용한다. 허용되지 않은 type은 HTTP 400이다. type을 생략하면 위 통합 검색 동작을 유지한다.
+선택적 `type=TRACK|ALBUM|ARTIST`를 지정하면 화면 검색과 같은 3-page window를 사용한다(ADR-019/020). Track·Artist는 일반 keyword와 `type=track,artist`, Album은 `q=album:{keyword}`와 `type=album`의 연속 3페이지를 조회한다. 해당 타입 최대 30개 후보의 동일 Spotify ID를 window 안에서 제거하고 기존 정렬 규칙을 적용한다. `items`는 요청한 타입의 현재 page 최대 10개이고 `totalCount`는 첫 window에서 얻은 해당 타입 Spotify total 참고 값이다. Album total은 제목 필터 검색의 total이다. `page`는 타입별 독립 0-based, 허용 범위 0~100이다. 허용되지 않은 type 또는 범위 밖 page는 HTTP 400이다. type을 생략하면 위 기존 통합 검색 동작을 유지한다.
 
 기존 `GET /api/tracks?keyword=&page=` Track 전용 검색은 하위 호환을 위해 유지한다.
+
+검색 결과 화면용 `GET /api/catalog/search/screen?keyword=&trackPage=0&albumPage=0&artistPage=0`은 별도 공개 읽기 API다. 세 page는 각각 선택적 0-based이고 기본값 0, 허용 범위는 0~100이다. 응답 `response.tracks`, `response.albums`, `response.artists`는 각각 `items`(최대 10개), `totalCount`, `hasNext`를 포함한다. 각 item은 기존 Catalog 검색 항목(`subjectType`, `spotifyId`, `title`, nullable `artistName`, nullable `albumName`, `imageUrl`)과 같다. 인증은 필요하지 않다.
+
+화면 검색은 Spotify Search `limit=10`에서 Track·Artist 일반 keyword와 Album `album:` 제목 필터를 각 page offset에 한 번씩 조회해 3-page window의 각 타입 최대 30개 후보를 만든다. cache miss의 Spotify 검색은 최대 6회다. 같은 Spotify ID 중복을 window 안에서 제거하고 기존 이름 exact/prefix/유사도/원본 순서 정렬을 전체 window에 적용한 뒤 선택 page 10개만 응답한다. 같은 keyword와 3-page window의 정렬 결과는 Redis에 5분 보관해 화면의 해당 세 page가 동일한 후보 순서를 사용한다. 이전 일반 Album 검색 cache key는 재사용하지 않는다. 같은 서버 프로세스의 동시 cache miss도 하나의 조회로 합친다. 마지막 window는 offset 1000까지만 조회한다. `totalCount`는 첫 window의 Spotify 응답을 보존하는 참고 값이며, 다음 page 탐색에는 `hasNext`를 사용한다. Album total은 제목 필터 검색의 total이다. window가 정확히 차서 `hasNext=true`여도 다음 window가 비어 있을 수 있으며 그 경우 `items=[]`, `hasNext=false`로 종료한다. 클라이언트는 빈 다음 page를 표시하지 않고 직전 page를 유지해야 한다. page 음수·100 초과·정수 아님은 HTTP 400, Spotify 장애는 기존 `SPOTIFY_EXCEPTION` 응답이다. DB 저장·태그 계산·enrichment·DB transaction은 수행하지 않는다. 타입 생략 Catalog 검색 API의 동작은 유지한다.
 
 ### 13.2 Track 선택 / Import
 
@@ -1198,7 +1202,7 @@ Response:
 
 `subjectType`은 `TRACK`, `ALBUM`, `ARTIST` 중 하나다. Album 결과는 `albumName`, Artist 결과는 `artistName`과 `albumName`이 null이다. 검색 GET은 내부 Catalog 저장이나 enrichment를 실행하지 않는다.
 
-`type`은 선택적이며 생략하면 통합 결과 최대 30개와 세 타입 total 합계를 반환한다. 지정하면 선택 타입 결과 최대 10개와 해당 타입 total만 반환한다. 각 요청은 Spotify Search HTTP 호출 한 번만 수행하며 잘못된 type은 HTTP 400이다.
+`type`은 선택적이며 생략하면 기존 통합 결과 최대 30개와 세 타입 total 합계를 반환한다. 지정하면 ADR-019/020에 따라 3-page window의 해당 타입 후보 최대 30개를 정렬하고 요청 page 최대 10개와 첫 window의 해당 타입 Spotify total 참고 값을 반환한다. Album은 `album:` 제목 필터를 사용한다. cache miss 시 최대 6회 Spotify Search HTTP 호출을 수행하며 잘못된 type 또는 타입별 page 0~100 범위 초과는 HTTP 400이다.
 
 ### Catalog Album·Artist 상세 메타데이터
 

@@ -16,12 +16,16 @@ public class CatalogSearchService {
 
     private final SearchKeywordRecorder searchKeywordRecorder;
     private final CatalogSearchProvider catalogSearchProvider;
+    private final CatalogScreenSearchService screenSearchService;
 
     public CatalogSearchResult search(String keyword, int page) {
         return search(keyword, page, CatalogSearchScope.ALL);
     }
 
     public CatalogSearchResult search(String keyword, int page, CatalogSearchScope scope) {
+        if (scope != CatalogSearchScope.ALL) {
+            return screenSearchService.searchType(keyword, page, scope);
+        }
         searchKeywordRecorder.record(keyword);
         CatalogSearchResult providerResult = catalogSearchProvider.search(keyword, page, scope);
         List<CatalogSearchItem> rankedItems = CatalogSearchRanker.rank(keyword, providerResult.getItems());

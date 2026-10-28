@@ -28,6 +28,9 @@ class CatalogSearchServiceTest {
     @Mock
     private CatalogSearchProvider catalogSearchProvider;
 
+    @Mock
+    private CatalogScreenSearchService screenSearchService;
+
     @InjectMocks
     private CatalogSearchService service;
 
@@ -85,19 +88,18 @@ class CatalogSearchServiceTest {
     }
 
     @Test
-    void 타입별_검색은_선택한_범위를_전달하고_해당_타입의_전체_건수를_유지한다() {
-        when(catalogSearchProvider.search("Queen", 3, CatalogSearchScope.ARTIST))
+    void 타입별_검색은_화면_window_정렬_경계에_위임하고_해당_타입의_전체_건수를_유지한다() {
+        when(screenSearchService.searchType("Queen", 3, CatalogSearchScope.ARTIST))
                 .thenReturn(CatalogSearchResult.of(List.of(
                         item(CatalogSearchSubjectType.ARTIST, "artist-2", "Queen II", null, 0),
                         item(CatalogSearchSubjectType.ARTIST, "artist-1", "Queen", null, 1)), 87L));
 
         CatalogSearchResult result = service.search("Queen", 3, CatalogSearchScope.ARTIST);
 
-        InOrder order = inOrder(searchKeywordRecorder, catalogSearchProvider);
-        order.verify(searchKeywordRecorder).record("Queen");
-        order.verify(catalogSearchProvider).search("Queen", 3, CatalogSearchScope.ARTIST);
+        InOrder order = inOrder(screenSearchService);
+        order.verify(screenSearchService).searchType("Queen", 3, CatalogSearchScope.ARTIST);
         assertThat(result.getItems()).extracting(CatalogSearchItem::getSpotifyId)
-                .containsExactly("artist-1", "artist-2");
+                .containsExactly("artist-2", "artist-1");
         assertThat(result.getTotalCount()).isEqualTo(87L);
     }
 

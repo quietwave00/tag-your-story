@@ -1,5 +1,6 @@
 package com.tagnote.core.common;
 
+import com.tagnote.application.catalog.search.model.CatalogSearchWindow;
 import com.tagnote.core.domain.file.FileEntity;
 import com.tagnote.core.domain.user.service.User;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,8 @@ public enum CacheSpec {
     REFRESH_TOKEN("refreshToken", Duration.ofDays(30L), String.class),
     USER("user", Duration.ofDays(365L), User.class),
     SPOTIFY_ACCESS_TOKEN("spotifyAccessToken", Duration.ofMinutes(30), String.class),
-    FILE("file", Duration.ofDays(365L), FileEntity.class)
+    FILE("file", Duration.ofDays(365L), FileEntity.class),
+    CATALOG_SEARCH_WINDOW("catalogSearchWindow", Duration.ofMinutes(5), CatalogSearchWindow.class)
     ;
 
     private static final String SEPARATOR = ":";

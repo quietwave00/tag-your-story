@@ -1,8 +1,10 @@
 # Progress
 
-## 현재 진행: CATALOG-DETAIL-001 구현, 사용자 검증 대기 (2026-10-27)
+## 현재 진행: 승인된 active Plan 없음 (2026-10-28)
 
-- [CATALOG-DETAIL-001](plans/active/CATALOG-DETAIL-001.md): 사용자 승인에 따라 Album·Artist 공개 상세 조회와 Artist Album·Album Track 페이지 목록을 Catalog 경계에 추가했다. 팔로워 수와 클라이언트 소스 변경은 제외했다. Swagger, Server Spec, API 계약 및 관련 테스트를 작성했으며 사용자 실행 검증 결과를 기다린다.
+- [CATALOG-SEARCH-TITLE-001](plans/completed/CATALOG-SEARCH-TITLE-001.md): Album 후보에 Spotify `album:` 제목 필터를 적용하고 Track·Artist 일반 검색을 유지한다. 화면용·타입별 검색은 같은 window를 사용하며 cache key를 버전 변경했다. ADR-020, Swagger, Server Spec, API 계약 및 관련 테스트를 갱신했다. 2026-10-28 사용자 결과 검증과 완료 요청으로 completed 처리했다. Codex는 Gradle·verify.sh를 실행하지 않았고 명령별 출력은 전달받지 않아 개별 통과 여부는 미확인이다.
+
+- [CATALOG-DETAIL-001](plans/completed/CATALOG-DETAIL-001.md): Album·Artist 상세와 하위 목록, 화면용 통합 검색 응답 및 기존 타입별 검색의 3-page window 연결을 구현했다(ADR-018/019). 2026-10-28 사용자 확인으로 완료 처리했다. Codex는 Gradle·verify.sh를 실행하지 않았고 명령별 출력은 전달받지 않아 개별 통과 여부는 미확인이다. slug 작업 요청은 사용자 지시에 따라 일시 중지했다.
 
 - [CATALOG-SEARCH-002](plans/completed/CATALOG-SEARCH-002.md): 선택적 `type=TRACK|ALBUM|ARTIST` 검색, Spotify 단일 타입 요청, 타입별 결과·total, Swagger·Server Spec·테스트를 작성했다. 기존 통합 검색과 `GET /api/tracks`는 유지한다. 2026-10-27 사용자 확인으로 완료 처리했다. Codex는 검증 명령을 실행하지 않았고 명령별 출력은 전달받지 않아 개별 통과 여부는 미확인이다.
 

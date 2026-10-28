@@ -19,13 +19,14 @@ public interface CatalogSearchApi {
             summary = "Catalog 통합·타입별 검색",
             description = "GET /api/catalog/search. 인증 불필요. type 생략 시 Spotify Track, Album, Artist를 함께 검색하고 "
                     + "각 타입에서 최대 10개씩 현재 page 후보를 통합 정렬한다. type=TRACK|ALBUM|ARTIST 지정 시 "
-                    + "해당 Spotify 타입만 검색하고 page당 최대 10개를 그 타입 안에서 정렬한다. "
+                    + "화면과 동일한 3-page window에서 해당 타입 최대 30개 후보를 정렬하고 page당 최대 10개를 반환한다. "
+                    + "window의 Album 후보에는 Spotify album: 제목 필터를 적용하고 Track·Artist는 일반 keyword로 검색한다. "
                     + "검색만 수행하며 Catalog 저장이나 태그 계산은 하지 않는다."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "검색 성공. type 생략 시 totalCount는 세 타입 total 합계, type 지정 시 해당 타입 total. "
+                    description = "검색 성공. type 생략 시 totalCount는 세 타입 total 합계, type 지정 시 첫 window의 해당 타입 Spotify total을 참고 값으로 반환. "
                             + "Spotify 장애는 기존 정책에 따라 HTTP 200의 success=false, response.exceptionCode=SPOTIFY_EXCEPTION, response.status=503으로 반환",
                     useReturnTypeSchema = true,
                     content = @Content(examples = @ExampleObject(
@@ -37,7 +38,7 @@ public interface CatalogSearchApi {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "필수 query parameter 누락, page 타입 오류 또는 type이 TRACK/ALBUM/ARTIST 외 값",
+                    description = "필수 query parameter 누락, page 타입 오류, 타입별 page가 0~100 범위 밖 또는 type이 TRACK/ALBUM/ARTIST 외 값",
                     content = @Content
             )
     })
@@ -52,7 +53,7 @@ public interface CatalogSearchApi {
             String keyword,
             @Parameter(
                     name = "page",
-                    description = "0-based page. 각 subject type의 페이지 크기는 10이며 응답 items는 최대 30개",
+                    description = "0-based page. type 지정 시 허용 범위 0~100, page size 10. type 생략 시 기존 통합 검색 동작",
                     required = true,
                     in = ParameterIn.QUERY,
                     example = "0"
@@ -60,7 +61,7 @@ public interface CatalogSearchApi {
             int page,
             @Parameter(
                     name = "type",
-                    description = "선택 검색 타입. 생략하면 통합 검색. 지정 시 items와 totalCount는 해당 타입만 포함",
+                    description = "선택 검색 타입. 생략하면 기존 통합 검색. 지정 시 3-page window를 정렬하고 해당 타입의 items와 totalCount만 반환",
                     required = false,
                     in = ParameterIn.QUERY,
                     schema = @Schema(allowableValues = {"TRACK", "ALBUM", "ARTIST"})

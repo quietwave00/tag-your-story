@@ -4,6 +4,7 @@ import com.tagnote.application.catalog.search.model.CatalogSearchItem;
 import com.tagnote.application.catalog.search.model.CatalogSearchResult;
 import com.tagnote.application.catalog.search.model.CatalogSearchScope;
 import com.tagnote.application.catalog.search.model.CatalogSearchSubjectType;
+import com.tagnote.application.catalog.search.model.CatalogSearchWindow;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
 import com.tagnote.core.domain.tracks.webclient.dto.SpotifyCatalogSearchInfo;
 import org.junit.jupiter.api.Test;
@@ -105,6 +106,50 @@ class SpotifyCatalogSearchAdapterTest {
         assertThat(result.getItems()).extracting(CatalogSearchItem::getSubjectType)
                 .containsExactly(CatalogSearchSubjectType.ARTIST);
         assertThat(result.getTotalCount()).isEqualTo(79L);
+    }
+
+    @Test
+    void 화면_window는_일반_곡_가수와_제목_필터_앨범을_각각_조회한다() {
+        Track first = track("track-1", "First", "Band", "Album", "image");
+        Track third = track("track-3", "Exact", "Band", "Album", "image");
+        AlbumSimplified album = album("album-2", "Album", "Band", "image");
+        Artist artist = artist("artist-3", "Band", "image");
+        when(spotifyWebClient.searchCatalog("Exact", 0, "track,artist"))
+                .thenReturn(SpotifyCatalogSearchInfo.of(new Track[]{first}, null,
+                        new Artist[0], 100, 999, 5));
+        when(spotifyWebClient.searchCatalog("album:Exact", 0, "album"))
+                .thenReturn(SpotifyCatalogSearchInfo.of(null, new AlbumSimplified[0],
+                        null, 0, 20, 0));
+        when(spotifyWebClient.searchCatalog("Exact", 1, "track,artist"))
+                .thenReturn(SpotifyCatalogSearchInfo.of(new Track[0], null,
+                        new Artist[0], 101, 999, 6));
+        when(spotifyWebClient.searchCatalog("album:Exact", 1, "album"))
+                .thenReturn(SpotifyCatalogSearchInfo.of(null, new AlbumSimplified[]{album},
+                        null, 0, 21, 0));
+        when(spotifyWebClient.searchCatalog("Exact", 2, "track,artist"))
+                .thenReturn(SpotifyCatalogSearchInfo.of(new Track[]{third}, null,
+                        new Artist[]{artist}, 102, 999, 7));
+        when(spotifyWebClient.searchCatalog("album:Exact", 2, "album"))
+                .thenReturn(SpotifyCatalogSearchInfo.of(null, new AlbumSimplified[0],
+                        null, 0, 22, 0));
+
+        CatalogSearchWindow window = adapter.searchWindow("Exact", 0, 3);
+
+        assertThat(window.tracks()).extracting(CatalogSearchItem::getSpotifyId)
+                .containsExactly("track-1", "track-3");
+        assertThat(window.tracks()).extracting(CatalogSearchItem::getProviderRank)
+                .containsExactly(0, 20);
+        assertThat(window.albums()).extracting(CatalogSearchItem::getSpotifyId).containsExactly("album-2");
+        assertThat(window.artists()).extracting(CatalogSearchItem::getSpotifyId).containsExactly("artist-3");
+        assertThat(window.trackTotalCount()).isEqualTo(100);
+        assertThat(window.albumTotalCount()).isEqualTo(20);
+        assertThat(window.artistTotalCount()).isEqualTo(5);
+        verify(spotifyWebClient).searchCatalog("Exact", 0, "track,artist");
+        verify(spotifyWebClient).searchCatalog("album:Exact", 0, "album");
+        verify(spotifyWebClient).searchCatalog("Exact", 1, "track,artist");
+        verify(spotifyWebClient).searchCatalog("album:Exact", 1, "album");
+        verify(spotifyWebClient).searchCatalog("Exact", 2, "track,artist");
+        verify(spotifyWebClient).searchCatalog("album:Exact", 2, "album");
     }
 
     private Track track(String id, String title, String artistName, String albumName, String imageUrl) {

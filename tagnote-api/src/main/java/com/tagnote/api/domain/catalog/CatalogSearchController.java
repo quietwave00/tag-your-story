@@ -2,6 +2,7 @@ package com.tagnote.api.domain.catalog;
 
 import com.tagnote.api.domain.catalog.dto.response.CatalogSearchResponse;
 import com.tagnote.application.catalog.search.CatalogSearchService;
+import com.tagnote.application.catalog.search.CatalogScreenSearchService;
 import com.tagnote.application.catalog.search.model.CatalogSearchResult;
 import com.tagnote.application.catalog.search.model.CatalogSearchScope;
 import com.tagnote.application.catalog.search.model.CatalogSearchSubjectType;
@@ -30,6 +31,9 @@ public class CatalogSearchController implements CatalogSearchApi {
             @RequestParam(value = "type", required = false) String type
     ) {
         CatalogSearchScope scope = searchScope(type);
+        if (scope != CatalogSearchScope.ALL && (page < 0 || page > CatalogScreenSearchService.MAX_PAGE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page must be between 0 and 100");
+        }
         CatalogSearchResult result = catalogSearchService.search(keyword, page, scope);
         return ApiUtils.success(CatalogSearchResponse.from(result));
     }

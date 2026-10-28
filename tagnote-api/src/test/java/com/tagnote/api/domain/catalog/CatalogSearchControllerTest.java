@@ -105,4 +105,14 @@ class CatalogSearchControllerTest {
                         .param("keyword", "Queen").param("page", "0").param("type", ""))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void 타입별_검색은_Spotify_offset_범위를_벗어난_페이지를_차단한다() throws Exception {
+        mockMvc.perform(get("/api/catalog/search")
+                        .param("keyword", "in love").param("page", "-1").param("type", "TRACK"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/catalog/search")
+                        .param("keyword", "in love").param("page", "101").param("type", "TRACK"))
+                .andExpect(status().isBadRequest());
+    }
 }
