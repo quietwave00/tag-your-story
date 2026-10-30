@@ -151,8 +151,8 @@ class TrackControllerTest {
     }
 
     @Test
-    void GET_api_tracks_trackId는_TrackData_shape를_그대로_반환한다() throws Exception {
-        when(trackService.getDetail("track-1")).thenReturn(TrackData.of("track-1", "artist", "title", "album", "image"));
+    void 트랙_상세는_기존_필드와_아티스트_앨범_ID를_함께_반환한다() throws Exception {
+        when(trackService.getDetail("track-1")).thenReturn(TrackData.of("track-1", "artist", "title", "album", "image", "spotify-artist-1", "spotify-album-1"));
 
         mockMvc.perform(get("/api/tracks/{trackId}", "track-1"))
                 .andExpect(status().isOk())
@@ -161,6 +161,8 @@ class TrackControllerTest {
                 .andExpect(jsonPath("$.response.artistName").value("artist"))
                 .andExpect(jsonPath("$.response.title").value("title"))
                 .andExpect(jsonPath("$.response.albumName").value("album"))
+                .andExpect(jsonPath("$.response.spotifyArtistId").value("spotify-artist-1"))
+                .andExpect(jsonPath("$.response.spotifyAlbumId").value("spotify-album-1"))
                 .andExpect(jsonPath("$.response.imageUrl").value("image"));
     }
 

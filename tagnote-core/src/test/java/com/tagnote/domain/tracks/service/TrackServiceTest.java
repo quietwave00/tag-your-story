@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +35,7 @@ class TrackServiceTest {
     private TrackService trackService;
 
     @Test
-    void getDetail은_album_image가_없으면_NO_IMAGE를_쓴다() {
+    void 앨범_이미지가_없으면_기본_이미지_값을_반환한다() {
         Track noImageTrack = track("track-1", "artist-1", "title-1", "album-1");
         when(spotifyWebClient.getDetailTrackInfo("track-1")).thenReturn(noImageTrack);
 
@@ -44,7 +45,7 @@ class TrackServiceTest {
     }
 
     @Test
-    void getDetail은_Spotify단건결과를_TrackData로_매핑한다() {
+    void 트랙_상세는_같은_Spotify_응답의_아티스트와_앨범_ID를_반환한다() {
         Track track = track("track-1", "artist-1", "title-1", "album-1", "image-1");
         when(spotifyWebClient.getDetailTrackInfo("track-1")).thenReturn(track);
 
@@ -52,9 +53,12 @@ class TrackServiceTest {
 
         assertThat(result.getTrackId()).isEqualTo("track-1");
         assertThat(result.getArtistName()).isEqualTo("artist-1");
+        assertThat(result.getSpotifyArtistId()).isEqualTo("spotify-artist-1");
         assertThat(result.getTitle()).isEqualTo("title-1");
         assertThat(result.getAlbumName()).isEqualTo("album-1");
+        assertThat(result.getSpotifyAlbumId()).isEqualTo("spotify-album-1");
         assertThat(result.getImageUrl()).isEqualTo("image-1");
+        verify(spotifyWebClient).getDetailTrackInfo("track-1");
     }
 
     @Test
@@ -76,8 +80,10 @@ class TrackServiceTest {
         when(track.getName()).thenReturn(title);
         when(track.getArtists()).thenReturn(new ArtistSimplified[]{artist});
         when(artist.getName()).thenReturn(artistName);
+        when(artist.getId()).thenReturn("spotify-artist-1");
         when(track.getAlbum()).thenReturn(album);
         when(album.getName()).thenReturn(albumName);
+        when(album.getId()).thenReturn("spotify-album-1");
         when(album.getImages()).thenReturn(new Image[]{image});
         when(image.getUrl()).thenReturn(imageUrl);
         return track;
@@ -92,8 +98,10 @@ class TrackServiceTest {
         when(track.getName()).thenReturn(title);
         when(track.getArtists()).thenReturn(new ArtistSimplified[]{artist});
         when(artist.getName()).thenReturn(artistName);
+        when(artist.getId()).thenReturn("spotify-artist-1");
         when(track.getAlbum()).thenReturn(album);
         when(album.getName()).thenReturn(albumName);
+        when(album.getId()).thenReturn("spotify-album-1");
         when(album.getImages()).thenReturn(new Image[0]);
         return track;
     }

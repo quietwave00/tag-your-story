@@ -26,7 +26,7 @@ public class RedisSearchKeywordTracker implements SearchKeywordRecorder, SearchK
     public List<String> getTopSearchKeywordList() {
         Set<ZSetOperations.TypedTuple<String>> typedTupleSet = redisTemplate
                 .opsForZSet()
-                .reverseRangeWithScores(SEARCH_KEYWORD, 0, 4);
+                .reverseRangeWithScores(SEARCH_KEYWORD, 0, 9);
 
         return typedTupleSet.stream()
                 .map(ZSetOperations.TypedTuple::getValue)

@@ -4,7 +4,7 @@ import com.tagnote.api.domain.tracks.dto.response.RankingListResponse;
 import com.tagnote.api.domain.tracks.dto.response.SearchTracksResponse;
 import com.tagnote.api.domain.tracks.dto.request.ImportTrackRequest;
 import com.tagnote.api.domain.tracks.dto.response.CatalogTrackResponse;
-import com.tagnote.core.domain.tracks.service.dto.TrackData;
+import com.tagnote.api.domain.tracks.dto.response.DetailTrackResponse;
 import com.tagnote.core.utils.api.ApiResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -105,7 +105,7 @@ public interface TrackApi {
 
     @Operation(
             summary = "트랙 상세 조회",
-            description = "Spotify track id로 트랙 상세 정보를 조회"
+            description = "인증 불필요. Spotify track id로 트랙 상세 정보를 조회한다. 표시하는 첫 번째 Artist와 Album의 Spotify ID를 함께 반환해 각 상세 화면으로 이동할 수 있다."
     )
     @ApiResponses({
             @ApiResponse(
@@ -121,7 +121,7 @@ public interface TrackApi {
                     ))
             )
     })
-    ApiResult<TrackData> getDetail(
+    ApiResult<DetailTrackResponse> getDetail(
             @Parameter(
                     name = "trackId",
                     description = "Spotify track id",
@@ -134,7 +134,7 @@ public interface TrackApi {
 
     @Operation(
             summary = "검색어 랭킹 조회",
-            description = "검색 횟수 기준 상위 5개 키워드를 조회"
+            description = "인증 불필요. 검색 횟수 기준 상위 10개 키워드를 조회"
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "검색어 랭킹 조회 성공", useReturnTypeSchema = true),

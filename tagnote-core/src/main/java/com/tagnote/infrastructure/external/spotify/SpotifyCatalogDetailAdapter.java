@@ -1,5 +1,6 @@
 package com.tagnote.infrastructure.external.spotify;
 
+import com.tagnote.application.catalog.detail.model.CatalogReleaseType;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumDetail;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumSummary;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumTrack;
@@ -7,6 +8,7 @@ import com.tagnote.application.catalog.detail.model.SpotifyArtistDetail;
 import com.tagnote.application.catalog.detail.model.SpotifyCatalogPage;
 import com.tagnote.application.catalog.detail.port.SpotifyCatalogDetailProvider;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
+import com.tagnote.core.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import se.michaelthelin.spotify.model_objects.specification.Album;
@@ -25,6 +27,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class SpotifyCatalogDetailAdapter implements SpotifyCatalogDetailProvider {
     private static final String NO_IMAGE = "NO_IMAGE";
+    private static final int TRACK_PAGE_SIZE = 10;
 
     private final SpotifyWebClient client;
 
@@ -37,8 +40,12 @@ public class SpotifyCatalogDetailAdapter implements SpotifyCatalogDetailProvider
                 .map(artist -> new SpotifyAlbumDetail.ArtistCredit(artist.getId(), artist.getName()))
                 .toList();
         var tracks = album.getTracks();
+        Integer totalTracks = tracks == null ? null : tracks.getTotal();
+        String albumType = album.getAlbumType() == null ? null : album.getAlbumType().toString();
+        Long observedDurationMs = "album".equalsIgnoreCase(albumType) && totalTracks != null && totalTracks > 6
+                ? observedDurationMs(spotifyAlbumId, tracks, totalTracks) : null;
         return new SpotifyAlbumDetail(album.getId(), album.getName(), imageUrl(album.getImages()),
-                album.getReleaseDate(), tracks == null ? null : tracks.getTotal(), artists);
+                album.getReleaseDate(), totalTracks, artists, albumType, observedDurationMs);
     }
 
     @Override
@@ -55,9 +62,28 @@ public class SpotifyCatalogDetailAdapter implements SpotifyCatalogDetailProvider
         AlbumSimplified[] albums = result.getItems();
         List<SpotifyAlbumSummary> items = albums == null ? List.of() : Arrays.stream(albums)
                 .map(album -> new SpotifyAlbumSummary(album.getId(), album.getName(),
-                        imageUrl(album.getImages()), album.getReleaseDate()))
+                        imageUrl(album.getImages()), album.getReleaseDate(), artistAlbumReleaseType(album)))
                 .toList();
         return new SpotifyCatalogPage<>(items, result.getTotal());
+    }
+
+    private CatalogReleaseType artistAlbumReleaseType(AlbumSimplified album) {
+        String albumType = album.getAlbumType() == null ? null : album.getAlbumType().toString();
+        if (!"album".equalsIgnoreCase(albumType)) {
+            return CatalogReleaseType.classify(albumType, null, null);
+        }
+        try {
+            Paging<TrackSimplified> tracks = client.getAlbumTracks(album.getId(), 0);
+            if (tracks == null) {
+                return null;
+            }
+            Integer totalTracks = tracks.getTotal();
+            Long durationMs = totalTracks != null && totalTracks > 6
+                    ? observedDurationMs(album.getId(), tracks, totalTracks) : null;
+            return CatalogReleaseType.classify(albumType, totalTracks, durationMs);
+        } catch (CustomException e) {
+            return null;
+        }
     }
 
     @Override
@@ -74,6 +100,67 @@ public class SpotifyCatalogDetailAdapter implements SpotifyCatalogDetailProvider
 
     private String firstArtistName(ArtistSimplified[] artists) {
         return artists == null || artists.length == 0 || artists[0] == null ? null : artists[0].getName();
+    }
+
+    private Long observedDurationMs(String albumId, Paging<TrackSimplified> initialPage, int totalTracks) {
+        TrackSimplified[] initial = initialPage.getItems();
+        int processed = 0;
+        long durationMs = 0;
+        if (initial != null && initial.length <= totalTracks
+                && (initial.length == totalTracks || initial.length % TRACK_PAGE_SIZE == 0)) {
+            Long initialDuration = sumDuration(initial);
+            if (initialDuration == null) {
+                return null;
+            }
+            durationMs = initialDuration;
+            processed = initial.length;
+            if (durationMs >= CatalogReleaseType.THIRTY_MINUTES_MS) {
+                return durationMs;
+            }
+        }
+        for (int page = processed / TRACK_PAGE_SIZE; processed < totalTracks; page++) {
+            TrackSimplified[] items;
+            try {
+                Paging<TrackSimplified> extraPage = client.getAlbumTracks(albumId, page);
+                if (extraPage == null) {
+                    return null;
+                }
+                items = extraPage.getItems();
+            } catch (CustomException e) {
+                return null;
+            }
+            if (items == null || items.length == 0 || processed + items.length > totalTracks) {
+                return null;
+            }
+            Long pageDuration = sumDuration(items);
+            if (pageDuration == null) {
+                return null;
+            }
+            durationMs += pageDuration;
+            processed += items.length;
+            if (durationMs >= CatalogReleaseType.THIRTY_MINUTES_MS) {
+                return durationMs;
+            }
+        }
+        return durationMs;
+    }
+
+    private Long sumDuration(TrackSimplified[] tracks) {
+        long durationMs = 0;
+        for (TrackSimplified track : tracks) {
+            if (track == null) {
+                return null;
+            }
+            Integer trackDurationMs = track.getDurationMs();
+            if (trackDurationMs == null || trackDurationMs <= 0) {
+                return null;
+            }
+            durationMs += trackDurationMs;
+            if (durationMs >= CatalogReleaseType.THIRTY_MINUTES_MS) {
+                return durationMs;
+            }
+        }
+        return durationMs;
     }
 
     private String imageUrl(Image[] images) {

@@ -1,16 +1,20 @@
 package com.tagnote.infrastructure.external.spotify;
 
+import com.tagnote.application.catalog.detail.model.CatalogReleaseType;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumDetail;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumSummary;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumTrack;
 import com.tagnote.application.catalog.detail.model.SpotifyArtistDetail;
 import com.tagnote.application.catalog.detail.model.SpotifyCatalogPage;
 import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
+import com.tagnote.core.exception.CustomException;
+import com.tagnote.core.exception.ExceptionCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import se.michaelthelin.spotify.enums.AlbumType;
 import se.michaelthelin.spotify.model_objects.specification.Album;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
@@ -19,8 +23,11 @@ import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,8 +51,14 @@ class SpotifyCatalogDetailAdapterTest {
         when(album.getId()).thenReturn("album-1");
         when(album.getName()).thenReturn("Album");
         when(album.getReleaseDate()).thenReturn("2024-03-15");
+        when(album.getAlbumType()).thenReturn(AlbumType.ALBUM);
         when(album.getTracks()).thenReturn(tracks);
         when(tracks.getTotal()).thenReturn(12);
+        TrackSimplified track = mock(TrackSimplified.class);
+        when(track.getDurationMs()).thenReturn(150_000);
+        TrackSimplified[] albumTracks = new TrackSimplified[12];
+        Arrays.fill(albumTracks, track);
+        when(tracks.getItems()).thenReturn(albumTracks);
         when(album.getArtists()).thenReturn(new ArtistSimplified[]{first, second});
         when(album.getImages()).thenReturn(new Image[]{image});
         when(image.getUrl()).thenReturn("cover-url");
@@ -57,9 +70,62 @@ class SpotifyCatalogDetailAdapterTest {
         assertThat(detail.imageUrl()).isEqualTo("cover-url");
         assertThat(detail.releaseDate()).isEqualTo("2024-03-15");
         assertThat(detail.totalTracks()).isEqualTo(12);
+        assertThat(detail.releaseType()).isEqualTo(CatalogReleaseType.ALBUM);
         assertThat(detail.artists()).extracting(SpotifyAlbumDetail.ArtistCredit::spotifyId)
                 .containsExactly("first", "second");
         verify(client).getDetailAlbumInfo("album-1");
+        verify(client, never()).getAlbumTracks(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    void 앨범_상세는_스포티파이_트랙_추가_페이지까지_합산해_삼십_분_미만을_분류한다() {
+        Album album = mock(Album.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> firstPage = mock(Paging.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> lastPage = mock(Paging.class);
+        TrackSimplified shortTrack = mock(TrackSimplified.class);
+        TrackSimplified lastTrack = mock(TrackSimplified.class);
+        TrackSimplified[] firstTracks = new TrackSimplified[20];
+        Arrays.fill(firstTracks, shortTrack);
+        when(shortTrack.getDurationMs()).thenReturn(60_000);
+        when(lastTrack.getDurationMs()).thenReturn(120_000);
+        when(client.getDetailAlbumInfo("album-3")).thenReturn(album);
+        when(album.getAlbumType()).thenReturn(AlbumType.ALBUM);
+        when(album.getTracks()).thenReturn(firstPage);
+        when(firstPage.getTotal()).thenReturn(21);
+        when(firstPage.getItems()).thenReturn(firstTracks);
+        when(client.getAlbumTracks("album-3", 2)).thenReturn(lastPage);
+        when(lastPage.getItems()).thenReturn(new TrackSimplified[]{lastTrack});
+
+        SpotifyAlbumDetail detail = adapter.getAlbum("album-3");
+
+        assertThat(detail.releaseType()).isEqualTo(CatalogReleaseType.SINGLE_EP);
+        verify(client).getAlbumTracks("album-3", 2);
+    }
+
+    @Test
+    void 분류용_추가_트랙_조회가_실패해도_앨범_상세는_반환한다() {
+        Album album = mock(Album.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> firstPage = mock(Paging.class);
+        TrackSimplified shortTrack = mock(TrackSimplified.class);
+        TrackSimplified[] firstTracks = new TrackSimplified[20];
+        Arrays.fill(firstTracks, shortTrack);
+        when(shortTrack.getDurationMs()).thenReturn(60_000);
+        when(client.getDetailAlbumInfo("album-4")).thenReturn(album);
+        when(album.getId()).thenReturn("album-4");
+        when(album.getAlbumType()).thenReturn(AlbumType.ALBUM);
+        when(album.getTracks()).thenReturn(firstPage);
+        when(firstPage.getTotal()).thenReturn(21);
+        when(firstPage.getItems()).thenReturn(firstTracks);
+        when(client.getAlbumTracks("album-4", 2))
+                .thenThrow(new CustomException(ExceptionCode.SPOTIFY_EXCEPTION));
+
+        SpotifyAlbumDetail detail = adapter.getAlbum("album-4");
+
+        assertThat(detail.spotifyId()).isEqualTo("album-4");
+        assertThat(detail.releaseType()).isNull();
     }
 
     @Test
@@ -118,11 +184,13 @@ class SpotifyCatalogDetailAdapterTest {
         when(first.getId()).thenReturn("album-1");
         when(first.getName()).thenReturn("First");
         when(first.getReleaseDate()).thenReturn("2020");
+        when(first.getAlbumType()).thenReturn(AlbumType.SINGLE);
         when(first.getImages()).thenReturn(new Image[]{image});
         when(image.getUrl()).thenReturn("cover");
         when(second.getId()).thenReturn("album-2");
         when(second.getName()).thenReturn("Second");
         when(second.getImages()).thenReturn(new Image[0]);
+        when(second.getAlbumType()).thenReturn(AlbumType.COMPILATION);
 
         SpotifyCatalogPage<SpotifyAlbumSummary> result = adapter.getArtistAlbums("artist-1", 2);
 
@@ -131,8 +199,124 @@ class SpotifyCatalogDetailAdapterTest {
         assertThat(result.items().get(0).releaseDate()).isEqualTo("2020");
         assertThat(result.items().get(0).imageUrl()).isEqualTo("cover");
         assertThat(result.items().get(1).imageUrl()).isEqualTo("NO_IMAGE");
+        assertThat(result.items()).extracting(SpotifyAlbumSummary::releaseType)
+                .containsExactly(CatalogReleaseType.SINGLE_EP, CatalogReleaseType.COMPILATION);
         assertThat(result.totalCount()).isEqualTo(27);
         verify(client).getArtistAlbums("artist-1", 2);
+        verify(client, never()).getAlbumTracks("album-1", 0);
+        verify(client, never()).getAlbumTracks("album-2", 0);
+    }
+
+    @Test
+    void 아티스트_앨범_목록은_여섯_곡_이하를_추가_페이지_없이_싱글_EP로_분류한다() {
+        @SuppressWarnings("unchecked")
+        Paging<AlbumSimplified> albums = mock(Paging.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> tracks = mock(Paging.class);
+        AlbumSimplified album = mock(AlbumSimplified.class);
+        when(client.getArtistAlbums("artist-1", 0)).thenReturn(albums);
+        when(albums.getItems()).thenReturn(new AlbumSimplified[]{album});
+        when(album.getId()).thenReturn("album-1");
+        when(album.getAlbumType()).thenReturn(AlbumType.ALBUM);
+        when(client.getAlbumTracks("album-1", 0)).thenReturn(tracks);
+        when(tracks.getTotal()).thenReturn(6);
+
+        SpotifyCatalogPage<SpotifyAlbumSummary> result = adapter.getArtistAlbums("artist-1", 0);
+
+        assertThat(result.items().get(0).releaseType()).isEqualTo(CatalogReleaseType.SINGLE_EP);
+        verify(client, never()).getAlbumTracks("album-1", 1);
+    }
+
+    @Test
+    void 아티스트_앨범_목록은_일곱_곡_이상의_재생_시간으로_유형을_분류한다() {
+        @SuppressWarnings("unchecked")
+        Paging<AlbumSimplified> albums = mock(Paging.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> shortTracks = mock(Paging.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> longTracks = mock(Paging.class);
+        AlbumSimplified shortAlbum = mock(AlbumSimplified.class);
+        AlbumSimplified longAlbum = mock(AlbumSimplified.class);
+        TrackSimplified shortTrack = mock(TrackSimplified.class);
+        TrackSimplified longTrack = mock(TrackSimplified.class);
+        when(client.getArtistAlbums("artist-1", 0)).thenReturn(albums);
+        when(albums.getItems()).thenReturn(new AlbumSimplified[]{shortAlbum, longAlbum});
+        when(shortAlbum.getId()).thenReturn("short");
+        when(shortAlbum.getAlbumType()).thenReturn(AlbumType.ALBUM);
+        when(longAlbum.getId()).thenReturn("long");
+        when(longAlbum.getAlbumType()).thenReturn(AlbumType.ALBUM);
+        when(client.getAlbumTracks("short", 0)).thenReturn(shortTracks);
+        when(client.getAlbumTracks("long", 0)).thenReturn(longTracks);
+        when(shortTracks.getTotal()).thenReturn(7);
+        when(longTracks.getTotal()).thenReturn(10);
+        when(shortTrack.getDurationMs()).thenReturn(200_000);
+        when(longTrack.getDurationMs()).thenReturn(180_000);
+        TrackSimplified[] seven = new TrackSimplified[7];
+        TrackSimplified[] ten = new TrackSimplified[10];
+        Arrays.fill(seven, shortTrack);
+        Arrays.fill(ten, longTrack);
+        when(shortTracks.getItems()).thenReturn(seven);
+        when(longTracks.getItems()).thenReturn(ten);
+
+        SpotifyCatalogPage<SpotifyAlbumSummary> result = adapter.getArtistAlbums("artist-1", 0);
+
+        assertThat(result.items()).extracting(SpotifyAlbumSummary::releaseType)
+                .containsExactly(CatalogReleaseType.SINGLE_EP, CatalogReleaseType.ALBUM);
+        verify(client, never()).getAlbumTracks("short", 1);
+        verify(client, never()).getAlbumTracks("long", 1);
+    }
+
+    @Test
+    void 아티스트_앨범_목록은_한_앨범의_트랙_조회가_실패해도_나머지를_반환한다() {
+        @SuppressWarnings("unchecked")
+        Paging<AlbumSimplified> albums = mock(Paging.class);
+        AlbumSimplified failed = mock(AlbumSimplified.class);
+        AlbumSimplified single = mock(AlbumSimplified.class);
+        when(client.getArtistAlbums("artist-1", 0)).thenReturn(albums);
+        when(albums.getItems()).thenReturn(new AlbumSimplified[]{failed, single});
+        when(failed.getId()).thenReturn("failed");
+        when(failed.getAlbumType()).thenReturn(AlbumType.ALBUM);
+        when(single.getAlbumType()).thenReturn(AlbumType.SINGLE);
+        when(client.getAlbumTracks("failed", 0))
+                .thenThrow(new CustomException(ExceptionCode.SPOTIFY_EXCEPTION));
+
+        SpotifyCatalogPage<SpotifyAlbumSummary> result = adapter.getArtistAlbums("artist-1", 0);
+
+        assertThat(result.items()).extracting(SpotifyAlbumSummary::releaseType)
+                .containsExactly(null, CatalogReleaseType.SINGLE_EP);
+        assertThat(result.items()).hasSize(2);
+    }
+
+    @Test
+    void 아티스트_앨범_목록은_필요한_추가_트랙_페이지까지_합산한다() {
+        @SuppressWarnings("unchecked")
+        Paging<AlbumSimplified> albums = mock(Paging.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> firstPage = mock(Paging.class);
+        @SuppressWarnings("unchecked")
+        Paging<TrackSimplified> secondPage = mock(Paging.class);
+        AlbumSimplified album = mock(AlbumSimplified.class);
+        TrackSimplified track = mock(TrackSimplified.class);
+        when(client.getArtistAlbums("artist-1", 0)).thenReturn(albums);
+        when(albums.getItems()).thenReturn(new AlbumSimplified[]{album});
+        when(album.getId()).thenReturn("album-1");
+        when(album.getAlbumType()).thenReturn(AlbumType.ALBUM);
+        when(client.getAlbumTracks("album-1", 0)).thenReturn(firstPage);
+        when(client.getAlbumTracks("album-1", 1)).thenReturn(secondPage);
+        when(firstPage.getTotal()).thenReturn(15);
+        when(track.getDurationMs()).thenReturn(100_000);
+        TrackSimplified[] firstTen = new TrackSimplified[10];
+        TrackSimplified[] lastFive = new TrackSimplified[5];
+        Arrays.fill(firstTen, track);
+        Arrays.fill(lastFive, track);
+        when(firstPage.getItems()).thenReturn(firstTen);
+        when(secondPage.getItems()).thenReturn(lastFive);
+
+        SpotifyCatalogPage<SpotifyAlbumSummary> result = adapter.getArtistAlbums("artist-1", 0);
+
+        assertThat(result.items().get(0).releaseType()).isEqualTo(CatalogReleaseType.SINGLE_EP);
+        verify(client).getAlbumTracks("album-1", 1);
+        verify(client, never()).getAlbumTracks("album-1", 2);
     }
 
     @Test

@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(description = "검색 횟수 기준 상위 5개 키워드 응답")
+@Schema(description = "검색 횟수 기준 상위 10개 키워드 응답")
 public class RankingListResponse {
     @JsonUnwrapped
     @Schema(description = "keywordList 필드로 펼쳐지는 검색어 랭킹")

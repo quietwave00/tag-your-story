@@ -2,6 +2,7 @@ package com.tagnote.api.domain.catalog;
 
 import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
 import com.tagnote.application.catalog.detail.CatalogDetailService;
+import com.tagnote.application.catalog.detail.model.CatalogReleaseType;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumDetail;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumSummary;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumTrack;
@@ -37,7 +38,7 @@ class CatalogDetailControllerTest {
     void 앨범_상세는_Spotify_ID로_조회하고_참여_아티스트를_응답한다() throws Exception {
         when(catalogDetailService.getAlbum("album-1")).thenReturn(new SpotifyAlbumDetail(
                 "album-1", "Album", "cover", "2024-03", 12,
-                List.of(new SpotifyAlbumDetail.ArtistCredit("artist-1", "Queen"))));
+                List.of(new SpotifyAlbumDetail.ArtistCredit("artist-1", "Queen")), "album", 1_800_000L));
 
         mockMvc.perform(get("/api/catalog/albums/album-1"))
                 .andExpect(status().isOk())
@@ -47,6 +48,7 @@ class CatalogDetailControllerTest {
                 .andExpect(jsonPath("$.response.imageUrl").value("cover"))
                 .andExpect(jsonPath("$.response.releaseDate").value("2024-03"))
                 .andExpect(jsonPath("$.response.totalTracks").value(12))
+                .andExpect(jsonPath("$.response.releaseType").value("ALBUM"))
                 .andExpect(jsonPath("$.response.artists[0].spotifyId").value("artist-1"))
                 .andExpect(jsonPath("$.response.artists[0].name").value("Queen"));
         verify(catalogDetailService).getAlbum("album-1");
@@ -82,7 +84,7 @@ class CatalogDetailControllerTest {
     @Test
     void 아티스트_앨범_목록은_선택한_페이지와_Spotify_전체_건수를_반환한다() throws Exception {
         when(catalogDetailService.getArtistAlbums("artist-1", 2)).thenReturn(new SpotifyCatalogPage<>(
-                List.of(new SpotifyAlbumSummary("album-1", "Album", "cover", "2024-03")), 31));
+                List.of(new SpotifyAlbumSummary("album-1", "Album", "cover", "2024-03", CatalogReleaseType.SINGLE_EP)), 31));
 
         mockMvc.perform(get("/api/catalog/artists/artist-1/albums").param("page", "2"))
                 .andExpect(status().isOk())
@@ -90,6 +92,7 @@ class CatalogDetailControllerTest {
                 .andExpect(jsonPath("$.response.items[0].title").value("Album"))
                 .andExpect(jsonPath("$.response.items[0].imageUrl").value("cover"))
                 .andExpect(jsonPath("$.response.items[0].releaseDate").value("2024-03"))
+                .andExpect(jsonPath("$.response.items[0].releaseType").value("SINGLE_EP"))
                 .andExpect(jsonPath("$.response.totalCount").value(31));
         verify(catalogDetailService).getArtistAlbums("artist-1", 2);
     }

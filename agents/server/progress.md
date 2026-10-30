@@ -1,6 +1,14 @@
 # Progress
 
-## 현재 진행: 승인된 active Plan 없음 (2026-10-28)
+## 현재 진행: CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001 사용자 검증 대기 (2026-10-30)
+
+- [CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001](plans/active/CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001.md): Artist Album 목록 item에 Album 상세와 동일한 nullable `releaseType`을 추가한다. ADR-022, Swagger, Server Spec, 클라이언트 계약 및 회귀 테스트를 작성했다. 사용자 실행 검증 대기다.
+
+- [SEARCH-RANK-LIMIT-001](plans/completed/SEARCH-RANK-LIMIT-001.md): 사용자 확인으로 검색어 랭킹 상위 10개 변경의 테스트 확인 및 완료 요청을 받았다. Redis `0..9`, 테스트·Swagger·API 계약을 정적으로 재검토하고 completed로 이동했다. `check`·`verify.sh` 명령별 결과는 미확인이다.
+
+- [CATALOG-TRACK-DETAIL-LINKS-001](plans/completed/CATALOG-TRACK-DETAIL-LINKS-001.md): 사용자 확인으로 Track 상세 ID와 클라이언트 링크의 테스트 확인 및 완료 요청을 받았다. 코드·계약을 정적으로 재검토하고 completed로 이동했다. `check`·`verify.sh`·클라이언트 lint/build 명령별 결과는 미확인이다.
+
+- [CATALOG-RELEASE-TYPE-001](plans/completed/CATALOG-RELEASE-TYPE-001.md): 사용자 확인으로 Album 상세 발매 유형의 테스트 확인 및 완료 요청을 받았다. ADR-021·분류 규칙·응답 계약을 정적으로 재검토하고 completed로 이동했다. `check`·`verify.sh` 명령별 결과는 미확인이다.
 
 - [CATALOG-SEARCH-TITLE-001](plans/completed/CATALOG-SEARCH-TITLE-001.md): Album 후보에 Spotify `album:` 제목 필터를 적용하고 Track·Artist 일반 검색을 유지한다. 화면용·타입별 검색은 같은 window를 사용하며 cache key를 버전 변경했다. ADR-020, Swagger, Server Spec, API 계약 및 관련 테스트를 갱신했다. 2026-10-28 사용자 결과 검증과 완료 요청으로 completed 처리했다. Codex는 Gradle·verify.sh를 실행하지 않았고 명령별 출력은 전달받지 않아 개별 통과 여부는 미확인이다.
 

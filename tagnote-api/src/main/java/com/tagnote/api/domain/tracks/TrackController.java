@@ -2,6 +2,7 @@ package com.tagnote.api.domain.tracks;
 
 import com.tagnote.api.domain.tracks.dto.response.RankingListResponse;
 import com.tagnote.api.domain.tracks.dto.response.SearchTracksResponse;
+import com.tagnote.api.domain.tracks.dto.response.DetailTrackResponse;
 import com.tagnote.api.domain.tracks.dto.request.ImportTrackRequest;
 import com.tagnote.api.domain.tracks.dto.response.CatalogTrackResponse;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
@@ -49,9 +50,9 @@ public class TrackController implements TrackApi {
      */
     @GetMapping("/tracks/{trackId}")
     @Override
-    public ApiResult<TrackData> getDetail(@PathVariable("trackId") String trackId) {
+    public ApiResult<DetailTrackResponse> getDetail(@PathVariable("trackId") String trackId) {
         TrackData trackData = trackService.getDetail(trackId);
-        return ApiUtils.success(trackData);
+        return ApiUtils.success(DetailTrackResponse.from(trackData));
     }
 
     /*

@@ -41,6 +41,7 @@ public class TrackService {
         Image[] images = album.getImages();
         String imageUrl = (images.length > 0) ? images[0].getUrl() : "NO_IMAGE";
 
-        return TrackData.of(track.getId(), artistName, track.getName(), albumName, imageUrl);
+        return TrackData.of(track.getId(), artistName, track.getName(), albumName, imageUrl,
+                artists[0].getId(), album.getId());
     }
 }

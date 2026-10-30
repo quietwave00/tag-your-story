@@ -1211,9 +1211,9 @@ GET /api/catalog/albums/{spotifyAlbumId}
 GET /api/catalog/artists/{spotifyArtistId}
 ```
 
-두 API는 인증 없이 Spotify ID로 단건 상세를 조회하고 기존 `ApiResult` envelope에 결과를 반환한다. Album 응답은 `spotifyId`, `title`, `imageUrl`, `releaseDate`, `totalTracks`, Spotify 표시 순서의 `artists[{spotifyId,name}]`를 포함한다. Artist 응답은 `spotifyId`, `name`, `imageUrl`, `genres`를 포함하며 팔로워 수는 포함하지 않는다. 이미지가 없으면 `NO_IMAGE`, 장르가 없으면 빈 목록이다. `releaseDate`는 Spotify 원문으로 연도 또는 연월만 포함할 수 있다.
+두 API는 인증 없이 Spotify ID로 단건 상세를 조회하고 기존 `ApiResult` envelope에 결과를 반환한다. Album 응답은 `spotifyId`, `title`, `imageUrl`, `releaseDate`, `totalTracks`, nullable `releaseType`, Spotify 표시 순서의 `artists[{spotifyId,name}]`를 포함한다. `releaseType`은 `ALBUM`, `COMPILATION`, `SINGLE_EP` 중 하나다. Spotify `album_type=compilation`은 `COMPILATION`, `single`은 `SINGLE_EP`이고, `album`은 6곡 이하 또는 총 재생 시간 30분 미만이면 `SINGLE_EP`, 그 외 `ALBUM`이다(ADR-021). 전체 재생 시간 확인에 필요한 경우 Spotify Album Track 후속 페이지를 읽으며 30분 이상이 확인되면 중단한다. Spotify metadata가 부족해 분류할 수 없으면 null이다. Artist 응답은 `spotifyId`, `name`, `imageUrl`, `genres`를 포함하며 팔로워 수는 포함하지 않는다. 이미지가 없으면 `NO_IMAGE`, 장르가 없으면 빈 목록이다. `releaseDate`는 Spotify 원문으로 연도 또는 연월만 포함할 수 있다.
 
-조회는 Catalog 저장, DB 조회, 태그 계산 및 enrichment 없이 Spotify 메타데이터만 사용한다. Album Track 목록과 Artist Album 목록은 이 단건 응답에 포함하지 않는다. Spotify 조회 실패는 기존 오류 체계의 `SPOTIFY_EXCEPTION`이며 현재 `CustomExceptionManager` 정책상 HTTP 200, `success=false`, `response.status=503`이다. 기존 `GET /api/tracks/{trackId}` 상세 계약은 유지한다.
+조회는 Catalog 저장, DB 조회, 태그 계산 및 enrichment 없이 Spotify 메타데이터만 사용한다. 분류를 위한 Spotify Album Track 추가 페이지 조회만 실패하면 이미 얻은 Album 상세를 반환하고 `releaseType`은 null로 둔다. Album Track 목록과 Artist Album 목록은 이 단건 응답에 포함하지 않는다. 최초 Spotify 상세 조회 실패는 기존 오류 체계의 `SPOTIFY_EXCEPTION`이며 현재 `CustomExceptionManager` 정책상 HTTP 200, `success=false`, `response.status=503`이다. 기존 `GET /api/tracks/{trackId}` 상세 계약은 유지한다.
 
 ### Catalog Artist Album·Album Track 목록
 
@@ -1224,7 +1224,7 @@ GET /api/catalog/albums/{spotifyAlbumId}/tracks?page=0
 
 두 목록 API는 인증 없이 Spotify ID로 조회하며 `page`는 선택적 0-based, 기본값 0, page size 10, Spotify offset `page * 10`이다. 응답은 기존 `ApiResult` envelope 안에 현재 page의 `items`와 Spotify `totalCount`를 둔다. 음수·정수가 아닌 page 또는 offset 계산 범위 초과는 HTTP 400이다. 빈 page는 `items=[]`와 Spotify total을 반환한다.
 
-Artist Album 목록은 Spotify 기본 포함 범위(Album, Single, Compilation, Appears On)와 순서를 유지하고 로컬 필터링·중복 제거를 하지 않는다. 각 item은 `spotifyId`, `title`, `imageUrl`, `releaseDate`를 포함한다. Album Track 목록은 Spotify 디스크·트랙 순서를 유지하고 각 item에 `spotifyId`, `title`, nullable `artistName`, `discNumber`, `trackNumber`, `durationMs`를 포함한다. 이미지가 없으면 `NO_IMAGE`다. 목록 GET도 Catalog 저장, DB 조회, 태그 계산 및 enrichment를 수행하지 않으며 Spotify 장애는 기존 `SPOTIFY_EXCEPTION` 계약을 따른다.
+Artist Album 목록은 Spotify 기본 포함 범위(Album, Single, Compilation, Appears On)와 순서를 유지하고 로컬 필터링·중복 제거를 하지 않는다. 각 item은 `spotifyId`, `title`, `imageUrl`, `releaseDate`, nullable `releaseType`을 포함한다. `releaseType`은 Album 상세와 같은 `ALBUM`, `COMPILATION`, `SINGLE_EP` 분류(ADR-021/022)다. 목록의 `single`과 `compilation`은 Spotify 유형으로 즉시 분류하고, `album`은 Spotify Album Track 목록에서 전체 곡 수와 총 재생 시간을 확인한다. 6곡 이하이면 추가 페이지 없이 `SINGLE_EP`, 7곡 이상은 30분 이상이 확인되면 후속 페이지 조회를 중단한다. 개별 Track 조회 실패나 metadata 부족 시 해당 item의 `releaseType`만 null로 두고 나머지 목록은 반환한다. Album Track 목록은 Spotify 디스크·트랙 순서를 유지하고 각 item에 `spotifyId`, `title`, nullable `artistName`, `discNumber`, `trackNumber`, `durationMs`를 포함한다. 이미지가 없으면 `NO_IMAGE`다. 목록 GET도 Catalog 저장, DB 조회, 태그 계산 및 enrichment를 수행하지 않으며 최초 Spotify 목록 조회 장애는 기존 `SPOTIFY_EXCEPTION` 계약을 따른다.
 
 ### Track Import
 
@@ -1294,6 +1294,10 @@ Album과 `systemTags`, `previewTags`, `tagDisplayStatus`를 포함한다. 기존
 ```http
 GET /api/tracks/{trackId}
 ```
+
+인증 없이 Spotify Track ID로 상세를 조회한다. 기존 `TrackData` 필드 `trackId`, `artistName`, `title`, `albumName`, `imageUrl`에 nullable `spotifyArtistId`, `spotifyAlbumId`를 더한다. `spotifyArtistId`는 표시하는 첫 번째 Spotify Artist의 ID이고 `spotifyAlbumId`는 표시하는 Album의 ID다. 같은 Spotify Track 단건 응답에서 읽으므로 DB SELECT나 Spotify HTTP 호출을 추가하지 않는다. 이미지가 없으면 `NO_IMAGE`다. Spotify 조회 실패는 기존 `SPOTIFY_EXCEPTION` 응답 정책을 따른다.
+
+공개 검색어 랭킹 `GET /api/tracks/ranking`은 Redis `search_keyword:` ZSET의 점수 역순 `0..9`를 읽고 기존 `ApiResult` envelope의 `response.keywordList`에 최대 10개 문자열을 반환한다. 조회 순서와 검색 시 score 증가 정책은 유지한다.
 
 ### Board 생성
 
