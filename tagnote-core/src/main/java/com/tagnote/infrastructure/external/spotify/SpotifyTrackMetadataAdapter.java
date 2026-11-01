@@ -3,28 +3,26 @@ package com.tagnote.infrastructure.external.spotify;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvider;
-import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
-import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
-import se.michaelthelin.spotify.model_objects.specification.Track;
-
+import com.tagnote.infrastructure.external.spotify.dto.SpotifyJson.Album;
+import com.tagnote.infrastructure.external.spotify.dto.SpotifyJson.Artist;
+import com.tagnote.infrastructure.external.spotify.dto.SpotifyJson.Track;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class SpotifyTrackMetadataAdapter implements SpotifyTrackMetadataProvider {
 
-    private final SpotifyWebClient spotifyWebClient;
+    private final SpotifyHttpClient client;
 
     @Override
     public SpotifyTrackMetadata getTrack(String spotifyTrackId) {
-        Track track = spotifyWebClient.getDetailTrackInfo(spotifyTrackId);
-        AlbumSimplified album = requireAlbum(track.getAlbum());
+        Track track = client.track(spotifyTrackId);
+        Album album = requireAlbum(track.getAlbum());
 
         return SpotifyTrackMetadata.of(
                 requireText(track.getId(), "Spotify track id"),
@@ -39,13 +37,13 @@ public class SpotifyTrackMetadataAdapter implements SpotifyTrackMetadataProvider
         );
     }
 
-    private List<SpotifyArtistMetadata> artists(ArtistSimplified[] spotifyArtists, String subject) {
+    private List<SpotifyArtistMetadata> artists(Artist[] spotifyArtists, String subject) {
         if (spotifyArtists == null || spotifyArtists.length == 0) {
             throw new IllegalArgumentException("Spotify " + subject + " artists must not be empty");
         }
 
         Map<String, String> uniqueArtists = new LinkedHashMap<>();
-        for (ArtistSimplified artist : spotifyArtists) {
+        for (Artist artist : spotifyArtists) {
             if (artist == null) {
                 throw new IllegalArgumentException("Spotify " + subject + " artist must not be null");
             }
@@ -64,10 +62,10 @@ public class SpotifyTrackMetadataAdapter implements SpotifyTrackMetadataProvider
     }
 
     private String isrc(Track track) {
-        if (track.getExternalIds() == null || track.getExternalIds().getExternalIds() == null) {
+        if (track.getExternalIds() == null) {
             return null;
         }
-        return track.getExternalIds().getExternalIds().get("isrc");
+        return track.getExternalIds().get("isrc");
     }
 
     private Integer releaseYear(String releaseDate) {
@@ -81,7 +79,7 @@ public class SpotifyTrackMetadataAdapter implements SpotifyTrackMetadataProvider
         return Integer.valueOf(year);
     }
 
-    private AlbumSimplified requireAlbum(AlbumSimplified album) {
+    private Album requireAlbum(Album album) {
         if (album == null) {
             throw new IllegalArgumentException("Spotify album must not be null");
         }

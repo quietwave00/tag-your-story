@@ -10,7 +10,6 @@ dependencies {
     api 'com.auth0:java-jwt:4.2.1'
     implementation 'io.sentry:sentry-spring-boot-starter:6.33.1'
     implementation 'io.sentry:sentry-logback:6.33.1'
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:8.0.0'
 
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11'

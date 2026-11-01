@@ -1,6 +1,10 @@
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
   client-secret: ${SPOTIFY_CLIENT_SECRET}
+  accounts-url: ${SPOTIFY_ACCOUNTS_URL:https://accounts.spotify.com}
+  api-url: ${SPOTIFY_API_URL:https://api.spotify.com}
+  connect-timeout-ms: 2000
+  read-timeout-ms: 5000
 
 spring:
   config.activate.on-profile: local

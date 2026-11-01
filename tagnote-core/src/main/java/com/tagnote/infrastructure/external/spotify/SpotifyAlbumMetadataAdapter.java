@@ -3,36 +3,34 @@ package com.tagnote.infrastructure.external.spotify;
 import com.tagnote.application.catalog.importer.model.SpotifyAlbumMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyAlbumMetadataProvider;
-import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import se.michaelthelin.spotify.model_objects.specification.Album;
-import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
-
+import com.tagnote.infrastructure.external.spotify.dto.SpotifyJson.Album;
+import com.tagnote.infrastructure.external.spotify.dto.SpotifyJson.Artist;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class SpotifyAlbumMetadataAdapter implements SpotifyAlbumMetadataProvider {
 
-    private final SpotifyWebClient client;
+    private final SpotifyHttpClient client;
 
     @Override
     public SpotifyAlbumMetadata getAlbum(String spotifyAlbumId) {
-        Album album = client.getDetailAlbumInfo(spotifyAlbumId);
+        Album album = client.album(spotifyAlbumId);
         if (album.getId() == null || album.getId().isBlank()
                 || album.getName() == null || album.getName().isBlank()) {
             throw new IllegalArgumentException("Spotify Album identity is missing");
         }
-        ArtistSimplified[] credits = album.getArtists();
+        Artist[] credits = album.getArtists();
         if (credits == null || credits.length == 0) {
             throw new IllegalArgumentException("Spotify Album artists are missing");
         }
         Map<String, String> unique = new LinkedHashMap<>();
-        for (ArtistSimplified artist : credits) {
+        for (Artist artist : credits) {
             if (artist == null || artist.getId() == null || artist.getId().isBlank()
                     || artist.getName() == null || artist.getName().isBlank()) {
                 throw new IllegalArgumentException("Spotify Album artist identity is missing");

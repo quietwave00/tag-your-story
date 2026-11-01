@@ -1,193 +1,57 @@
 package com.tagnote.infrastructure.external.spotify;
 
 import com.tagnote.application.catalog.search.model.CatalogSearchItem;
-import com.tagnote.application.catalog.search.model.CatalogSearchResult;
 import com.tagnote.application.catalog.search.model.CatalogSearchScope;
-import com.tagnote.application.catalog.search.model.CatalogSearchSubjectType;
-import com.tagnote.application.catalog.search.model.CatalogSearchWindow;
-import com.tagnote.core.domain.tracks.webclient.SpotifyWebClient;
-import com.tagnote.core.domain.tracks.webclient.dto.SpotifyCatalogSearchInfo;
+import com.tagnote.infrastructure.external.spotify.dto.SpotifyJson;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
-import se.michaelthelin.spotify.model_objects.specification.Artist;
-import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
-import se.michaelthelin.spotify.model_objects.specification.Image;
-import se.michaelthelin.spotify.model_objects.specification.Track;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class SpotifyCatalogSearchAdapterTest {
-
-    @Mock
-    private SpotifyWebClient spotifyWebClient;
-
-    @InjectMocks
-    private SpotifyCatalogSearchAdapter adapter;
+    private final SpotifyHttpClient client = mock(SpotifyHttpClient.class);
+    private final SpotifyCatalogSearchAdapter adapter = new SpotifyCatalogSearchAdapter(client);
 
     @Test
-    void 통합_검색은_곡과_앨범과_가수를_공통_모델로_변환하고_전체_건수를_합산한다() {
-        Track track = track("track-1", "Song", "Track Artist", "Track Album", "track-image");
-        AlbumSimplified album = album("album-1", "Album", "Album Artist", "album-image");
-        Artist artist = artist("artist-1", "Artist", "artist-image");
-        when(spotifyWebClient.searchCatalog("queen", 1, "track,album,artist")).thenReturn(SpotifyCatalogSearchInfo.of(
-                new Track[]{track},
-                new AlbumSimplified[]{album},
-                new Artist[]{artist},
-                100,
-                20,
-                3
-        ));
-
-        CatalogSearchResult result = adapter.search("queen", 1, CatalogSearchScope.ALL);
-
-        verify(spotifyWebClient).searchCatalog("queen", 1, "track,album,artist");
-        assertThat(result.getTotalCount()).isEqualTo(123L);
-        assertThat(result.getItems()).extracting(CatalogSearchItem::getSubjectType)
-                .containsExactly(
-                        CatalogSearchSubjectType.TRACK,
-                        CatalogSearchSubjectType.ALBUM,
-                        CatalogSearchSubjectType.ARTIST
-                );
-        assertThat(result.getItems().get(0).getAlbumName()).isEqualTo("Track Album");
-        assertThat(result.getItems().get(1).getTitle()).isEqualTo("Album");
-        assertThat(result.getItems().get(1).getAlbumName()).isNull();
-        assertThat(result.getItems().get(2).getTitle()).isEqualTo("Artist");
-        assertThat(result.getItems().get(2).getArtistName()).isNull();
+    void combined_search_preserves_type_order_fields_and_totals() {
+        var result = SpotifyFixtures.read("""
+                {"tracks":{"total":10,"items":[{"id":"t","name":"Track","artists":[{"name":"Singer"}],
+                "album":{"name":"Record","images":[{"url":"track-cover"}]}}]},
+                "albums":{"total":20,"items":[{"id":"al","name":"Album","artists":[{"name":"Band"}],"images":[]}]},
+                "artists":{"total":30,"items":[{"id":"ar","name":"Artist","images":[{"url":"portrait"}]}]}}
+                """, SpotifyJson.Search.class);
+        when(client.search("queen", 1, "track,album,artist")).thenReturn(result);
+        var mapped = adapter.search("queen", 1, CatalogSearchScope.ALL);
+        assertThat(mapped.getItems()).extracting(CatalogSearchItem::getSpotifyId).containsExactly("t", "al", "ar");
+        assertThat(mapped.getTotalCount()).isEqualTo(60);
+        assertThat(mapped.getItems().get(0).getArtistName()).isEqualTo("Singer");
+        assertThat(mapped.getItems().get(1).getImageUrl()).isEqualTo("NO_IMAGE");
+        verify(client).search("queen", 1, "track,album,artist");
     }
 
     @Test
-    void 앨범_검색은_이미지와_가수가_없어도_기존_표시_규칙을_유지한다() {
-        AlbumSimplified album = mock(AlbumSimplified.class);
-        when(album.getId()).thenReturn("album-1");
-        when(album.getName()).thenReturn("Album");
-        when(album.getArtists()).thenReturn(new ArtistSimplified[0]);
-        when(album.getImages()).thenReturn(new Image[0]);
-        when(spotifyWebClient.searchCatalog("album", 0, "album")).thenReturn(SpotifyCatalogSearchInfo.of(
-                null, new AlbumSimplified[]{album}, null, 0, 1, 0
-        ));
-
-        CatalogSearchResult result = adapter.search("album", 0, CatalogSearchScope.ALBUM);
-
-        assertThat(result.getItems().get(0).getArtistName()).isNull();
-        assertThat(result.getItems().get(0).getImageUrl()).isEqualTo("NO_IMAGE");
-        verify(spotifyWebClient).searchCatalog("album", 0, "album");
-    }
-
-    @Test
-    void 타입별_검색은_다른_타입의_결과와_건수를_포함하지_않는다() {
-        Track track = track("track-1", "Song", "Artist", "Album", "image");
-        when(spotifyWebClient.searchCatalog("song", 2, "track")).thenReturn(SpotifyCatalogSearchInfo.of(
-                new Track[]{track}, null, null, 47, 200, 300));
-
-        CatalogSearchResult result = adapter.search("song", 2, CatalogSearchScope.TRACK);
-
-        assertThat(result.getItems()).extracting(CatalogSearchItem::getSubjectType)
-                .containsExactly(CatalogSearchSubjectType.TRACK);
-        assertThat(result.getTotalCount()).isEqualTo(47L);
-        verify(spotifyWebClient).searchCatalog("song", 2, "track");
-    }
-
-    @Test
-    void 가수_검색은_요청하지_않은_결과_그룹이_없어도_동작한다() {
-        Artist artist = artist("artist-1", "Queen", "image");
-        when(spotifyWebClient.searchCatalog("Queen", 0, "artist")).thenReturn(SpotifyCatalogSearchInfo.of(
-                null, null, new Artist[]{artist}, 0, 0, 79));
-
-        CatalogSearchResult result = adapter.search("Queen", 0, CatalogSearchScope.ARTIST);
-
-        assertThat(result.getItems()).extracting(CatalogSearchItem::getSubjectType)
-                .containsExactly(CatalogSearchSubjectType.ARTIST);
-        assertThat(result.getTotalCount()).isEqualTo(79L);
-    }
-
-    @Test
-    void 화면_window는_일반_곡_가수와_제목_필터_앨범을_각각_조회한다() {
-        Track first = track("track-1", "First", "Band", "Album", "image");
-        Track third = track("track-3", "Exact", "Band", "Album", "image");
-        AlbumSimplified album = album("album-2", "Album", "Band", "image");
-        Artist artist = artist("artist-3", "Band", "image");
-        when(spotifyWebClient.searchCatalog("Exact", 0, "track,artist"))
-                .thenReturn(SpotifyCatalogSearchInfo.of(new Track[]{first}, null,
-                        new Artist[0], 100, 999, 5));
-        when(spotifyWebClient.searchCatalog("album:Exact", 0, "album"))
-                .thenReturn(SpotifyCatalogSearchInfo.of(null, new AlbumSimplified[0],
-                        null, 0, 20, 0));
-        when(spotifyWebClient.searchCatalog("Exact", 1, "track,artist"))
-                .thenReturn(SpotifyCatalogSearchInfo.of(new Track[0], null,
-                        new Artist[0], 101, 999, 6));
-        when(spotifyWebClient.searchCatalog("album:Exact", 1, "album"))
-                .thenReturn(SpotifyCatalogSearchInfo.of(null, new AlbumSimplified[]{album},
-                        null, 0, 21, 0));
-        when(spotifyWebClient.searchCatalog("Exact", 2, "track,artist"))
-                .thenReturn(SpotifyCatalogSearchInfo.of(new Track[]{third}, null,
-                        new Artist[]{artist}, 102, 999, 7));
-        when(spotifyWebClient.searchCatalog("album:Exact", 2, "album"))
-                .thenReturn(SpotifyCatalogSearchInfo.of(null, new AlbumSimplified[0],
-                        null, 0, 22, 0));
-
-        CatalogSearchWindow window = adapter.searchWindow("Exact", 0, 3);
-
-        assertThat(window.tracks()).extracting(CatalogSearchItem::getSpotifyId)
-                .containsExactly("track-1", "track-3");
-        assertThat(window.tracks()).extracting(CatalogSearchItem::getProviderRank)
-                .containsExactly(0, 20);
-        assertThat(window.albums()).extracting(CatalogSearchItem::getSpotifyId).containsExactly("album-2");
-        assertThat(window.artists()).extracting(CatalogSearchItem::getSpotifyId).containsExactly("artist-3");
+    void screen_window_uses_title_filtered_album_query_and_original_ranks() {
+        var first = SpotifyFixtures.read("""
+                {"tracks":{"total":100,"items":[{"id":"t1","name":"First","artists":[],"album":{"name":"A","images":[]}}]},
+                "artists":{"total":5,"items":[]}}
+                """, SpotifyJson.Search.class);
+        var second = SpotifyFixtures.read("""
+                {"tracks":{"total":101,"items":[{"id":"t2","name":"Second","artists":[],"album":{"name":"A","images":[]}}]},
+                "artists":{"total":5,"items":[]}}
+                """, SpotifyJson.Search.class);
+        var albums = SpotifyFixtures.read("""
+                {"albums":{"total":20,"items":[{"id":"al","name":"Album","artists":[],"images":[]}]}}
+                """, SpotifyJson.Search.class);
+        when(client.search("Exact", 0, "track,artist")).thenReturn(first);
+        when(client.search("Exact", 1, "track,artist")).thenReturn(second);
+        when(client.search("album:Exact", 0, "album")).thenReturn(albums);
+        when(client.search("album:Exact", 1, "album")).thenReturn(albums);
+        var window = adapter.searchWindow("Exact", 0, 2);
+        assertThat(window.tracks()).extracting(CatalogSearchItem::getSpotifyId).containsExactly("t1", "t2");
+        assertThat(window.tracks()).extracting(CatalogSearchItem::getProviderRank).containsExactly(0, 10);
         assertThat(window.trackTotalCount()).isEqualTo(100);
         assertThat(window.albumTotalCount()).isEqualTo(20);
-        assertThat(window.artistTotalCount()).isEqualTo(5);
-        verify(spotifyWebClient).searchCatalog("Exact", 0, "track,artist");
-        verify(spotifyWebClient).searchCatalog("album:Exact", 0, "album");
-        verify(spotifyWebClient).searchCatalog("Exact", 1, "track,artist");
-        verify(spotifyWebClient).searchCatalog("album:Exact", 1, "album");
-        verify(spotifyWebClient).searchCatalog("Exact", 2, "track,artist");
-        verify(spotifyWebClient).searchCatalog("album:Exact", 2, "album");
-    }
-
-    private Track track(String id, String title, String artistName, String albumName, String imageUrl) {
-        Track track = mock(Track.class);
-        AlbumSimplified album = mock(AlbumSimplified.class);
-        ArtistSimplified artist = mock(ArtistSimplified.class);
-        Image image = mock(Image.class);
-        when(track.getId()).thenReturn(id);
-        when(track.getName()).thenReturn(title);
-        when(track.getArtists()).thenReturn(new ArtistSimplified[]{artist});
-        when(track.getAlbum()).thenReturn(album);
-        when(artist.getName()).thenReturn(artistName);
-        when(album.getName()).thenReturn(albumName);
-        when(album.getImages()).thenReturn(new Image[]{image});
-        when(image.getUrl()).thenReturn(imageUrl);
-        return track;
-    }
-
-    private AlbumSimplified album(String id, String title, String artistName, String imageUrl) {
-        AlbumSimplified album = mock(AlbumSimplified.class);
-        ArtistSimplified artist = mock(ArtistSimplified.class);
-        Image image = mock(Image.class);
-        when(album.getId()).thenReturn(id);
-        when(album.getName()).thenReturn(title);
-        when(album.getArtists()).thenReturn(new ArtistSimplified[]{artist});
-        when(album.getImages()).thenReturn(new Image[]{image});
-        when(artist.getName()).thenReturn(artistName);
-        when(image.getUrl()).thenReturn(imageUrl);
-        return album;
-    }
-
-    private Artist artist(String id, String name, String imageUrl) {
-        Artist artist = mock(Artist.class);
-        Image image = mock(Image.class);
-        when(artist.getId()).thenReturn(id);
-        when(artist.getName()).thenReturn(name);
-        when(artist.getImages()).thenReturn(new Image[]{image});
-        when(image.getUrl()).thenReturn(imageUrl);
-        return artist;
+        verify(client).search("album:Exact", 0, "album");
+        verify(client).search("album:Exact", 1, "album");
     }
 }

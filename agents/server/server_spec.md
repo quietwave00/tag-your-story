@@ -1764,3 +1764,7 @@ Track / Album
 15. 외부 Provider 실패는 가능한 범위에서 partial success로 처리한다.
 16. DB unique / FK / index를 데이터 정합성의 최종 방어선으로 사용한다.
 17. MVP에서는 읽기 쉬운 Layered Architecture를 유지하고 과도한 인프라 추상화를 피한다.
+
+## Spotify HTTP provider (ADR-023)
+
+Spotify 호출은 서버 Infrastructure의 `SpotifyHttpClient`가 직접 수행한다. Client Credentials 토큰은 기존 Redis 키에 만료 여유를 두고 저장한다. Track·Catalog 검색, Track/Album/Artist 상세, Artist Album 및 Album Track 목록의 공개 API 계약은 유지한다. Artist Album 목록 원본의 `album_type`과 `total_tracks`를 읽어 6곡 이하 `album`은 Track 추가 조회 없이 발매 분류한다. 401은 토큰 갱신 후 1회, 429는 제한된 재시도 후 기존 `SPOTIFY_EXCEPTION` 계약으로 실패한다.

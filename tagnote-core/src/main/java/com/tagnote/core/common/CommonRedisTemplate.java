@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
+
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -21,9 +23,13 @@ public class CommonRedisTemplate {
      * 데이터를 레디스에 저장한다.
      */
     public <V> void set(Object id, V value, CacheSpec cacheSpec) {
+        set(id, value, cacheSpec, cacheSpec.getTtl());
+    }
+
+    public <V> void set(Object id, V value, CacheSpec cacheSpec, Duration ttl) {
         try {
             String json =  objectMapper.writeValueAsString(value);
-            redisTemplate.opsForValue().set(cacheSpec.generateKey(id), json, cacheSpec.getTtl());
+            redisTemplate.opsForValue().set(cacheSpec.generateKey(id), json, ttl);
         } catch (JsonProcessingException e) {
             throw new CustomException(ExceptionCode.CONVERSION_EXCEPTION);
         }

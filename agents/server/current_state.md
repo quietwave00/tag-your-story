@@ -1,3 +1,5 @@
+> 2026-10-30 Spotify SDK 제거 구현 메모: 아래 초기 baseline의 `SpotifyWebClient` 설명은 과거 상태다. 현재 서버 루트는 `infrastructure.external.spotify.SpotifyHttpClient`가 직접 Spotify HTTP를 호출하고, JSON DTO는 Infrastructure에 한정한다. `TrackService` 상세 조회는 `TrackDetailProvider`를 거치며 외부 HTTP 중 DB transaction을 열지 않는다. Artist Album 목록은 `total_tracks`를 읽어 6곡 이하 `album`의 분류용 Track 호출을 생략한다. 검증 결과는 아직 사용자에게 받지 않았다.
+
 > Characterization Testing 용도
 
 # TagNote Server Current State Baseline

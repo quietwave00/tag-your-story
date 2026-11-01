@@ -1,6 +1,12 @@
 # Progress
 
-## 현재 진행: CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001 사용자 검증 대기 (2026-10-30)
+- 2026-10-30: SPOTIFY-SDK-REMOVAL-001 완료 처리. 직접 HTTP·토큰 캐시·제한 재시도, SDK 제거, 검색/상세/import adapter와 fixture 테스트, ADR-023을 반영했다. 사용자가 `./gradlew test`, `./gradlew check`, `./scripts/verify.sh` 모두 완료했다고 확인했으며, 이를 검증 근거로 완료 처리했다.
+
+## 현재 진행: CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001 사용자 검증 대기, CATALOG-ARTIST-ALBUM-INDEX-001 착수 대기 (2026-10-30)
+
+- [SPOTIFY-SDK-REMOVAL-001](plans/completed/SPOTIFY-SDK-REMOVAL-001.md): 사용자 확인으로 `test`·`check`·`verify.sh` 완료를 기록하고 completed로 이동했다.
+
+- [CATALOG-ARTIST-ALBUM-INDEX-001](plans/active/CATALOG-ARTIST-ALBUM-INDEX-001.md): 2026-10-30 사용자 승인으로 Plan을 active로 승격했다. Spotify SDK 제거 선행 작업은 완료 처리되었으며 본 Plan은 아직 구현 착수 전이다. 유형별 페이지·건수를 아티스트별 Redis 인덱스에서 제공하는 범위로 승인되었다.
 
 - [CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001](plans/active/CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001.md): Artist Album 목록 item에 Album 상세와 동일한 nullable `releaseType`을 추가한다. ADR-022, Swagger, Server Spec, 클라이언트 계약 및 회귀 테스트를 작성했다. 사용자 실행 검증 대기다.
 
