@@ -91,7 +91,7 @@ class SubjectTagResolvedJpaRepositoryTest {
 
         resolutionService.resolve(SubjectRef.track(track));
         assertionRepository.saveAndFlush(assertion(tag, AssertionSource.DISCOGS, 0.9, AssertionStatus.APPROVED));
-        var result = resolutionService.resolve(SubjectRef.track(track));
+        java.util.List<com.tagnote.application.resolution.model.ResolvedTagResult> result = resolutionService.resolve(SubjectRef.track(track));
         resolutionService.resolve(SubjectRef.track(track));
 
         assertThat(result).singleElement().satisfies(resolved -> {
@@ -239,7 +239,7 @@ class SubjectTagResolvedJpaRepositoryTest {
                 .getStatistics();
         statistics.clear();
 
-        var visible = resolvedRepository.findVisibleBySubjectWithTag(
+        java.util.List<com.tagnote.domain.resolution.SubjectTagResolvedEntity> visible = resolvedRepository.findVisibleBySubjectWithTag(
                 SubjectType.TRACK, track.getTrackId(), ResolvedStatus.HIDDEN
         );
         visible.forEach(row -> assertThat(row.getTag().getName()).isNotBlank());

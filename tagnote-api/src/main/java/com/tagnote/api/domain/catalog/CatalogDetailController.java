@@ -8,21 +8,19 @@ import com.tagnote.application.catalog.detail.CatalogDetailService;
 import com.tagnote.core.utils.api.ApiResult;
 import com.tagnote.core.utils.api.ApiUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/catalog")
 @RequiredArgsConstructor
 public class CatalogDetailController implements CatalogDetailApi {
-    private static final int PAGE_SIZE = 10;
-
     private final CatalogDetailService catalogDetailService;
+    private final CatalogDetailRequestValidator validator;
 
     @GetMapping("/albums/{spotifyAlbumId}")
     @Override
@@ -38,11 +36,13 @@ public class CatalogDetailController implements CatalogDetailApi {
 
     @GetMapping("/artists/{spotifyArtistId}/albums")
     @Override
-    public ApiResult<CatalogArtistAlbumsResponse> getArtistAlbums(
+    public ResponseEntity<ApiResult<CatalogArtistAlbumsResponse>> getArtistAlbums(
             @PathVariable("spotifyArtistId") String spotifyArtistId,
-            @RequestParam(value = "page", defaultValue = "0") int page) {
-        return ApiUtils.success(CatalogArtistAlbumsResponse.from(
-                catalogDetailService.getArtistAlbums(spotifyArtistId, validPage(page))));
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "releaseType", required = false) String releaseType) {
+        return CatalogArtistAlbumsResponse.toHttpResponse(
+                catalogDetailService.getArtistAlbumListing(spotifyArtistId,
+                        validator.releaseType(releaseType), validator.page(page)));
     }
 
     @GetMapping("/albums/{spotifyAlbumId}/tracks")
@@ -51,13 +51,6 @@ public class CatalogDetailController implements CatalogDetailApi {
             @PathVariable("spotifyAlbumId") String spotifyAlbumId,
             @RequestParam(value = "page", defaultValue = "0") int page) {
         return ApiUtils.success(CatalogAlbumTracksResponse.from(
-                catalogDetailService.getAlbumTracks(spotifyAlbumId, validPage(page))));
-    }
-
-    private int validPage(int page) {
-        if (page < 0 || page > Integer.MAX_VALUE / PAGE_SIZE) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page must be a non-negative 0-based index");
-        }
-        return page;
+                catalogDetailService.getAlbumTracks(spotifyAlbumId, validator.page(page))));
     }
 }

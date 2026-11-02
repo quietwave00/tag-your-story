@@ -85,7 +85,7 @@ class RedisSignupChallengeStoreTest {
     @Test
     void concurrentStartsWithSameEmailCannotExceedRateLimit() throws Exception {
         RedisSignupChallengeStore store = store();
-        var executor = Executors.newFixedThreadPool(10);
+        java.util.concurrent.ExecutorService executor = Executors.newFixedThreadPool(10);
         try {
             List<java.util.concurrent.Future<Integer>> results = new ArrayList<>();
             for (int i = 0; i < 10; i++) {
@@ -93,7 +93,7 @@ class RedisSignupChallengeStoreTest {
                         "user@example.com", "hash", "verifier", "e3", "ip3")));
             }
             int accepted = 0;
-            for (var result : results) if (result.get(10, TimeUnit.SECONDS) == 1) accepted++;
+            for (java.util.concurrent.Future<Integer> result : results) if (result.get(10, TimeUnit.SECONDS) == 1) accepted++;
             assertThat(accepted).isEqualTo(5);
         } finally {
             executor.shutdownNow();
@@ -110,7 +110,7 @@ class RedisSignupChallengeStoreTest {
         template.afterPropertiesSet();
         template.opsForHash().put("signup:challenge:" + id, "last_send", "1");
 
-        var executor = Executors.newFixedThreadPool(8);
+        java.util.concurrent.ExecutorService executor = Executors.newFixedThreadPool(8);
         try {
             List<java.util.concurrent.Future<Integer>> results = new ArrayList<>();
             for (int i = 0; i < 8; i++) {
@@ -118,7 +118,7 @@ class RedisSignupChallengeStoreTest {
                 results.add(executor.submit(() -> store.reserveResend(id, next, "e4", "ip4")));
             }
             int accepted = 0;
-            for (var result : results) if (result.get(10, TimeUnit.SECONDS) == 1) accepted++;
+            for (java.util.concurrent.Future<Integer> result : results) if (result.get(10, TimeUnit.SECONDS) == 1) accepted++;
             assertThat(accepted).isEqualTo(1);
             assertThat(store.verify(id, null).status()).isEqualTo(SignupChallengeStore.Verification.Status.PENDING);
         } finally {
@@ -151,7 +151,7 @@ class RedisSignupChallengeStoreTest {
         String id = UUID.randomUUID().toString();
         store.reserveNew(id, "user@example.com", "hash", "correct", "claim-email", "claim-ip");
         store.activate(id, "correct");
-        var executor = Executors.newFixedThreadPool(8);
+        java.util.concurrent.ExecutorService executor = Executors.newFixedThreadPool(8);
         try {
             List<java.util.concurrent.Future<SignupChallengeStore.Claim.Status>> results = new ArrayList<>();
             for (int i = 0; i < 8; i++) {
@@ -159,7 +159,7 @@ class RedisSignupChallengeStoreTest {
                 results.add(executor.submit(() -> store.claim(id, "correct", owner).status()));
             }
             int claimed = 0;
-            for (var result : results) if (result.get(10, TimeUnit.SECONDS) == SignupChallengeStore.Claim.Status.CLAIMED) claimed++;
+            for (java.util.concurrent.Future<SignupChallengeStore.Claim.Status> result : results) if (result.get(10, TimeUnit.SECONDS) == SignupChallengeStore.Claim.Status.CLAIMED) claimed++;
             assertThat(claimed).isEqualTo(1);
             // Identify the owner retained by the atomic claim before marking it complete.
             StringRedisTemplate template = new StringRedisTemplate(connection);

@@ -22,7 +22,7 @@ class DiscogsAlbumSearchPlanTest {
 
     @Test
     void box_set은_원문_album_축약_album_track_순서로_검색한다() {
-        var attempts = plan.attempts(track(
+        java.util.List<com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumSearchAttempt> attempts = plan.attempts(track(
                 "Creep",
                 "5 Album Set (Pablo Honey/The Bends/OK Computer/Kid A/Amnesiac)"
         ));
@@ -50,7 +50,7 @@ class DiscogsAlbumSearchPlanTest {
 
     @Test
     void slash목록이_아닌_괄호는_축약하지_않는다() {
-        var attempts = plan.attempts(track("Song", "Album (Live)"));
+        java.util.List<com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumSearchAttempt> attempts = plan.attempts(track("Song", "Album (Live)"));
 
         assertThat(attempts)
                 .extracting(attempt -> attempt.query().field(), attempt -> attempt.query().value())

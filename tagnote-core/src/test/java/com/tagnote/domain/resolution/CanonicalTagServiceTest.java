@@ -14,7 +14,7 @@ class CanonicalTagServiceTest {
 
     @Test
     void ACTIVE는_자기_자신을_canonical_tag로_반환한다() {
-        var result = service.findActiveCanonicalTag(1L, Map.of(
+        java.util.OptionalLong result = service.findActiveCanonicalTag(1L, Map.of(
                 1L, node(1L, TagStatus.ACTIVE, null)
         ));
 
@@ -23,7 +23,7 @@ class CanonicalTagServiceTest {
 
     @Test
     void MERGED_chain은_최종_ACTIVE_tag까지_따라간다() {
-        var result = service.findActiveCanonicalTag(1L, Map.of(
+        java.util.OptionalLong result = service.findActiveCanonicalTag(1L, Map.of(
                 1L, node(1L, TagStatus.MERGED, 2L),
                 2L, node(2L, TagStatus.MERGED, 3L),
                 3L, node(3L, TagStatus.ACTIVE, null)

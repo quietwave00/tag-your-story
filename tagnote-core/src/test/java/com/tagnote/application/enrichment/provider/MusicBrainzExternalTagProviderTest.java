@@ -48,7 +48,7 @@ class MusicBrainzExternalTagProviderTest {
         when(client.getReleaseGroup("rg-nevermind"))
                 .thenReturn(new ReleaseGroupDetails("rg-nevermind", List.of(new Genre("Grunge", 2))));
 
-        var result = provider.collectAlbum(album, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collectAlbum(album, deadline());
 
         verify(client).searchReleaseGroups("Nevermind", List.of("Nirvana"));
         verify(client, never()).searchReleaseGroups("Nevermind (Remastered)", List.of("Nirvana"));
@@ -72,7 +72,7 @@ class MusicBrainzExternalTagProviderTest {
         when(client.getReleaseGroup("rg-remaster"))
                 .thenReturn(new ReleaseGroupDetails("rg-remaster", List.of(new Genre("Rock", 1))));
 
-        var result = provider.collectAlbum(album, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collectAlbum(album, deadline());
 
         verify(client).searchReleaseGroups("Nevermind", List.of("Nirvana"));
         verify(client).searchReleaseGroups("Nevermind (Remastered)", List.of("Nirvana"));
@@ -147,7 +147,7 @@ class MusicBrainzExternalTagProviderTest {
                 "release-group-1", List.of(new Genre("Electronic", 1))
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         verify(client, never()).searchByIsrc(org.mockito.ArgumentMatchers.anyString());
         verify(client, never()).searchByTitleAndArtists(
@@ -191,7 +191,7 @@ class MusicBrainzExternalTagProviderTest {
                 ProviderEnrichmentStatus.TIMEOUT, "fixture timeout"
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.status()).isEqualTo(ProviderEnrichmentStatus.SUCCESS);
         assertThat(result.tags().trackInputs()).singleElement()
@@ -232,7 +232,7 @@ class MusicBrainzExternalTagProviderTest {
                 "release-group-1", List.of(new Genre("Classic Rock", 1))
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         verify(client, never()).searchByTitleAndArtists(
                 org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyList()
@@ -276,7 +276,7 @@ class MusicBrainzExternalTagProviderTest {
                 closest.id(), List.of(), List.of()
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         verify(client, never()).searchByTitleAndArtists(
                 org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyList()
@@ -310,7 +310,7 @@ class MusicBrainzExternalTagProviderTest {
                 "recording-2", List.of(), List.of()
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         verify(client).searchByIsrc("USABC1234567");
         verify(client).searchByTitleAndArtists("Track", List.of("Artist"));
@@ -343,7 +343,7 @@ class MusicBrainzExternalTagProviderTest {
                 "recording-original", List.of(), List.of()
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         verify(client, times(2)).searchByIsrc("USABC1234567");
         verify(client).getRecording("recording-original");
@@ -381,7 +381,7 @@ class MusicBrainzExternalTagProviderTest {
                 "recording-original", List.of(), List.of()
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         verify(client, times(2)).searchByIsrc("USABC1234567");
         assertThat(result.tags().trackInputs()).singleElement()
@@ -429,7 +429,7 @@ class MusicBrainzExternalTagProviderTest {
                 "recording-1", List.of(new Genre("Ambient", 2)), List.of()
         ));
 
-        var result = provider.collect(track, EnrichmentDeadline.expired());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, EnrichmentDeadline.expired());
 
         verify(client, never()).getReleaseGroup("release-group-1");
         verify(client, never()).getRecordingReleaseGroups("recording-1");
@@ -468,7 +468,7 @@ class MusicBrainzExternalTagProviderTest {
                 "recording-2", List.of(), List.of()
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         verify(client).searchByIsrc("USABC1234567");
         verify(client).searchByTitleAndArtists("Track", List.of("Artist"));
@@ -498,7 +498,7 @@ class MusicBrainzExternalTagProviderTest {
                 ProviderEnrichmentStatus.TIMEOUT, "fixture timeout"
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.status()).isEqualTo(ProviderEnrichmentStatus.SUCCESS);
         assertThat(result.tags().trackInputs()).singleElement()

@@ -21,7 +21,7 @@ class SpotifyTrackSearchAdapterTest {
                 """, SpotifyJson.Search.class);
         when(client.searchTracks("rock", 2)).thenReturn(response.getTracks());
 
-        var result = adapter.search("rock", 2);
+        com.tagnote.application.catalog.search.model.TrackSearchResult result = adapter.search("rock", 2);
 
         assertThat(result.getItems()).extracting(TrackSearchItem::getSpotifyTrackId).containsExactly("t1", "t2");
         assertThat(result.getTotalCount()).isEqualTo(25);

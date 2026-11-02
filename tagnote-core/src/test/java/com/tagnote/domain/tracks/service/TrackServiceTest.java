@@ -18,7 +18,7 @@ class TrackServiceTest {
 
     @Test
     void detail_delegates_to_provider() {
-        var track = TrackData.of("t", "A", "Title", "Album", "NO_IMAGE", "a", "al");
+        com.tagnote.core.domain.tracks.service.dto.TrackData track = TrackData.of("t", "A", "Title", "Album", "NO_IMAGE", "a", "al");
         when(detail.getTrack("t")).thenReturn(track);
         assertThat(service.getDetail("t")).isSameAs(track);
         verify(detail).getTrack("t");

@@ -1226,6 +1226,8 @@ GET /api/catalog/albums/{spotifyAlbumId}/tracks?page=0
 
 Artist Album 목록은 Spotify 기본 포함 범위(Album, Single, Compilation, Appears On)와 순서를 유지하고 로컬 필터링·중복 제거를 하지 않는다. 각 item은 `spotifyId`, `title`, `imageUrl`, `releaseDate`, nullable `releaseType`을 포함한다. `releaseType`은 Album 상세와 같은 `ALBUM`, `COMPILATION`, `SINGLE_EP` 분류(ADR-021/022)다. 목록의 `single`과 `compilation`은 Spotify 유형으로 즉시 분류하고, `album`은 Spotify Album Track 목록에서 전체 곡 수와 총 재생 시간을 확인한다. 6곡 이하이면 추가 페이지 없이 `SINGLE_EP`, 7곡 이상은 30분 이상이 확인되면 후속 페이지 조회를 중단한다. 개별 Track 조회 실패나 metadata 부족 시 해당 item의 `releaseType`만 null로 두고 나머지 목록은 반환한다. Album Track 목록은 Spotify 디스크·트랙 순서를 유지하고 각 item에 `spotifyId`, `title`, nullable `artistName`, `discNumber`, `trackNumber`, `durationMs`를 포함한다. 이미지가 없으면 `NO_IMAGE`다. 목록 GET도 Catalog 저장, DB 조회, 태그 계산 및 enrichment를 수행하지 않으며 최초 Spotify 목록 조회 장애는 기존 `SPOTIFY_EXCEPTION` 계약을 따른다.
 
+Artist Album 목록에 `releaseType=ALL|ALBUM|SINGLE_EP|COMPILATION`을 명시하면 서버의 아티스트별 단일 인덱스에서 분류 후 0-based `page`(크기 10)를 조회한다(ADR-024/025). Spotify 원본 창은 `total`이 가리키는 offset 범위까지 순회하며, 한 창이 10건보다 적어도 다음 offset을 읽는다. HTTP 200의 기존 `ApiResult` 응답에는 `items`, 선택 유형에서 실제 수집된 항목의 `totalCount`, `classificationComplete`, `unclassifiedCount`가 있다. `ALL.totalCount`는 원본 창이 짧을 때 Spotify 원본 `total`보다 작을 수 있다. 분류 불가 항목은 `ALL`에 포함되지만 유형별 목록에서는 제외된다. 구축 중에는 HTTP 202, `Retry-After: 1`, `response.status=BUILDING`이며 클라이언트는 재요청한다. 목록 수집 실패는 기존 `SPOTIFY_EXCEPTION` 오류 계약이다. `releaseType` 생략 시 위 Spotify 원본 페이지·전체 건수 계약을 유지한다. 빈 값·허용되지 않은 유형 또는 음수 page는 HTTP 400이다. 완전한 Redis 스냅샷은 15분, 불완전한 스냅샷은 1분 캐시한다.
+
 ### Track Import
 
 ```http

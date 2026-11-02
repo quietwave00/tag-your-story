@@ -45,15 +45,15 @@ class DiscogsClientTest {
                          "genres":["Electronic"],"styles":["Ambient"],"ignored":true}
                         """, MediaType.APPLICATION_JSON));
 
-        var masterCandidates = client.searchAlbums(
+        java.util.List<com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumCandidate> masterCandidates = client.searchAlbums(
                 new AlbumSearchQuery(SearchField.RELEASE_TITLE, "Album", List.of("Artist")),
                 EntityType.MASTER
         );
-        var releaseCandidates = client.searchAlbums(
+        java.util.List<com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumCandidate> releaseCandidates = client.searchAlbums(
                 new AlbumSearchQuery(SearchField.TRACK, "Track", List.of("Artist")),
                 EntityType.RELEASE
         );
-        var details = client.getAlbum(EntityType.MASTER, 10L);
+        com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumDetails details = client.getAlbum(EntityType.MASTER, 10L);
 
         assertThat(masterCandidates).singleElement().satisfies(candidate -> {
             assertThat(candidate.type()).isEqualTo(EntityType.MASTER);

@@ -32,7 +32,7 @@ class EmailNormalizerTest {
         User pending = User.builder().userKey("google-sub")
                 .email(" User@Example.com ").nickname("listener").build();
 
-        var entity = pending.toEntity();
+        com.tagnote.core.domain.user.UserEntity entity = pending.toEntity();
         assertThat(entity.getUserKey()).isEqualTo("google-sub");
         assertThat(entity.getSubject()).isEqualTo("google-sub");
         assertThat(entity.getProvider()).isEqualTo(AccountProvider.GOOGLE);
@@ -41,7 +41,7 @@ class EmailNormalizerTest {
 
     @Test
     void 관계_참조용_user_id만_있는_객체는_email없이_Entity로_변환할_수_있다() {
-        var reference = User.builder().userId(42L).build().toEntity();
+        com.tagnote.core.domain.user.UserEntity reference = User.builder().userId(42L).build().toEntity();
 
         assertThat(reference.getUserId()).isEqualTo(42L);
         assertThat(reference.getEmail()).isNull();

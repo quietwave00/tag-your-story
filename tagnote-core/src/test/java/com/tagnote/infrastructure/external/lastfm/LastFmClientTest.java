@@ -34,7 +34,7 @@ class LastFmClientTest {
                           "tag":[{"name":"Ambient","count":"20"},{"name":"Drone","count":19}]}}
                         """, MediaType.APPLICATION_JSON));
 
-        var result = fixture.client.getTrackTopTags("Artist", "Track");
+        com.tagnote.application.enrichment.matching.model.LastFmCatalogData.TopTags result = fixture.client.getTrackTopTags("Artist", "Track");
 
         assertThat(result.artistName()).isEqualTo("Artist");
         assertThat(result.title()).isEqualTo("Track");

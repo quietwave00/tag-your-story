@@ -12,13 +12,13 @@ class SpotifyTrackMetadataAdapterTest {
 
     @Test
     void import_preserves_both_artist_credit_orders_and_isrc() {
-        var track = SpotifyFixtures.read("""
+        com.tagnote.infrastructure.external.spotify.dto.SpotifyJson.Track track = SpotifyFixtures.read("""
                 {"id":"t1","name":"Title","duration_ms":240000,"external_ids":{"isrc":"ISRC-1"},
                  "artists":[{"id":"a","name":"A"},{"id":"a","name":"Duplicate"},{"id":"b","name":"B"}],
                  "album":{"id":"al","name":"Album","release_date":"2024-03-15","artists":[{"id":"c","name":"C"}]}}
                 """, SpotifyJson.Track.class);
         when(client.track("t1")).thenReturn(track);
-        var metadata = adapter.getTrack("t1");
+        com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata metadata = adapter.getTrack("t1");
         assertThat(metadata.getIsrc()).isEqualTo("ISRC-1");
         assertThat(metadata.getReleaseYear()).isEqualTo(2024);
         assertThat(metadata.getTrackArtists()).extracting(a -> a.getSpotifyArtistId() + ":" + a.getPosition())
@@ -29,7 +29,7 @@ class SpotifyTrackMetadataAdapterTest {
 
     @Test
     void missing_track_artists_rejects_import() {
-        var track = SpotifyFixtures.read("""
+        com.tagnote.infrastructure.external.spotify.dto.SpotifyJson.Track track = SpotifyFixtures.read("""
                 {"id":"t1","name":"Title","duration_ms":240000,"artists":[],"album":{"id":"al","name":"Album"}}
                 """, SpotifyJson.Track.class);
         when(client.track("t1")).thenReturn(track);

@@ -23,7 +23,7 @@ class PrincipalOauth2UserServiceTest {
         when(accounts.loginOrCreate("sub-1", " User@Example.com "))
                 .thenReturn(User.builder().userId(42L).role(Role.ROLE_USER).build());
 
-        var principal = service.login(Map.of("sub", "sub-1", "email", " User@Example.com ", "email_verified", true));
+        com.tagnote.api.auth.PrincipalDetails principal = service.login(Map.of("sub", "sub-1", "email", " User@Example.com ", "email_verified", true));
 
         assertThat(principal.getUserId()).isEqualTo(42L);
         assertThat(principal.getAuthorities()).extracting("authority").containsExactly("ROLE_USER");

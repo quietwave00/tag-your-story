@@ -50,10 +50,10 @@ class MusicBrainzClientTest {
                 {"id":"release-group-1","genres":[{"name":"Electronic","count":2}]}
                 """, MediaType.APPLICATION_JSON));
 
-        var candidates = client.searchByIsrc("USABC1234567");
-        var recording = client.getRecording("recording-1");
-        var recordingReleaseGroups = client.getRecordingReleaseGroups("recording-1");
-        var releaseGroup = client.getReleaseGroup("release-group-1");
+        java.util.List<com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.RecordingCandidate> candidates = client.searchByIsrc("USABC1234567");
+        com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.RecordingDetails recording = client.getRecording("recording-1");
+        com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.RecordingDetails recordingReleaseGroups = client.getRecordingReleaseGroups("recording-1");
+        com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.ReleaseGroupDetails releaseGroup = client.getReleaseGroup("release-group-1");
 
         assertThat(candidates).singleElement().satisfies(candidate -> {
             assertThat(candidate.id()).isEqualTo("recording-1");

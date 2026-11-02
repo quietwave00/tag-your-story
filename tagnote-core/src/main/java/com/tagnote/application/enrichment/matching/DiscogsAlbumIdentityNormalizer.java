@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 @Component
 public class DiscogsAlbumIdentityNormalizer {
@@ -45,7 +46,7 @@ public class DiscogsAlbumIdentityNormalizer {
         if (value == null) {
             return Optional.empty();
         }
-        var matcher = TRAILING_SLASH_LIST.matcher(value.trim());
+        Matcher matcher = TRAILING_SLASH_LIST.matcher(value.trim());
         if (!matcher.matches()) {
             return Optional.empty();
         }

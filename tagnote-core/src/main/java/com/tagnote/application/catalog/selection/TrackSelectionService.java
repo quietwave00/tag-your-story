@@ -18,11 +18,13 @@ import com.tagnote.application.enrichment.model.ProviderEnrichmentStatus;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.application.resolution.model.ResolvedTagResult;
 import com.tagnote.domain.taxonomy.matching.TagNameNormalizer;
+import com.tagnote.domain.taxonomy.matching.TagMatchResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +60,7 @@ public class TrackSelectionService {
         CollectedExternalTags collected = new CollectedExternalTags(
                 enrichment.tags().albumInputs().stream().filter(this::persistable).toList(),
                 enrichment.tags().trackInputs().stream().filter(this::persistable).toList());
-        var matches = tagBootstrapService.prepare(collected);
+        Map<String, TagMatchResult> matches = tagBootstrapService.prepare(collected);
         ObservationProcessingResult albumResult = ObservationProcessingResult.empty();
         ObservationProcessingResult trackResult = ObservationProcessingResult.empty();
         if (!collected.albumInputs().isEmpty()) {

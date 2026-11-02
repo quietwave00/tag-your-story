@@ -35,7 +35,7 @@ class SmtpSignupMailSenderTest {
 
         sender.sendCode("user@example.com", "123456");
 
-        var message = org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
+        org.mockito.ArgumentCaptor<org.springframework.mail.SimpleMailMessage> message = org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mail).send(message.capture());
         assertThat(message.getValue().getFrom()).isEqualTo("noreply@example.com");
         assertThat(message.getValue().getTo()).containsExactly("user@example.com");

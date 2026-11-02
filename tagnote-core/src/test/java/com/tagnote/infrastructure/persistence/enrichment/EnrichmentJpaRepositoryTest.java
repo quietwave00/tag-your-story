@@ -334,14 +334,14 @@ class EnrichmentJpaRepositoryTest {
         entityManager.clear();
 
         PersistenceUnitUtil persistence = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
-        var observation = observationRepository.findAll().get(0);
-        var assertion = assertionRepository.findAll().get(0);
+        com.tagnote.domain.enrichment.observation.ExternalTagObservationEntity observation = observationRepository.findAll().get(0);
+        com.tagnote.domain.enrichment.assertion.TagAssertionEntity assertion = assertionRepository.findAll().get(0);
 
         assertThat(persistence.isLoaded(observation, "matchedTag")).isFalse();
         assertThat(persistence.isLoaded(assertion, "tag")).isFalse();
 
         entityManager.clear();
-        var bulkObservations = observationRepository.findExistingForInputs(
+        java.util.List<com.tagnote.domain.enrichment.observation.ExternalTagObservationEntity> bulkObservations = observationRepository.findExistingForInputs(
                 SubjectType.TRACK,
                 track.getTrackId(),
                 List.of(ExternalTagSource.MUSICBRAINZ),

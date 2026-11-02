@@ -36,7 +36,7 @@ public class NotificationServiceTest {
 
     @Test
     void 지연된_알림은_탈퇴한_수신자에게_저장하지_않는다() {
-        var notification = NotificationFixture.createNotification(1L);
+        com.tagnote.core.domain.notification.service.Notification notification = NotificationFixture.createNotification(1L);
         when(users.findByUserIdForUpdate(1L)).thenReturn(Optional.of(UserEntity.builder()
                 .userId(1L).userStatus(UserStatus.WITHDRAWN).build()));
 

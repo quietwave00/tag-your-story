@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriBuilder;
 
 import java.util.List;
 import java.util.Locale;
@@ -76,7 +77,7 @@ public class DiscogsClient implements DiscogsCatalogClient {
         try {
             response = restClient.get()
                     .uri(uri -> {
-                        var builder = uri.path("/database/search")
+                        UriBuilder builder = uri.path("/database/search")
                                 .queryParam("type", type.name().toLowerCase(Locale.ROOT))
                                 .queryParam(searchParameter(query), query.value())
                                 .queryParam("per_page", 100);

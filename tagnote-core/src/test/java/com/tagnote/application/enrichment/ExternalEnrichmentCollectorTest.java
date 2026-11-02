@@ -57,7 +57,7 @@ class ExternalEnrichmentCollectorTest {
                 provider(ExternalTagSource.MUSICBRAINZ, result)
         ), 1000);
 
-        var collected = collector.collect(importedTrack());
+        com.tagnote.application.enrichment.model.ExternalEnrichmentCollection collected = collector.collect(importedTrack());
 
         assertThat(collected.tags().trackInputs())
                 .extracting(ExternalTagInput::source)
@@ -82,7 +82,7 @@ class ExternalEnrichmentCollectorTest {
                         CatalogExternalIdentityMatch.none()
                 ));
 
-        var collected = collector(List.of(failed, succeeded), 1000).collect(importedTrack());
+        com.tagnote.application.enrichment.model.ExternalEnrichmentCollection collected = collector(List.of(failed, succeeded), 1000).collect(importedTrack());
 
         assertThat(collected.tags().trackInputs()).singleElement()
                 .extracting(ExternalTagInput::source)
@@ -100,7 +100,7 @@ class ExternalEnrichmentCollectorTest {
             return ProviderEnrichmentResult.withoutData(source, ProviderEnrichmentStatus.EMPTY);
         });
 
-        var collected = collector(List.of(slow), 30).collect(importedTrack());
+        com.tagnote.application.enrichment.model.ExternalEnrichmentCollection collected = collector(List.of(slow), 30).collect(importedTrack());
 
         assertThat(collected.tags()).isEqualTo(CollectedExternalTags.empty());
         assertThat(collected.providerResults()).singleElement()

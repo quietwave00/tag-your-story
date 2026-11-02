@@ -3,6 +3,8 @@ package com.tagnote.api.domain.catalog;
 import com.tagnote.api.support.WebMvcMethodSecurityTestConfig;
 import com.tagnote.application.catalog.detail.CatalogDetailService;
 import com.tagnote.application.catalog.detail.model.CatalogReleaseType;
+import com.tagnote.application.catalog.detail.model.ArtistAlbumIndexPage;
+import com.tagnote.application.catalog.detail.model.ArtistAlbumListing;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumDetail;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumSummary;
 import com.tagnote.application.catalog.detail.model.SpotifyAlbumTrack;
@@ -18,6 +20,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CatalogDetailController.class)
-@Import(WebMvcMethodSecurityTestConfig.class)
+@Import({WebMvcMethodSecurityTestConfig.class, CatalogDetailRequestValidator.class})
 class CatalogDetailControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -83,8 +86,9 @@ class CatalogDetailControllerTest {
 
     @Test
     void 아티스트_앨범_목록은_선택한_페이지와_Spotify_전체_건수를_반환한다() throws Exception {
-        when(catalogDetailService.getArtistAlbums("artist-1", 2)).thenReturn(new SpotifyCatalogPage<>(
-                List.of(new SpotifyAlbumSummary("album-1", "Album", "cover", "2024-03", CatalogReleaseType.SINGLE_EP)), 31));
+        when(catalogDetailService.getArtistAlbumListing("artist-1", null, 2)).thenReturn(Optional.of(
+                ArtistAlbumListing.original(new SpotifyCatalogPage<>(
+                        List.of(new SpotifyAlbumSummary("album-1", "Album", "cover", "2024-03", CatalogReleaseType.SINGLE_EP)), 31))));
 
         mockMvc.perform(get("/api/catalog/artists/artist-1/albums").param("page", "2"))
                 .andExpect(status().isOk())
@@ -94,7 +98,42 @@ class CatalogDetailControllerTest {
                 .andExpect(jsonPath("$.response.items[0].releaseDate").value("2024-03"))
                 .andExpect(jsonPath("$.response.items[0].releaseType").value("SINGLE_EP"))
                 .andExpect(jsonPath("$.response.totalCount").value(31));
-        verify(catalogDetailService).getArtistAlbums("artist-1", 2);
+        verify(catalogDetailService).getArtistAlbumListing("artist-1", null, 2);
+    }
+
+    @Test
+    void 유형별_인덱스_구축_중에는_202와_재시도_헤더를_반환한다() throws Exception {
+        when(catalogDetailService.getArtistAlbumListing("artist-1", "ALBUM", 0)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/catalog/artists/artist-1/albums").param("releaseType", "ALBUM"))
+                .andExpect(status().isAccepted())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Retry-After", "1"))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response.status").value("BUILDING"));
+    }
+
+    @Test
+    void 유형별_페이지는_분류_완료_상태와_확정된_건수를_반환한다() throws Exception {
+        when(catalogDetailService.getArtistAlbumListing("artist-1", "SINGLE_EP", 1))
+                .thenReturn(Optional.of(ArtistAlbumListing.indexed(new ArtistAlbumIndexPage(
+                        List.of(new SpotifyAlbumSummary("single", "Single", "cover", null, CatalogReleaseType.SINGLE_EP)),
+                        11, false, 2))));
+
+        mockMvc.perform(get("/api/catalog/artists/artist-1/albums")
+                        .param("releaseType", "SINGLE_EP").param("page", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response.items[0].spotifyId").value("single"))
+                .andExpect(jsonPath("$.response.totalCount").value(11))
+                .andExpect(jsonPath("$.response.classificationComplete").value(false))
+                .andExpect(jsonPath("$.response.unclassifiedCount").value(2));
+    }
+
+    @Test
+    void 잘못된_발매_유형은_400을_반환한다() throws Exception {
+        mockMvc.perform(get("/api/catalog/artists/artist-1/albums").param("releaseType", ""))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/catalog/artists/artist-1/albums").param("releaseType", "OTHER"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

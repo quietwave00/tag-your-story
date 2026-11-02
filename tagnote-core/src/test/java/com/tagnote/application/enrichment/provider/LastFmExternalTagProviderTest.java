@@ -53,8 +53,8 @@ class LastFmExternalTagProviderTest {
                 new TopTags("Album Artist", "Album", List.of(new Tag("Electronic", 50)))
         );
 
-        var result = provider.collect(track, deadline());
-        var repeated = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult repeated = provider.collect(track, deadline());
 
         assertThat(repeated.tags()).isEqualTo(result.tags());
         assertThat(result.tags().trackInputs())
@@ -93,7 +93,7 @@ class LastFmExternalTagProviderTest {
                 new TopTags("Album Artist", "Album", List.of(new Tag("Electronic", 50)))
         );
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().trackInputs()).isEmpty();
         assertThat(result.tags().albumInputs()).singleElement()
@@ -121,7 +121,7 @@ class LastFmExternalTagProviderTest {
                 new TopTags("Wrong Artist", "Album", List.of(new Tag("Electronic", 50)))
         );
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.status()).isEqualTo(ProviderEnrichmentStatus.SUCCESS);
         assertThat(result.tags().trackInputs()).singleElement()
@@ -152,7 +152,7 @@ class LastFmExternalTagProviderTest {
                 new TopTags("Album Artist", "Album", List.of())
         );
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().trackInputs()).singleElement()
                 .extracting(input -> input.rawName())
@@ -184,7 +184,7 @@ class LastFmExternalTagProviderTest {
                 new TopTags("Album Artist", "Album", List.of())
         );
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().trackInputs()).singleElement()
                 .extracting(input -> input.rawName())

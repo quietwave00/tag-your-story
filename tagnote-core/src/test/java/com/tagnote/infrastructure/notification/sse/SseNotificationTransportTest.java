@@ -72,7 +72,7 @@ class SseNotificationTransportTest {
 
     @Test
     void 전송_데이터에는_공개_알림_필드만_포함한다() throws Exception {
-        var json = new ObjectMapper().readTree(transport.payload(
+        com.fasterxml.jackson.databind.JsonNode json = new ObjectMapper().readTree(transport.payload(
                 new NotificationDelivery(9L, 1L, "board", "name", NotificationType.COMMENT, false)));
         assertThat(json.size()).isEqualTo(5);
         assertThat(json.get("notificationId").asLong()).isEqualTo(9L);

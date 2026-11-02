@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriBuilder;
 
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class LastFmClient implements LastFmCatalogClient {
         try {
             response = restClient.get()
                     .uri(uri -> {
-                        var builder = uri.queryParam("method", method)
+                        UriBuilder builder = uri.queryParam("method", method)
                                 .queryParam("api_key", apiKey)
                                 .queryParam("format", "json")
                                 .queryParam("autocorrect", 0);

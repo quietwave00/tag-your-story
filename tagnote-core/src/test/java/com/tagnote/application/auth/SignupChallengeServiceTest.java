@@ -39,7 +39,7 @@ class SignupChallengeServiceTest {
         verify(store).reserveNew(eq(id), eq("user@example.com"), eq("$2a$hashed-password"),
                 eq(verifier), anyString(), anyString());
         verify(store).activate(id, verifier);
-        var order = inOrder(store, sender);
+        org.mockito.InOrder order = inOrder(store, sender);
         order.verify(store).reserveNew(anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
         order.verify(sender).sendCode(anyString(), anyString());
         order.verify(store).activate(anyString(), anyString());
@@ -77,7 +77,7 @@ class SignupChallengeServiceTest {
 
         service.resend("53e65cc8-8e8e-49eb-a309-c084566a8051", "192.0.2.1");
 
-        var order = inOrder(store, sender);
+        org.mockito.InOrder order = inOrder(store, sender);
         order.verify(store).reserveResend(anyString(), anyString(), anyString(), anyString());
         order.verify(sender).sendCode(eq("user@example.com"), matches("[0-9]{6}"));
         order.verify(store).activate(anyString(), anyString());

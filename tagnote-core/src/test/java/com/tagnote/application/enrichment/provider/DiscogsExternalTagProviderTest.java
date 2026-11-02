@@ -59,7 +59,7 @@ class DiscogsExternalTagProviderTest {
                 List.of("Ambient")
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().trackInputs()).isEmpty();
         assertThat(result.tags().albumInputs()).hasSize(2);
@@ -112,7 +112,7 @@ class DiscogsExternalTagProviderTest {
                 List.of("Ambient")
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().albumInputs())
                 .extracting(input -> input.externalRef())
@@ -217,7 +217,7 @@ class DiscogsExternalTagProviderTest {
                 List.of("Classic Rock")
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().albumInputs())
                 .extracting(input -> input.externalRef())
@@ -260,7 +260,7 @@ class DiscogsExternalTagProviderTest {
                 List.of("Alternative Rock")
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().albumInputs())
                 .extracting(input -> input.externalRef())
@@ -301,7 +301,7 @@ class DiscogsExternalTagProviderTest {
                 List.of()
         ));
 
-        var result = provider.collect(track, deadline());
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track, deadline());
 
         assertThat(result.tags().albumInputs()).singleElement()
                 .extracting(input -> input.externalRef())

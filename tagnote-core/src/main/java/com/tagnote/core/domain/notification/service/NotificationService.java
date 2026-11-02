@@ -4,6 +4,7 @@ import com.tagnote.core.domain.notification.NotificationEntity;
 import com.tagnote.core.domain.notification.dto.command.NotificationReadCommand;
 import com.tagnote.core.domain.notification.repository.NotificationRepository;
 import com.tagnote.core.domain.user.service.User;
+import com.tagnote.core.domain.user.UserEntity;
 import com.tagnote.core.domain.user.Role;
 import com.tagnote.core.domain.user.UserStatus;
 import com.tagnote.core.domain.user.repository.UserRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +30,13 @@ public class NotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification save(Notification notification) {
         // Lock the recipient so a delayed event cannot create a notification after withdrawal.
-        var subscriber = users.findByUserIdForUpdate(notification.getSubscriber().getUserId());
+        Optional<UserEntity> subscriber = users.findByUserIdForUpdate(notification.getSubscriber().getUserId());
         if (subscriber.isEmpty() || subscriber.get().getUserStatus() != UserStatus.ACTIVE
                 || subscriber.get().getRole() != Role.ROLE_USER) {
             return null;
         }
         if (notification.getPublisher() != null) {
-            var publisher = users.findByUserId(notification.getPublisher().getUserId());
+            Optional<UserEntity> publisher = users.findByUserId(notification.getPublisher().getUserId());
             if (publisher.isEmpty() || publisher.get().getUserStatus() != UserStatus.ACTIVE) {
                 return null;
             }

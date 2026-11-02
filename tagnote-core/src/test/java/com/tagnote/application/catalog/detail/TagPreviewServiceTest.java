@@ -26,7 +26,7 @@ class TagPreviewServiceTest {
                 row("C", "c", ExternalTagSource.LASTFM),
                 row("D", "d", ExternalTagSource.LASTFM)));
 
-        var preview = service.fromProcessed(album, track);
+        java.util.List<com.tagnote.application.catalog.detail.model.PreviewTagDetail> preview = service.fromProcessed(album, track);
 
         assertThat(preview).extracting(item -> item.name())
                 .containsExactly("AMBIENT", "Night Drive", "A", "B", "C");

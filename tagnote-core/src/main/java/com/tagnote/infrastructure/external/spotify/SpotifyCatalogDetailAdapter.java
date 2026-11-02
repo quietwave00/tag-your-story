@@ -35,7 +35,7 @@ public class SpotifyCatalogDetailAdapter implements SpotifyCatalogDetailProvider
                 .filter(Objects::nonNull)
                 .map(artist -> new SpotifyAlbumDetail.ArtistCredit(artist.getId(), artist.getName()))
                 .toList();
-        var tracks = album.getTracks();
+        Page<Track> tracks = album.getTracks();
         Integer totalTracks = tracks == null ? null : tracks.getTotal();
         String albumType = album.getAlbumType();
         Long observedDurationMs = "album".equalsIgnoreCase(albumType) && totalTracks != null && totalTracks > 6
@@ -77,7 +77,15 @@ public class SpotifyCatalogDetailAdapter implements SpotifyCatalogDetailProvider
             if (tracks == null) {
                 return null;
             }
+            if (knownTotal != null && !Objects.equals(tracks.getTotal(), knownTotal)) {
+                return null;
+            }
             Integer totalTracks = knownTotal != null ? knownTotal : tracks.getTotal();
+            Track[] firstPage = tracks.getItems();
+            if (totalTracks != null && totalTracks > 6
+                    && (firstPage == null || firstPage.length != Math.min(totalTracks, TRACK_PAGE_SIZE))) {
+                return null;
+            }
             Long durationMs = totalTracks != null && totalTracks > 6
                     ? observedDurationMs(album.getId(), tracks, totalTracks) : null;
             return CatalogReleaseType.classify(albumType, totalTracks, durationMs);

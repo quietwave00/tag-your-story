@@ -50,6 +50,18 @@ class SpotifyHttpClientTest {
     }
 
     @Test
+    void 아티스트_앨범_후속_페이지에_정확한_offset을_보낸다() {
+        when(cache.get("", CacheSpec.SPOTIFY_ACCESS_TOKEN)).thenReturn("token");
+        api.expect(once(), request -> assertThat(request.getURI().toString())
+                        .contains("/v1/artists/ar/albums?").contains("limit=10").contains("offset=20"))
+                .andRespond(withSuccess("{\"total\":31,\"items\":[{\"id\":\"album-21\",\"album_type\":\"album\",\"total_tracks\":6}]}",
+                        MediaType.APPLICATION_JSON));
+
+        assertThat(client.artistAlbums("ar", 2).getItems()[0].getId()).isEqualTo("album-21");
+        api.verify();
+    }
+
+    @Test
     void unauthorized_invalidates_cached_token_and_retries_once() {
         AtomicReference<String> cached = new AtomicReference<>("old");
         when(cache.get("", CacheSpec.SPOTIFY_ACCESS_TOKEN)).thenAnswer(call -> cached.get());

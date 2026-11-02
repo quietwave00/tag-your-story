@@ -135,9 +135,9 @@ class CatalogScreenSearchServiceTest {
                 tracks, List.of(), List.of(), 60, 0, 0));
         CatalogScreenSearchService service = new CatalogScreenSearchService(recorder, provider, store);
 
-        var result = service.searchType("in love", 0,
+        com.tagnote.application.catalog.search.model.CatalogSearchResult result = service.searchType("in love", 0,
                 com.tagnote.application.catalog.search.model.CatalogSearchScope.TRACK);
-        var second = service.searchType("in love", 1,
+        com.tagnote.application.catalog.search.model.CatalogSearchResult second = service.searchType("in love", 1,
                 com.tagnote.application.catalog.search.model.CatalogSearchScope.TRACK);
 
         assertThat(result.getItems().get(0).getSpotifyId()).isEqualTo("exact");

@@ -81,7 +81,7 @@ class TrackTagResolutionIntegrationTest {
                 SubjectRef.album(album), tag, AssertionSource.DISCOGS, EvidenceType.EXPLICIT_STYLE, 0.80
         ));
 
-        var result = resolutionService.resolve(SubjectRef.track(track));
+        java.util.List<com.tagnote.application.resolution.model.ResolvedTagResult> result = resolutionService.resolve(SubjectRef.track(track));
         entityManager.clear();
 
         assertThat(result).singleElement().satisfies(resolved -> {
