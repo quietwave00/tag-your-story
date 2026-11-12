@@ -4,6 +4,7 @@ import com.tagnote.application.catalog.importer.model.ImportedArtist;
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
+import com.tagnote.application.enrichment.diagnostics.EnrichmentDiagnostics;
 import com.tagnote.application.enrichment.exception.ExternalProviderException;
 import com.tagnote.application.enrichment.matching.LastFmEntityMatchingService;
 import com.tagnote.application.enrichment.matching.MusicEditionTitleNormalizer;
@@ -78,6 +79,9 @@ public class LastFmExternalTagProvider implements ExternalTagProvider {
                 if (response.tags().isEmpty()) {
                     String canonicalTitle = editionTitleNormalizer.canonicalTitle(track.getTitle());
                     if (!canonicalTitle.equals(track.getTitle())) {
+                        EnrichmentDiagnostics.event("lastfm_fallback", java.util.Map.of(
+                                "subject", "TRACK", "from", track.getTitle(), "to", canonicalTitle,
+                                "reason", "ORIGINAL_EMPTY"));
                         response = exactTrackTopTags(trackArtist, canonicalTitle);
                     }
                 }
@@ -97,6 +101,8 @@ public class LastFmExternalTagProvider implements ExternalTagProvider {
             try {
                 TopTags response = client.getAlbumTopTags(albumArtist, track.getAlbum().getTitle());
                 if (matchingService.matches(albumArtist, track.getAlbum().getTitle(), response)) {
+                    EnrichmentDiagnostics.event("lastfm_identity", java.util.Map.of(
+                            "subject", "ALBUM", "matched", true));
                     albumMatched = true;
                     albumInputs = inputs(
                             response.tags(),
@@ -104,6 +110,8 @@ public class LastFmExternalTagProvider implements ExternalTagProvider {
                             confidence.getLastfmAlbumCommunityTag()
                     );
                 } else if (firstFailure == null) {
+                    EnrichmentDiagnostics.event("lastfm_identity", java.util.Map.of(
+                            "subject", "ALBUM", "matched", false));
                     firstFailure = new ExternalProviderException(
                             ProviderEnrichmentStatus.NOT_FOUND,
                             "Last.fm Album identity did not match exactly"
@@ -127,6 +135,29 @@ public class LastFmExternalTagProvider implements ExternalTagProvider {
     }
 
     @Override
+    public ProviderEnrichmentResult collectTrackDirect(ImportedTrack track, EnrichmentDeadline deadline) {
+        String artist = representativeArtist(track.getArtists());
+        if (artist == null) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "Last.fm Track lookup requires a Track Artist");
+        }
+        TopTags response = exactTrackTopTags(artist, track.getTitle());
+        if (response.tags().isEmpty()) {
+            String canonicalTitle = editionTitleNormalizer.canonicalTitle(track.getTitle());
+            if (!canonicalTitle.equals(track.getTitle())) {
+                EnrichmentDiagnostics.event("lastfm_fallback", java.util.Map.of(
+                        "subject", "TRACK", "from", track.getTitle(), "to", canonicalTitle,
+                        "reason", "ORIGINAL_EMPTY"));
+                response = exactTrackTopTags(artist, canonicalTitle);
+            }
+        }
+        return ProviderEnrichmentResult.completed(source(),
+                new CollectedExternalTags(List.of(), inputs(response.tags(),
+                        externalRef("track", artist, track.getTitle()),
+                        confidence.getLastfmTrackCommunityTag())), CatalogExternalIdentityMatch.none());
+    }
+
+    @Override
     public ProviderEnrichmentResult collectAlbum(ImportedAlbum album, EnrichmentDeadline deadline) {
         String artist = representativeArtist(album.getArtists());
         if (artist == null) {
@@ -135,9 +166,13 @@ public class LastFmExternalTagProvider implements ExternalTagProvider {
         }
         TopTags response = client.getAlbumTopTags(artist, album.getTitle());
         if (!matchingService.matches(artist, album.getTitle(), response)) {
+            EnrichmentDiagnostics.event("lastfm_identity", java.util.Map.of(
+                    "subject", "ALBUM", "matched", false));
             throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
                     "Last.fm Album identity did not match exactly");
         }
+        EnrichmentDiagnostics.event("lastfm_identity", java.util.Map.of(
+                "subject", "ALBUM", "matched", true));
         return ProviderEnrichmentResult.completed(source(),
                 new CollectedExternalTags(inputs(response.tags(),
                         externalRef("album", artist, album.getTitle()),
@@ -148,30 +183,50 @@ public class LastFmExternalTagProvider implements ExternalTagProvider {
     private TopTags exactTrackTopTags(String artist, String title) {
         TopTags response = client.getTrackTopTags(artist, title);
         if (!matchingService.matches(artist, title, response)) {
+            EnrichmentDiagnostics.event("lastfm_identity", java.util.Map.of(
+                    "subject", "TRACK", "matched", false));
             throw new ExternalProviderException(
                     ProviderEnrichmentStatus.NOT_FOUND,
                     "Last.fm Track identity did not match exactly"
             );
         }
+        EnrichmentDiagnostics.event("lastfm_identity", java.util.Map.of(
+                "subject", "TRACK", "matched", true));
         return response;
     }
 
     private List<ExternalTagInput> inputs(List<Tag> tags, String externalRef, double value) {
         LinkedHashMap<String, ExternalTagInput> unique = new LinkedHashMap<>();
-        for (Tag tag : tags) {
+        List<java.util.Map<String, Object>> excluded = EnrichmentDiagnostics.enabled()
+                ? new java.util.ArrayList<>() : null;
+        for (int rank = 0; rank < tags.size(); rank++) {
+            Tag tag = tags.get(rank);
             if (unique.size() >= config.getMaximumTagsPerSubject()) {
-                break;
-            }
-            if (tag.name() == null || tag.name().isBlank()) {
+                if (excluded == null) break;
+                if (excluded != null) excluded.add(java.util.Map.of("rank", rank + 1,
+                        "name", EnrichmentDiagnostics.safe(tag.name()), "reason", "LIMIT"));
                 continue;
             }
+            if (tag.name() == null || tag.name().isBlank()) {
+                if (excluded != null) excluded.add(java.util.Map.of("rank", rank + 1,
+                        "name", EnrichmentDiagnostics.safe(tag.name()), "reason", "BLANK"));
+                continue;
+            }
+            String normalized = normalizer.normalize(tag.name());
+            if (excluded != null && unique.containsKey(normalized)) excluded.add(java.util.Map.of(
+                    "rank", rank + 1, "name", tag.name(), "reason", "DUPLICATE"));
             unique.putIfAbsent(
-                    normalizer.normalize(tag.name()),
+                    normalized,
                     new ExternalTagInput(
                             source(), tag.name(), externalRef, EvidenceType.COMMUNITY_TAG, value
                     )
             );
         }
+        if (EnrichmentDiagnostics.enabled()) EnrichmentDiagnostics.event("lastfm_tag_selection", java.util.Map.of(
+                "rawCount", tags.size(), "selectedCount", unique.size(),
+                "selected", EnrichmentDiagnostics.bounded(unique.values().stream()
+                        .map(ExternalTagInput::rawName).toList()),
+                "excluded", EnrichmentDiagnostics.bounded(excluded)));
         return List.copyOf(unique.values());
     }
 

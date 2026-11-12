@@ -164,7 +164,8 @@ public class MusicBrainzClient implements MusicBrainzCatalogClient {
 
     private RecordingCandidate candidate(RecordingDto recording) {
         return new RecordingCandidate(
-                recording.id(), recording.title(), recording.length(), artistNames(recording.artistCredit())
+                recording.id(), recording.title(), recording.length(), artistNames(recording.artistCredit()),
+                recording.score()
         );
     }
 
@@ -227,6 +228,7 @@ public class MusicBrainzClient implements MusicBrainzCatalogClient {
             String id,
             String title,
             Integer length,
+            Integer score,
             @JsonProperty("artist-credit") List<ArtistCreditDto> artistCredit,
             List<GenreDto> genres,
             List<ReleaseDto> releases

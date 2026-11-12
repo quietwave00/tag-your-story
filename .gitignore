@@ -41,3 +41,4 @@ tag-story-react/
 
 # Local API smoke-test output
 auth-smoke-*.log
+/logs/

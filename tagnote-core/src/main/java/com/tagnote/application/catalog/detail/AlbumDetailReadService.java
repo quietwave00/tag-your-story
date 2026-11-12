@@ -23,15 +23,20 @@ public class AlbumDetailReadService {
     private final SubjectTagResolvedJpaRepository resolvedRepository;
 
     public Optional<AlbumDetail> findResolved(ImportedAlbum album) {
+        return findResolvedTags(album.getAlbumId())
+                .map(systemTags -> new AlbumDetail(album, systemTags));
+    }
+
+    public Optional<List<SystemTagDetail>> findResolvedTags(long catalogAlbumId) {
         List<SubjectTagResolvedEntity> resolved = resolvedRepository.findAllBySubjectWithTag(
-                SubjectType.ALBUM, album.getAlbumId());
+                SubjectType.ALBUM, catalogAlbumId);
         if (resolved.isEmpty()) return Optional.empty();
-        return Optional.of(new AlbumDetail(album, resolved.stream()
+        return Optional.of(resolved.stream()
                 .filter(row -> row.getStatus() != ResolvedStatus.HIDDEN)
                 .sorted(Comparator.comparingDouble(SubjectTagResolvedEntity::getScore).reversed()
                         .thenComparingLong(row -> row.getTag().getTagId()))
                 .map(row -> new SystemTagDetail(row.getTag().getTagId(), row.getTag().getName(), row.getScore()))
-                .toList()));
+                .toList());
     }
 
     public AlbumDetail fromResolved(ImportedAlbum album, List<ResolvedTagResult> resolved) {

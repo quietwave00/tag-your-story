@@ -1,6 +1,6 @@
 # CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001 — Artist Album 목록 발매 유형
 
-> 상태: 2026-10-30 사용자 요청과 재사용·효율 기준 검토 후 구현 중. 사용자 실행 검증 대기.
+> 상태: 2026-11-09 사용자 요청으로 계획 종료 및 completed 보관. 사용자 실행 검증이 확인되지 않아 수용 기준 통과로 표시하지 않는다.
 
 ## Goal
 
@@ -27,3 +27,7 @@ Artist Album 목록의 각 항목에 Album 상세와 동일한 `releaseType`을 
 - Artist Album 목록 DTO·Swagger·Server Spec·클라이언트 계약·테스트를 갱신했다. 개별 Album Track 조회 실패는 해당 항목의 null 유형으로 처리한다.
 - 변경 파일의 `git diff --check`는 통과했다. Gradle과 verify.sh는 실행하지 않았으며 사용자 실행 검증을 기다린다.
 - 2026-11-02: 구현 재점검에서 목록의 `total_tracks`와 Track 응답 건수 불일치, 불완전한 첫 Track 페이지를 null 분류로 처리하도록 보강했다. compilation·원본 순서/건수·정확히 30분·후속 페이지·불완전한 metadata·원본 목록 오류 전파 테스트를 추가했다. 변경 코드 파일 대상 `git diff --check`는 통과했다. 사용자 실행 검증은 아직 받지 않았다.
+
+## Closure Record (2026-11-09)
+
+사용자 요청에 따라 active 목록에서 completed로 보관한다. 구현·문서·테스트 코드 작성 기록은 유지한다. `./gradlew test`, `./gradlew check`, `./scripts/verify.sh`의 사용자 실행 결과 및 최종 Acceptance Criteria 리뷰는 미확인이다. 이 이동을 검증 통과로 해석하지 않는다.

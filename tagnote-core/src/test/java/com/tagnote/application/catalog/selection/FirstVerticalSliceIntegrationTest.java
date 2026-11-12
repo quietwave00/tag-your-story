@@ -1,6 +1,7 @@
 package com.tagnote.application.catalog.selection;
 
 import com.tagnote.application.catalog.detail.TrackDetailReadService;
+import com.tagnote.application.catalog.detail.CatalogDetailService;
 import com.tagnote.application.catalog.detail.TagPreviewService;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.CatalogTrackReadService;
@@ -11,6 +12,7 @@ import com.tagnote.application.catalog.importer.model.SpotifyArtistMetadata;
 import com.tagnote.application.catalog.importer.model.SpotifyTrackMetadata;
 import com.tagnote.application.catalog.importer.port.SpotifyTrackMetadataProvider;
 import com.tagnote.application.enrichment.ExternalEnrichmentCollector;
+import com.tagnote.application.enrichment.AlbumInheritanceRefreshService;
 import com.tagnote.application.enrichment.ObservationProcessingService;
 import com.tagnote.application.enrichment.ObservationWriteService;
 import com.tagnote.application.enrichment.TagBootstrapService;
@@ -136,6 +138,8 @@ class FirstVerticalSliceIntegrationTest {
 
     @MockBean private SpotifyTrackMetadataProvider spotifyProvider;
     @MockBean private ExternalEnrichmentCollector externalEnrichmentCollector;
+    @MockBean private AlbumInheritanceRefreshService albumInheritanceRefreshService;
+    @MockBean private CatalogDetailService catalogDetailService;
 
     @AfterEach
     void cleanUp() {
@@ -320,7 +324,7 @@ class FirstVerticalSliceIntegrationTest {
     }
 
     @Test
-    void lastfm만_미매칭이면_preview를_반환하고_반복_선택은_provider를_재호출하지_않는다() {
+    void lastfm만_미매칭이면_System_Tag를_생성하고_반복_선택은_provider를_재호출하지_않는다() {
         when(spotifyProvider.getTrack("track-1")).thenReturn(metadata());
         when(externalEnrichmentCollector.collect(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new ExternalEnrichmentCollection(
@@ -332,16 +336,17 @@ class FirstVerticalSliceIntegrationTest {
         TrackDetail first = selectionService.select("track-1");
         TrackDetail second = selectionService.select("track-1");
 
-        assertThat(first.systemTags()).isEmpty();
-        assertThat(first.previewTags()).singleElement().satisfies(preview -> {
-            assertThat(preview.name()).isEqualTo("Night Drive");
-            assertThat(preview.source()).isEqualTo(ExternalTagSource.LASTFM);
+        assertThat(first.systemTags()).singleElement().satisfies(tag ->
+                assertThat(tag.name()).isEqualTo("Night Drive"));
+        assertThat(first.previewTags()).isEmpty();
+        assertThat(second.systemTags()).isEqualTo(first.systemTags());
+        assertThat(tagRepository.findAll()).singleElement().satisfies(tag -> {
+            assertThat(tag.getType()).isEqualTo(TagType.UNCLASSIFIED);
+            assertThat(tag.getStatus()).isEqualTo(TagStatus.ACTIVE);
         });
-        assertThat(second.previewTags()).isEqualTo(first.previewTags());
-        assertThat(tagRepository.count()).isZero();
-        assertThat(assertionRepository.count()).isZero();
-        assertThat(resolvedRepository.count()).isZero();
-        assertThat(completionRepository.count()).isEqualTo(1);
+        assertThat(assertionRepository.count()).isEqualTo(1);
+        assertThat(resolvedRepository.count()).isEqualTo(1);
+        assertThat(completionRepository.count()).isZero();
         verify(externalEnrichmentCollector).collect(org.mockito.ArgumentMatchers.any());
     }
 
@@ -423,13 +428,11 @@ class FirstVerticalSliceIntegrationTest {
         TrackDetail detail = selectionService.select("track-1");
         int importExecutionCount = importQueryProbe.executionCount();
 
-        assertThat(detail.systemTags()).isEmpty();
+        assertThat(detail.systemTags()).hasSize(31);
         assertThat(observationRepository.count()).isEqualTo(31L);
-        assertThat(importQueryProbe.insertCountContaining(" into tag ")).isZero();
+        assertThat(importQueryProbe.insertCountContaining(" into tag ")).isEqualTo(31L);
         assertThat(importQueryProbe.selectCountContaining(" from track_artist ")).isZero();
         assertThat(importQueryProbe.selectCountContaining(" from album_artist ")).isZero();
-        assertThat(importQueryProbe.selectCountContaining(" from tag_assertion "))
-                .isLessThanOrEqualTo(4L);
         assertThat(importExecutionCount).isPositive();
         assertThat(importQueryProbe.selectCountContaining(" from tag_alias ")).isLessThanOrEqualTo(1);
         assertThat(importQueryProbe.selectCountContainingBoth(" from tag ", ".normalized_name in"))

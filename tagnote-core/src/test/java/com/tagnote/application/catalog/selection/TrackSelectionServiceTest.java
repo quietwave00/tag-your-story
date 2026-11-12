@@ -1,6 +1,7 @@
 package com.tagnote.application.catalog.selection;
 
 import com.tagnote.application.catalog.detail.TrackDetailReadService;
+import com.tagnote.application.catalog.detail.CatalogDetailService;
 import com.tagnote.application.catalog.detail.TagPreviewService;
 import com.tagnote.application.catalog.detail.model.TrackDetail;
 import com.tagnote.application.catalog.importer.CatalogExternalIdentityWriteService;
@@ -16,6 +17,8 @@ import com.tagnote.application.enrichment.model.CollectedExternalTags;
 import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
 import com.tagnote.application.enrichment.model.ObservationProcessingResult;
+import com.tagnote.application.enrichment.model.ProviderEnrichmentResult;
+import com.tagnote.application.enrichment.model.ProviderEnrichmentStatus;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.enrichment.observation.ExternalTagSource;
@@ -49,6 +52,8 @@ class TrackSelectionServiceTest {
     @Mock private TagBootstrapService tagBootstrapService;
     @Mock private TagPreviewService tagPreviewService;
     @Mock private TrackTagCompletionService completionService;
+    @Mock private CatalogDetailService catalogDetails;
+    @Mock private com.tagnote.application.enrichment.AlbumInheritanceRefreshService albumInheritanceRefreshService;
 
     private TrackSelectionService service;
 
@@ -64,7 +69,7 @@ class TrackSelectionServiceTest {
                 tagBootstrapService,
                 tagPreviewService,
                 completionService,
-                new TagNameNormalizer()
+                new TagNameNormalizer(), catalogDetails, albumInheritanceRefreshService
         );
     }
 
@@ -147,7 +152,7 @@ class TrackSelectionServiceTest {
                 tagBootstrapService,
                 tagPreviewService,
                 completionService,
-                new TagNameNormalizer()
+                new TagNameNormalizer(), catalogDetails, albumInheritanceRefreshService
         );
         when(trackImportService.importTrack("track-1")).thenReturn(imported);
         when(trackDetailReadService.findResolved(imported)).thenReturn(Optional.empty());
@@ -166,6 +171,27 @@ class TrackSelectionServiceTest {
                         org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList()
                 );
         verify(tagResolutionService).resolvePersistedTrack(imported);
+        verify(completionService, never()).complete(10L);
+    }
+
+    @Test
+    void 제공자가_빈_결과를_정상_반환하면_트랙_완료를_기록한다() {
+        ImportedTrack imported = importedTrack();
+        TrackDetail detail = new TrackDetail(imported, List.of());
+        when(trackImportService.importTrack("track-1")).thenReturn(imported);
+        when(trackDetailReadService.findResolved(imported)).thenReturn(Optional.empty());
+        when(externalEnrichmentCollector.collect(imported)).thenReturn(new ExternalEnrichmentCollection(
+                CollectedExternalTags.empty(), CatalogExternalIdentityMatch.none(),
+                List.of(ProviderEnrichmentResult.withoutData(
+                        ExternalTagSource.MUSICBRAINZ, ProviderEnrichmentStatus.EMPTY))));
+        when(tagResolutionService.resolvePersistedTrack(imported)).thenReturn(List.of());
+        when(trackDetailReadService.fromResolved(imported, List.of())).thenReturn(detail);
+        when(tagBootstrapService.prepare(org.mockito.ArgumentMatchers.any())).thenReturn(Map.of());
+        when(tagPreviewService.fromProcessed(ObservationProcessingResult.empty(),
+                ObservationProcessingResult.empty())).thenReturn(List.of());
+
+        assertThat(service.select("track-1")).isSameAs(detail);
+        verify(completionService).complete(10L);
     }
 
     private ExternalTagInput input(String name, String ref) {

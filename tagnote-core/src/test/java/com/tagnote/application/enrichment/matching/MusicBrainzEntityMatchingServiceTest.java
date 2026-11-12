@@ -85,6 +85,18 @@ class MusicBrainzEntityMatchingServiceTest {
     }
 
     @Test
+    void Isrc_404_이후에는_검증에_실패한_첫_후보를_건너뛰고_첫_유효후보를_고른다() {
+        RecordingCandidate rejected = new RecordingCandidate("wrong", "Other", 180_000, List.of("Artist"));
+        RecordingCandidate first = new RecordingCandidate("first", "Track Name", 180_000, List.of("Artist"));
+        RecordingCandidate second = new RecordingCandidate("second", "Track Name", 180_000, List.of("Artist"));
+
+        assertThat(service.matchFirstValidRecordingAfterIsrcNotFound(track(), List.of(rejected, first, second)))
+                .contains(first);
+        assertThat(service.matchRecordingByMetadata(track(), List.of(first, second))).isEmpty();
+        assertThat(service.matchFirstValidRecordingAfterIsrcNotFound(track(), List.of(rejected))).isEmpty();
+    }
+
+    @Test
     void release_group은_title_artist_year가_맞는_유일후보만_채택한다() {
         ReleaseGroupCandidate accepted = new ReleaseGroupCandidate(
                 "rg", "Album", 2026, List.of("Album Artist")

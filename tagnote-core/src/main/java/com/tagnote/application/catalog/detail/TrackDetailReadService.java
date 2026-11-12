@@ -24,8 +24,13 @@ public class TrackDetailReadService {
     private final SubjectTagResolvedJpaRepository resolvedRepository;
 
     public Optional<TrackDetail> findResolved(ImportedTrack track) {
+        return findResolvedTags(track.getCatalogTrackId())
+                .map(systemTags -> new TrackDetail(track, systemTags));
+    }
+
+    public Optional<List<SystemTagDetail>> findResolvedTags(long catalogTrackId) {
         List<SubjectTagResolvedEntity> resolved = resolvedRepository
-                .findAllBySubjectWithTag(SubjectType.TRACK, track.getCatalogTrackId());
+                .findAllBySubjectWithTag(SubjectType.TRACK, catalogTrackId);
         if (resolved.isEmpty()) {
             return Optional.empty();
         }
@@ -41,7 +46,7 @@ public class TrackDetailReadService {
                         row.getScore()
                 ))
                 .toList();
-        return Optional.of(new TrackDetail(track, systemTags));
+        return Optional.of(systemTags);
     }
 
     public TrackDetail fromResolved(ImportedTrack track, List<ResolvedTagResult> resolved) {

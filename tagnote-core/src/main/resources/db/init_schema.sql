@@ -151,6 +151,22 @@ create table album_tag_completion
     foreign key (album_id) references album (album_id)
 ) ENGINE = InnoDB;
 
+create table album_provider_evidence
+(
+    album_id bigint not null,
+    source varchar(32) not null,
+    status varchar(32) not null,
+    raw_tags clob,
+    lease_token varchar(36),
+    lease_until datetime(6),
+    completed_at datetime(6),
+    constraint pk_album_provider_evidence primary key (album_id, source),
+    constraint fk_album_provider_evidence_album foreign key (album_id) references album (album_id),
+    constraint ck_album_provider_evidence_status check
+        (status in ('IN_PROGRESS', 'SUCCESS', 'EMPTY', 'NOT_FOUND', 'FAILED', 'TIMEOUT')),
+    index idx_album_provider_evidence_lease (status, lease_until)
+) ENGINE = InnoDB;
+
 create table external_tag_observation
 (
     observation_id bigint primary key,

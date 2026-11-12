@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface TrackJpaRepository extends JpaRepository<TrackEntity, Long> {
 
@@ -27,4 +28,7 @@ public interface TrackJpaRepository extends JpaRepository<TrackEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select track from TrackEntity track where track.trackId = :trackId")
     Optional<TrackEntity> findByIdForUpdate(@Param("trackId") long trackId);
+
+    @Query("select track.trackId from TrackEntity track where track.album.albumId = :albumId")
+    List<Long> findIdsByAlbumId(@Param("albumId") long albumId);
 }

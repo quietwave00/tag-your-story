@@ -743,12 +743,22 @@ ISRC lookup이 복수 Recording을 반환하면 title, Artist와 설정된 durat
 후보만 확정하며, 최소 차이가 동률이면 매칭하지 않는다. ISRC가 없는 metadata fallback은
 기존처럼 조건을 통과한 후보가 정확히 하나일 때만 확정한다.
 
+ADR-026/028: ISRC 조회가 HTTP 404이면 제목·Artist metadata 검색으로
+넘어간다. 이 경로에서 제목·Artist·재생 시간 검증을 통과한 Recording이 여러 개면
+MusicBrainz 응답 순서의 첫 유효 후보를 선택한다. ISRC 조회의 복수 후보 판정과
+ISRC 부재·기타 후보 미일치 후 metadata 검색의 유일 후보 규칙은 유지한다.
+
 Discogs Album 검색은 canonical `release_title`, slash 목록형 trailing 괄호를 제거한
 base `release_title`, `track` title 순서로 시도한다. 각 시도는 MASTER 후 RELEASE 순서이며,
 Album title과 Artist 검증 뒤 정확히 하나인 후보만 확정한다. 복수 후보가 남으면 다음
 검색으로 우회하지 않는다.
 
 ### 13.4 External Tag 수집
+
+Album/provider 근거는 `(album_id, provider)` 상태와 함께 저장한다(ADR-029). 최초 Track은
+Track 직접 근거와 Album 근거를 각각 조회하고, 같은 Album의 후속 Track은 완료된 Album
+branch만 재사용한다. `FAILED`/`TIMEOUT` branch는 재시도하며, Album 근거가 새로 확정되면
+기존 Track의 상속 projection을 다시 계산한다. 외부 HTTP 호출은 DB lease transaction 밖에서 수행한다.
 
 ```text
 MusicBrainz / Discogs / Last.fm
@@ -764,10 +774,16 @@ raw tag는 매칭 실패 여부와 관계없이 저장한다.
 
 TAG-BOOTSTRAP-001/ADR-010 적용: 최초 import는 Album/Track 입력을 합쳐 approved alias와
 ACTIVE canonical `tag.normalized_name`을 bulk 조회한다. alias가 ambiguous이면 fallback하지
-않는다. 두 경로에서 매칭되지 않은 MusicBrainz 명시적 genre와 Discogs 명시적 genre/style만
-ACTIVE `UNCLASSIFIED` Tag로 생성하고 해당 subject에 APPROVED Assertion을 만든다.
-Last.fm COMMUNITY_TAG 단독으로는 Tag를 만들지 않는다. 아래 alias-only 흐름은
+않는다. 두 경로에서 매칭되지 않은 MusicBrainz 명시적 genre, Discogs 명시적 genre/style,
+Last.fm community tag는 ACTIVE `UNCLASSIFIED` Tag로 생성하고 해당 subject에 APPROVED Assertion을 만든다.
+아래 alias-only 흐름은
 범용 Observation 처리와 기존 재매칭 경로에 해당한다.
+
+ADR-027: identity 검증을 통과한 Last.fm 상위 5개 `COMMUNITY_TAG`도
+미매칭이면 ACTIVE/UNCLASSIFIED System Tag를 생성한다. `UNCLASSIFIED`는 내부 type이며
+화면에 표시할 태그 이름이 아니다. Last.fm Track/Album confidence와 Resolver 점수 기준은
+유지한다. 기존 `NEW` Observation과 `EMPTY_COMPLETED` subject의 일괄 재처리는
+이번 정책 변경 범위에 포함하지 않는다.
 
 ```text
 external_tag_observation.normalized_name
@@ -827,6 +843,7 @@ subject_tag_resolved
 표현이며 Tag ID/score가 없다. HIDDEN-only 결과는 raw preview로 우회 노출하지 않는다.
 정상 계산 후 resolved 0건이면 Track 완료 marker를 기록하며, transient provider 실패는
 완료로 기록하지 않는다.
+활성 외부 제공자가 0개이면 수집 결과가 없으므로 빈 결과 완료 marker를 기록하지 않는다.
 
 ```text
 Track
@@ -1290,6 +1307,34 @@ Album과 `systemTags`, `previewTags`, `tagDisplayStatus`를 포함한다. 기존
 `POST /api/tracks/import` 계약은 유지하되 deprecated로 표시한다. 새 클라이언트는
 `POST /api/catalog/import`를 사용한다. 빈 Album tag 계산도 완료 marker로
 기록하여 반복 요청에서 외부 provider를 재호출하지 않는다.
+활성 외부 제공자가 0개인 경우는 성공적인 빈 수집으로 취급하지 않아 Album 완료 marker를
+기록하지 않는다.
+
+### Track/Album 상세 화면의 태그 분리 조회
+
+```http
+GET /api/catalog/tracks/{spotifyTrackId}/tags
+GET /api/catalog/albums/{spotifyAlbumId}/tags
+```
+
+두 API는 인증 없이 Spotify ID를 path parameter로 받고 기존 `ApiResult` envelope에
+`systemTags`, `previewTags`, `tagDisplayStatus`만 반환한다. Track 요청은 TRACK subject의
+visible resolved System Tag를, Album 요청은 ALBUM subject의 visible resolved System Tag를
+읽는다. Track의 Album 상속과 HIDDEN 제외는 기존 Resolver/조회 정책을 따른다. 확정 결과가
+없을 때만 검증 전 raw preview를 최대 5개 표시하며, 둘 다 없으면 빈 배열과 `EMPTY`를
+반환한다. `systemTags` item은 `tagId`, `name`, `score`, `previewTags` item은 `name`,
+`source`다. `tagDisplayStatus`는 `CONFIRMED | PREVIEW | EMPTY`다.
+
+상세 화면은 먼저 `POST /api/catalog/import`에 `subjectType=TRACK|ALBUM`과 Spotify
+`spotifyId`를 보내 Catalog 저장, 외부 근거 수집 및 Resolver 계산을 트리거한다. 부분
+provider 실패 시에도 성공한 결과를 유지하는 기존 선택 서비스 정책을 따른다. 그 다음
+태그 GET은 저장된 resolved/preview 결과만 조회하며 외부 HTTP, DB write, Resolver
+계산을 수행하지 않는다. import 전 해당 Catalog Track/Album이 없으면 기존
+`TRACK_NOT_FOUND`/`ALBUM_NOT_FOUND` 오류를 반환한다(현재 HTTP 200,
+`success=false`, `response.status=404`). Catalog 대상이 있으나 표시할 태그가 없으면
+빈 목록과 `EMPTY`를 반환한다. 별도 상세 API인
+`GET /api/tracks/{trackId}`와 `GET /api/catalog/albums/{spotifyAlbumId}`는 태그 계산과
+Catalog 저장 없이 기존 메타데이터 계약을 유지한다.
 
 ### Track 상세
 

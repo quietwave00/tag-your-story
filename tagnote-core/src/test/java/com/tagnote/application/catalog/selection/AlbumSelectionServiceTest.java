@@ -1,6 +1,7 @@
 package com.tagnote.application.catalog.selection;
 
 import com.tagnote.application.catalog.detail.AlbumDetailReadService;
+import com.tagnote.application.catalog.detail.CatalogDetailService;
 import com.tagnote.application.catalog.detail.TagPreviewService;
 import com.tagnote.application.catalog.detail.model.AlbumDetail;
 import com.tagnote.application.catalog.detail.model.SystemTagDetail;
@@ -15,6 +16,8 @@ import com.tagnote.application.enrichment.model.CollectedExternalTags;
 import com.tagnote.application.enrichment.model.ExternalEnrichmentCollection;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
 import com.tagnote.application.enrichment.model.ObservationProcessingResult;
+import com.tagnote.application.enrichment.model.ProviderEnrichmentResult;
+import com.tagnote.application.enrichment.model.ProviderEnrichmentStatus;
 import com.tagnote.application.resolution.TagResolutionService;
 import com.tagnote.application.resolution.model.ResolvedTagResult;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
@@ -47,12 +50,15 @@ class AlbumSelectionServiceTest {
     @Mock AlbumDetailReadService details;
     @Mock TagPreviewService previews;
     @Mock AlbumTagCompletionService completion;
+    @Mock CatalogDetailService catalogDetails;
+    @Mock com.tagnote.application.enrichment.AlbumInheritanceRefreshService albumInheritanceRefreshService;
     AlbumSelectionService service;
 
     @BeforeEach
     void setUp() {
         service = new AlbumSelectionService(importer, collector, bootstrap, observations,
-                resolver, details, previews, completion, new TagNameNormalizer());
+                resolver, details, previews, completion, new TagNameNormalizer(), catalogDetails,
+                albumInheritanceRefreshService);
     }
 
     @Test
@@ -94,10 +100,52 @@ class AlbumSelectionServiceTest {
                 .thenReturn(ObservationProcessingResult.empty());
         when(resolver.resolve(SubjectRef.album(5L))).thenReturn(List.<ResolvedTagResult>of());
         when(details.fromResolved(album, List.of())).thenReturn(detail);
+        when(previews.fromProcessed(ObservationProcessingResult.empty(), ObservationProcessingResult.empty()))
+                .thenReturn(List.of());
+        when(previews.fromPersistedAlbum(5L)).thenReturn(List.of());
 
         assertThat(service.select("album-1")).isEqualTo(detail);
         verify(observations).processPersistedAlbum(album, List.of(input), Map.of());
         verify(resolver).resolve(SubjectRef.album(5L));
+    }
+
+    @Test
+    void 외부_제공자가_없으면_앨범_완료를_기록하지_않는다() {
+        ImportedAlbum album = album();
+        AlbumDetail detail = new AlbumDetail(album, List.of());
+        when(importer.importAlbum("album-1")).thenReturn(album);
+        when(details.findResolved(album)).thenReturn(Optional.empty());
+        when(collector.collectAlbum(album)).thenReturn(ExternalEnrichmentCollection.empty());
+        when(bootstrap.prepare(new CollectedExternalTags(List.of(), List.of()))).thenReturn(Map.of());
+        when(resolver.resolve(SubjectRef.album(5L))).thenReturn(List.of());
+        when(details.fromResolved(album, List.of())).thenReturn(detail);
+        when(previews.fromProcessed(ObservationProcessingResult.empty(), ObservationProcessingResult.empty()))
+                .thenReturn(List.of());
+        when(previews.fromPersistedAlbum(5L)).thenReturn(List.of());
+
+        assertThat(service.select("album-1")).isEqualTo(detail);
+        verify(completion, never()).complete(5L);
+    }
+
+    @Test
+    void 제공자가_빈_결과를_정상_반환하면_앨범_완료를_기록한다() {
+        ImportedAlbum album = album();
+        AlbumDetail detail = new AlbumDetail(album, List.of());
+        when(importer.importAlbum("album-1")).thenReturn(album);
+        when(details.findResolved(album)).thenReturn(Optional.empty());
+        when(collector.collectAlbum(album)).thenReturn(new ExternalEnrichmentCollection(
+                CollectedExternalTags.empty(), CatalogExternalIdentityMatch.none(),
+                List.of(ProviderEnrichmentResult.withoutData(
+                        ExternalTagSource.DISCOGS, ProviderEnrichmentStatus.EMPTY))));
+        when(bootstrap.prepare(new CollectedExternalTags(List.of(), List.of()))).thenReturn(Map.of());
+        when(resolver.resolve(SubjectRef.album(5L))).thenReturn(List.of());
+        when(details.fromResolved(album, List.of())).thenReturn(detail);
+        when(previews.fromProcessed(ObservationProcessingResult.empty(), ObservationProcessingResult.empty()))
+                .thenReturn(List.of());
+        when(previews.fromPersistedAlbum(5L)).thenReturn(List.of());
+
+        assertThat(service.select("album-1")).isEqualTo(detail);
+        verify(completion).complete(5L);
     }
 
     private ImportedAlbum album() {

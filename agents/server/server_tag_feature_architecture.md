@@ -147,6 +147,10 @@ MusicBrainz Recording
 Release Group
 ```
 
+승인된 고도화 정책 ADR-026/028(현재 미구현): ISRC HTTP 404이면 title + artist metadata 검색으로
+넘어가고, title/artist/duration 검증을 통과한 Recording 후보가 여러 개면 응답 순서의
+첫 유효 후보를 선택한다. ISRC 복수 후보와 다른 metadata 검색 경로는 기존 규칙을 유지한다.
+
 MVP 기준 권장 매핑:
 
 ```text
@@ -942,6 +946,11 @@ canonical name과 충돌하면 생성하지 않는다. Last.fm community tag는 
 매칭될 때만 Assertion이 된다. Observation은 원래 `evidence_type`과 `confidence`를
 보존하며, 기존 null metadata를 source만으로 추정하지 않는다. raw preview와 완료
 marker의 상세 정책은 ADR-010 및 TAG-BOOTSTRAP-001을 따른다.
+
+승인된 고도화 정책 ADR-027(현재 미구현): identity 검증을 통과한 Last.fm 상위 5개 community tag도
+미매칭이면 같은 ACTIVE/UNCLASSIFIED System Tag 생성 경로를 사용한다. 내부 type과
+표시 태그 이름을 구분하고, Last.fm Track `0.65`/Album `0.60` confidence 및 Album
+상속 가중치 `0.85`를 유지한다. 기존 빈 결과의 일괄 재처리는 이번 변경 범위에서 제외한다.
 
 예:
 

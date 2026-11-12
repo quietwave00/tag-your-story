@@ -18,6 +18,8 @@ import com.tagnote.application.enrichment.model.ProviderEnrichmentStatus;
 import com.tagnote.application.enrichment.port.MusicBrainzCatalogClient;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -315,6 +317,47 @@ class MusicBrainzExternalTagProviderTest {
         verify(client).searchByIsrc("USABC1234567");
         verify(client).searchByTitleAndArtists("Track", List.of("Artist"));
         assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("recording-2");
+    }
+
+    @Test
+    void Isrc_HTTP_404_이후_metadata_복수_유효후보의_첫번째를_사용한다() {
+        MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
+        ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
+        MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
+        MusicBrainzExternalTagProvider provider = new MusicBrainzExternalTagProvider(
+                client, new MusicBrainzEntityMatchingService(normalizer, properties), normalizer,
+                new MusicEditionTitleNormalizer(normalizer), properties);
+        RecordingCandidate first = new RecordingCandidate("first", "Track", 180_000, List.of("Artist"));
+        RecordingCandidate second = new RecordingCandidate("second", "Track", 180_000, List.of("Artist"));
+        when(client.searchByIsrc("USABC1234567")).thenThrow(new ExternalProviderException(
+                ProviderEnrichmentStatus.NOT_FOUND, "MusicBrainz entity was not found",
+                new HttpClientErrorException(HttpStatus.NOT_FOUND)));
+        when(client.searchByTitleAndArtists("Track", List.of("Artist"))).thenReturn(List.of(first, second));
+        when(client.getRecording("first")).thenReturn(new RecordingDetails("first", List.of(), List.of()));
+        when(client.getRecordingReleaseGroups("first"))
+                .thenReturn(new RecordingDetails("first", List.of(), List.of()));
+
+        com.tagnote.application.enrichment.model.ProviderEnrichmentResult result = provider.collect(track(null), deadline());
+
+        assertThat(result.identityMatch().musicBrainzRecordingId()).isEqualTo("first");
+        verify(client, never()).getRecording("second");
+    }
+
+    @Test
+    void Isrc의_다른_HTTP_실패는_metadata_fallback하지_않는다() {
+        MusicBrainzCatalogClient client = mock(MusicBrainzCatalogClient.class);
+        ExternalEnrichmentProperties properties = new ExternalEnrichmentProperties();
+        MusicEntityNameNormalizer normalizer = new MusicEntityNameNormalizer();
+        MusicBrainzExternalTagProvider provider = new MusicBrainzExternalTagProvider(
+                client, new MusicBrainzEntityMatchingService(normalizer, properties), normalizer,
+                new MusicEditionTitleNormalizer(normalizer), properties);
+        ExternalProviderException failure = new ExternalProviderException(
+                ProviderEnrichmentStatus.FAILED, "MusicBrainz request failed",
+                new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
+        when(client.searchByIsrc("USABC1234567")).thenThrow(failure);
+
+        assertThatThrownBy(() -> provider.collect(track(null), deadline())).isSameAs(failure);
+        verify(client, never()).searchByTitleAndArtists("Track", List.of("Artist"));
     }
 
     @Test

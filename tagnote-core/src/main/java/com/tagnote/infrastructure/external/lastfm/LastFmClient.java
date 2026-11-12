@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
+import com.tagnote.application.enrichment.diagnostics.EnrichmentDiagnostics;
 import com.tagnote.application.enrichment.exception.ExternalProviderException;
 import com.tagnote.application.enrichment.matching.model.LastFmCatalogData.Tag;
 import com.tagnote.application.enrichment.matching.model.LastFmCatalogData.TopTags;
@@ -70,6 +71,9 @@ public class LastFmClient implements LastFmCatalogClient {
             throw new ExternalProviderException(ProviderEnrichmentStatus.FAILED, "Last.fm returned no body");
         }
         if (response.error() != null) {
+            if (EnrichmentDiagnostics.enabled()) EnrichmentDiagnostics.event("lastfm_api_error", java.util.Map.of(
+                    "method", method, "code", response.error(),
+                    "message", diagnosticMessage(response.message())));
             ProviderEnrichmentStatus status = response.error() == 6 || response.error() == 7
                     ? ProviderEnrichmentStatus.NOT_FOUND
                     : ProviderEnrichmentStatus.FAILED;
@@ -83,6 +87,16 @@ public class LastFmClient implements LastFmCatalogClient {
         }
         Attributes attributes = response.topTags().attributes();
         String responseTitle = attributes.track() == null ? attributes.album() : attributes.track();
+        if (EnrichmentDiagnostics.enabled()) EnrichmentDiagnostics.event("lastfm_top_tags", java.util.Map.of(
+                "method", method, "requestedArtist", artist, "requestedTitle", title,
+                "responseArtist", attributes.artist() == null ? "" : attributes.artist(),
+                "responseTitle", responseTitle == null ? "" : responseTitle,
+                "tags", EnrichmentDiagnostics.bounded(java.util.stream.IntStream.range(0,
+                                safe(response.topTags().tags()).size())
+                        .mapToObj(index -> java.util.Map.of("rank", index + 1,
+                                "name", EnrichmentDiagnostics.safe(response.topTags().tags().get(index).name()),
+                                "count", parseCount(response.topTags().tags().get(index).count())))
+                        .toList())));
         return new TopTags(
                 attributes.artist(),
                 responseTitle,
@@ -101,6 +115,13 @@ public class LastFmClient implements LastFmCatalogClient {
         } catch (NumberFormatException ignored) {
             return -1;
         }
+    }
+
+    private String diagnosticMessage(String message) {
+        if (message == null) return "";
+        String sanitized = message.replaceAll("https?://\\S+", "[URL]");
+        if (apiKey != null && !apiKey.isBlank()) sanitized = sanitized.replace(apiKey, "[REDACTED]");
+        return sanitized.substring(0, Math.min(sanitized.length(), 200));
     }
 
     private <T> List<T> safe(List<T> values) {

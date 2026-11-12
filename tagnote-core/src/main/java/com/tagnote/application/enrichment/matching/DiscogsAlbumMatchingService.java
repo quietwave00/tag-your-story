@@ -1,6 +1,7 @@
 package com.tagnote.application.enrichment.matching;
 
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
+import com.tagnote.application.enrichment.diagnostics.EnrichmentDiagnostics;
 import com.tagnote.application.catalog.importer.model.ImportedArtist;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumCandidate;
 import com.tagnote.application.enrichment.matching.model.DiscogsCatalogData.AlbumDetails;
@@ -41,7 +42,23 @@ public class DiscogsAlbumMatchingService {
                         ))
                         .toList()
                 : rawTitleMatches;
-        return preferMatchingYear(album.getReleaseYear(), titleMatches);
+        List<AlbumCandidate> yearMatches = preferMatchingYear(album.getReleaseYear(), titleMatches);
+        if (EnrichmentDiagnostics.enabled()) {
+            EnrichmentDiagnostics.event("discogs_candidates_filtered", java.util.Map.of(
+                    "validationTitle", EnrichmentDiagnostics.safe(validationTitle),
+                    "rawCount", candidates.size(), "artistCount", artistMatches.size(),
+                    "rawTitleCount", rawTitleMatches.size(), "titleCount", titleMatches.size(),
+                    "yearCount", yearMatches.size(),
+                    "candidates", EnrichmentDiagnostics.bounded(candidates.stream().map(candidate ->
+                            java.util.Map.of("id", candidate.id(), "type", candidate.type().name(),
+                                    "title", EnrichmentDiagnostics.safe(candidate.title()), "year", candidate.releaseYear() == null
+                                            ? "UNKNOWN" : candidate.releaseYear(),
+                                    "decision", !artistMatches.contains(candidate) ? "ARTIST_MISMATCH"
+                                            : !titleMatches.contains(candidate) ? "TITLE_MISMATCH"
+                                            : !yearMatches.contains(candidate) ? "YEAR_PREFERENCE" : "MATCHED"))
+                            .toList())));
+        }
+        return yearMatches;
     }
 
     public boolean validates(ImportedAlbum album, AlbumDetails details) {

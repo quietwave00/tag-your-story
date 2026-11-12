@@ -23,7 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class LastFmExternalTagProviderTest {
+class TagProviderTest {
 
     @Test
     void count와_무관하게_응답_순서의_상위_5개를_community_tag로_매핑한다() {

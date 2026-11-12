@@ -1,6 +1,7 @@
 package com.tagnote.application.enrichment;
 
 import com.tagnote.application.enrichment.model.CollectedExternalTags;
+import com.tagnote.application.enrichment.diagnostics.EnrichmentDiagnostics;
 import com.tagnote.application.enrichment.model.ExternalTagInput;
 import com.tagnote.domain.enrichment.assertion.EvidenceType;
 import com.tagnote.domain.enrichment.observation.ExternalTagSource;
@@ -40,13 +41,17 @@ public class TagBootstrapService {
                 .forEach(input -> {
                     String name = normalizer.normalize(input.rawName()).value();
                     if (name.length() <= 255 && input.rawName().length() <= 255) {
-                        names.putIfAbsent(name, new NameCandidate(name, input.rawName(), eligible(input)));
+                        names.putIfAbsent(name, new NameCandidate(name, input.rawName(), eligible(input), input.source()));
                         if (eligible(input) && !names.get(name).eligible()) {
-                            names.put(name, new NameCandidate(name, input.rawName(), true));
+                            names.put(name, new NameCandidate(name, input.rawName(), true, input.source()));
                         }
                     }
                 });
-        if (names.isEmpty()) return Map.of();
+        if (names.isEmpty()) {
+            EnrichmentDiagnostics.event("tag_bootstrap_completed", Map.of(
+                    "inputNames", 0, "existingMatched", 0, "created", 0, "unmatched", 0));
+            return Map.of();
+        }
         Set<String> keys = names.keySet();
         Map<String, List<TagAliasEntity>> aliasesByName = aliases.findApprovedByNormalizedAliases(keys)
                 .stream().collect(Collectors.groupingBy(TagAliasEntity::getNormalizedAlias));
@@ -54,6 +59,8 @@ public class TagBootstrapService {
                 .collect(Collectors.toMap(TagEntity::getNormalizedName, tag -> tag));
         Map<String, TagMatchResult> result = new HashMap<>();
         List<NameCandidate> missing = new ArrayList<>();
+        int createdCount = 0;
+        Set<String> createdNames = new java.util.HashSet<>();
         for (NameCandidate candidate : names.values()) {
             String name = candidate.normalizedName();
             TagMatchResult alias = matching.match(normalizer.normalize(name),
@@ -72,6 +79,8 @@ public class TagBootstrapService {
             List<TagEntity> created;
             try {
                 created = writer.create(missing);
+                createdCount = created.size();
+                created.stream().map(TagEntity::getNormalizedName).forEach(createdNames::add);
             } catch (TagBootstrapWriteService.TagDuplicateException conflict) {
                 // The failed transaction has rolled back. Re-read every requested name once.
                 created = new ArrayList<>(tags.findByNormalizedNameIn(
@@ -80,13 +89,26 @@ public class TagBootstrapService {
                         .collect(Collectors.toSet());
                 List<NameCandidate> remaining = missing.stream()
                         .filter(candidate -> !existingNames.contains(candidate.normalizedName())).toList();
-                if (!remaining.isEmpty()) created.addAll(writer.create(remaining));
+                if (!remaining.isEmpty()) {
+                    List<TagEntity> inserted = writer.create(remaining);
+                    createdCount = inserted.size();
+                    inserted.stream().map(TagEntity::getNormalizedName).forEach(createdNames::add);
+                    created.addAll(inserted);
+                }
             }
             for (TagEntity tag : created) {
                 result.put(tag.getNormalizedName(), tag.getStatus() == TagStatus.ACTIVE
                         ? TagMatchResult.matched(tag) : TagMatchResult.unmatched());
             }
         }
+        if (EnrichmentDiagnostics.enabled()) EnrichmentDiagnostics.event("tag_bootstrap_completed", Map.of(
+                "inputNames", names.size(), "existingMatched", result.values().stream()
+                        .filter(TagMatchResult::isMatched).count() - createdCount,
+                "created", createdCount,
+                "lastfmOnlyCreated", missing.stream().filter(candidate ->
+                        candidate.source() == ExternalTagSource.LASTFM
+                                && createdNames.contains(candidate.normalizedName())).count(),
+                "unmatched", names.size() - result.values().stream().filter(TagMatchResult::isMatched).count()));
         return Map.copyOf(result);
     }
 
@@ -103,8 +125,11 @@ public class TagBootstrapService {
                 && input.evidenceType() == EvidenceType.EXPLICIT_GENRE)
                 || (input.source() == ExternalTagSource.DISCOGS
                 && (input.evidenceType() == EvidenceType.EXPLICIT_GENRE
-                || input.evidenceType() == EvidenceType.EXPLICIT_STYLE));
+                || input.evidenceType() == EvidenceType.EXPLICIT_STYLE))
+                || (input.source() == ExternalTagSource.LASTFM
+                && input.evidenceType() == EvidenceType.COMMUNITY_TAG);
     }
 
-    public record NameCandidate(String normalizedName, String displayName, boolean eligible) {}
+    public record NameCandidate(String normalizedName, String displayName, boolean eligible,
+                                ExternalTagSource source) {}
 }

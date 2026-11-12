@@ -4,6 +4,7 @@ import com.tagnote.application.catalog.importer.model.ImportedArtist;
 import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
+import com.tagnote.application.enrichment.diagnostics.EnrichmentDiagnostics;
 import com.tagnote.application.enrichment.exception.ExternalProviderException;
 import com.tagnote.application.enrichment.matching.MusicBrainzEntityMatchingService;
 import com.tagnote.application.enrichment.matching.MusicEditionTitleNormalizer;
@@ -32,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
+import org.springframework.web.client.RestClientResponseException;
 
 @Order(100)
 @Slf4j
@@ -89,10 +91,12 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
                 "musicbrainz:recording:" + recordingId,
                 confidence.getMusicbrainzRecordingGenre()
         );
+        genres("RECORDING", recordingId, recording.genres());
 
         List<ReleaseGroupCandidate> releaseGroups = collectRecordingReleaseGroups(
                 track, recordingId, deadline
         );
+        releaseGroups("RECORDING_LINKED", releaseGroups);
         String releaseGroupId = matchingService
                 .matchReleaseGroup(track.getAlbum(), releaseGroups)
                 .map(ReleaseGroupCandidate::id)
@@ -110,12 +114,71 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
     }
 
     @Override
+    public ProviderEnrichmentResult collectTrackDirect(ImportedTrack track, EnrichmentDeadline deadline) {
+        EssentialRequests requests = new EssentialRequests(deadline, track.getCatalogTrackId());
+        String recordingId = track.getMusicBrainzRecordingId();
+        if (recordingId == null) recordingId = matchRecording(track, requests).id();
+        String selectedId = recordingId;
+        RecordingDetails recording = requests.execute(() -> client.getRecording(selectedId));
+        if (!selectedId.equals(recording.id())) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "MusicBrainz Recording lookup returned a mismatched identity");
+        }
+        genres("RECORDING", selectedId, recording.genres());
+        return ProviderEnrichmentResult.completed(source(),
+                new CollectedExternalTags(List.of(), genreInputs(recording.genres(),
+                        "musicbrainz:recording:" + selectedId,
+                        confidence.getMusicbrainzRecordingGenre())),
+                new CatalogExternalIdentityMatch(selectedId));
+    }
+
+    @Override
+    public ProviderEnrichmentResult collectAlbumFromTrack(ImportedTrack track, EnrichmentDeadline deadline) {
+        String recordingId = track.getMusicBrainzRecordingId();
+        if (recordingId == null) return collectAlbum(track.getAlbum(), deadline);
+        if (!deadline.hasTimeFor(optionalRequestWorstCaseMs())) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.TIMEOUT,
+                    "MusicBrainz Recording releases lookup skipped due to insufficient remaining budget");
+        }
+        RecordingDetails recording = client.getRecordingReleaseGroups(recordingId);
+        if (!recordingId.equals(recording.id())) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "MusicBrainz Recording releases lookup returned a mismatched identity");
+        }
+        releaseGroups("RECORDING_LINKED", recording.releaseGroups());
+        String releaseGroupId = matchingService.matchReleaseGroup(track.getAlbum(), recording.releaseGroups())
+                .map(ReleaseGroupCandidate::id).orElse(null);
+        if (releaseGroupId == null) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "MusicBrainz Release Group was not uniquely matched");
+        }
+        if (!deadline.hasTimeFor(optionalRequestWorstCaseMs())) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.TIMEOUT,
+                    "MusicBrainz Release Group lookup skipped due to insufficient remaining budget");
+        }
+        ReleaseGroupDetails group = client.getReleaseGroup(releaseGroupId);
+        if (!releaseGroupId.equals(group.id())) {
+            throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
+                    "MusicBrainz Release Group lookup returned a mismatched identity");
+        }
+        genres("RELEASE_GROUP", releaseGroupId, group.genres());
+        return ProviderEnrichmentResult.completed(source(),
+                new CollectedExternalTags(genreInputs(group.genres(),
+                        "musicbrainz:release-group:" + releaseGroupId,
+                        confidence.getMusicbrainzReleaseGroupGenre()), List.of()),
+                CatalogExternalIdentityMatch.none());
+    }
+
+    @Override
     public ProviderEnrichmentResult collectAlbum(ImportedAlbum album, EnrichmentDeadline deadline) {
         List<String> artists = album.getArtists().stream().map(ImportedArtist::getName).toList();
         String canonicalTitle = editionTitleNormalizer.canonicalTitle(album.getTitle());
         List<ReleaseGroupCandidate> candidates = client.searchReleaseGroups(canonicalTitle, artists);
         List<ReleaseGroupCandidate> matches = matchingService.matchingReleaseGroups(
                 album, canonicalTitle, candidates);
+        releaseGroups("CANONICAL_SEARCH", candidates);
+        EnrichmentDiagnostics.event("musicbrainz_release_group_match", java.util.Map.of(
+                "stage", "CANONICAL_SEARCH", "matchedCount", matches.size()));
         String searchStage = "canonical";
         if (matches.isEmpty() && !canonicalTitle.equals(album.getTitle())) {
             if (!deadline.hasTimeFor(optionalRequestWorstCaseMs())) {
@@ -124,6 +187,9 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
             }
             candidates = client.searchReleaseGroups(album.getTitle(), artists);
             matches = matchingService.matchingReleaseGroups(album, album.getTitle(), candidates);
+            releaseGroups("ORIGINAL_SEARCH", candidates);
+            EnrichmentDiagnostics.event("musicbrainz_release_group_match", java.util.Map.of(
+                    "stage", "ORIGINAL_SEARCH", "matchedCount", matches.size()));
             searchStage = "original";
         }
         if (matches.size() != 1) {
@@ -139,6 +205,7 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
             throw new ExternalProviderException(ProviderEnrichmentStatus.NOT_FOUND,
                     "MusicBrainz Release Group lookup returned a mismatched identity");
         }
+        genres("RELEASE_GROUP", matched.id(), details.genres());
         return ProviderEnrichmentResult.completed(source(),
                 new CollectedExternalTags(genreInputs(details.genres(),
                         "musicbrainz:release-group:" + matched.id(),
@@ -177,23 +244,43 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
 
     private RecordingCandidate matchRecording(ImportedTrack track, EssentialRequests requests) {
         String isrc = normalizeIsrc(track.getIsrc());
+        boolean isrcHttpNotFound = false;
         if (isrc != null) {
-            List<RecordingCandidate> candidates = requests.execute(() -> client.searchByIsrc(isrc));
-            RecordingCandidate matched = matchingService.matchRecordingByIsrc(track, candidates).orElse(null);
-            if (matched != null) {
-                return matched;
+            try {
+                List<RecordingCandidate> candidates = requests.execute(() -> client.searchByIsrc(isrc));
+                RecordingCandidate matched = matchingService.matchRecordingByIsrc(track, candidates).orElse(null);
+                recordings("ISRC", track, candidates, matched);
+                if (matched != null) {
+                    return matched;
+                }
+                EnrichmentDiagnostics.event("musicbrainz_metadata_fallback", java.util.Map.of(
+                        "reason", candidates.isEmpty() ? "ISRC_EMPTY" : "ISRC_NO_VALID_MATCH"));
+            } catch (ExternalProviderException failure) {
+                if (!isHttp404(failure)) throw failure;
+                isrcHttpNotFound = true;
+                EnrichmentDiagnostics.event("musicbrainz_metadata_fallback", java.util.Map.of(
+                        "reason", "ISRC_HTTP_404", "isrcHttpStatus", 404));
             }
+        } else {
+            EnrichmentDiagnostics.event("musicbrainz_metadata_fallback", java.util.Map.of("reason", "ISRC_ABSENT"));
         }
         List<RecordingCandidate> candidates = requests.execute(() -> client.searchByTitleAndArtists(
                 track.getTitle(),
                 track.getArtists().stream().map(ImportedArtist::getName).toList()
         ));
-        RecordingCandidate matched = matchingService.matchRecordingByMetadata(track, candidates)
-                .orElseThrow(() -> new ExternalProviderException(
-                        ProviderEnrichmentStatus.NOT_FOUND,
-                        "MusicBrainz Recording was not uniquely matched"
-                ));
+        RecordingCandidate matched = (isrcHttpNotFound
+                ? matchingService.matchFirstValidRecordingAfterIsrcNotFound(track, candidates)
+                : matchingService.matchRecordingByMetadata(track, candidates)).orElse(null);
+        recordings("METADATA", track, candidates, matched);
+        if (matched == null) throw new ExternalProviderException(
+                ProviderEnrichmentStatus.NOT_FOUND, "MusicBrainz Recording was not uniquely matched");
         return matched;
+    }
+
+    private boolean isHttp404(ExternalProviderException failure) {
+        return failure.getStatus() == ProviderEnrichmentStatus.NOT_FOUND
+                && failure.getCause() instanceof RestClientResponseException response
+                && response.getStatusCode().value() == 404;
     }
 
     private List<ExternalTagInput> collectReleaseGroup(
@@ -218,6 +305,7 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
                         "MusicBrainz Release Group lookup returned a mismatched identity"
                 );
             }
+            genres("RELEASE_GROUP", releaseGroupId, releaseGroup.genres());
             return genreInputs(
                     releaseGroup.genres(),
                     "musicbrainz:release-group:" + releaseGroupId,
@@ -273,6 +361,43 @@ public class MusicBrainzExternalTagProvider implements ExternalTagProvider {
         }
         String normalized = isrc.replaceAll("[^A-Za-z0-9]", "").toUpperCase(Locale.ROOT);
         return normalized.isBlank() ? null : normalized;
+    }
+
+    private void recordings(String stage, ImportedTrack track, List<RecordingCandidate> candidates,
+                            RecordingCandidate selected) {
+        if (!EnrichmentDiagnostics.enabled()) return;
+        EnrichmentDiagnostics.event("musicbrainz_recording_candidates", java.util.Map.of(
+                "stage", stage, "title", EnrichmentDiagnostics.safe(track.getTitle()),
+                "artists", EnrichmentDiagnostics.bounded(track.getArtists().stream()
+                        .map(ImportedArtist::getName).toList()),
+                "isrc", stage.equals("ISRC") ? EnrichmentDiagnostics.safe(normalizeIsrc(track.getIsrc())) : "",
+                "rawCount", candidates.size(),
+                "selectedId", selected == null ? "" : selected.id(),
+                "decision", selected == null ? candidates.isEmpty() ? "API_ZERO" : "NO_UNIQUE_MATCH" : "SELECTED",
+                "candidates", EnrichmentDiagnostics.bounded(candidates.stream().map(candidate ->
+                        java.util.Map.of("id", EnrichmentDiagnostics.safe(candidate.id()),
+                                "title", EnrichmentDiagnostics.safe(candidate.title()),
+                                "artists", EnrichmentDiagnostics.bounded(candidate.artistNames()),
+                                "durationMs", candidate.durationMs() == null ? "UNKNOWN" : candidate.durationMs(),
+                                "score", candidate.score() == null ? "UNKNOWN" : candidate.score())).toList())));
+    }
+
+    private void releaseGroups(String stage, List<ReleaseGroupCandidate> candidates) {
+        if (!EnrichmentDiagnostics.enabled()) return;
+        EnrichmentDiagnostics.event("musicbrainz_release_groups", java.util.Map.of(
+                "stage", stage, "candidates", EnrichmentDiagnostics.bounded(candidates.stream().map(group ->
+                        java.util.Map.of("id", EnrichmentDiagnostics.safe(group.id()),
+                                "title", EnrichmentDiagnostics.safe(group.title()),
+                                "year", group.releaseYear() == null ? "UNKNOWN" : group.releaseYear())).toList())));
+    }
+
+    private void genres(String subject, String id, List<Genre> genres) {
+        if (!EnrichmentDiagnostics.enabled()) return;
+        EnrichmentDiagnostics.event("musicbrainz_genres", java.util.Map.of(
+                "subject", subject, "externalId", EnrichmentDiagnostics.safe(id),
+                "genres", EnrichmentDiagnostics.bounded(genres.stream().map(genre ->
+                        java.util.Map.of("name", EnrichmentDiagnostics.safe(genre.name()),
+                                "count", genre.count() == null ? "UNKNOWN" : genre.count())).toList())));
     }
 
     private final class EssentialRequests {

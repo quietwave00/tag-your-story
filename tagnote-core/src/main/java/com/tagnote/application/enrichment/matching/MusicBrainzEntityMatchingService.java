@@ -4,6 +4,7 @@ import com.tagnote.application.catalog.importer.model.ImportedAlbum;
 import com.tagnote.application.catalog.importer.model.ImportedArtist;
 import com.tagnote.application.catalog.importer.model.ImportedTrack;
 import com.tagnote.application.enrichment.config.ExternalEnrichmentProperties;
+import com.tagnote.application.enrichment.diagnostics.EnrichmentDiagnostics;
 import com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.RecordingCandidate;
 import com.tagnote.application.enrichment.matching.model.MusicBrainzCatalogData.ReleaseGroupCandidate;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,11 @@ public class MusicBrainzEntityMatchingService {
     ) {
         if (candidates.size() == 1) {
             RecordingCandidate candidate = candidates.get(0);
-            return hasArtistOverlap(track.getArtists(), candidate.artistNames())
+            boolean artistMatched = hasArtistOverlap(track.getArtists(), candidate.artistNames());
+            EnrichmentDiagnostics.event("musicbrainz_recording_filter", java.util.Map.of(
+                    "stage", "ISRC_SINGLE", "rawCount", 1, "artistCount", artistMatched ? 1 : 0,
+                    "matchedCount", artistMatched ? 1 : 0));
+            return artistMatched
                     ? Optional.of(candidate)
                     : Optional.empty();
         }
@@ -51,15 +56,39 @@ public class MusicBrainzEntityMatchingService {
         return unique(matchingRecordings(track, candidates));
     }
 
+    public Optional<RecordingCandidate> matchFirstValidRecordingAfterIsrcNotFound(
+            ImportedTrack track,
+            List<RecordingCandidate> candidates
+    ) {
+        List<RecordingCandidate> matched = matchingRecordings(track, candidates);
+        EnrichmentDiagnostics.event("musicbrainz_isrc_404_metadata_match", java.util.Map.of(
+                "rawCount", candidates.size(), "validCount", matched.size(),
+                "selectedId", matched.isEmpty() ? "" : matched.get(0).id(),
+                "reason", matched.isEmpty() ? "NO_VALID_CANDIDATE" : "FIRST_VALID_AFTER_ISRC_404"));
+        return matched.stream().findFirst();
+    }
+
     private List<RecordingCandidate> matchingRecordings(
             ImportedTrack track,
             List<RecordingCandidate> candidates
     ) {
-        return candidates.stream()
+        List<RecordingCandidate> titleMatches = candidates.stream()
                 .filter(candidate -> normalizer.exact(track.getTitle(), candidate.title()))
-                .filter(candidate -> hasArtistOverlap(track.getArtists(), candidate.artistNames()))
-                .filter(candidate -> durationMatches(track.getDurationMs(), candidate.durationMs()))
                 .toList();
+        List<RecordingCandidate> artistMatches = titleMatches.stream()
+                .filter(candidate -> hasArtistOverlap(track.getArtists(), candidate.artistNames())).toList();
+        List<RecordingCandidate> durationMatches = artistMatches.stream()
+                .filter(candidate -> durationMatches(track.getDurationMs(), candidate.durationMs())).toList();
+        if (EnrichmentDiagnostics.enabled()) EnrichmentDiagnostics.event("musicbrainz_recording_filter", java.util.Map.of(
+                "rawCount", candidates.size(), "titleCount", titleMatches.size(),
+                "artistCount", artistMatches.size(), "matchedCount", durationMatches.size(),
+                "decisions", EnrichmentDiagnostics.bounded(candidates.stream().map(candidate ->
+                        java.util.Map.of("id", EnrichmentDiagnostics.safe(candidate.id()),
+                                "reason", !titleMatches.contains(candidate) ? "TITLE_MISMATCH"
+                                        : !artistMatches.contains(candidate) ? "ARTIST_MISMATCH"
+                                        : !durationMatches.contains(candidate) ? "DURATION_MISMATCH" : "MATCHED"))
+                        .toList())));
+        return durationMatches;
     }
 
     public Optional<ReleaseGroupCandidate> matchReleaseGroup(

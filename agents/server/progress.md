@@ -2,13 +2,23 @@
 
 - 2026-10-30: SPOTIFY-SDK-REMOVAL-001 완료 처리. 직접 HTTP·토큰 캐시·제한 재시도, SDK 제거, 검색/상세/import adapter와 fixture 테스트, ADR-023을 반영했다. 사용자가 `./gradlew test`, `./gradlew check`, `./scripts/verify.sh` 모두 완료했다고 확인했으며, 이를 검증 근거로 완료 처리했다.
 
-## 현재 진행: CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001 및 CATALOG-ARTIST-ALBUM-INDEX-001 사용자 검증 대기 (2026-11-02)
+## 현재 진행: 태그 재계산 및 MusicBrainz 장르 그래프 수집 Plan Human Review (2026-11-10)
+
+- [TAG-CALCULATION-MIGRATION-001](plans/active/TAG-CALCULATION-MIGRATION-001.md): 사용자 요청으로 태그 계산 파이프라인 재설계와 기존 Track/Album 결과의 점진적 재계산 초안을 active에 작성했다. 현재는 Human Review 중이며 구현·DDL 변경은 착수하지 않았다. Server Spec의 장르·스타일·씬·국가·시대를 포괄하는 System Tag 정의를 유지하고 [ADR-030](decisions/ADR-030-controlled-genre-vocabulary-and-track-album-fallback.md)의 장르 표시, [ADR-032](decisions/ADR-032-independent-detail-and-synchronous-tag-import.md)의 metadata/태그 독립 호출, [ADR-033](decisions/ADR-033-explicit-provider-tag-type-bootstrap.md)의 명시적 provider 타입 초기화를 기준으로 삼는다. ADR-031의 비동기 worker 설계는 대체됐다.
+
+- [MUSICBRAINZ-GENRE-GRAPH-001](plans/active/MUSICBRAINZ-GENRE-GRAPH-001.md): 사용자가 MusicBrainz 전체 장르 목록 `https://musicbrainz.org/genres`와 상세 관계를 HTML 스크래핑해 DB에 저장할 별도 Plan을 요청했다. 현재는 Human Review 초안이며 수집 코드·DDL·전체 수집은 미착수다. 첫 범위는 외부 장르/유형별 관계의 원본 그래프 저장이고, 내부 System Tag 매핑·`tag_parent` 승인·시각화는 후속 결정이다. 태그 재계산 Plan의 선행 조건이 아니다.
+
+- 2026-11-09 사용자 요청으로 이전 active Plan 네 개를 모두 `plans/completed/`에 종료 기록으로 옮겼다. 사용자 실행 검증이나 수용 기준 통과로 간주하지 않으며, 각 문서의 Closure Record에 미확인 항목을 남겼다.
+
+- [ENRICHMENT-DIAGNOSTICS-001](plans/completed/ENRICHMENT-DIAGNOSTICS-001.md): 진단·Album 근거 재사용·MusicBrainz fallback·Last.fm 자동 태그 생성의 구현 기록을 보관했다. Replay 및 전체 검증, 임시 진단 설정 원복과 운영 migration 적용은 미확인이다. ADR-027의 자동 생성은 새 ADR-030과 충돌하므로 후속 마이그레이션에서 조정한다.
+
+- [CATALOG-SUBJECT-TAGS-001](plans/completed/CATALOG-SUBJECT-TAGS-001.md): 태그 전용 GET 및 제공자 0개 완료 marker 보강 구현 기록을 보관했다. 사용자 실행 검증과 실제 제공자 설정 확인은 미확인이다.
 
 - [SPOTIFY-SDK-REMOVAL-001](plans/completed/SPOTIFY-SDK-REMOVAL-001.md): 사용자 확인으로 `test`·`check`·`verify.sh` 완료를 기록하고 completed로 이동했다.
 
-- [CATALOG-ARTIST-ALBUM-INDEX-001](plans/active/CATALOG-ARTIST-ALBUM-INDEX-001.md): 아티스트별 Redis 스냅샷, 단일 빌드 조율, 유형별 페이지·건수, HTTP 202 구축 응답 및 Artist 화면 서버 페이지 호출을 구현했다(ADR-024). 사용자 실행 검증·리뷰 대기다.
+- [CATALOG-ARTIST-ALBUM-INDEX-001](plans/completed/CATALOG-ARTIST-ALBUM-INDEX-001.md): 아티스트별 Redis 스냅샷, 단일 빌드 조율, 유형별 페이지·건수 및 HTTP 202 구현 기록을 보관했다(ADR-024). 사용자 실행 검증·리뷰는 미확인이다.
 
-- [CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001](plans/active/CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001.md): Artist Album 목록 item에 Album 상세와 동일한 nullable `releaseType`을 추가한다. ADR-022, Swagger, Server Spec, 클라이언트 계약 및 회귀 테스트를 작성했다. 사용자 실행 검증 대기다.
+- [CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001](plans/completed/CATALOG-ARTIST-ALBUM-RELEASE-TYPE-001.md): Artist Album 목록의 nullable `releaseType`, ADR-022, 계약 및 테스트 작성 기록을 보관했다. 사용자 실행 검증은 미확인이다.
 
 - [SEARCH-RANK-LIMIT-001](plans/completed/SEARCH-RANK-LIMIT-001.md): 사용자 확인으로 검색어 랭킹 상위 10개 변경의 테스트 확인 및 완료 요청을 받았다. Redis `0..9`, 테스트·Swagger·API 계약을 정적으로 재검토하고 completed로 이동했다. `check`·`verify.sh` 명령별 결과는 미확인이다.
 

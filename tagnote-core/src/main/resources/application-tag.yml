@@ -3,6 +3,9 @@ tag:
     album-to-track-inheritance-weight: 0.85
     minimum-score: 0.50
   enrichment:
+    diagnostics:
+      enabled: true
+      file: "D:/p/tag-your-story/logs/enrichment-diagnostics-tobe.jsonl"
     executor-size: 3
     total-first-load-budget-ms: 12000
     musicbrainz:

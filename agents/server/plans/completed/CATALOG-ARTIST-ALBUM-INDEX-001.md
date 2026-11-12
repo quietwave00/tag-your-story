@@ -1,6 +1,6 @@
 # CATALOG-ARTIST-ALBUM-INDEX-001 — 아티스트 발매 인덱스와 유형별 페이지
 
-> 상태: 2026-11-02 구현·정적 검토 진행, 사용자 실행 검증 대기. Spotify SDK 제거 선행 Plan 완료 처리.
+> 상태: 2026-11-09 사용자 요청으로 계획 종료 및 completed 보관. 구현 기록은 있으나 사용자 실행 검증·최종 리뷰가 확인되지 않아 수용 기준 통과로 표시하지 않는다.
 
 > 선행 경계 구현 메모 (2026-10-30): `SpotifyHttpClient.artistAlbums`의 Infrastructure DTO가 `album_type`과 `total_tracks`, 원본 순서와 total을 읽는다(ADR-023). 현재 `SpotifyCatalogDetailAdapter`는 이를 nullable `releaseType`으로 변환한다. 본 Plan 착수 시 필요한 provider-neutral 인덱스 입력 모델만 확장하고 사용자 실행 검증 결과를 먼저 확인한다.
 
@@ -75,3 +75,7 @@ GET /api/catalog/artists/{spotifyArtistId}/albums?releaseType=COMPILATION&page=0
 - 2026-11-02: 사용자가 로컬 8080의 `releaseType=COMPILATION` 요청에서 원본 10건·Spotify 전체 건수 60건, 분류 상태 필드가 없는 응답을 전달했다. 이는 현재 인덱스 API 계약과 일치하지 않는다. 현 작업 환경에서는 8080 연결이 거부되어 실행 프로세스를 확인할 수 없었다. COMPILATION 필터 결과에 해당 유형만 포함되는 서비스 테스트 단언을 보강했고, 실행 서버의 코드 버전·재시작 및 사용자 실행 검증 확인을 기다린다.
 - 2026-11-02: 사용자가 최신 인덱스 구축 중 `ArtistAlbumIndexService.build`의 페이지 일관성 검사(92행)에서 `SPOTIFY_EXCEPTION`이 발생한다고 전달했다. 스택만으로 실제 페이지 크기 불일치와 이전 페이지 반복을 구별할 수 없어, 각각 artist ID·page·total·수집 건수·예상/실제 건수를 기록하는 로그를 추가했다. 불완전한 스냅샷 비게시 정책은 유지하며 사용자 실행 로그를 기다린다.
 - 2026-11-02: 사용자가 Spotify `total=60`, 두 번째 offset 창에서 5건이 반환된 로그를 전달했다. 기존 '비마지막 창은 항상 10건' 가정이 실제 응답과 충돌했다. ADR-025에 따라 수집 건수가 아니라 offset으로 전체 창을 탐색하고, 짧은 창과 동일한 내용의 창도 원본 순서대로 보존하도록 수정했다. 변경된 목록 건수 의미를 Server Spec·Swagger·클라이언트 API 계약에 반영하고 회귀 테스트를 추가했다. 사용자 실행 검증은 대기 중이다.
+
+## Closure Record (2026-11-09)
+
+사용자가 모든 기존 active Plan을 completed로 정리하도록 명시적으로 요청했다. 이 이동은 작업 목록 정리이며 Acceptance Criteria 통과나 배포 완료를 뜻하지 않는다. `./gradlew test`, `./gradlew check`, `./scripts/verify.sh` 및 클라이언트 검증의 최종 사용자 결과와 인덱스 API 실동작 리뷰는 미확인이다. 재개 시 새 Plan에서 검증한다.

@@ -11,8 +11,12 @@ public final class MusicBrainzCatalogData {
             String id,
             String title,
             Integer durationMs,
-            List<String> artistNames
+            List<String> artistNames,
+            Integer score
     ) {
+        public RecordingCandidate(String id, String title, Integer durationMs, List<String> artistNames) {
+            this(id, title, durationMs, artistNames, null);
+        }
         public RecordingCandidate {
             artistNames = artistNames == null ? List.of() : List.copyOf(artistNames);
         }
