@@ -6,31 +6,16 @@ import { boardService } from '../services/boardService.js';
 import { likeService } from '../services/likeService.js';
 import { AuthExpiredError } from '../services/apiClient.js';
 import { useAuthStore } from '../store/authStore.js';
+import BackButton from '../components/common/BackButton.jsx';
+import UserAvatar from '../components/common/UserAvatar.jsx';
+import useDetailScrollTop from '../hooks/useDetailScrollTop.js';
 import { buildRoute, routes } from '../utils/routes.js';
+import { formatCreatedAt } from '../utils/formatDate.js';
 import { getSelectedTrack } from '../utils/trackSearchStorage.js';
 import '../styles/boardDetail.css';
 
 function getUserTagNames(board) {
   return board?.userTagNameList?.nameList ?? [];
-}
-
-function formatCreatedAt(createdAt, language) {
-  if (!createdAt) {
-    return '';
-  }
-
-  if (Array.isArray(createdAt)) {
-    const [year, month, day] = createdAt;
-    return new Intl.DateTimeFormat(language).format(new Date(year, month - 1, day));
-  }
-
-  const date = new Date(createdAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(createdAt);
-  }
-
-  return new Intl.DateTimeFormat(language).format(date);
 }
 
 function getLikeStatus(response) {
@@ -56,6 +41,7 @@ export default function BoardDetailPage() {
   const userTagNames = useMemo(() => getUserTagNames(board), [board]);
   const selectedTrack = useMemo(() => getSelectedTrack(), []);
   const displayLiked = isAuthenticated && isLiked;
+  useDetailScrollTop(boardId);
 
   const moveToLogin = (messageKey, hasDraft = false) => {
     if (hasDraft && !window.confirm(t('auth:loginRequired.discardDraft'))) {
@@ -164,7 +150,7 @@ export default function BoardDetailPage() {
 
   const handleBack = () => {
     if (selectedTrack.trackId) {
-      navigate(buildRoute.trackDetail(selectedTrack.trackId));
+      navigate(buildRoute.trackDetail(selectedTrack.trackId, selectedTrack.title));
       return;
     }
 
@@ -245,68 +231,86 @@ export default function BoardDetailPage() {
   };
 
   return (
-    <div className="board-detail-page">
-      <button className="board-detail-back" onClick={handleBack} type="button">
-        <span>◀</span>
-        {selectedTrack.title ? (
-          <span>{t('detail.backToTrack', { title: selectedTrack.title })}</span>
-        ) : (
-          <span>{t('detail.back')}</span>
-        )}
-      </button>
+    <div className="board-detail-page detail-page-frame">
+      <BackButton
+        label={selectedTrack.title ? t('detail.backToTrack', { title: selectedTrack.title }) : t('detail.back')}
+        onClick={handleBack}
+      />
 
-      {isBoardLoading ? <p className="board-detail-message">{t('detail.loading')}</p> : null}
-      {boardError ? (
+      {isBoardLoading ? (
+        <article className="board-detail-card board-detail-skeleton" role="status">
+          <span className="visually-hidden">{t('detail.loading')}</span>
+          <div aria-hidden="true" className="board-detail-meta">
+            <div className="board-detail-byline"><span className="skeleton-block board-detail-skeleton-avatar" /><span className="board-detail-byline-text"><span className="skeleton-block" /><span className="skeleton-block" /></span></div>
+            <span className="skeleton-block board-detail-skeleton-tags" />
+          </div>
+          <div aria-hidden="true" className="board-detail-content"><span className="skeleton-block" /><span className="skeleton-block" /><span className="skeleton-block" /></div>
+          <div aria-hidden="true" className="board-detail-footer"><span className="skeleton-block" /></div>
+        </article>
+      ) : null}
+      {!isBoardLoading && boardError ? (
         <p className="board-detail-message error">{t('detail.error')}</p>
       ) : null}
 
       {!isBoardLoading && !boardError && board ? (
         <>
-          <article className="board-detail-card">
-            <header className="board-detail-header">
-              <div className="board-detail-user-tags">
-                {userTagNames.map((userTag) => (
-                  <button className="board-detail-user-tag" key={userTag} type="button">
-                    #{userTag}
+          <div className="board-detail-layout">
+            <article className="board-detail-card">
+              <h1 className="visually-hidden">{t('detail.title')}</h1>
+              <header className="board-detail-meta">
+                <div className="board-detail-byline">
+                  <UserAvatar name={board.nickname} size="large" />
+                  <div className="board-detail-byline-text">
+                    <strong className="board-detail-author">{board.nickname}</strong>
+                    {board.createdAt ? (
+                      <time className="board-detail-date">
+                        {formatCreatedAt(board.createdAt, i18n.resolvedLanguage ?? i18n.language)}
+                      </time>
+                    ) : null}
+                  </div>
+                </div>
+                {userTagNames.length > 0 ? (
+                  <div className="board-detail-user-tags">
+                    {userTagNames.map((userTag) => (
+                      <span className="board-detail-user-tag" key={userTag}>
+                        #{userTag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </header>
+              <p className="board-detail-content">{board.content}</p>
+              <footer className="board-detail-footer">
+                <section className="board-like-section" aria-label={t('detail.likeLabel')}>
+                  <button
+                    aria-label={t('detail.likeLabel')}
+                    aria-pressed={displayLiked}
+                    className={displayLiked ? 'board-like-button liked' : 'board-like-button'}
+                    disabled={isLikeLoading}
+                    onClick={handleLikeClick}
+                    type="button"
+                  >
+                    {displayLiked ? '♥' : '♡'}
                   </button>
-                ))}
-              </div>
-              <time className="board-detail-date">
-                {formatCreatedAt(board.createdAt, i18n.resolvedLanguage ?? i18n.language)}
-              </time>
-            </header>
-            <p className="board-detail-content">{board.content}</p>
-            <footer className="board-detail-author">{board.nickname}</footer>
-          </article>
+                  <span className="board-like-count">{t('detail.likeCount', { count: likeCount })}</span>
+                </section>
+                {isAuthenticated && isWriter ? (
+                  <div className="board-detail-actions">
+                    <button onClick={handleEdit} type="button">
+                      {t('common:actions.edit')}
+                    </button>
+                    <button disabled={isDeleting} onClick={handleDelete} type="button">
+                      {t('common:actions.delete')}
+                    </button>
+                  </div>
+                ) : null}
+              </footer>
+              {deleteError ? <p className="board-detail-message error">{t('detail.deleteError')}</p> : null}
+              {likeError ? <p className="board-detail-message error">{t('detail.likeError')}</p> : null}
+            </article>
 
-          {isAuthenticated && isWriter ? (
-            <div className="board-detail-actions">
-              <button onClick={handleEdit} type="button">
-                {t('common:actions.edit')}
-              </button>
-              <button disabled={isDeleting} onClick={handleDelete} type="button">
-                {t('common:actions.delete')}
-              </button>
-            </div>
-          ) : null}
-          {deleteError ? <p className="board-detail-message error">{t('detail.deleteError')}</p> : null}
-
-          <section className="board-like-section" aria-label={t('detail.likeLabel')}>
-            <button
-              aria-label={t('detail.likeLabel')}
-              aria-pressed={displayLiked}
-              className={displayLiked ? 'board-like-button liked' : 'board-like-button'}
-              disabled={isLikeLoading}
-              onClick={handleLikeClick}
-              type="button"
-            >
-              {displayLiked ? '♥' : '♡'}
-            </button>
-            <span className="board-like-count">{t('detail.likeCount', { count: likeCount })}</span>
-          </section>
-          {likeError ? <p className="board-detail-message error">{t('detail.likeError')}</p> : null}
-
-          <CommentSection boardId={boardId} isAuthenticated={isAuthenticated} onLoginRequired={handleLoginRequired} />
+            <CommentSection boardId={boardId} isAuthenticated={isAuthenticated} onLoginRequired={handleLoginRequired} />
+          </div>
         </>
       ) : null}
     </div>

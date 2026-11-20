@@ -1,6 +1,9 @@
 import { apiClient } from './apiClient.js';
 
 export const likeService = {
+  getMyLikedBoards(page = 1) {
+    return apiClient.get('/api/users/me/liked-boards', { params: { page: page - 1 } });
+  },
   like(boardId) {
     return apiClient.post('/api/likes', { boardId });
   },

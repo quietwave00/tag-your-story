@@ -16,7 +16,7 @@ function buildSubscriptionUrl() {
 }
 
 export const notificationService = {
-  subscribe({ eventName = 'message', onMessage, onError } = {}) {
+  subscribe({ eventName = 'message', onMessage, onError, onOpen } = {}) {
     const eventSource = new EventSource(buildSubscriptionUrl(), {
       withCredentials: SSE_AUTH_MODE === 'cookie',
     });
@@ -27,6 +27,10 @@ export const notificationService = {
 
     if (onError) {
       eventSource.addEventListener('error', onError);
+    }
+
+    if (onOpen) {
+      eventSource.addEventListener('open', onOpen);
     }
 
     return eventSource;

@@ -1,0 +1,73 @@
+.subject-tags {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.subject-tags h2,
+.subject-tags p {
+  margin: 0;
+}
+
+.subject-tags h2 {
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.subject-tags p {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.subject-tags ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subject-tags li {
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: var(--color-paper);
+  font-size: 13px;
+}
+
+.subject-tags-skeleton {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.subject-tags-skeleton .skeleton-block {
+  width: 86px;
+  height: 30px;
+}
+
+.subject-tags-skeleton .skeleton-block:last-child { width: 120px; }
+
+.subject-tags--hero {
+  max-width: 100%;
+  gap: 8px;
+}
+
+.subject-tags--hero ul { gap: 8px 10px; }
+
+.subject-tags--hero li {
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-display);
+  font-size: clamp(14px, 2.5vw, 32px);
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.subject-tags--hero .subject-tags-skeleton .skeleton-block {
+  width: clamp(72px, 12vw, 132px);
+  height: clamp(28px, 3.5vw, 49px);
+}

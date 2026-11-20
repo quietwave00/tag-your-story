@@ -5,18 +5,23 @@
 1. 저장소 루트 `AGENTS.md` — 공통 작업·검증 규칙
 2. `agents/client/frontend_spec.md` — 클라이언트 구조와 기능 책임
 3. `agents/client/design_spec.md` — 시각 언어와 금지사항
-4. `agents/client/plans/FRONTEND-ROADMAP.md` — 마일스톤 순서와 의존성
-5. 이번 작업의 `agents/client/plans/active/` Plan — 승인된 변경 범위와 수용 기준
-6. `agents/client/api-contract.md` — 도메인·API별 서버 계약 기준선
+4. `agents/client/ui-reuse.md` — 공통 UI 재사용과 상세 화면 필수 동작
+5. `agents/client/plans/FRONTEND-ROADMAP.md` — 마일스톤 순서와 의존성
+6. 이번 작업의 `agents/client/plans/active/` Plan — 승인된 변경 범위와 수용 기준
+7. `agents/client/api-contract.md` — 도메인·API별 서버 계약 기준선
 
-`tag-note-react/`에서 작업할 때도 위 문서를 읽는다. 여러 Plan이 `active/`에 있어도 한 세션에서는 하나의 Plan만 구현한다. 현재 M2 구현 순서는 M2-1 → M2-2 → M2-3이며, 후속 Plan은 선행 Plan의 사용자 검증이 끝난 뒤 착수한다.
+`tag-note-react/`에서 작업할 때도 위 문서를 읽는다. 여러 Plan이 `active/`에 있어도 한 세션에서는 하나의 Plan만 구현한다. 현재 작업 순서는 `FRONTEND-ROADMAP.md`를 따른다.
+
+## UI 공통 코드 재사용
+
+- UI 작업 전 `ui-reuse.md`의 실제 공통 진입점과 상세 화면 필수 계약을 확인한다. 예외는 active Plan에 이유와 검증 범위를 기록한다.
 
 ## 계약 확인과 문서 우선순위
 
 - `api-contract.md`는 `D:\p\tag-your-story`의 `migration-server` worktree를 조사한 **정적 기록**이다. 특정 커밋에 고정된 계약으로 취급하지 않는다. 새 세션에서 해당 API를 사용하기 전에 그 worktree의 현재 `*Api.java` → Controller → Request/Response DTO → 인증 필터·예외 처리·관련 ADR을 대조한다. 이 클라이언트 worktree에 포함된 서버 코드를 최신으로 가정하지 않는다.
 - 이 환경에서는 Swagger/OpenAPI 접속을 시도하지 않는다. 사용자가 전달한 curl 응답만 실행 서버 계약의 근거로 추가한다. 정적 문서, Controller/DTO, 실행 응답이 다르면 충돌을 보고하고 임의로 선택하지 않는다.
 - 클라이언트 구현 범위는 Human Review를 거친 해당 active Plan을 따른다. Plan과 최신 서버 계약이 충돌하면 구현 전에 보고한다. 확인되지 않은 endpoint, 응답 필드, 인증 동작은 추측하지 않는다.
-- API 변경이 확인되면 `api-contract.md`의 해당 항목과 기준 근거를 갱신한다. 마일스톤 순서 변경은 `FRONTEND-ROADMAP.md`, 실행 범위 변경은 해당 Plan에 기록한다. 같은 계약 목록을 여러 문서에 복제하지 않는다.
+- 서버의 공개 API를 추가·수정·삭제하는 같은 작업에서 `api-contract.md`의 해당 항목과 기준 근거·확인 날짜를 갱신한다. 클라이언트 작업 중 API 변경을 확인했을 때도 같은 규칙을 적용한다. 실행 응답을 확인하지 않았다면 정적 코드 기준임을 표시한다. 마일스톤 순서 변경은 `FRONTEND-ROADMAP.md`, 실행 범위 변경은 해당 Plan에 기록한다. 같은 계약 목록을 여러 문서에 복제하지 않는다.
 
 ## 구현·검증 규칙
 

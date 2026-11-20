@@ -1,11 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import BackButton from '../components/common/BackButton.jsx';
+import SubjectTags from '../components/catalog/SubjectTags.jsx';
+import useDetailScrollTop from '../hooks/useDetailScrollTop.js';
+import useArtworkAmbient from '../hooks/useArtworkAmbient.js';
+import useSubjectTags from '../hooks/useSubjectTags.js';
+import BoardEditPage from './BoardEditPage.jsx';
 import { boardService } from '../services/boardService.js';
+import { getBoardListMetrics } from '../features/boards/boardListMetrics.js';
 import { trackService } from '../services/trackService.js';
 import { useAuthStore } from '../store/authStore.js';
 import { buildRoute, routes } from '../utils/routes.js';
+import { toSlug } from '../utils/slug.js';
 import { getTrackSearch } from '../utils/trackSearchStorage.js';
+import { formatCreatedAt } from '../utils/formatDate.js';
+import { createDetailNavigationState, getDetailBackTarget } from '../utils/detailNavigation.js';
 import '../styles/trackDetail.css';
 
 const BOARD_PAGE_SIZE = 8;
@@ -26,9 +36,10 @@ function getUserTagNames(board) {
 }
 
 export default function TrackDetailPage() {
-  const { t } = useTranslation(['tracks', 'common']);
-  const { trackId } = useParams();
+  const { i18n, t } = useTranslation(['tracks', 'common']);
+  const { trackId, slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [track, setTrack] = useState(null);
   const [boards, setBoards] = useState([]);
@@ -37,8 +48,13 @@ export default function TrackDetailPage() {
   const [boardPage, setBoardPage] = useState(DEFAULT_PAGE);
   const [isTrackLoading, setIsTrackLoading] = useState(true);
   const [isBoardLoading, setIsBoardLoading] = useState(true);
+  const [boardMetrics, setBoardMetrics] = useState({});
   const [trackError, setTrackError] = useState(null);
   const [boardError, setBoardError] = useState(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [writeNotice, setWriteNotice] = useState(false);
+  const writeButtonRef = useRef(null);
+  const subjectTags = useSubjectTags('TRACK', trackId);
 
   const totalBoardPages = useMemo(() => {
     const calculatedTotalPages = Math.ceil(totalBoardCount / BOARD_PAGE_SIZE);
@@ -50,6 +66,9 @@ export default function TrackDetailPage() {
     () => getBoardPageNumbers(totalBoardPages),
     [totalBoardPages],
   );
+
+  useDetailScrollTop(trackId);
+  useArtworkAmbient(track?.trackId === trackId ? track.imageUrl : null);
 
   useEffect(() => {
     if (!trackId) {
@@ -88,6 +107,12 @@ export default function TrackDetailPage() {
   }, [trackId]);
 
   useEffect(() => {
+    if (track?.trackId === trackId && slug !== toSlug(track.title)) {
+      navigate(buildRoute.trackDetail(trackId, track.title), { replace: true, state: location.state });
+    }
+  }, [location.state, navigate, slug, track, trackId]);
+
+  useEffect(() => {
     if (!trackId) {
       return;
     }
@@ -96,6 +121,7 @@ export default function TrackDetailPage() {
 
     async function loadBoardList() {
       setIsBoardLoading(true);
+      setBoardMetrics({});
 
       try {
         const response = await boardService.getBoardListByTrackId(
@@ -108,6 +134,13 @@ export default function TrackDetailPage() {
           setBoards(response?.boardResponseList ?? []);
           setTotalBoardCount(response?.totalCount ?? 0);
           setBoardError(null);
+          getBoardListMetrics(response?.boardResponseList ?? [])
+            .then((metrics) => {
+              if (!ignore) setBoardMetrics(metrics);
+            })
+            .catch(() => {
+              if (!ignore) setBoardMetrics({});
+            });
         }
       } catch (error) {
         if (!ignore) {
@@ -130,6 +163,11 @@ export default function TrackDetailPage() {
   }, [boardOrderType, boardPage, trackId]);
 
   const handleBack = () => {
+    const target = getDetailBackTarget(location);
+    if (target) {
+      navigate(target.path, { state: target.state });
+      return;
+    }
     const { keyword, page } = getTrackSearch();
 
     if (keyword) {
@@ -161,22 +199,36 @@ export default function TrackDetailPage() {
   const moveBoardCreate = () => {
     if (trackId) {
       if (!isAuthenticated) {
-        navigate(routes.login, { state: { messageKey: 'loginRequired.createBoard' } });
+        setWriteNotice(true);
         return;
       }
-      navigate(buildRoute.boardCreate(trackId));
+      setIsCreateOpen(true);
     }
   };
 
+  const closeBoardCreate = () => {
+    setIsCreateOpen(false);
+    writeButtonRef.current?.focus();
+  };
+
   return (
-    <div className="track-detail-page">
-      <button aria-label={t('detail.back')} className="track-detail-back-button" onClick={handleBack} type="button">
-        ◀
-      </button>
+    <div className="track-detail-page detail-page-frame">
+      <BackButton onClick={handleBack} />
 
       <section className="track-detail-card" aria-labelledby="track-detail-title">
-        {isTrackLoading ? <p className="track-detail-message">{t('detail.loading')}</p> : null}
-        {trackError ? (
+        {isTrackLoading ? (
+          <>
+            <span className="visually-hidden" role="status">{t('detail.loading')}</span>
+            <span aria-hidden="true" className="track-detail-image skeleton-block" />
+            <div aria-hidden="true" className="track-detail-content track-detail-skeleton">
+              <span className="skeleton-block" />
+              <span className="skeleton-block" />
+              <span className="skeleton-block" />
+              <span className="skeleton-block" />
+            </div>
+          </>
+        ) : null}
+        {!isTrackLoading && trackError ? (
           <p className="track-detail-message error">{t('detail.error')}</p>
         ) : null}
         {!isTrackLoading && !trackError && track ? (
@@ -187,26 +239,24 @@ export default function TrackDetailPage() {
               alt={t('common:images.albumCover', { title: track.title })}
             />
             <div className="track-detail-content">
+              <SubjectTags {...subjectTags} hero />
               <h1 className="track-detail-title" id="track-detail-title">
                 {track.title}
               </h1>
               <dl className="track-detail-meta">
                 <div className="track-detail-meta-row">
                   <dt>{t('metadata.artist')}</dt>
-                  <dd>{track.artistName}</dd>
+                  <dd>{track.spotifyArtistId ? (
+                    <Link className="track-detail-meta-link" state={createDetailNavigationState(location)} to={buildRoute.artistDetail(track.spotifyArtistId, track.artistName)}>{track.artistName}</Link>
+                  ) : track.artistName}</dd>
                 </div>
                 <div className="track-detail-meta-row">
                   <dt>{t('metadata.album')}</dt>
-                  <dd>{track.albumName}</dd>
-                </div>
-                <div className="track-detail-meta-row">
-                  <dt>{t('metadata.trackId')}</dt>
-                  <dd>{trackId}</dd>
+                  <dd>{track.spotifyAlbumId ? (
+                    <Link className="track-detail-meta-link" state={createDetailNavigationState(location)} to={buildRoute.albumDetail(track.spotifyAlbumId, track.albumName)}>{track.albumName}</Link>
+                  ) : track.albumName}</dd>
                 </div>
               </dl>
-              <button className="track-detail-write-button" onClick={moveBoardCreate} type="button">
-                {t('detail.addTag')}
-              </button>
             </div>
           </>
         ) : null}
@@ -214,9 +264,13 @@ export default function TrackDetailPage() {
 
       <section className="board-list-section" aria-labelledby="board-list-title">
         <div className="board-list-header">
-          <h2 className="board-list-title" id="board-list-title">
-            {t('boards.title')}
-          </h2>
+          <div className="board-list-header-main">
+            <h2 className="visually-hidden" id="board-list-title">{t('boards.title')}</h2>
+            <button aria-disabled={!isAuthenticated} className={isAuthenticated ? 'track-detail-write-button' : 'track-detail-write-button track-detail-write-button--guest'} onClick={moveBoardCreate} ref={writeButtonRef} type="button">
+              {t('boards.write')}
+            </button>
+          </div>
+          {writeNotice && !isAuthenticated ? <p className="track-detail-write-notice" role="status">{t('boards.loginRequired')}</p> : null}
           <fieldset className="board-order-fieldset">
             <legend className="visually-hidden">{t('boards.sortLabel')}</legend>
             {boardOrderOptions.map((option) => (
@@ -234,33 +288,67 @@ export default function TrackDetailPage() {
           </fieldset>
         </div>
 
-        {isBoardLoading ? <p className="track-detail-message">{t('boards.loading')}</p> : null}
-        {boardError ? (
+        {isBoardLoading ? (
+          <div className="board-list board-list-skeleton" role="status">
+            <span className="visually-hidden">{t('boards.loading')}</span>
+            {[0, 1, 2].map((index) => (
+              <div aria-hidden="true" className="board-list-row" key={index}>
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {!isBoardLoading && boardError ? (
           <p className="track-detail-message error">{t('boards.error')}</p>
         ) : null}
         {!isBoardLoading && !boardError && boards.length === 0 ? (
-          <p className="track-detail-message">{t('boards.empty')}</p>
+          <p className="track-detail-message board-list-empty">{t('boards.empty')}</p>
         ) : null}
 
-        <div className="board-list-grid">
-          {boards.map((board) => (
-            <button
-              className="board-list-card"
-              key={board.boardId}
-              onClick={() => moveBoardDetail(board.boardId)}
-              type="button"
-            >
-              <span className="board-user-tag-list">
-                {getUserTagNames(board).map((userTag) => (
-                  <span className="board-user-tag" key={`${board.boardId}-${userTag}`}>
-                    #{userTag}
+        {!isBoardLoading && boards.length > 0 ? (
+          <ul className="board-list">
+            {boards.map((board) => (
+              <li key={board.boardId}>
+                <button
+                  className="board-list-row"
+                  onClick={() => moveBoardDetail(board.boardId)}
+                  type="button"
+                >
+                  {getUserTagNames(board).length > 0 ? (
+                    <span className="board-user-tag-list">
+                      {getUserTagNames(board).map((userTag) => (
+                        <span className="board-user-tag" key={`${board.boardId}-${userTag}`}>
+                          #{userTag}
+                        </span>
+                      ))}
+                    </span>
+                  ) : null}
+                  <span className="board-content">{board.content}</span>
+                  <span className="board-list-meta">
+                    <span className="board-list-identity">
+                      <span className="board-list-author">{board.nickname}</span>
+                      {board.createdAt ? (
+                        <time className="board-list-date">
+                          {formatCreatedAt(board.createdAt, i18n.resolvedLanguage ?? i18n.language)}
+                        </time>
+                      ) : null}
+                    </span>
+                    <span className="board-list-engagement">
+                      {boardMetrics[board.boardId]?.likeCount != null ? (
+                        <span>{t('boards.likeCount', { count: boardMetrics[board.boardId].likeCount })}</span>
+                      ) : null}
+                      {boardMetrics[board.boardId]?.commentCount != null ? (
+                        <span>{t('boards.commentCount', { count: boardMetrics[board.boardId].commentCount })}</span>
+                      ) : null}
+                    </span>
                   </span>
-                ))}
-              </span>
-              <span className="board-content">{board.content}</span>
-            </button>
-          ))}
-        </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
         {!isBoardLoading && !boardError && boards.length > 0 ? (
           <nav className="board-pagination" aria-label={t('boards.pagination')}>
@@ -271,7 +359,7 @@ export default function TrackDetailPage() {
               onClick={() => moveBoardPage(boardPage - 1)}
               type="button"
             >
-              ⤺
+              ←
             </button>
             {boardPageNumbers.map((page) => (
               <button
@@ -291,11 +379,12 @@ export default function TrackDetailPage() {
               onClick={() => moveBoardPage(boardPage + 1)}
               type="button"
             >
-              ⤻
+              →
             </button>
           </nav>
         ) : null}
       </section>
+      {isCreateOpen ? <BoardEditPage modal onClose={closeBoardCreate} trackIdOverride={trackId} /> : null}
     </div>
   );
 }

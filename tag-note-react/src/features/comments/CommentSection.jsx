@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import UserAvatar from '../../components/common/UserAvatar.jsx';
 import { commentService } from '../../services/commentService.js';
 import { AuthExpiredError } from '../../services/apiClient.js';
+import { formatCreatedAt } from '../../utils/formatDate.js';
 import '../../styles/commentSection.css';
 
 const COMMENT_PAGE_SIZE = 20;
@@ -32,25 +34,33 @@ function CommentItem({
   onReplyStart,
   children,
 }) {
-  const { t } = useTranslation(['community', 'common']);
+  const { i18n, t } = useTranslation(['community', 'common']);
 
   return (
     <>
       <div className={isReply ? 'comment-row reply' : 'comment-row'}>
-        <strong className="comment-nickname">{comment.nickname}</strong>
-        <div className="comment-content">
-          {isReply ? <span className="reply-symbol">↳ </span> : null}
-          <span>{comment.content}</span>
-          {!isReply ? (
-            <button
-              aria-label={t('comments.replyAction')}
-              className="comment-reply-trigger"
-              onClick={() => onReplyStart(comment.commentId)}
-              type="button"
-            >
-              ↳
-            </button>
-          ) : null}
+        <UserAvatar name={comment.nickname} />
+        <div className="comment-main">
+          <div className="comment-heading">
+            <strong className="comment-nickname">{comment.nickname}</strong>
+            {comment.createdDate ? (
+              <time className="comment-date">
+                {formatCreatedAt(comment.createdDate, i18n.resolvedLanguage ?? i18n.language)}
+              </time>
+            ) : null}
+          </div>
+          <div className="comment-content">
+            <span>{comment.content}</span>
+            {!isReply ? (
+              <button
+                className="comment-reply-trigger"
+                onClick={() => onReplyStart(comment.commentId)}
+                type="button"
+              >
+                {t('comments.replyAction')}
+              </button>
+            ) : null}
+          </div>
         </div>
         {canEdit ? (
           <div className="comment-actions">
@@ -282,7 +292,9 @@ export default function CommentSection({ boardId, isAuthenticated, onLoginRequir
   return (
     <section className="comment-section" aria-labelledby="comment-section-title">
       <h2 className="comment-section-title" id="comment-section-title">
-        {t('comments.title')}
+        {t('comments.title')}{!isLoading && !loadError ? (
+          <span className="comment-section-count"> {commentCount}</span>
+        ) : null}
       </h2>
 
       <form className="comment-write-form" onSubmit={handleWriteComment}>
@@ -299,14 +311,24 @@ export default function CommentSection({ boardId, isAuthenticated, onLoginRequir
         </button>
       </form>
 
-      {isLoading ? <p className="comment-message">{t('comments.loading')}</p> : null}
-      {error ? <p className="comment-message error">{t('comments.error')}</p> : null}
+      {isLoading ? (
+        <div className="comment-list comment-list-skeleton" role="status">
+          <span className="visually-hidden">{t('comments.loading')}</span>
+          {[0, 1, 2].map((index) => (
+            <div aria-hidden="true" className="comment-row" key={index}>
+              <span className="skeleton-block comment-skeleton-avatar" />
+              <span className="comment-main"><span className="skeleton-block" /><span className="skeleton-block" /></span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {!isLoading && error ? <p className="comment-message error">{t('comments.error')}</p> : null}
       {!isLoading && !error && comments.length === 0 ? (
         <p className="comment-message">{t('comments.empty')}</p>
       ) : null}
 
       <div className="comment-list">
-        {comments.map(({ comment, children = [] }) => {
+        {(!isLoading ? comments : []).map(({ comment, children = [] }) => {
           const visibleReplyCount = visibleReplyCounts[comment.commentId] ?? INITIAL_REPLY_COUNT;
           const visibleReplies = children.slice(0, visibleReplyCount);
           const hasMoreReplies = children.length > visibleReplyCount;
@@ -388,12 +410,11 @@ export default function CommentSection({ boardId, isAuthenticated, onLoginRequir
 
               {hasMoreReplies ? (
                 <button
-                  aria-label={t('comments.moreReplies')}
                   className="more-replies-button"
                   onClick={() => showMoreReplies(comment.commentId)}
                   type="button"
                 >
-                  ● ● ●
+                  {t('comments.moreReplies')}
                 </button>
               ) : null}
             </div>
@@ -409,7 +430,7 @@ export default function CommentSection({ boardId, isAuthenticated, onLoginRequir
             onClick={() => handlePageChange(currentPage - 1)}
             type="button"
           >
-            ⤺
+            ←
           </button>
           {pageNumbers.map((page) => (
             <button
@@ -428,7 +449,7 @@ export default function CommentSection({ boardId, isAuthenticated, onLoginRequir
             onClick={() => handlePageChange(currentPage + 1)}
             type="button"
           >
-            ⤻
+            →
           </button>
         </nav>
       ) : null}

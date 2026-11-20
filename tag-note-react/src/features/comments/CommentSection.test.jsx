@@ -5,7 +5,7 @@ import { ApiError, AuthExpiredError } from '../../services/apiClient.js';
 import { commentService } from '../../services/commentService.js';
 import CommentSection from './CommentSection.jsx';
 
-const commentList = [{ comment: { commentId: 1, nickname: 'Listener', content: 'Original comment' }, children: [] }];
+const commentList = [{ comment: { commentId: 1, nickname: 'Listener', content: 'Original comment', createdDate: [2026, 11, 2] }, children: [] }];
 
 beforeEach(async () => {
   await i18n.changeLanguage('en');
@@ -27,11 +27,13 @@ describe('comment mutation entry', () => {
     render(<CommentSection boardId="board-1" isAuthenticated={false} onLoginRequired={onLoginRequired} />);
 
     expect(await screen.findByText('Original comment')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Comments 1' })).toBeInTheDocument();
+    expect(screen.getByText('11/2/2026')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Reply' }));
     expect(onLoginRequired).toHaveBeenCalledWith(false);
     expect(screen.queryByPlaceholderText('Write a reply')).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText('Write a comment'), { target: { value: 'My draft' } });
+    fireEvent.change(screen.getByPlaceholderText('Leave a comment'), { target: { value: 'My draft' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'WRITE' }).at(-1));
     expect(onLoginRequired).toHaveBeenCalledWith(true);
     expect(writeComment).not.toHaveBeenCalled();
@@ -43,7 +45,7 @@ describe('comment mutation entry', () => {
     const writeComment = vi.spyOn(commentService, 'writeComment').mockResolvedValue({});
     render(<CommentSection boardId="board-1" isAuthenticated onLoginRequired={onLoginRequired} />);
 
-    fireEvent.change(screen.getByPlaceholderText('Write a comment'), { target: { value: 'New comment' } });
+    fireEvent.change(screen.getByPlaceholderText('Leave a comment'), { target: { value: 'New comment' } });
     fireEvent.click(screen.getByRole('button', { name: 'WRITE' }));
     await waitFor(() => expect(writeComment).toHaveBeenCalledWith('board-1', 'New comment'));
     expect(onLoginRequired).not.toHaveBeenCalled();
@@ -69,7 +71,7 @@ describe('comment mutation entry', () => {
     render(<CommentSection boardId="board-1" isAuthenticated onLoginRequired={onLoginRequired} />);
 
     expect(await screen.findByText('Original comment')).toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText('Write a comment'), { target: { value: 'Draft' } });
+    fireEvent.change(screen.getByPlaceholderText('Leave a comment'), { target: { value: 'Draft' } });
     fireEvent.click(screen.getByRole('button', { name: 'WRITE' }));
     await waitFor(() => expect(writeComment).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('We could not process the comment request.')).toBeInTheDocument();
@@ -85,7 +87,7 @@ describe('comment mutation entry', () => {
     vi.spyOn(commentService, 'writeComment').mockRejectedValue(new ApiError('Denied', { exceptionCode: 'NO_PERMISSION' }));
     render(<CommentSection boardId="board-1" isAuthenticated onLoginRequired={vi.fn()} />);
 
-    fireEvent.change(screen.getByPlaceholderText('Write a comment'), { target: { value: 'Draft' } });
+    fireEvent.change(screen.getByPlaceholderText('Leave a comment'), { target: { value: 'Draft' } });
     fireEvent.click(screen.getByRole('button', { name: 'WRITE' }));
     expect(await screen.findByText('We could not process the comment request.')).toBeInTheDocument();
 

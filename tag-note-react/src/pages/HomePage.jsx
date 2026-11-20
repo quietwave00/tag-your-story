@@ -140,9 +140,14 @@ export default function HomePage() {
         <h2 className="home-section-title" id="ranking-title">
           {t('ranking.title')}
         </h2>
-        {isLoadingRanking ? <p className="home-message">{t('ranking.loading')}</p> : null}
+        {isLoadingRanking ? (
+          <div className="keyword-cloud home-keyword-skeleton" role="status">
+            <span className="visually-hidden">{t('ranking.loading')}</span>
+            {[0, 1, 2, 3, 4, 5].map((index) => <span aria-hidden="true" className="skeleton-block" key={index} />)}
+          </div>
+        ) : null}
         {rankingError ? <p className="home-message error">{t('ranking.error')}</p> : null}
-        <div className="keyword-cloud">
+        {!isLoadingRanking ? <div className="keyword-cloud">
           {cloudKeywords.map((rankingKeyword, index) => (
             <button
               className="keyword-cloud-item"
@@ -154,14 +159,21 @@ export default function HomePage() {
               #{rankingKeyword}
             </button>
           ))}
-        </div>
+        </div> : null}
       </section>
 
       <section className="home-section" aria-labelledby="recent-user-tag-title">
         <h2 className="home-section-title" id="recent-user-tag-title">
           {t('recentTags.title')}
         </h2>
-        {isLoadingUserTags ? <p className="home-message">{t('recentTags.loading')}</p> : null}
+        {isLoadingUserTags ? (
+          <div className="user-tag-list home-tag-skeleton" role="status">
+            <span className="visually-hidden">{t('recentTags.loading')}</span>
+            {[0, 1, 2, 3].map((index) => (
+              <div aria-hidden="true" className="archive-stream-item" key={index}><span className="skeleton-block" /><span className="skeleton-block" /></div>
+            ))}
+          </div>
+        ) : null}
         {userTagError ? (
           <p className="home-message error">{t('recentTags.error')}</p>
         ) : null}

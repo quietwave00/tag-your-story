@@ -1,3 +1,5 @@
+import genresEn from './locales/en/genres.json';
+import genresKo from './locales/ko/genres.json';
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
@@ -6,35 +8,40 @@ import boardsEn from './locales/en/boards.json';
 import commonEn from './locales/en/common.json';
 import communityEn from './locales/en/community.json';
 import homeEn from './locales/en/home.json';
+import myPageEn from './locales/en/myPage.json';
 import tracksEn from './locales/en/tracks.json';
 import authKo from './locales/ko/auth.json';
 import boardsKo from './locales/ko/boards.json';
 import commonKo from './locales/ko/common.json';
 import communityKo from './locales/ko/community.json';
 import homeKo from './locales/ko/home.json';
+import myPageKo from './locales/ko/myPage.json';
 import tracksKo from './locales/ko/tracks.json';
 import {
   FALLBACK_LANGUAGE,
-  LANGUAGE_STORAGE_KEY,
   SUPPORTED_LANGUAGES,
   getBaseLanguage,
 } from './languages.js';
 
-export const namespaces = ['common', 'auth', 'home', 'tracks', 'boards', 'community'];
+export const namespaces = ['common', 'auth', 'home', 'tracks', 'boards', 'community', 'myPage', 'genres'];
 
 export const resources = {
   en: {
+    genres: genresEn,
     common: commonEn,
     auth: authEn,
     home: homeEn,
+    myPage: myPageEn,
     tracks: tracksEn,
     boards: boardsEn,
     community: communityEn,
   },
   ko: {
+    genres: genresKo,
     common: commonKo,
     auth: authKo,
     home: homeKo,
+    myPage: myPageKo,
     tracks: tracksKo,
     boards: boardsKo,
     community: communityKo,
@@ -60,9 +67,8 @@ if (!i18n.isInitialized) {
       load: 'languageOnly',
       cleanCode: true,
       detection: {
-        order: ['localStorage', 'navigator'],
-        lookupLocalStorage: LANGUAGE_STORAGE_KEY,
-        caches: ['localStorage'],
+        order: ['navigator'],
+        caches: [],
         convertDetectedLanguage: getBaseLanguage,
       },
       interpolation: {

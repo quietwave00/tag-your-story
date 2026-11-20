@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { authStore } from '../store/authStore.js';
 import { routes } from '../utils/routes.js';
 import { tokenStorage } from '../utils/tokenStorage.js';
+import { accountService } from '../services/accountService.js';
 import '../styles/auth.css';
 
 export default function TokenPage() {
@@ -12,6 +13,7 @@ export default function TokenPage() {
   const location = useLocation();
 
   useEffect(() => {
+    let active = true;
     const params = new URLSearchParams(location.search);
     if (params.has('error_code')) {
       const errorCode = params.get('error_code');
@@ -33,9 +35,17 @@ export default function TokenPage() {
 
     const result = tokenStorage.syncFromCookies();
     if (result.hasAccessToken) {
+      authStore.setNickname(null);
       authStore.refreshFromStorage();
-      navigate(routes.home, { replace: true });
-      return;
+      accountService.getMe().then((profile) => {
+        if (!active) return;
+        if (typeof profile?.nickname === 'string') authStore.setNickname(profile.nickname);
+        navigate(routes.home, { replace: true });
+      }).catch(() => {
+        if (!active) return;
+        navigate(authStore.getState().isAuthenticated ? routes.home : routes.login, { replace: true });
+      });
+      return () => { active = false; };
     }
 
     authStore.clear();

@@ -3,31 +3,67 @@
     "title": "검색",
     "prompt": "홈에서 트랙, 앨범, 아티스트를 검색해 주세요.",
     "resultsTitle": "검색 결과",
-    "loading": "트랙을 불러오는 중입니다 █",
-    "error": "트랙을 불러오지 못했습니다.",
-    "empty": "검색 결과가 없습니다.",
-    "pagination": "트랙 검색 결과 페이지"
+    "keywordLabel": "카탈로그 검색",
+    "keywordPlaceholder": "트랙, 아티스트, 앨범 검색",
+    "sections": { "TRACK": "트랙", "ARTIST": "아티스트", "ALBUM": "앨범" },
+    "loadingAll": "검색 결과를 불러오는 중입니다",
+    "loadingType": "{{type}} 결과를 불러오는 중입니다",
+    "error": "{{type}} 검색 결과를 불러오지 못했습니다.",
+    "empty": "{{type}} 검색 결과가 없습니다.",
+    "pagination": "{{type}} 검색 결과 페이지",
+    "currentPage": "{{type}} {{currentPage}}페이지",
+    "imageAlt": "{{title}} 이미지",
+    "noImage": "이미지 없음",
+    "detailPending": "상세 정보는 아직 제공되지 않습니다.",
+    "spotifyId": "Spotify ID: {{id}}"
   },
   "metadata": {
     "artist": "아티스트",
     "album": "앨범",
-    "tag": "태그",
-    "trackId": "트랙 ID"
+    "tag": "태그"
   },
   "detail": {
-    "back": "검색 결과로 돌아가기",
+    "back": "뒤로가기",
     "loading": "트랙 정보를 불러오는 중입니다.",
-    "error": "트랙 정보를 불러오지 못했습니다.",
-    "addTag": "+ 커스텀 태그 추가"
+    "error": "트랙 정보를 불러오지 못했습니다."
+  },
+  "subject": {
+    "loading": "{{type}} 정보를 불러오는 중입니다.",
+    "error": "{{type}} 정보를 불러오지 못했습니다.",
+    "listLoading": "{{type}} 목록을 불러오는 중입니다.",
+    "listError": "{{type}} 목록을 불러오지 못했습니다.",
+    "empty": "표시할 {{type}}이 없습니다.",
+    "albums": "앨범",
+    "tracks": "트랙",
+    "releaseTypeLabel": "발매 유형",
+    "releaseTypes": { "ALL": "전체", "SINGLE_EP": "싱글·EP", "ALBUM": "앨범", "COMPILATION": "컴필레이션" },
+    "releaseTypeNames": { "SINGLE_EP": "싱글·EP", "ALBUM": "앨범", "COMPILATION": "컴필레이션" },
+    "releaseDate": "발매일",
+    "trackCount": "트랙 {{count}}개",
+    "duration": "{{minutes}}:{{seconds}}",
+    "pagination": "{{type}} 목록 페이지",
+    "pageStatus": "{{page}} / {{totalPages}}",
+    "currentPage": "{{page}}페이지"
+  },
+  "subjectTags": {
+    "title": "시스템 태그",
+    "loading": "태그를 불러오는 중입니다.",
+    "error": "태그를 불러오지 못했습니다.",
+    "preview": "검증 전 태그",
+    "empty": "표시할 태그가 없습니다."
   },
   "boards": {
     "title": "태그 노트",
+    "write": "글 작성",
+    "loginRequired": "로그인 후 사용할 수 있습니다.",
     "sortLabel": "태그 노트 정렬",
     "latest": "최신순",
     "popular": "추천순",
     "loading": "태그 노트를 불러오는 중입니다 █",
     "error": "태그 노트를 불러오지 못했습니다.",
     "empty": "아직 작성된 태그 노트가 없습니다.",
+    "likeCount": "좋아요 {{count}}개",
+    "commentCount": "댓글 {{count}}개",
     "pagination": "태그 노트 목록 페이지"
   }
 }

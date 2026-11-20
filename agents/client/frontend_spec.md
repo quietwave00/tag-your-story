@@ -42,6 +42,7 @@
 주의:
 - 페이지별 데이터 로딩 로직을 `router.jsx`에 직접 넣지 않는다.
 - route path와 URL 생성 규칙을 여러 파일에 흩뜨리지 않는다.
+- Track·Album·Artist 상세의 공개 클라이언트 주소는 `ID/이름-slug`이며 조회는 ID를 사용한다. 이전 ID 전용 주소는 상세 조회 후 현재 이름 slug 주소로 교체한다.
 
 ### 2.2 Pages 계층
 
@@ -55,10 +56,11 @@
 구성 기준:
 - `HomePage.jsx`: 홈, 검색 진입, 최근 태그/랭킹 노출
 - `TracksPage.jsx`: 트랙 검색 결과
+- `CatalogSubjectPage.jsx`: Artist·Album 상세와 각 관련 목록의 조회·페이지 상태
 - `TrackDetailPage.jsx`: 트랙 상세와 해당 트랙의 게시글 목록
 - `BoardDetailPage.jsx`: 게시글 상세, 좋아요, 댓글 조립
 - `BoardEditPage.jsx`: 게시글 작성/수정 화면
-- `LoginPage.jsx`, `TokenPage.jsx`, `NicknamePage.jsx`: 인증/가입 흐름
+- `LoginPage.jsx`, `SignupPage.jsx`, `TokenPage.jsx`, `NicknamePage.jsx`: 인증/가입 흐름
 - `ExceptionPage.jsx`: 라우팅 및 오류 화면
 
 주의:
@@ -129,6 +131,7 @@ features/
 구성 기준:
 - `layout/`: 앱 shell, header, outlet 배치
 - `common/`: 여러 화면에서 공유 가능한 작은 UI 컴포넌트
+- 공통 UI의 실제 진입점과 상세 화면 재사용 계약은 `agents/client/ui-reuse.md`에서 관리한다.
 
 주의:
 - board, comment, notification처럼 도메인 의미가 강한 컴포넌트는 `components/common`이 아니라 `features` 하위에 둔다.
@@ -146,6 +149,8 @@ features/
 - `apiClient.js`: fetch wrapper, token reissue, API error class
 - `authService.js`: 로그인/가입/토큰/로그아웃 API
 - `trackService.js`: 트랙 검색, 상세, 랭킹 API
+- `catalogDetailService.js`: Artist·Album 상세와 관련 목록 API
+- `catalogSubjectTagsService.js`: Track·Album import 완료 후 저장된 태그 조회 API
 - `boardService.js`: 게시글 목록/상세/작성/수정/삭제 API
 - `commentService.js`: 댓글/답글 API
 - `fileService.js`: 파일 업로드/조회/삭제 API
@@ -227,7 +232,7 @@ features/
 - `index.js`: bundled resource, browser language detector, React 연결, `<html lang>` 동기화
 - `languages.js`: 지원 언어, fallback, storage key, base language 변환
 - `locales/{ko,en}/`: `common`, `auth`, `home`, `tracks`, `boards`, `community` namespace
-- `components/common/LanguageSwitcher.jsx`: 전역 언어 선택 UI
+- 헤더에는 언어 선택 UI를 표시하지 않는다. `index.js`가 브라우저 언어를 감지한다.
 
 번역 경계:
 - navigation, 버튼, 제목, 안내/검증/오류 문구, 접근성 라벨, 알림 문장 템플릿은 번역한다.
@@ -414,7 +419,7 @@ npm run build
 ```
 
 추가 권장 검증:
-- 주요 route 수동 확인: `/`, `/tracks`, `/tracks/:trackId`, `/boards/:boardId`, `/boards/new`, `/login`, `/nickname`
+- 주요 route 수동 확인: `/`, `/search`, `/track/:trackId`, `/artist/:spotifyArtistId`, `/album/:spotifyAlbumId`, `/boards/:boardId`, `/boards/new`, `/login`, `/nickname`
 - 인증 상태 변경 후 header와 notification 표시 확인
 - token reissue 실패 시 로그아웃/인증 만료 흐름 확인
 - 댓글 작성/수정/삭제 후 pagination과 작성 가능 댓글 목록 갱신 확인

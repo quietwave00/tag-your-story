@@ -7,14 +7,13 @@ describe('language detection', () => {
     window.localStorage.clear();
   });
 
-  it('prefers the saved language over the browser language', () => {
+  it('uses the browser language even when a language was saved previously', () => {
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, 'ko');
     const detector = new LanguageDetector(undefined, {
-      order: ['localStorage', 'navigator'],
-      lookupLocalStorage: LANGUAGE_STORAGE_KEY,
+      order: ['navigator'],
       convertDetectedLanguage: getBaseLanguage,
     });
 
-    expect(detector.detect()).toBe('ko');
+    expect(detector.detect()).toBe(getBaseLanguage(navigator.language));
   });
 });

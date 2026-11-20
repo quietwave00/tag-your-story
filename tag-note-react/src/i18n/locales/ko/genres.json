@@ -1,0 +1,62 @@
+{
+  "title": "장르",
+  "search": "장르 검색",
+  "results": "장르 검색 결과",
+  "noResults": "일치하는 장르가 없습니다.",
+  "more": "더 보기",
+  "closeSearch": "검색 결과 닫기",
+  "canvas": "장르 그래프. 키보드로는 검색에서 장르를 선택할 수 있습니다.",
+  "zoomIn": "확대",
+  "zoomOut": "축소",
+  "overview": "전체 보기",
+  "filter": "관계 유형",
+  "legend": "관계 방향",
+  "types": {
+    "SUBGENRE": "하위 장르",
+    "INFLUENCES": "영향",
+    "FUSION": "융합"
+  },
+  "legendText": {
+    "SUBGENRE": "상위 → 하위 장르",
+    "INFLUENCES": "영향을 준 장르 → 받은 장르",
+    "FUSION": "재료 → 융합 결과"
+  },
+  "groups": {
+    "SUBGENRE": {
+      "in": "상위 장르",
+      "out": "하위 장르"
+    },
+    "INFLUENCES": {
+      "in": "영향을 받은 출처",
+      "out": "영향을 준 대상"
+    },
+    "FUSION": {
+      "in": "융합 재료",
+      "out": "융합 결과"
+    }
+  },
+  "loading": "장르 지도를 준비하고 있습니다…",
+  "error": "장르 지도를 불러오지 못했습니다.",
+  "retry": "다시 시도",
+  "partial": "부분 수집 자료입니다. 일부 장르나 관계가 누락되어 있을 수 있습니다.",
+  "invalidNode": "현재 자료에 없는 장르입니다. 전체 지도를 표시합니다.",
+  "empty": "이 자료에는 장르가 없습니다.",
+  "totals": "장르 {{nodes}}개 · 관계 {{edges}}개",
+  "neighbors": "연결 장르: {{visible}} / {{total}}",
+  "relations": "관계: {{visible}} / {{total}}",
+  "isolated": "기록된 관계 없음",
+  "filteredEmpty": "선택한 필터에 해당하는 관계가 없습니다.",
+  "source": "출처 보기",
+  "evidence": "관계 근거",
+  "closePanel": "장르 상세 닫기",
+  "collapse": "접기",
+  "expand": "펼치기",
+  "help": "장르를 선택해 연결을 따라가세요. 드래그로 이동하고 휠이나 핀치로 확대합니다. 검색에서도 모든 장르에 접근할 수 있습니다.",
+  "dataInfo": "데이터 정보",
+  "interpretation": "노드 크기는 이 자료에 기록된 연결 장르 수입니다. 위치와 거리는 연결을 정리한 배치이며 인기도나 청취 유사도를 의미하지 않습니다. 다중 부모와 순환 관계를 보존합니다.",
+  "completeMeaning": "완료 상태는 해당 수집 작업이 끝났다는 의미입니다. 모든 음악 장르와 관계를 망라한다는 뜻은 아닙니다.",
+  "version": "자료 버전",
+  "collected": "수집 시각",
+  "scope": "수집 범위 / 상태",
+  "components": "연결 집합 {{count}}개 · 연결 없는 장르 {{isolated}}개"
+}

@@ -1,5 +1,6 @@
 {
   "detail": {
+    "title": "Tag note",
     "backToTrack": "Back to {{title}}",
     "back": "Go back",
     "loading": "Loading the tag note.",
@@ -16,7 +17,9 @@
     "editTitle": "Edit tag note",
     "userTags": "User tags",
     "tagInput": "Enter a tag and press Enter",
+    "removeTag": "Remove tag {{tag}}",
     "images": "Images",
+    "removeImage": "Remove image",
     "story": "Story",
     "storyPlaceholder": "Write your story.",
     "loading": "Loading the tag note.",

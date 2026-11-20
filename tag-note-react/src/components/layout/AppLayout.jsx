@@ -1,37 +1,32 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from '../common/LanguageSwitcher.jsx';
 import NotificationCenter from '../../features/notifications/NotificationCenter.jsx';
-import { authService } from '../../services/authService.js';
-import { authStore, useAuthStore } from '../../store/authStore.js';
+import UserAvatar from '../common/UserAvatar.jsx';
+import { useAuthStore } from '../../store/authStore.js';
 import { routes } from '../../utils/routes.js';
 import logoUrl from '../../../assets/tagnote-logo-transparent.png';
 
 const navItems = [
+  { to: routes.genres, labelKey: 'navigation.genres' },
   { to: routes.tracks, labelKey: 'navigation.dig' },
 ];
 
 export default function AppLayout() {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const nickname = useAuthStore((state) => state.nickname);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  const handleLogout = async () => {
-    let failed = false;
-    try {
-      await authService.logout();
-    } catch {
-      failed = true;
-    } finally {
-      authStore.clear();
-      navigate(failed ? routes.login : routes.home, {
-        state: failed ? { messageKey: 'oauth.logoutFailed' } : undefined,
-      });
-    }
-  };
+  useEffect(() => {
+    const updateScroll = () => setIsScrolled(window.scrollY > 24);
+    updateScroll();
+    window.addEventListener('scroll', updateScroll, { passive: true });
+    return () => window.removeEventListener('scroll', updateScroll);
+  }, []);
 
   return (
-    <div className="app-shell">
+    <div className={isScrolled ? 'app-shell app-shell--scrolled' : 'app-shell'}>
       <header className="app-header">
         <NavLink
           aria-label={t('navigation.brandHome')}
@@ -53,18 +48,15 @@ export default function AppLayout() {
             ))}
           </div>
           <div className="app-nav-actions">
-            <NavLink
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-              to={routes.contact}
-            >
-              {t('navigation.contact')}
-            </NavLink>
             <NotificationCenter />
-            <LanguageSwitcher />
             {isAuthenticated ? (
-              <button className="nav-action" onClick={handleLogout} type="button">
-                {t('navigation.exit')}
-              </button>
+              <NavLink
+                className={({ isActive }) => `nav-link nav-account${isActive ? ' active' : ''}`}
+                to={routes.myPage}
+              >
+                <UserAvatar name={nickname || t('navigation.accountFallback')} />
+                <span>{nickname || t('navigation.accountFallback')}</span>
+              </NavLink>
             ) : (
               <NavLink
                 className={({ isActive }) => `nav-link nav-login${isActive ? ' active' : ''}`}
@@ -79,6 +71,19 @@ export default function AppLayout() {
       <main className="app-main">
         <Outlet />
       </main>
+      <footer className="app-footer">
+        <div className="app-footer-inner">
+          <NavLink aria-label={t('navigation.brandHome')} className="app-footer-brand" to={routes.home}>
+            <img alt="" className="app-footer-logo" src={logoUrl} />
+          </NavLink>
+          <div className="app-footer-meta">
+            <nav aria-label={t('footer.navigation')} className="app-footer-nav">
+              <NavLink className="app-footer-link" to={routes.contact}>{t('footer.contactMe')}</NavLink>
+            </nav>
+            <small className="app-footer-copyright">© {new Date().getFullYear()}</small>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

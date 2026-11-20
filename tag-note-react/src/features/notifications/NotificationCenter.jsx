@@ -49,6 +49,9 @@ export default function NotificationCenter() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const rootRef = useRef(null);
+  const openRef = useRef(false);
+  const pageRef = useRef(0);
+  const seenRef = useRef(new Set());
 
   const endPage = useMemo(() => {
     const calculatedEndPage = Math.ceil(totalCount / PAGE_SIZE) - 1;
@@ -68,14 +71,32 @@ export default function NotificationCenter() {
 
     const eventSource = notificationService.subscribe({
       eventName: 'Notification',
+      onOpen: async () => {
+        notificationStore.setSubscribed(true);
+        try {
+          const count = await notificationService.getNotificationCount();
+          notificationStore.setUnreadCount(count?.count ?? 0);
+          if (openRef.current) {
+            const list = await notificationService.getNotificationList(pageRef.current);
+            setNotifications(list ?? []);
+            setTotalCount(count?.count ?? 0);
+          }
+        } catch {
+          if (openRef.current) setHasError(true);
+        }
+      },
       onMessage: (event) => {
         const notification = parseNotificationEvent(event);
 
-        if (!notification) {
+        if (!notification || !notification.notificationId || seenRef.current.has(notification.notificationId)) {
           return;
         }
+        seenRef.current.add(notification.notificationId);
+        if (seenRef.current.size > 200) {
+          seenRef.current.delete(seenRef.current.values().next().value);
+        }
 
-        const toastId = `${Date.now()}-${notification.contentId ?? 'notification'}`;
+        const toastId = notification.notificationId;
         notificationStore.receive(notification);
         setToasts((currentToasts) => [...currentToasts, { id: toastId, notification }]);
         window.setTimeout(() => {
@@ -87,10 +108,9 @@ export default function NotificationCenter() {
       },
     });
 
-    notificationStore.setSubscribed(true);
-
     return () => {
       eventSource.close();
+      seenRef.current.clear();
       notificationStore.setSubscribed(false);
     };
   }, [isAuthenticated]);
@@ -125,6 +145,7 @@ export default function NotificationCenter() {
       setNotifications(notificationList ?? []);
       setTotalCount(countResponse?.count ?? 0);
       setCurrentPage(page);
+      pageRef.current = page;
       setHasError(false);
     } catch {
       setNotifications([]);
@@ -137,6 +158,7 @@ export default function NotificationCenter() {
   const toggleDropdown = async () => {
     const nextOpen = !isOpen;
     setIsOpen(nextOpen);
+    openRef.current = nextOpen;
 
     if (nextOpen) {
       await loadNotifications(0);
@@ -179,19 +201,26 @@ export default function NotificationCenter() {
 
   return (
     <div className="notification-center" ref={rootRef}>
-      <button className="notification-trigger" onClick={toggleDropdown} type="button">
-        {t('notifications.trigger')}
+      <button aria-label={t('notifications.trigger')} className="notification-trigger" onClick={toggleDropdown} type="button">
+        <svg aria-hidden="true" className="notification-icon" fill="none" viewBox="0 0 24 24">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9ZM10 21h4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+        </svg>
         {unreadCount > 0 ? <span className="notification-badge">{unreadCount}</span> : null}
       </button>
 
       {isOpen ? (
         <div className="notification-dropdown">
-          {isLoading ? <p className="notification-message">{t('notifications.loading')}</p> : null}
-          {hasError ? <p className="notification-message error">{t('notifications.error')}</p> : null}
+          {isLoading ? (
+            <div className="notification-list-skeleton" role="status">
+              <span className="visually-hidden">{t('notifications.loading')}</span>
+              {[0, 1, 2].map((index) => <span aria-hidden="true" className="skeleton-block" key={index} />)}
+            </div>
+          ) : null}
+          {!isLoading && hasError ? <p className="notification-message error">{t('notifications.error')}</p> : null}
           {!isLoading && !hasError && notifications.length === 0 ? (
             <p className="notification-message">{t('notifications.empty')}</p>
           ) : null}
-          {notifications.map((notification) => {
+          {(!isLoading ? notifications : []).map((notification) => {
             const isRead = notification.isRead ?? notification.read;
 
             return (

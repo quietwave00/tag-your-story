@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import i18n from '../i18n/index.js';
 import { ApiError, AuthExpiredError } from '../services/apiClient.js';
 import { boardService } from '../services/boardService.js';
@@ -11,10 +11,16 @@ import BoardDetailPage from './BoardDetailPage.jsx';
 
 vi.mock('../features/comments/CommentSection.jsx', () => ({ default: () => null }));
 
-function renderBoard() {
+function BoardSource() {
+  const navigate = useNavigate();
+  return <button onClick={() => navigate('/boards/board-1')} type="button">Open board</button>;
+}
+
+function renderBoard(path = '/boards/board-1') {
   return render(
-    <MemoryRouter initialEntries={['/boards/board-1']}>
+    <MemoryRouter initialEntries={[path]}>
       <Routes>
+        <Route path="/source" element={<BoardSource />} />
         <Route path="/boards/:boardId" element={<BoardDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
       </Routes>
@@ -30,6 +36,7 @@ beforeEach(async () => {
   vi.spyOn(boardService, 'getBoardByBoardId').mockResolvedValue({ content: 'Public note', nickname: 'Listener', likeCount: 3 });
   vi.spyOn(boardService, 'isWriter').mockResolvedValue(true);
   vi.spyOn(likeService, 'checkLiked').mockResolvedValue({ isLiked: false });
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
 });
 
 afterEach(() => {
@@ -39,11 +46,22 @@ afterEach(() => {
 });
 
 describe('board mutation entry', () => {
+  it('resets scroll and shows the shared back button after an in-app transition', async () => {
+    renderBoard('/source');
+    fireEvent.click(screen.getByRole('button', { name: 'Open board' }));
+
+    expect(await screen.findByText('Public note')).toBeInTheDocument();
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    expect(screen.getByRole('button', { name: 'Go back' })).toHaveClass('detail-back-button');
+  });
+
   it('keeps public board reading and redirects a guest like without sending a mutation', async () => {
     const like = vi.spyOn(likeService, 'like');
     renderBoard();
 
     expect(await screen.findByText('Public note')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Go back' })).toHaveClass('detail-back-button');
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     fireEvent.click(screen.getByRole('button', { name: 'Like' }));
 
     expect(await screen.findByText('Sign in to like this tag note.')).toBeInTheDocument();

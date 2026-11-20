@@ -1,0 +1,46 @@
+{
+  "accountFallback": "Account",
+  "sectionNavigation": "My page sections",
+  "sections": {
+    "tags": "My tags",
+    "likes": "Liked notes",
+    "settings": "Settings",
+    "account": "Account"
+  },
+  "tags": {
+    "description": "A place for the tags you add to music.",
+    "unavailable": "Your tag collection is coming soon."
+  },
+  "likes": {
+    "description": "Revisit the notes you liked.",
+    "loading": "Loading liked notes.",
+    "failed": "We could not load your liked notes.",
+    "empty": "You have not liked any notes yet.",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "settings": {
+    "description": "Change the name shown to others.",
+    "nickname": "New nickname",
+    "hint": "Use 1 to 20 characters without spaces.",
+    "save": "Change nickname",
+    "saving": "Saving...",
+    "saved": "Your nickname is now {{nickname}}.",
+    "nicknameInvalid": "Enter 1 to 20 characters without spaces.",
+    "nicknameExists": "That nickname is already taken.",
+    "nicknameFailed": "We could not change your nickname. Try again shortly."
+  },
+  "account": {
+    "description": "Sign out or manage your account.",
+    "logout": "Sign out",
+    "logoutDescription": "Sign out on this browser.",
+    "withdraw": "Delete account",
+    "withdrawDescription": "Close your account and leave TagNote.",
+    "confirmTitle": "Delete your account?",
+    "confirmDescription": "After deletion, you cannot sign in with this account again.",
+    "cancel": "Cancel",
+    "confirm": "Delete account",
+    "processing": "Processing...",
+    "withdrawFailed": "We could not delete your account. Try again shortly."
+  }
+}

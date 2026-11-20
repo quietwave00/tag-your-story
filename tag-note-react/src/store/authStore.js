@@ -1,5 +1,6 @@
 import { createStore } from './createStore.js';
 import { tokenStorage } from '../utils/tokenStorage.js';
+import { profileStorage } from '../utils/profileStorage.js';
 
 function getInitialAuthState() {
   const accessToken = tokenStorage.getAccessToken();
@@ -7,6 +8,7 @@ function getInitialAuthState() {
   return {
     accessToken,
     isAuthenticated: Boolean(accessToken),
+    nickname: accessToken ? profileStorage.getNickname() : null,
   };
 }
 
@@ -24,11 +26,18 @@ export const authStore = {
     store.setState(getInitialAuthState());
   },
 
+  setNickname(nickname) {
+    profileStorage.setNickname(nickname);
+    store.setState({ nickname: nickname || null });
+  },
+
   clear() {
     tokenStorage.clearAuth();
+    profileStorage.clear();
     store.setState({
       accessToken: null,
       isAuthenticated: false,
+      nickname: null,
     });
   },
 };

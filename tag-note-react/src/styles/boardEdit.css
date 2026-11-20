@@ -40,23 +40,38 @@
 }
 
 .board-edit-user-tag {
-  min-height: 30px;
-  padding: 0 7px;
+  min-height: 36px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 8px;
   background: var(--color-text);
   color: var(--color-bg);
   cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 650;
 }
 
 .board-edit-user-tag:hover {
-  background: var(--color-bg);
-  color: var(--color-text);
-  filter: blur(1px);
+  background: #303030;
+}
+
+.board-edit-tag-warning {
+  flex-basis: 100%;
+  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: center;
+  animation: board-edit-warning-fade 1.8s ease-out forwards;
+}
+
+@keyframes board-edit-warning-fade {
+  0%, 40% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-edit-tag-warning { animation: none; }
 }
 
 .board-edit-tag-input {
@@ -76,34 +91,6 @@
 .board-edit-tag-input::placeholder,
 .board-edit-content::placeholder {
   color: var(--color-muted);
-}
-
-.board-file-upload {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  min-width: 190px;
-  min-height: 46px;
-  overflow: hidden;
-  border: var(--grid-line);
-  background: transparent;
-  color: var(--color-text);
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-transform: uppercase;
-}
-
-.board-file-upload:hover {
-  background: var(--color-invert);
-  color: var(--color-invert-text);
-}
-
-.board-file-upload input {
-  position: absolute;
-  inset: 0;
-  cursor: pointer;
-  opacity: 0;
 }
 
 .board-file-preview-list {
@@ -171,9 +158,308 @@
   text-decoration: line-through;
 }
 
+.board-edit-detail-page .board-edit-detail-card {
+  gap: 0;
+}
+
+.board-edit-skeleton-back { width: 38px; height: 32px; }
+.board-edit-skeleton .board-detail-meta { min-height: 80px; }
+.board-edit-skeleton-author { width: 175px; height: 40px; }
+.board-edit-skeleton-tags { width: 205px; height: 34px; }
+.board-edit-skeleton .board-edit-detail-body { display: grid; gap: 14px; padding: 30px 0 56px; }
+.board-edit-skeleton .board-edit-detail-body .skeleton-block { width: 100%; height: 20px; }
+.board-edit-skeleton .board-edit-detail-body .skeleton-block:nth-child(2) { width: 90%; }
+.board-edit-skeleton .board-edit-detail-body .skeleton-block:nth-child(3) { width: 56%; }
+.board-edit-skeleton .board-detail-footer { justify-content: flex-end; }
+.board-edit-skeleton-action { width: 130px; height: 36px; }
+
+.board-edit-detail-tags {
+  display: grid;
+  justify-items: end;
+  gap: 9px;
+  min-width: min(100%, 235px);
+  max-width: 100%;
+}
+
+.board-edit-detail-tags .board-edit-user-tag-list {
+  justify-content: flex-end;
+  min-height: 0;
+}
+
+.board-edit-detail-tags .board-edit-user-tag {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--color-paper);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 630;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.board-edit-tag-remove-mark {
+  margin-left: 6px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.board-edit-detail-tags .board-edit-user-tag:hover,
+.board-edit-detail-tags .board-edit-user-tag:focus-visible {
+  background: #d8d8d8;
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.board-edit-detail-tags .board-edit-tag-input {
+  width: min(235px, 100%);
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-line-soft);
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-body);
+  font-size: 12px;
+  text-align: left;
+  text-transform: none;
+}
+
+.board-edit-detail-tags .board-edit-tag-warning {
+  width: 100%;
+  text-align: right;
+}
+
+.board-edit-detail-body {
+  width: 100%;
+  min-width: 0;
+}
+
+.board-edit-detail-body .board-edit-content {
+  display: block;
+  width: 100%;
+  min-height: 190px;
+  margin: 0;
+  padding: 30px 0 36px;
+  border: 0;
+  background: transparent;
+  font-size: 17px;
+  font-weight: 450;
+  line-height: 1.85;
+}
+
+.board-edit-detail-body .board-edit-content:focus {
+  outline: 0;
+  box-shadow: inset 0 -2px var(--color-text);
+}
+
+.board-edit-detail-card .board-edit-images {
+  justify-items: start;
+  gap: 12px;
+  padding-bottom: 24px;
+}
+
+.board-edit-detail-card .board-file-preview-list {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.board-edit-detail-card .board-file-preview {
+  width: 92px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.board-edit-detail-card .board-edit-detail-footer {
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.board-edit-detail-footer .primary-button,
+.board-edit-detail-footer .secondary-button {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-transform: none;
+}
+
+.board-edit-detail-footer .secondary-button {
+  background: transparent;
+}
+
+.board-edit-detail-footer .primary-button {
+  background: var(--color-text);
+  color: #fff;
+}
+
+.board-edit-detail-footer .primary-button:disabled {
+  opacity: 0.4;
+}
+
 @media (max-width: 767px) {
   .board-edit-footer {
     display: grid;
     width: 100%;
+  }
+
+  .board-edit-detail-meta {
+    align-items: flex-start;
+  }
+
+  .board-edit-detail-tags {
+    justify-items: start;
+    width: 100%;
+  }
+
+  .board-edit-detail-tags .board-edit-user-tag-list {
+    justify-content: flex-start;
+  }
+
+  .board-edit-detail-tags .board-edit-tag-warning {
+    text-align: left;
+  }
+
+  .board-edit-detail-body .board-edit-content {
+    padding: 26px 0 30px;
+    font-size: 16px;
+  }
+}
+
+.board-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(10 10 10 / 54%);
+  backdrop-filter: blur(8px);
+}
+
+.board-edit-dialog {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: calc(100dvh - 32px);
+  padding: clamp(28px, 5vw, 46px);
+  overflow-y: auto;
+  border-radius: 18px;
+  background: var(--color-bg);
+  box-shadow: 0 28px 90px rgb(0 0 0 / 22%);
+}
+
+.board-edit-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.board-edit-close:hover,
+.board-edit-close:focus-visible {
+  background: var(--color-paper);
+  color: var(--color-text);
+}
+
+.board-edit-page--create {
+  justify-items: stretch;
+  gap: 20px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.board-edit-page--create .board-edit-section {
+  justify-items: stretch;
+  gap: 8px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--color-paper);
+}
+
+.board-edit-page--create .board-edit-section:first-of-type {
+  gap: 12px;
+  padding: 0;
+  background: transparent;
+}
+
+.board-edit-page--create .board-edit-user-tag-list {
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 112px;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.board-edit-page--create .board-edit-tag-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-align: left;
+  text-transform: none;
+}
+
+.board-edit-page--create .board-edit-content {
+  width: 100%;
+  min-height: 240px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 17px;
+  resize: vertical;
+}
+
+.board-edit-page--create .board-edit-tag-input:focus,
+.board-edit-page--create .board-edit-content:focus {
+  outline: 0;
+}
+
+.board-edit-page--create .board-edit-footer {
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.board-edit-page--create .primary-button,
+.board-edit-page--create .secondary-button {
+  border: 0;
+  border-radius: 8px;
+}
+
+.board-edit-page--create .primary-button {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.board-edit-page--create .secondary-button {
+  background: transparent;
+}
+
+@media (max-width: 767px) {
+  .board-edit-dialog {
+    padding: 48px 20px 24px;
+  }
+
+  .board-edit-page--create .board-edit-footer {
+    display: flex;
   }
 }

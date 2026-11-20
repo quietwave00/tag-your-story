@@ -14,14 +14,14 @@ describe('LanguageSwitcher', () => {
     cleanup();
   });
 
-  it('changes the UI language and persists the explicit choice', async () => {
+  it('changes the UI language without persisting the choice', async () => {
     render(<LanguageSwitcher />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Korean' }));
 
     expect(await screen.findByRole('button', { name: '한국어' })).toHaveAttribute('aria-pressed', 'true');
     expect(document.documentElement).toHaveAttribute('lang', 'ko');
-    expect(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('ko');
+    expect(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBeNull();
   });
 
   it('does not change dynamic content when the locale changes', async () => {

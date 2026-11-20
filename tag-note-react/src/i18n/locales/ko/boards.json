@@ -1,5 +1,6 @@
 {
   "detail": {
+    "title": "태그 노트",
     "backToTrack": "{{title}}으로 돌아가기",
     "back": "돌아가기",
     "loading": "게시글을 불러오는 중입니다.",
@@ -16,7 +17,9 @@
     "editTitle": "게시글 수정",
     "userTags": "유저 태그",
     "tagInput": "태그 입력 후 Enter",
+    "removeTag": "{{tag}} 태그 삭제",
     "images": "이미지",
+    "removeImage": "이미지 삭제",
     "story": "이야기",
     "storyPlaceholder": "이야기를 작성해 주세요.",
     "loading": "게시글 정보를 불러오는 중입니다.",

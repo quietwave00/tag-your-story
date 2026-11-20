@@ -1,7 +1,7 @@
 {
   "comments": {
     "title": "Comments",
-    "input": "Write a comment",
+    "input": "Leave a comment",
     "replyInput": "Write a reply",
     "loading": "Loading comments.",
     "error": "We could not process the comment request.",

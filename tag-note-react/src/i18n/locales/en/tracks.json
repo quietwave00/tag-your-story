@@ -3,31 +3,69 @@
     "title": "Search",
     "prompt": "Search for a track, album, or artist from Home.",
     "resultsTitle": "Search results",
-    "loading": "Loading tracks █",
-    "error": "We could not load the tracks.",
-    "empty": "No results found.",
-    "pagination": "Track search result pages"
+    "keywordLabel": "Search the catalog",
+    "keywordPlaceholder": "Search tracks, artists, albums",
+    "sections": { "TRACK": "Tracks", "ARTIST": "Artists", "ALBUM": "Albums" },
+    "loadingAll": "Loading search results",
+    "loadingType": "Loading {{type}} results",
+    "error": "We could not load {{type}}.",
+    "empty": "No {{type}} found.",
+    "pagination": "{{type}} search result pages",
+    "currentPage": "{{type}} page {{currentPage}}",
+    "imageAlt": "{{title}} image",
+    "noImage": "No image",
+    "detailPending": "Details are not available yet.",
+    "spotifyId": "Spotify ID: {{id}}"
   },
   "metadata": {
     "artist": "Artist",
     "album": "Album",
-    "tag": "Tag",
-    "trackId": "Track ID"
+    "tag": "Tag"
   },
   "detail": {
-    "back": "Back to search",
+    "back": "Go back",
     "loading": "Loading track information.",
-    "error": "We could not load the track information.",
-    "addTag": "+ ADD CUSTOM TAG"
+    "error": "We could not load the track information."
+  },
+  "subject": {
+    "loading": "Loading {{type}} information.",
+    "error": "We could not load {{type}} information.",
+    "listLoading": "Loading {{type}} list.",
+    "listError": "We could not load the {{type}} list.",
+    "empty": "No {{type}} to show.",
+    "albums": "Albums",
+    "tracks": "Tracks",
+    "releaseTypeLabel": "Release type",
+    "releaseTypes": { "ALL": "All", "SINGLE_EP": "Singles & EPs", "ALBUM": "Albums", "COMPILATION": "Compilations" },
+    "releaseTypeNames": { "SINGLE_EP": "Single / EP", "ALBUM": "Album", "COMPILATION": "Compilation" },
+    "releaseDate": "Released",
+    "trackCount": "{{count}} tracks",
+    "duration": "{{minutes}}:{{seconds}}",
+    "pagination": "{{type}} list pages",
+    "pageStatus": "{{page}} / {{totalPages}}",
+    "currentPage": "Page {{page}}"
+  },
+  "subjectTags": {
+    "title": "System tags",
+    "loading": "Loading tags.",
+    "error": "We could not load the tags.",
+    "preview": "Unverified tags",
+    "empty": "No tags to show."
   },
   "boards": {
     "title": "Tag notes",
+    "write": "WRITE A NOTE",
+    "loginRequired": "Sign in to use this feature.",
     "sortLabel": "Sort tag notes",
     "latest": "Latest",
     "popular": "Most liked",
     "loading": "Loading tag notes █",
     "error": "We could not load the tag notes.",
     "empty": "No tag notes have been written yet.",
+    "likeCount_one": "{{count}} Like",
+    "likeCount_other": "{{count}} Likes",
+    "commentCount_one": "{{count}} Comment",
+    "commentCount_other": "{{count}} Comments",
     "pagination": "Tag note pages"
   }
 }

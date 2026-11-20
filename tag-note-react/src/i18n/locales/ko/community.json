@@ -1,7 +1,7 @@
 {
   "comments": {
     "title": "댓글",
-    "input": "댓글 작성",
+    "input": "댓글을 남겨보세요",
     "replyInput": "답글 작성",
     "loading": "댓글을 불러오는 중입니다.",
     "error": "댓글 요청을 처리하지 못했습니다.",

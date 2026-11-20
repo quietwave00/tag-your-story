@@ -1,0 +1,62 @@
+{
+  "title": "Genres",
+  "search": "Search genres",
+  "results": "Genre results",
+  "noResults": "No matching genres.",
+  "more": "Show more",
+  "closeSearch": "Close results",
+  "canvas": "Genre graph. Use search for keyboard navigation.",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "overview": "Full view",
+  "filter": "Relationship types",
+  "legend": "Relationship directions",
+  "types": {
+    "SUBGENRE": "Subgenre",
+    "INFLUENCES": "Influence",
+    "FUSION": "Fusion"
+  },
+  "legendText": {
+    "SUBGENRE": "Parent → subgenre",
+    "INFLUENCES": "Influence source → recipient",
+    "FUSION": "Ingredient → fusion"
+  },
+  "groups": {
+    "SUBGENRE": {
+      "in": "Parent genres",
+      "out": "Subgenres"
+    },
+    "INFLUENCES": {
+      "in": "Influenced by",
+      "out": "Influences"
+    },
+    "FUSION": {
+      "in": "Ingredients",
+      "out": "Fusion results"
+    }
+  },
+  "loading": "Preparing the genre map…",
+  "error": "Could not load the genre map.",
+  "retry": "Try again",
+  "partial": "This is a partial collection. Some genres or relationships may be missing.",
+  "invalidNode": "This genre is not in the current snapshot. Showing the full map.",
+  "empty": "This snapshot has no genres.",
+  "totals": "{{nodes}} genres · {{edges}} relationships",
+  "neighbors": "Connected genres: {{visible}} / {{total}}",
+  "relations": "Relationships: {{visible}} / {{total}}",
+  "isolated": "No recorded relationships.",
+  "filteredEmpty": "No relationships match the selected filters.",
+  "source": "View source",
+  "evidence": "Relationship evidence",
+  "closePanel": "Close genre details",
+  "collapse": "Collapse",
+  "expand": "Expand",
+  "help": "Select a genre to explore its connections. Drag to pan; scroll or pinch to zoom. All genres are also available through search.",
+  "dataInfo": "About this data",
+  "interpretation": "Node size represents the number of connected genres in this snapshot. Position and distance help organize connections; they do not measure popularity or listening similarity. Multiple parents and cycles are preserved.",
+  "completeMeaning": "Complete means this collection finished. It does not mean every musical genre or relationship is covered.",
+  "version": "Snapshot version",
+  "collected": "Collected at",
+  "scope": "Collection scope / status",
+  "components": "Connected groups: {{count}} · Genres without connections: {{isolated}}"
+}

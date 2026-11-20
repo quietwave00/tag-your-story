@@ -1,0 +1,46 @@
+{
+  "accountFallback": "내 계정",
+  "sectionNavigation": "마이 페이지 메뉴",
+  "sections": {
+    "tags": "내가 쓴 태그",
+    "likes": "내가 좋아요한 글",
+    "settings": "설정",
+    "account": "계정"
+  },
+  "tags": {
+    "description": "음악에 남긴 태그를 모아 보는 공간입니다.",
+    "unavailable": "내 태그 목록은 준비 중입니다."
+  },
+  "likes": {
+    "description": "마음에 남아 좋아요한 글을 다시 읽어보세요.",
+    "loading": "좋아요한 글을 불러오는 중입니다.",
+    "failed": "좋아요한 글을 불러오지 못했습니다.",
+    "empty": "아직 좋아요한 글이 없습니다.",
+    "previous": "이전",
+    "next": "다음"
+  },
+  "settings": {
+    "description": "보이는 이름을 바꿀 수 있습니다.",
+    "nickname": "새 닉네임",
+    "hint": "1~20자, 공백 없이 입력해 주세요.",
+    "save": "닉네임 변경",
+    "saving": "변경 중...",
+    "saved": "{{nickname}}(으)로 변경되었습니다.",
+    "nicknameInvalid": "닉네임은 공백 없이 1~20자로 입력해 주세요.",
+    "nicknameExists": "이미 사용 중인 닉네임입니다.",
+    "nicknameFailed": "닉네임을 변경하지 못했습니다. 잠시 후 다시 시도해 주세요."
+  },
+  "account": {
+    "description": "로그아웃하거나 계정을 관리할 수 있습니다.",
+    "logout": "로그아웃",
+    "logoutDescription": "이 브라우저에서 로그아웃합니다.",
+    "withdraw": "회원 탈퇴",
+    "withdrawDescription": "계정을 탈퇴하고 TagNote 이용을 종료합니다.",
+    "confirmTitle": "정말 탈퇴하시겠습니까?",
+    "confirmDescription": "탈퇴를 완료하면 현재 계정으로 다시 로그인할 수 없습니다.",
+    "cancel": "취소",
+    "confirm": "탈퇴하기",
+    "processing": "처리 중...",
+    "withdrawFailed": "탈퇴 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요."
+  }
+}

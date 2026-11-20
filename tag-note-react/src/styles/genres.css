@@ -1,0 +1,52 @@
+.genres-page { width: 100%; padding: 16px 0 40px; }
+.genre-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.genre-title h1 { font-size: clamp(28px, 4vw, 48px); margin: 0; }
+.genre-title p, .genre-help, .genre-data, .genre-legend { color: #737373; font-size: 13px; }
+.genre-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+.genre-toolbar button, .genre-zoom button, .genre-panel-heading button, .genre-search-popup button { min-height: 44px; padding: 8px 12px; border: 0; border-radius: 8px; background: transparent; color: inherit; cursor: pointer; }
+.genres-page button:hover { background: #e9e9e9; }
+.genres-page :focus-visible { outline: 2px solid #555; outline-offset: 3px; }
+.genre-search { position: relative; flex: 1 1 220px; }
+.genre-search input { width: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-bottom: 1px solid #aaa; background: transparent; color: #171717; }
+.genre-search-popup { position: absolute; z-index: 10; top: 100%; left: 0; right: 0; background: #f7f7f7; box-shadow: 0 10px 30px #0001; max-height: 45vh; overflow: auto; border-radius: 8px; padding: 8px; }
+.genre-search-popup button { width: 100%; text-align: left; }
+.genre-search-popup [aria-selected="true"] { background: #e9e9e9; border-radius: 8px; }
+.genre-filters { display: flex; flex-wrap: wrap; gap: 12px; border: 0; margin: 0; padding: 0; }
+.genre-filters label { display: flex; align-items: center; gap: 5px; min-height: 44px; font-size: 13px; cursor: pointer; }
+.genre-filters input { accent-color: #333; }
+.genre-filters span { color: #777; font-size: 11px; }
+.genre-workspace { display: flex; height: max(420px, calc(100dvh - 280px)); min-height: 420px; overflow: hidden; background: #f2f2f2; border-radius: 8px; }
+.genre-canvas { flex: 1; min-width: 0; height: 100%; position: relative; overflow: hidden; touch-action: none; }
+.genre-zoom { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 4px; background: #f7f7f7e8; border-radius: 8px; }
+.genre-zoom button { width: 44px; font-size: 22px; }
+.genre-panel { flex: 0 0 320px; width: 320px; display: flex; flex-direction: column; background: #f9f9f9; padding: 16px; overflow: hidden; }
+.genre-panel-heading { display: flex; align-items: center; gap: 6px; }
+.genre-panel-heading h2 { font-size: 22px; overflow-wrap: anywhere; flex: 1; margin: 0; }
+.genre-panel-heading h2:focus { outline: none; }
+.genre-panel-toggle { display: none; }
+.genre-panel-body { overflow: auto; font-size: 13px; }
+.genre-panel-body h3 { font-size: 13px; margin: 24px 0 8px; }
+.genre-panel-body ul { list-style: none; padding: 0; margin: 0; }
+.genre-panel-body li { margin: 5px 0; }
+.genre-related { width: 100%; min-height: 44px; text-align: left; border: 0; padding: 8px; background: transparent; border-radius: 8px; overflow-wrap: anywhere; cursor: pointer; }
+.genre-panel-body details { color: #666; margin: 0 8px 12px; overflow-wrap: anywhere; }
+.genre-panel-body summary, .genre-data summary { cursor: pointer; padding: 8px 0; }
+.genre-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; }
+.genre-key::before { content: ''; display: inline-block; width: 20px; border-top: 2px solid #516b60; margin-right: 6px; vertical-align: middle; }
+.genre-key--influences::before { border-color: #85634d; border-top-style: dashed; }
+.genre-key--fusion::before { border-color: #666083; }
+.genre-data { margin-top: 20px; max-width: 720px; overflow-wrap: anywhere; }
+.genre-data dd { margin: 4px 0 12px; }
+.genre-loading { min-height: 420px; display: grid; place-items: center; width: 100%; }
+@media (max-width: 767px) {
+  .genre-title { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .genre-workspace { flex-direction: column; height: max(600px, calc(100dvh - 180px)); }
+  .genre-canvas { height: auto; min-height: 250px; }
+  .genre-panel { flex: 0 1 auto; width: 100%; max-height: 45dvh; padding: 12px; }
+  .genre-panel-toggle { display: block; }
+  .genre-panel--collapsed .genre-panel-body { display: none; }
+  .genre-panel-heading h2 { font-size: 18px; }
+}
+
+/* The global fog overlay obscures graph labels and arrows. */
+body:has(.genres-page)::after { display: none; }

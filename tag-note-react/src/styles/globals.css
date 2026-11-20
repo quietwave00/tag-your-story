@@ -6,6 +6,7 @@
   --color-muted: #737373;
   --color-border: #1a1a1a;
   --color-line-soft: #d1d1d1;
+  --color-skeleton: #e4e4e4;
   --color-paper: #e9e9e9;
   --color-invert: #0a0a0a;
   --color-invert-text: #f2f2f2;
@@ -28,11 +29,7 @@
 html,
 body {
   min-height: 100%;
-  background: var(--color-bg);
-}
-
-html {
-  scrollbar-gutter: stable both-edges;
+  background: linear-gradient(90deg, rgba(242, 242, 242, 1) 0%, rgba(255, 255, 255, 1) 100%);
 }
 
 body {
@@ -47,14 +44,52 @@ body::after {
   z-index: 998;
   pointer-events: none;
   content: "";
-  background:
-    linear-gradient(180deg, rgb(242 242 242 / 0%) 0%, rgb(242 242 242 / 72%) 72%, rgb(242 242 242 / 88%) 100%),
-    linear-gradient(90deg, rgb(10 10 10 / 4%), transparent 26%, transparent 74%, rgb(10 10 10 / 5%));
+  background: linear-gradient(180deg, rgb(242 242 242 / 0%) 0%, rgb(242 242 242 / 72%) 72%, rgb(242 242 242 / 88%) 100%);
   opacity: 0.88;
 }
 
-body:has(.tracks-page)::after {
+body.has-artwork-ambient::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(180deg, rgb(242 242 242 / 82%) 0%, rgb(242 242 242 / 88%) 28%, rgb(242 242 242 / 78%) 58%, rgb(242 242 242 / 38%) 100%),
+    radial-gradient(ellipse 88% 76% at 8% 103%, color-mix(in srgb, var(--artwork-ambient-one) 80%, transparent), transparent 82%),
+    radial-gradient(ellipse 80% 86% at 96% 108%, color-mix(in srgb, var(--artwork-ambient-two) 76%, transparent), transparent 81%),
+    radial-gradient(ellipse 95% 92% at 54% 118%, color-mix(in srgb, var(--artwork-ambient-three) 66%, transparent), transparent 85%);
+}
+
+body.has-artwork-ambient-fallback::before {
+  background:
+    linear-gradient(180deg, #f2f2f2 0%, rgb(242 242 242 / 82%) 44%, rgb(242 242 242 / 30%) 100%),
+    var(--artwork-ambient-image) center bottom / cover no-repeat;
+  filter: blur(64px);
+  transform: scale(1.12);
+  opacity: 0.62;
+}
+
+body.has-artwork-ambient .app-main {
+  position: relative;
+  z-index: 1;
+}
+
+body:has(.tracks-page)::after,
+body:has(.app-shell--scrolled)::after {
   background: none;
+  opacity: 0;
+}
+
+body:has(.track-detail-page)::after,
+body:has(.catalog-subject-page)::after,
+body:has(.board-detail-page)::after {
+  opacity: 0.28;
+}
+
+body:has(.app-shell--scrolled):has(.track-detail-page)::after,
+body:has(.app-shell--scrolled):has(.catalog-subject-page)::after,
+body:has(.app-shell--scrolled):has(.board-detail-page)::after {
   opacity: 0;
 }
 
@@ -70,7 +105,7 @@ textarea {
 }
 
 button {
-  border-radius: 0;
+  border-radius: 6px;
 }
 
 button:focus-visible,
@@ -100,15 +135,30 @@ a:active {
   position: sticky;
   top: 0;
   z-index: 20;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: clamp(18px, 3vw, 36px);
-  width: min(var(--content-max), calc(100% - (var(--space-page) * 2)));
-  margin: 0 auto;
-  padding: 24px 0 16px;
+  width: 100%;
+  padding: 24px max(var(--space-page), calc((100% - var(--content-max)) / 2)) 16px;
+}
+
+.app-header::before {
+  position: absolute;
+  inset: -12px 0 -12px;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
   background: color-mix(in srgb, var(--color-bg) 52%, transparent);
   backdrop-filter: blur(20px);
+  filter: blur(14px);
+}
+
+.app-header > .brand,
+.app-header > .app-nav {
+  position: relative;
+  z-index: 1;
 }
 
 .brand {
@@ -165,6 +215,7 @@ a:active {
   min-width: 72px;
   padding: 14px 10px;
   border: 0;
+  border-radius: 12px;
   background: transparent;
   color: var(--color-muted);
   cursor: pointer;
@@ -187,6 +238,7 @@ a:active {
   min-width: 34px;
   padding: 8px 5px;
   border: 0;
+  border-radius: 12px;
   background: transparent;
   color: var(--color-muted);
   cursor: pointer;
@@ -207,6 +259,26 @@ a:active {
 .nav-link.active {
   color: var(--color-text);
   text-decoration: none;
+}
+
+.nav-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+}
+
+.nav-account > span:last-child {
+  max-width: min(28vw, 180px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-account:hover .user-avatar,
+.nav-account:focus-visible .user-avatar {
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .nav-link.nav-login {
@@ -232,8 +304,7 @@ a:active {
 }
 
 .nav-link:hover,
-.nav-action:hover,
-.notification-trigger:hover {
+.nav-action:hover {
   background: var(--color-invert);
   color: var(--color-invert-text);
   filter: blur(0.7px);
@@ -244,7 +315,119 @@ a:active {
   min-height: calc(100vh - 120px);
   margin: 0 auto;
   padding: clamp(14px, 3vw, 38px) 0 96px;
-  animation: page-bloom 1100ms linear both;
+  animation: page-bloom 420ms ease-out both;
+}
+
+.detail-back-button {
+  justify-self: start;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.detail-page-frame {
+  width: min(980px, 100%);
+  margin-inline: auto;
+}
+
+.detail-page-frame > .detail-back-button {
+  justify-self: start;
+}
+
+.user-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.user-avatar--large {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+}
+
+.detail-back-button:focus-visible {
+  outline: 2px solid var(--color-muted);
+  outline-offset: 2px;
+}
+
+.app-footer {
+  position: relative;
+  z-index: 999;
+  width: 100%;
+  padding: 24px var(--space-page) 40px;
+  background: var(--color-bg);
+}
+
+body.has-artwork-ambient .app-footer {
+  background: transparent;
+}
+
+.app-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 36px);
+  width: min(var(--content-max), 100%);
+  margin: 0 auto;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.app-footer-brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 92px;
+}
+
+.app-footer-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.app-footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-footer-copyright {
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+.app-footer-link {
+  display: inline-block;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 640;
+  transition: color 240ms linear, filter 240ms linear;
+}
+
+.app-footer-link:hover {
+  color: var(--color-text);
+  filter: blur(0.5px);
 }
 
 .page-header,
@@ -284,6 +467,7 @@ a:active {
   min-height: 44px;
   padding: 0 18px;
   border: var(--grid-line);
+  border-radius: 8px;
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
@@ -321,6 +505,23 @@ button:disabled {
   border: 0;
 }
 
+.skeleton-block.skeleton-block {
+  display: block;
+  min-height: 12px;
+  border-radius: 8px;
+  background: var(--color-skeleton);
+  animation: skeleton-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block.skeleton-block { animation: none; }
+}
+
 @keyframes blink-block {
   0%,
   49% {
@@ -350,6 +551,18 @@ button:disabled {
   }
 }
 
+@keyframes detail-materialize {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
 @media (max-width: 767px) {
   :root {
     --space-page: 12px;
@@ -359,7 +572,6 @@ button:disabled {
     align-items: stretch;
     flex-direction: column;
     gap: 12px;
-    width: calc(100% - 24px);
     padding-top: 22px;
   }
 
@@ -379,6 +591,11 @@ button:disabled {
   .app-nav-primary,
   .app-nav-actions {
     gap: 0;
+  }
+
+  .app-nav-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .nav-link,
@@ -407,5 +624,15 @@ button:disabled {
   .app-main {
     width: calc(100% - 24px);
     padding-top: 56px;
+  }
+}
+
+@media (max-width: 440px) {
+  .app-nav {
+    flex-wrap: wrap;
+  }
+
+  .app-nav-actions {
+    flex: 1 1 auto;
   }
 }

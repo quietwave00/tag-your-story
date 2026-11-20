@@ -17,7 +17,7 @@
   display: block;
   width: min(456px, 52.8%);
   height: auto;
-  animation: logo-enter 1000ms linear both;
+  animation: logo-enter 480ms ease-out both;
 }
 
 .home-kicker,
@@ -51,7 +51,7 @@
   background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   box-shadow: 0 16px 48px rgb(10 10 10 / 9%), 0 2px 8px rgb(10 10 10 / 4%);
   backdrop-filter: blur(20px);
-  animation: search-float 1400ms linear both;
+  animation: search-float 550ms ease-out both;
   transition: box-shadow 240ms ease, border-color 240ms ease, background-color 240ms ease;
 }
 
@@ -130,7 +130,7 @@
   margin: 0 auto;
   padding: 16px 0 34px;
   text-align: center;
-  animation: section-rise 900ms linear both;
+  animation: section-rise 520ms ease-out both;
   animation-timeline: view();
   animation-range: entry 0% cover 36%;
   transition:
@@ -175,9 +175,13 @@
   line-height: 1;
 }
 
+.home-keyword-skeleton .skeleton-block { width: clamp(96px, 18vw, 210px); height: clamp(24px, 4vw, 48px); }
+.home-keyword-skeleton .skeleton-block:nth-child(3n) { width: clamp(70px, 12vw, 140px); }
+
 .keyword-cloud-item {
-  padding: 5px 3px;
+  padding: 0 3px;
   border: 0;
+  border-radius: 6px;
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
@@ -214,6 +218,10 @@
   align-items: baseline;
 }
 
+.home-tag-skeleton .archive-stream-item { align-items: center; min-height: 26px; }
+.home-tag-skeleton .archive-stream-item .skeleton-block:first-child { width: 25px; height: 12px; }
+.home-tag-skeleton .archive-stream-item .skeleton-block:last-child { width: 52%; height: 20px; }
+
 .archive-index,
 .archive-source {
   color: var(--color-muted);
@@ -225,14 +233,16 @@
 
 .user-tag-button {
   width: 100%;
-  padding: 5px 0;
+  padding: 0;
   border: 0;
+  border-radius: 6px;
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: clamp(16px, 2.2vw, 24px);
   font-weight: 640;
+  line-height: 1;
   text-align: left;
   text-transform: uppercase;
   transition:

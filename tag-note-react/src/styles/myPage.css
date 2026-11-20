@@ -1,0 +1,162 @@
+.my-page {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 48px) 0 90px;
+}
+
+.my-page-header {
+  max-width: 760px;
+  margin: 0 0 clamp(44px, 7vw, 80px);
+}
+
+.my-page-header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(46px, 7vw, 82px);
+  font-weight: 760;
+  line-height: 0.98;
+}
+
+.my-page-layout {
+  display: grid;
+  grid-template-columns: minmax(170px, 250px) minmax(0, 1fr);
+  gap: clamp(38px, 7vw, 110px);
+}
+
+.my-page-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-self: start;
+}
+
+.my-page-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  transition: background-color 240ms linear, color 240ms linear, filter 240ms linear;
+}
+
+.my-page-nav-item:hover,
+.my-page-nav-item[aria-current="page"] {
+  background: color-mix(in srgb, var(--color-paper) 72%, transparent);
+  color: var(--color-text);
+  font-weight: 760;
+}
+
+.my-page-nav-item:hover { filter: blur(0.35px); }
+
+.my-page-panel {
+  min-height: 380px;
+  padding-top: 3px;
+}
+
+.my-page-panel h2 {
+  margin: 0 0 13px;
+  font-family: var(--font-display);
+  font-size: clamp(29px, 3.4vw, 42px);
+  font-weight: 760;
+}
+
+.my-page-description {
+  margin: 0 0 32px;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.my-page-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 270px;
+  padding: 35px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-paper) 56%, transparent);
+  color: var(--color-muted);
+  text-align: center;
+  backdrop-filter: blur(18px);
+}
+
+.my-page-empty-mark {
+  color: color-mix(in srgb, var(--color-muted) 36%, transparent);
+  font-family: var(--font-display);
+  font-size: 68px;
+  font-weight: 760;
+  line-height: 1;
+  filter: blur(2px);
+}
+
+.my-page-empty p { margin: 20px 0 0; font-size: 14px; }
+.my-page-message { padding: 28px 0; color: var(--color-muted); }
+
+.my-page-liked-list { display: grid; gap: 7px; }
+.my-page-liked-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px 16px;
+  padding: 19px 20px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-paper) 60%, transparent);
+  transition: background-color 220ms linear, filter 220ms linear;
+}
+.my-page-liked-item:hover { background: var(--color-paper); filter: blur(0.4px); }
+.my-page-liked-author { grid-column: 1; color: var(--color-muted); font-size: 12px; }
+.my-page-liked-content { grid-column: 1; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 15px; line-height: 1.5; }
+.my-page-liked-skeleton .my-page-liked-item { min-height: 88px; }
+.my-page-liked-skeleton .skeleton-block:first-child { width: 110px; height: 13px; }
+.my-page-liked-skeleton .skeleton-block:last-child { width: 75%; height: 19px; }
+.my-page-pagination { display: flex; align-items: center; justify-content: center; gap: 26px; margin-top: 28px; font-size: 13px; }
+.my-page-pagination button { border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.my-page-pagination button:disabled { opacity: 0.35; cursor: default; }
+
+.my-page-form { display: grid; justify-items: start; max-width: 420px; }
+.my-page-form label { margin-bottom: 12px; font-size: 13px; font-weight: 700; }
+.my-page-form input { width: 100%; min-height: 49px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--color-line-soft); border-radius: 0; background: transparent; color: var(--color-text); outline: 0; }
+.my-page-form input:focus { border-color: var(--color-text); font-weight: 700; }
+.my-page-hint { margin: 11px 0 22px; color: var(--color-muted); font-size: 12px; }
+.my-page-error { color: var(--color-text); font-size: 13px; font-weight: 700; }
+.my-page-success { color: var(--color-muted); font-size: 13px; }
+.my-page-primary { min-width: 130px; min-height: 42px; padding: 10px 20px; border: 0; border-radius: 10px; background: var(--color-invert); color: var(--color-invert-text); cursor: pointer; }
+.my-page-primary:disabled { background: var(--color-line-soft); color: var(--color-muted); cursor: default; }
+
+.my-page-account-action { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--color-line-soft); }
+.my-page-account-action h3 { margin: 0 0 7px; font-size: 16px; }
+.my-page-account-action p { margin: 0; color: var(--color-muted); font-size: 13px; line-height: 1.5; }
+.my-page-account-action button,
+.my-page-withdraw-confirm button { flex: none; min-height: 38px; padding: 8px 15px; border: 0; border-radius: 9px; background: var(--color-paper); color: var(--color-text); cursor: pointer; }
+.my-page-account-action button:hover,
+.my-page-withdraw-confirm button:hover { background: var(--color-invert); color: var(--color-invert-text); }
+.my-page-account-action button:disabled,
+.my-page-withdraw-confirm button:disabled { opacity: 0.5; cursor: default; }
+.my-page-withdraw-confirm { margin-top: 25px; padding: 23px; border-radius: 14px; background: var(--color-paper); }
+.my-page-withdraw-confirm h3 { margin: 0 0 9px; font-size: 17px; }
+.my-page-withdraw-confirm p { margin: 0 0 19px; color: var(--color-muted); font-size: 13px; line-height: 1.6; }
+.my-page-withdraw-confirm > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.my-page-withdraw-confirm button { background: var(--color-bg); }
+.my-page-withdraw-confirm button:last-child { background: var(--color-invert); color: var(--color-invert-text); }
+
+@media (max-width: 700px) {
+  .my-page-header { margin-bottom: 32px; }
+  .my-page-layout { grid-template-columns: 1fr; gap: 30px; }
+  .my-page-nav { flex-direction: row; flex-wrap: wrap; gap: 3px; }
+  .my-page-nav-item { width: auto; min-height: 39px; padding: 7px 11px; font-size: 12px; }
+  .my-page-nav-item span:last-child { display: none; }
+  .my-page-panel { min-height: 300px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-page-nav-item,
+  .my-page-liked-item { transition: none; }
+}

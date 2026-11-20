@@ -1,58 +1,85 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { boardService } from '../services/boardService.js';
 import { fileService } from '../services/fileService.js';
 import { AuthExpiredError } from '../services/apiClient.js';
 import { useAuthStore } from '../store/authStore.js';
+import BackButton from '../components/common/BackButton.jsx';
+import UserAvatar from '../components/common/UserAvatar.jsx';
+import { formatCreatedAt } from '../utils/formatDate.js';
 import { buildRoute, routes } from '../utils/routes.js';
+import '../styles/boardDetail.css';
 import '../styles/boardEdit.css';
 
 const MAX_USER_TAG_COUNT = 5;
-const MAX_FILE_COUNT = 3;
-const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg'];
-
-function createBoardFileFormData(boardId, files) {
-  const formData = new FormData();
-
-  files.forEach((file) => {
-    formData.append('fileList', file);
-  });
-  formData.append('boardId', boardId);
-
-  return formData;
-}
 
 function normalizeUserTag(value) {
   return value.replace(/\s/g, '').replace(/^#/, '');
 }
 
-function validateImageFile(file) {
-  return ACCEPTED_IMAGE_TYPES.includes(file.type);
-}
-
-export default function BoardEditPage() {
-  const { t } = useTranslation(['boards', 'common', 'auth']);
+export default function BoardEditPage({ modal = false, onClose, trackIdOverride }) {
+  const { i18n, t } = useTranslation(['boards', 'common', 'auth']);
   const { boardId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const wasAuthenticatedOnEntry = useRef(isAuthenticated);
-  const trackId = searchParams.get('trackId');
+  const dialogRef = useRef(null);
+  const trackId = trackIdOverride ?? searchParams.get('trackId');
   const isEditMode = Boolean(boardId);
   const [content, setContent] = useState('');
+  const [boardMeta, setBoardMeta] = useState(null);
   const [userTagInput, setUserTagInput] = useState('');
   const [userTags, setUserTags] = useState([]);
   const [existingFiles, setExistingFiles] = useState([]);
   const [deletedFileIds, setDeletedFileIds] = useState([]);
-  const [newFiles, setNewFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorKey, setErrorKey] = useState('');
+  const [tagWarning, setTagWarning] = useState(null);
 
   const title = isEditMode ? t('form.editTitle') : t('form.createTitle');
-  const totalFileCount = existingFiles.length + newFiles.length;
   const canSubmit = content.trim() && userTags.length > 0 && !isSubmitting;
+
+  useEffect(() => {
+    if (!tagWarning) return undefined;
+    const timeout = window.setTimeout(() => setTagWarning(null), 1800);
+    return () => window.clearTimeout(timeout);
+  }, [tagWarning]);
+
+  const showTagWarning = (key) => {
+    setTagWarning((current) => ({ key, id: (current?.id ?? 0) + 1 }));
+    setErrorKey('');
+  };
+
+  useEffect(() => {
+    if (!modal) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialogRef.current?.querySelector('textarea')?.focus();
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [modal]);
+
+  const handleModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose?.();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(dialogRef.current?.querySelectorAll('button:not(:disabled), input:not(:disabled), textarea:not(:disabled)') ?? []);
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  };
 
   useEffect(() => {
     if (!wasAuthenticatedOnEntry.current) {
@@ -63,25 +90,10 @@ export default function BoardEditPage() {
   }, [isAuthenticated, isEditMode, isLoading, navigate]);
 
   const moveToLogin = () => {
-    const hasDraft = Boolean(content.trim() || userTags.length || newFiles.length || deletedFileIds.length);
+    const hasDraft = Boolean(content.trim() || userTags.length || deletedFileIds.length);
     if (hasDraft && !window.confirm(t('auth:loginRequired.discardDraft'))) return;
     navigate(routes.login, { state: { messageKey: 'loginRequired.expired' } });
   };
-
-  const newFilePreviews = useMemo(
-    () =>
-      newFiles.map((file) => ({
-        file,
-        previewUrl: URL.createObjectURL(file),
-      })),
-    [newFiles],
-  );
-
-  useEffect(() => {
-    return () => {
-      newFilePreviews.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
-    };
-  }, [newFilePreviews]);
 
   useEffect(() => {
     if (!isAuthenticated || !isEditMode || !boardId) {
@@ -100,6 +112,7 @@ export default function BoardEditPage() {
         ]);
 
         if (!ignore) {
+          setBoardMeta(boardResponse);
           setContent(boardResponse?.content ?? '');
           setUserTags(boardResponse?.userTagNameList?.nameList ?? []);
           setExistingFiles(fileResponse ?? []);
@@ -127,22 +140,23 @@ export default function BoardEditPage() {
     const userTag = normalizeUserTag(userTagInput);
 
     if (!userTag) {
-      setErrorKey('form.validation.tagRequired');
+      showTagWarning('form.validation.tagRequired');
       return;
     }
 
     if (userTags.length >= MAX_USER_TAG_COUNT) {
-      setErrorKey('form.validation.tagLimit');
+      showTagWarning('form.validation.tagLimit');
       return;
     }
 
     if (userTags.includes(userTag)) {
-      setErrorKey('form.validation.tagDuplicate');
+      showTagWarning('form.validation.tagDuplicate');
       setUserTagInput('');
       return;
     }
 
     setUserTags((currentUserTags) => [...currentUserTags, userTag]);
+    setTagWarning(null);
     setUserTagInput('');
     setErrorKey('');
   };
@@ -156,57 +170,12 @@ export default function BoardEditPage() {
 
   const removeUserTag = (userTag) => {
     setUserTags((currentUserTags) => currentUserTags.filter((item) => item !== userTag));
-  };
-
-  const handleFileChange = (event) => {
-    const selectedFiles = Array.from(event.target.files ?? []);
-
-    if (selectedFiles.length === 0) {
-      return;
-    }
-
-    const availableCount = MAX_FILE_COUNT - totalFileCount;
-
-    if (availableCount <= 0) {
-      setErrorKey('form.validation.fileLimit');
-      event.target.value = '';
-      return;
-    }
-
-    const validFiles = selectedFiles.filter(validateImageFile).slice(0, availableCount);
-
-    if (validFiles.length !== selectedFiles.length) {
-      setErrorKey('form.validation.fileType');
-    } else {
-      setErrorKey('');
-    }
-
-    setNewFiles((currentFiles) => [...currentFiles, ...validFiles]);
-    event.target.value = '';
+    setTagWarning(null);
   };
 
   const removeExistingFile = (fileId) => {
     setExistingFiles((files) => files.filter((file) => file.fileId !== fileId));
     setDeletedFileIds((fileIds) => [...fileIds, fileId]);
-  };
-
-  const removeNewFile = (file) => {
-    setNewFiles((files) => files.filter((currentFile) => currentFile !== file));
-  };
-
-  const uploadNewFiles = async (targetBoardId, requestType) => {
-    if (newFiles.length === 0) {
-      return;
-    }
-
-    const formData = createBoardFileFormData(targetBoardId, newFiles);
-
-    if (requestType === 'update') {
-      await fileService.update(formData);
-      return;
-    }
-
-    await fileService.upload(formData);
   };
 
   const handleSubmit = async (event) => {
@@ -223,7 +192,7 @@ export default function BoardEditPage() {
     }
 
     if (userTags.length === 0) {
-      setErrorKey('form.validation.tagsRequired');
+      showTagWarning('form.validation.tagsRequired');
       return;
     }
 
@@ -242,7 +211,6 @@ export default function BoardEditPage() {
           await fileService.deleteFileList(deletedFileIds, boardId);
         }
 
-        await uploadNewFiles(boardId, 'update');
         navigate(buildRoute.boardDetail(boardId));
         return;
       }
@@ -253,7 +221,6 @@ export default function BoardEditPage() {
         trackId,
       });
 
-      await uploadNewFiles(createdBoard.boardId, 'create');
       navigate(buildRoute.boardDetail(createdBoard.boardId));
     } catch (error) {
       if (error instanceof AuthExpiredError) {
@@ -267,6 +234,10 @@ export default function BoardEditPage() {
   };
 
   const handleCancel = () => {
+    if (modal) {
+      onClose?.();
+      return;
+    }
     if (isEditMode) {
       navigate(buildRoute.boardDetail(boardId));
       return;
@@ -280,48 +251,58 @@ export default function BoardEditPage() {
   }
 
   if (isLoading) {
-    return <p className="board-edit-message">{t('form.loading')}</p>;
+    return (
+      <div className="board-detail-page detail-page-frame board-edit-detail-page">
+        <div aria-hidden="true" className="skeleton-block board-edit-skeleton-back" />
+        <div className="board-detail-card board-edit-detail-card board-edit-skeleton" role="status">
+          <span className="visually-hidden">{t('form.loading')}</span>
+          <div aria-hidden="true" className="board-detail-meta"><span className="skeleton-block board-edit-skeleton-author" /><span className="skeleton-block board-edit-skeleton-tags" /></div>
+          <div aria-hidden="true" className="board-edit-detail-body"><span className="skeleton-block" /><span className="skeleton-block" /><span className="skeleton-block" /></div>
+          <div aria-hidden="true" className="board-detail-footer"><span className="skeleton-block board-edit-skeleton-action" /></div>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <form className="board-edit-page" onSubmit={handleSubmit}>
-      <header className="board-edit-header">
-        <h1>{title}</h1>
-      </header>
-
-      <section className="board-edit-section" aria-labelledby="user-tag-title">
-        <h2 id="user-tag-title">{t('form.userTags')}</h2>
+  const tagEditor = (
+    <section className={isEditMode ? 'board-edit-detail-tags' : 'board-edit-section'} aria-label={t('form.userTags')}>
         <div className="board-edit-user-tag-list">
           {userTags.map((userTag) => (
             <button
+              aria-label={t('form.removeTag', { tag: userTag })}
               className="board-edit-user-tag"
               key={userTag}
               onClick={() => removeUserTag(userTag)}
               type="button"
             >
               #{userTag}
+              {isEditMode ? <span aria-hidden="true" className="board-edit-tag-remove-mark">×</span> : null}
             </button>
           ))}
+          {tagWarning ? (
+            <span className="board-edit-tag-warning" key={tagWarning.id} role="alert">
+              {t(tagWarning.key)}
+            </span>
+          ) : null}
         </div>
         <input
           className="board-edit-tag-input"
           onChange={(event) => setUserTagInput(event.target.value)}
           onKeyDown={handleUserTagKeyDown}
+          aria-label={t('form.tagInput')}
           placeholder={t('form.tagInput')}
           type="text"
           value={userTagInput}
         />
-      </section>
+    </section>
+  );
 
-      <section className="board-edit-section" aria-labelledby="file-title">
-        <h2 id="file-title">{t('form.images')}</h2>
-        <label className="board-file-upload">
-          <input accept="image/png,image/jpeg" multiple onChange={handleFileChange} type="file" />
-          <span>{t('common:actions.uploadImage')}</span>
-        </label>
+  const imageEditor = existingFiles.length > 0 ? (
+    <section className="board-edit-section board-edit-images" aria-label={t('form.images')}>
         <div className="board-file-preview-list">
           {existingFiles.map((file) => (
             <button
+              aria-label={t('form.removeImage')}
               className="board-file-preview"
               key={file.fileId}
               onClick={() => removeExistingFile(file.fileId)}
@@ -330,40 +311,84 @@ export default function BoardEditPage() {
               <img src={file.filePath} alt={t('common:images.uploaded')} />
             </button>
           ))}
-          {newFilePreviews.map(({ file, previewUrl }) => (
-            <button
-              className="board-file-preview"
-              key={`${file.name}-${file.lastModified}`}
-              onClick={() => removeNewFile(file)}
-              type="button"
-            >
-              <img src={previewUrl} alt={file.name} />
-            </button>
-          ))}
         </div>
-      </section>
+    </section>
+  ) : null;
 
-      <section className="board-edit-section" aria-labelledby="content-title">
-        <h2 id="content-title">{t('form.story')}</h2>
+  const contentEditor = (
+    <section className={isEditMode ? 'board-edit-detail-body' : 'board-edit-section'} aria-label={t('form.story')}>
         <textarea
+          aria-label={t('form.story')}
           className="board-edit-content"
           onChange={(event) => setContent(event.target.value)}
-          placeholder={t('form.storyPlaceholder')}
+          placeholder={isEditMode ? t('form.storyPlaceholder') : undefined}
           value={content}
         />
-      </section>
+    </section>
+  );
 
+  const feedback = (
+    <>
       {errorKey ? <p className="board-edit-message error">{t(errorKey)}</p> : null}
       {!isAuthenticated ? <p className="board-edit-message error">{t('auth:loginRequired.expired')}</p> : null}
+    </>
+  );
 
-      <footer className="board-edit-footer">
+  const actions = (
+    <footer className={isEditMode ? 'board-detail-footer board-edit-detail-footer' : 'board-edit-footer'}>
         <button className="secondary-button" onClick={handleCancel} type="button">
           {t('common:actions.cancel')}
         </button>
         <button className="primary-button" disabled={!canSubmit} type="submit">
           {isEditMode ? t('common:actions.edit') : t('common:actions.write')}
         </button>
-      </footer>
+    </footer>
+  );
+
+  const form = isEditMode ? (
+    <div className="board-detail-page detail-page-frame board-edit-detail-page">
+      <BackButton label={t('detail.back')} onClick={handleCancel} />
+      <form className="board-detail-card board-edit-detail-card" onSubmit={handleSubmit}>
+        <h1 className="visually-hidden">{title}</h1>
+        <header className="board-detail-meta board-edit-detail-meta">
+          <div className="board-detail-byline">
+            <UserAvatar name={boardMeta?.nickname} size="large" />
+            <div className="board-detail-byline-text">
+              <strong className="board-detail-author">{boardMeta?.nickname}</strong>
+              {boardMeta?.createdAt ? (
+                <time className="board-detail-date">
+                  {formatCreatedAt(boardMeta.createdAt, i18n.resolvedLanguage ?? i18n.language)}
+                </time>
+              ) : null}
+            </div>
+          </div>
+          {tagEditor}
+        </header>
+        {contentEditor}
+        {imageEditor}
+        {feedback}
+        {actions}
+      </form>
+    </div>
+  ) : (
+    <form className="board-edit-page board-edit-page--create" onSubmit={handleSubmit}>
+      {!modal ? <h1 className="visually-hidden">{title}</h1> : null}
+      {tagEditor}
+      {contentEditor}
+      {feedback}
+      {actions}
     </form>
+  );
+
+  if (!modal) return form;
+
+  return createPortal(
+    <div className="board-edit-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose?.(); }}>
+      <div aria-label={title} aria-modal="true" className="board-edit-dialog" onKeyDown={handleModalKeyDown} ref={dialogRef} role="dialog">
+        <button aria-label={t('common:actions.close')} className="board-edit-close" onClick={onClose} type="button">×</button>
+        {form}
+      </div>
+    </div>,
+    document.body,
   );
 }
